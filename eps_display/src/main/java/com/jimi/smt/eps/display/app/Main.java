@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.ConfigurationSource;
 import org.apache.logging.log4j.core.config.Configurator;
 
@@ -17,6 +19,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.image.Image;
 import javafx.scene.control.Alert.AlertType;
 import javafx.fxml.FXMLLoader;
 
@@ -27,8 +30,11 @@ public class Main extends Application {
 	
 	private static final String VERSION = "2.0.0";
 	
-	private static final String FILE_NAME = "EPS_Display-" + VERSION + ".jar";
+	private static final String NAME = "EPS_Display-" + VERSION;
 	
+	private static final String TYPE = ".jar";
+	// 日志记录
+	private Logger logger = LogManager.getRootLogger();
 	
 	@Override
 	public void start(Stage primaryStage) {
@@ -45,20 +51,20 @@ public class Main extends Application {
 				}).start();
 			}else {
 				//BorderPane root = (BorderPane)FXMLLoader.load(getClass().getResource("/fxml/Display.fxml"));
-				
 				FXMLLoader loader = new FXMLLoader(ResourcesUtil.getResourceURL("fxml/Display.fxml"));
 				Parent root =  loader.load();
 				displayController = loader.getController();
 				displayController.closeWindow(primaryStage);
 				Scene scene = new Scene(root,1366,940);
 				scene.getStylesheets().add(ResourcesUtil.getResourceURL("css/application.css").toExternalForm());
+				primaryStage.getIcons().add(new Image(ResourcesUtil.getResourceURL("image/smt.jpg").openStream()));
 				primaryStage.setTitle("产线实时监控-V"+VERSION);
 				primaryStage.setScene(scene);
 				primaryStage.show();
-				
 			}
 		} catch(Exception e) {
 			e.printStackTrace();
+			logger.error(e.getMessage());
 			System.exit(0);
 			
 		}
@@ -86,7 +92,7 @@ public class Main extends Application {
 		BufferedReader b = new BufferedReader(new InputStreamReader(in));
 		int count = 0;
 		while ((line = b.readLine()) != null) {
-			if (line.contains(FILE_NAME)) {
+			if (line.contains(NAME) && line.contains(TYPE)) {
 				count++;
 				if (count > 1) {
 					return true;
@@ -99,4 +105,6 @@ public class Main extends Application {
 	public static String getVersion() {
 		return VERSION;
 	}
+	
+
 }

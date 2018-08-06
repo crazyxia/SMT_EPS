@@ -566,10 +566,10 @@ public class DisplayController implements Initializable {
 			@Override
 			public void run() {
 				if (network) {
-					logger.error("重置工单生产数目失败，IP地址：" + asyncCommunicator.getRemoteIp() + "connect失败，网络连接出错");
+					logger.error("重置工单的生产数目失败，IP地址：" + asyncCommunicator.getRemoteIp() + "connect失败，网络连接出错");
 					new Alert(AlertType.ERROR, "重置工单生产数目失败，请检查你的网络连接", ButtonType.OK).show();
 				} else {
-					logger.error("重置工单生产数目失败，服务器原因");
+					logger.error("重置工单的生产数目失败，服务器原因");
 					new Alert(AlertType.ERROR, "重置工单生产数目失败，服务器原因", ButtonType.OK).show();
 				}
 				setDisableCb(false);
@@ -874,13 +874,13 @@ public class DisplayController implements Initializable {
 										Log rLog = createLogByPackage(reply);
 										logger.info("接收重置包：" + rLog.getData());
 										if (!reply.getControlResult().equals(ControlResult.SUCCEED)) {
-											logger.error("关闭时重置工单生产数目失败，取消工单失败，IP:" + asyncCommunicator.getRemoteIp()
+											logger.error("关闭时重置工单的生产数目失败，取消工单失败，IP:" + asyncCommunicator.getRemoteIp()
 													+ "服务器内部错误");
 										} else {
 											logger.info("关闭时重置生产数目成功");
 										}
 									} else {
-										logger.error("关闭时重置工单生产数目失败，取消工单失败，IP:" + asyncCommunicator.getRemoteIp()
+										logger.error("关闭时重置工单的生产数目失败，取消工单失败，IP:" + asyncCommunicator.getRemoteIp()
 												+ "服务器内部错误");
 									}
 									if (asyncCommunicator != null) {
@@ -892,7 +892,7 @@ public class DisplayController implements Initializable {
 								@Override
 								public void onCatchIOException(IOException exception) {
 									logger.error(
-											"关闭时重置工单生产数目失败，取消工单失败，IP:" + asyncCommunicator.getRemoteIp() + "网络连接错误");
+											"关闭时重置工单的生产数目失败，取消工单失败，IP:" + asyncCommunicator.getRemoteIp() + "网络连接错误");
 									if (asyncCommunicator != null) {
 										asyncCommunicator.close();
 									}
@@ -903,7 +903,7 @@ public class DisplayController implements Initializable {
 
 						@Override
 						public void onFailed(IOException e) {
-							logger.error("关闭时重置工单生产数目失败，取消工单失败，IP:" + asyncCommunicator.getRemoteIp() + "网络连接错误");
+							logger.error("关闭时重置工单的生产数目失败，取消工单失败，IP:" + asyncCommunicator.getRemoteIp() + "网络连接错误");
 							if (asyncCommunicator != null) {
 								asyncCommunicator.close();
 							}
