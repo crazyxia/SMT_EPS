@@ -28,7 +28,7 @@ public class Main extends Application {
 	
 	private DisplayController displayController;
 	
-	private static final String VERSION = "2.0.0";
+	private static final String VERSION = "2.1.0";
 	
 	private static final String NAME = "EPS_Display-" + VERSION;
 	
@@ -55,11 +55,14 @@ public class Main extends Application {
 				Parent root =  loader.load();
 				displayController = loader.getController();
 				displayController.closeWindow(primaryStage);
-				Scene scene = new Scene(root,1366,940);
+				displayController.scenceChangeListener(primaryStage);
+				Scene scene = new Scene(root,800,600);
 				scene.getStylesheets().add(ResourcesUtil.getResourceURL("css/application.css").toExternalForm());
 				primaryStage.getIcons().add(new Image(ResourcesUtil.getResourceURL("image/smt.jpg").openStream()));
 				primaryStage.setTitle("产线实时监控-V"+VERSION);
 				primaryStage.setScene(scene);
+				primaryStage.setMinWidth(800);
+				primaryStage.setMinHeight(600);
 				primaryStage.show();
 			}
 		} catch(Exception e) {

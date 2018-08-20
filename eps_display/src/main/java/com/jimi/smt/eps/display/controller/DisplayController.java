@@ -89,6 +89,7 @@ public class DisplayController implements Initializable {
 	// 定时器是否更新数据
 	private static boolean isUpdate = false;
 	// 不需要填充
+	private static int senceWidth = 0;
 	@FXML
 	private Label lineLb;
 	@FXML
@@ -184,10 +185,10 @@ public class DisplayController implements Initializable {
 		initSession();
 		initlineCb();
 		initDatatTV();
-		initButton();
-		lineCbChange();
-		workOrderChange();
-		boardTypeChange();
+		resetBtListener();
+		lineCbChangeListener();
+		workOrderChangeListener();
+		boardTypeChangeListener();
 		// 定时任务：刷新表单
 		timeTask();
 		
@@ -199,7 +200,7 @@ public class DisplayController implements Initializable {
 	 */
 	private void initSession() {
 		try {
-			programSession = MybatisHelper.getMS(MYBATIS_CONFIG_PATH, ProgramMapper.class, "smt");
+			programSession = MybatisHelper.getMS(MYBATIS_CONFIG_PATH,ProgramMapper.class,"smt");
 			operationSession = MybatisHelper.getMS(MYBATIS_CONFIG_PATH, OperationMapper.class, "smt");
 			loginSession = MybatisHelper.getMS(MYBATIS_CONFIG_PATH, LoginMapper.class, "socket");
 		} catch (IOException e) {
@@ -211,6 +212,7 @@ public class DisplayController implements Initializable {
 	private void initVersionLb() {
 		versionLb.setText("V"+Main.getVersion()+" © 2018 几米物联技术有限公司  All rights reserved.");
 	}
+	
 	/**
 	 * 初始化线号选择框
 	 */
@@ -225,7 +227,7 @@ public class DisplayController implements Initializable {
 	/**
 	 * 初始化表格
 	 */ 
-	@SuppressWarnings({ "unchecked" })
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void initDatatTV() {
 
 		lineseatCl.setCellValueFactory(new PropertyValueFactory<ResultData, String>("lineseat"));
@@ -235,6 +237,23 @@ public class DisplayController implements Initializable {
 		checkResultCl.setCellValueFactory(new PropertyValueFactory<ResultData, Integer>("checkResult"));
 		checkAllResultCl.setCellValueFactory(new PropertyValueFactory<ResultData, Integer>("checkAllResult"));
 		firstCheckAllResultCl.setCellValueFactory(new PropertyValueFactory<ResultData, Integer>("firstCheckAllResult"));
+		lineseatCl.setCellFactory(new Callback<TableColumn, TableCell>() {
+				public TableCell<ResultData, String> call(TableColumn pColumn) {
+					return new TableCell<ResultData, String>() {
+
+						@Override
+						public void updateItem(String item, boolean empty) {
+
+							super.updateItem(item, empty);
+							this.setStyle("-fx-font-size: "+((((senceWidth-18)/7-111)/12)+22)+"px;" + 
+									"	-fx-alignment: center;" + 
+									"	-fx-font-family:'STXiHei';" + 
+									"	-fx-font-weight: bold;");
+							this.setText(item);
+						}
+					};
+				}
+			});
 		initcell(storeIssueResultCl);
 		initcell(feedResultCl);
 		initcell(changeResultCl);
@@ -242,6 +261,7 @@ public class DisplayController implements Initializable {
 		initcell(checkAllResultCl);
 		initcell(firstCheckAllResultCl);
 	}
+
 
 	/**
 	 * 初始化表格中某一列的每个单元格
@@ -258,6 +278,10 @@ public class DisplayController implements Initializable {
 					public void updateItem(Integer item, boolean empty) {
 
 						super.updateItem(item, empty);
+						this.setStyle("-fx-font-size:"+((((senceWidth-18)/7-111)/12)+22)+"px;" + 
+								"	-fx-alignment: center;" + 
+								"	-fx-font-family:'STXiHei';" + 
+								"	-fx-font-weight: bold;");
 						this.setText(null);
 						if (!empty) {
 							if (item.toString().equals("0")) {
@@ -310,10 +334,11 @@ public class DisplayController implements Initializable {
 			}
 		}, TIME_DELAY, TIME_PERIOD);
 	}
+	
 	/*
 	 * 线号选择框文本内容变更监听器
 	 */
-	public void lineCbChange() {
+	public void lineCbChangeListener() {
 		lineCb.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
 
 			@Override
@@ -331,7 +356,6 @@ public class DisplayController implements Initializable {
 					String remoteIp = login.getIp();
 					// String remoteIp = "10.10.11.119";
 					int port = 23334;
-					System.out.println("IP:" + remoteIp + "  PORT:" + port);
 					if (asyncCommunicator != null) {
 						asyncCommunicator.close();
 					}
@@ -339,7 +363,7 @@ public class DisplayController implements Initializable {
 					boardResetPackage.setLine(Line.values()[newValue.intValue()+1]);
 					boardResetPackage.setClientDevice(ClientDevice.PC);
 					boardResetPackage.setBoardResetReson(BoardResetReson.WORK_ORDER_RESTART);
-					System.out.println(boardResetPackage.getLine());
+					logger.info("IP:" + remoteIp + "  PORT:" + port+"LINE:"+boardResetPackage.getLine());
 					clearText();
 				}
 
@@ -348,10 +372,9 @@ public class DisplayController implements Initializable {
 	}
 
 	/**
-	 * 工单选择框文本内容变更监听器
-	 * 
+	 * 工单选择框文本内容变更监听器 
 	 */
-	public void workOrderChange() {
+	public void workOrderChangeListener() {
 
 		workOrderCb.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
 
@@ -367,7 +390,7 @@ public class DisplayController implements Initializable {
 						program.setWorkOrder(workOrder);
 						List<String> boardTypes = programSession.getMapper().SelectByWorkOrderAndLine(program);
 						ObservableList<String> boardTybeList = FXCollections
-								.observableArrayList(initBoardType(boardTypes));
+								.observableArrayList(getBoardType(boardTypes));
 						boardTybeCb.getItems().clear();
 						boardTybeCb.setItems(boardTybeList);
 						clearText();
@@ -379,10 +402,10 @@ public class DisplayController implements Initializable {
 
 	}
 
-
-
-	// 板面类型选择框文本内容变更监听器
-	public void boardTypeChange() {
+	/**
+	 *  板面类型选择框文本内容变更监听器
+	 */
+	public void boardTypeChangeListener() {
 		boardTybeCb.getSelectionModel();
 		boardTybeCb.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
 
@@ -496,7 +519,7 @@ public class DisplayController implements Initializable {
 	/**
 	 * 重置按钮监听器
 	 */
-	public void initButton() {
+	public void resetBtListener() {
 		resetBt.setOnAction(new EventHandler<ActionEvent>() {
 
 			@Override
@@ -624,12 +647,16 @@ public class DisplayController implements Initializable {
 	}
 	
 
-	
+	/**
+	 * 设置下拉框的状态
+	 * @param status
+	 */
 	private void setDisableCb(boolean status) {
 		lineCb.setDisable(status);
 		workOrderCb.setDisable(status);
 		boardTybeCb.setDisable(status);
 	}
+	
 	/**
 	 * 更新站位，扫描站位，物料号，扫描物料号，操作员，操作结果以及表格数据
 	 * 
@@ -655,7 +682,7 @@ public class DisplayController implements Initializable {
 						"smt");
 				List<ProgramItemVisit> programItemVisits = programItemVisitSession.getMapper().selectByProgram(program);
 				String operator = operationSession.getMapper().selectOperator(program);
-				operator = operator == null ? "unkonwn" : operator;
+				operator = operator == null ? "unknown" : operator;
 				if (programItemVisits != null && programItemVisits.size() > 0) {
 					ProgramItemVisit programItemVisit = programItemVisits.get(0);
 					lineseatLb.setText(programItemVisit.getLineseat());
@@ -720,42 +747,46 @@ public class DisplayController implements Initializable {
 		}
 	}
 
+	/**
+	 * 根据操作结果进行显示
+	 * @param result
+	 */
 	private void showResult(Integer result) {
+		String style = "-fx-alignment:center;-fx-text-fill:white;-fx-font-family:'Microsoft YaHei';-fx-font-weight:bold;";
+		String textsize = "";
+		if(senceWidth<800 && senceWidth>600) {
+			textsize="-fx-font-size:140px;";
+		}else if (senceWidth>=800&&senceWidth<1366) {
+			textsize="-fx-font-size:140px;";
+		}else if (senceWidth>=1366) {
+			textsize="-fx-font-size:140px;";
+		}
 		switch (result) {
 		case 0:
-			typeLb.setStyle(
-					"-fx-background-color:red;-fx-alignment:center;-fx-font-size:160px;-fx-text-fill:white;-fx-font-family:'Microsoft YaHei';");
-			resultLb.setStyle(
-					"-fx-background-color:red;-fx-alignment:center;-fx-font-size:160px;-fx-text-fill:white;-fx-font-family:'Microsoft YaHei'");
+			typeLb.setStyle(style+textsize+"-fx-background-color:red;");
+			resultLb.setStyle(style+textsize+"-fx-background-color:red;");
 			resultLb.setText("FAIL");
 			break;
 		case 1:
-			typeLb.setStyle(
-					"-fx-background-color:green;-fx-alignment:center;-fx-font-size:160px;-fx-text-fill:white;-fx-font-family:'Microsoft YaHei'");
-			resultLb.setStyle(
-					"-fx-background-color:green;-fx-alignment:center;-fx-font-size:160px;-fx-text-fill:white;-fx-font-family:'Microsoft YaHei'");
+			typeLb.setStyle(style+textsize+"-fx-background-color:green;");
+			resultLb.setStyle(style+textsize+
+					"-fx-background-color:green;");
 			resultLb.setText("PASS");
 			break;
 		case 2:
-			typeLb.setStyle(
-					"-fx-background-color:green;-fx-alignment:center;-fx-font-size:160px;-fx-text-fill:white;-fx-font-family:'Microsoft YaHei'");
-			resultLb.setStyle(
-					"-fx-background-color:green;-fx-alignment:center;-fx-font-size:160px;-fx-text-fill:white;-fx-font-family:'Microsoft YaHei'");
+			typeLb.setStyle(style+textsize+"-fx-background-color:green;");
+			resultLb.setStyle(style+textsize+"-fx-background-color:green;");
 			typeLb.setText("操  作");
 			resultLb.setText("结  果");
 			break;
 		case 3:
-			typeLb.setStyle(
-					"-fx-background-color:red;-fx-alignment:center;-fx-font-size:160px;-fx-text-fill:white;-fx-font-family:'Microsoft YaHei'");
-			resultLb.setStyle(
-					"-fx-background-color:red;-fx-alignment:center;-fx-font-size:160px;-fx-text-fill:white;-fx-font-family:'Microsoft YaHei'");
+			typeLb.setStyle(style+textsize+"-fx-background-color:red;");
+			resultLb.setStyle(style+textsize+"-fx-background-color:red;");
 			resultLb.setText("已超时");
 			break;
 		case 4:
-			typeLb.setStyle(
-					"-fx-background-color:purple;-fx-alignment:center;-fx-font-size:160px;-fx-text-fill:white;-fx-font-family:'Microsoft YaHei'");
-			resultLb.setStyle(
-					"-fx-background-color:purple;-fx-alignment:center;-fx-font-size:160px;-fx-text-fill:white;-fx-font-family:'Microsoft YaHei'");
+			typeLb.setStyle(style+textsize+"-fx-background-color:purple;");
+			resultLb.setStyle(style+textsize+"-fx-background-color:purple;");
 			typeLb.setText("已换料");
 			resultLb.setText("请核料");
 			break;
@@ -816,7 +847,7 @@ public class DisplayController implements Initializable {
 	 * @param boardTybes 板面类型数字字符数组
 	 * @return
 	 */
-	private List<String> initBoardType(List<String> boardTybes) {
+	private List<String> getBoardType(List<String> boardTybes) {
 		List<String> boardTybeList = new ArrayList<>();
 		for (String boardTybe : boardTybes) {
 			if (boardTybe.equals("0")) {
@@ -832,7 +863,11 @@ public class DisplayController implements Initializable {
 		return boardTybeList;
 	}
 
-	// 将板面类型中文转化为数字
+	/**
+	 * 将板面类型中文转化为数字
+	 * @param boardType
+	 * @return
+	 */
 	private Integer getBoardTypeNo(String boardType) {
 		Integer boardTypeNo = null;
 		if (boardType.equals("默认")) {
@@ -886,7 +921,7 @@ public class DisplayController implements Initializable {
 									if (asyncCommunicator != null) {
 										asyncCommunicator.close();
 									}
-									sendHttpClose(line);
+									sendHttpCloseRequest(line);
 								}
 
 								@Override
@@ -896,7 +931,7 @@ public class DisplayController implements Initializable {
 									if (asyncCommunicator != null) {
 										asyncCommunicator.close();
 									}
-									sendHttpClose(line);
+									sendHttpCloseRequest(line);
 								}
 							});
 						}
@@ -907,7 +942,7 @@ public class DisplayController implements Initializable {
 							if (asyncCommunicator != null) {
 								asyncCommunicator.close();
 							}
-							sendHttpClose(line);
+							sendHttpCloseRequest(line);
 						}
 					});
 				}
@@ -915,7 +950,11 @@ public class DisplayController implements Initializable {
 		});
 	}
 	
-	private void sendHttpClose(String line) {
+	/**
+	 * http关闭请求取消工单
+	 * @param line
+	 */
+	private void sendHttpCloseRequest(String line) {
 		Map<String, String> map = new HashMap<>();
 		map.put("line", line);
 		try {
@@ -943,6 +982,106 @@ public class DisplayController implements Initializable {
 			System.exit(0);
 			
 		}
+	}
+	
+	/**
+	 * 根据窗口大小调整界面控件大小
+	 * @param primarystage
+	 */
+	public void scenceChangeListener(Stage primarystage) {
+		primarystage.widthProperty().addListener(new ChangeListener<Number>() {
+
+			@Override
+			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+				senceWidth = newValue.intValue();
+				//改变工单下拉框和板面类型下拉框的宽度和字体大小
+				changeCbSize(senceWidth);
+				//调整文本框控件的大小和字体大小
+				changeLbSize(senceWidth);
+				//调整重置工单按钮的位置
+				resetBt.setLayoutX(senceWidth/2 - 140);
+				//调整操作员文本框的大小和位置
+				changeOperatorSize(senceWidth);
+				//调整表格的每一列的大小和字体大小
+				ObservableList<TableColumn<ResultData, ?>> Columns = DataTv.getColumns();
+				for (TableColumn<ResultData, ?> tableColumn : Columns) {
+					tableColumn.setMinWidth((senceWidth-47)/7);
+					tableColumn.setMaxWidth((senceWidth-47)/7);
+					tableColumn.setStyle("-fx-font-size:"+((((senceWidth-18)/7-111)/20)+18)+"px;" + 
+								"	-fx-alignment: center;" + 
+								"	-fx-font-family:'Microsoft YaHei';" + 
+								"	-fx-font-weight: bolder;");
+				}
+				//调整单元格的字体大小
+				if (isUpdate) {
+					Platform.runLater(new Runnable() {
+						
+						@Override
+						public void run() {
+							updateText();
+							
+						}
+					});
+				}
+			}
+		});
+	}
+	
+	/**
+	 * 改变工单下拉框和板面类型下拉框的宽度和字体大小
+	 * @param senceWidth
+	 */
+	private void changeCbSize(int senceWidth) {
+		
+		workOrderCb.setMinWidth((senceWidth/2 - 85));
+		workOrderCb.setMaxWidth((senceWidth/2 - 85));
+		workOrderCb.setStyle(workOrderCb.getStyle()+"-fx-font-size:"+(20+(workOrderCb.getMinWidth()-315)/200)+";");
+		boardTybeCb.setMinWidth(125+(senceWidth/2 - 400)/10);
+		boardTybeCb.setMaxWidth(125+(senceWidth/2 - 400)/10);
+		boardTybeCb.setStyle(boardTybeCb.getStyle()+"-fx-font-size:"+(20+(boardTybeCb.getMinWidth()-125)/20)+";");
+	}
+	
+	/**
+	 * 改变操作员文本框和线号下拉框的宽度，位置和字体
+	 * @param senceWidth
+	 */
+	private void changeOperatorSize(int senceWidth) {
+		//操作员工号文本框
+		operatorLb.setMinWidth(110+(senceWidth/2 - 400)/10);
+		operatorLb.setLayoutX(senceWidth/2 - operatorLb.getMinWidth()-10);
+		operatorNameLb.setLayoutX(senceWidth/2 -operatorLb.getMinWidth()-100);
+		operatorLb.setStyle(operatorLb.getStyle()+"-fx-font-size:"+(22+(operatorLb.getMinWidth()-110)/10)+";");
+		//线号下拉框
+		lineCb.setMinWidth(115+((senceWidth/2 - operatorLb.getMinWidth()-300)/50));
+		lineCb.setMaxWidth(115+((senceWidth/2 - operatorLb.getMinWidth()-300)/50));
+		lineCb.setStyle(lineCb.getStyle()+"-fx-font-size:"+(20+(lineCb.getMinWidth()-115)/4)+";");
+	}
+	
+	/**
+	 * 改变文本框的宽度和字体大小
+	 * @param senceWidth
+	 */
+	private void changeLbSize(int senceWidth) {
+		String textStyle = "-fx-alignment:center;-fx-font-family:'Microsoft YaHei';"
+				+ "-fx-background-radius:4;-fx-border-radius:4;-fx-border-color:gray;-fx-font-weight:bold;";
+		double LbSize = ((senceWidth-20)/2)-130;
+		
+		lineseatLb.setMinWidth(LbSize);
+		scanLineseatLb.setMinWidth(LbSize);
+		materialNoLb.setMinWidth(LbSize);
+		scanMaterialNoLb.setMinWidth(LbSize);
+		double textsize = (22+((lineseatLb.getMinWidth()-260)/48));
+		lineseatLb.setStyle(textStyle+";-fx-font-size:"+textsize+"px;");
+		scanLineseatLb.setStyle(textStyle+";-fx-font-size:"+textsize+"px;");
+		materialNoLb.setStyle(textStyle+";-fx-font-size:"+textsize+"px;");
+		scanMaterialNoLb.setStyle(textStyle+";-fx-font-size:"+textsize+"px;");
+		
+		typeLb.setMinWidth(((senceWidth-20)/2)-10);
+		resultLb.setMinWidth(((senceWidth-20)/2)-10);
+		typeLb.setStyle(typeLb.getStyle()+"-fx-font-size:140px;-fx-font-weight:bold;");
+		resultLb.setStyle(resultLb.getStyle()+"-fx-font-size:140px;-fx-font-weight:bold;");
+		
+		
 	}
 
 	/**
