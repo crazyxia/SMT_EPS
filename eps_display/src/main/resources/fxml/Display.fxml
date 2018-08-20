@@ -8,42 +8,42 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.BorderPane?>
 
-<AnchorPane prefHeight="930.0" prefWidth="1366.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.jimi.smt.eps.display.controller.DisplayController">
+<AnchorPane maxHeight="600.0" maxWidth="949.0" minHeight="600.0" minWidth="800.0" prefHeight="593.0" prefWidth="787.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.jimi.smt.eps.display.controller.DisplayController">
    <children>
-      <Label fx:id="lineLb" layoutX="20.0" layoutY="20.0" prefHeight="50.0" prefWidth="100.0" style="-fx-font-family: 'Microsoft YaHei'; -fx-font-size: 42px; -fx-font-weight: bold;" text="线号" AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="20.0" />
-      <ComboBox fx:id="lineCb" layoutX="120.0" layoutY="24.0" maxHeight="50.0" prefHeight="50.0" prefWidth="180.0" AnchorPane.leftAnchor="120.0" AnchorPane.topAnchor="24.0" />
-      <Label fx:id="operatorNameLb" layoutX="325.0" layoutY="20.0" prefHeight="50.0" prefWidth="140.0" style="-fx-font-family: 'Microsoft YaHei'; -fx-font-size: 42px; -fx-font-weight: bold;" text="操作员" AnchorPane.leftAnchor="325.0" AnchorPane.topAnchor="20.0">
+      <Label fx:id="lineLb" layoutX="10.0" layoutY="10.0" prefHeight="50.0" prefWidth="60.0" style="-fx-font-family: 'Microsoft YaHei'; -fx-font-size: 28; -fx-font-weight: bold;" text="线号" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="10.0" />
+      <ComboBox fx:id="lineCb" layoutX="70.0" layoutY="14.0" maxHeight="50.0" prefHeight="50.0" prefWidth="115.0" style="-fx-font-size: 20; -fx-font-weight: bold;" AnchorPane.leftAnchor="75.0" AnchorPane.topAnchor="14.0" />
+      <Label fx:id="operatorNameLb" layoutX="195.0" layoutY="10.0" prefHeight="50.0" prefWidth="90.0" style="-fx-font-family: 'Microsoft YaHei'; -fx-font-size: 28; -fx-font-weight: bold;" text="操作员" AnchorPane.topAnchor="10.0">
          <font>
             <Font name="Times New Roman Bold" size="45.0" />
          </font>
       </Label>
-      <Label fx:id="operatorLb" layoutX="465.0" layoutY="24.0" prefHeight="50.0" prefWidth="220.0" style="-fx-font-size: 32; -fx-alignment: center; -fx-background-radius: 4; -fx-border-radius: 4; -fx-border-color: gray; -fx-font-family: 'Microsoft YaHei'; -fx-font-weight: bold;" AnchorPane.leftAnchor="465.0" AnchorPane.topAnchor="24.0" />
-      <Label fx:id="workOrderLb" layoutX="20.0" layoutY="80.0" prefHeight="50.0" prefWidth="100.0" style="-fx-font-family: 'Microsoft YaHei'; -fx-font-size: 42px; -fx-font-weight: bold;" text="工单" AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="80.0" />
-      <ComboBox fx:id="workOrderCb" layoutX="120.0" layoutY="84.0" prefHeight="50.0" prefWidth="565.0" AnchorPane.leftAnchor="120.0" AnchorPane.topAnchor="84.0" />
-      <Label fx:id="boardTybeLb" layoutX="20.0" layoutY="140.0" prefHeight="50.0" prefWidth="180.0" style="-fx-font-family: 'Microsoft YaHei'; -fx-font-size: 42px; -fx-font-weight: bold;" text="板面类型" AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="140.0" />
-      <ComboBox fx:id="boardTybeCb" layoutX="200.0" layoutY="144.0" prefHeight="50.0" prefWidth="180.0" AnchorPane.leftAnchor="200.0" AnchorPane.topAnchor="144.0" />
-      <Button fx:id="resetBt" layoutX="552.0" layoutY="144.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="131.0" style="-fx-font-size: 24px; -fx-font-family: 'Microsoft YaHei'; -fx-font-weight: bold;" text="重置状态" AnchorPane.leftAnchor="552.0" AnchorPane.topAnchor="144.0" />
-      <Label fx:id="lineseatNameLb" layoutX="20.0" layoutY="200.0" prefHeight="50.0" prefWidth="180.0" style="-fx-font-family: 'Microsoft YaHei'; -fx-font-size: 42px; -fx-font-weight: bold;" text="原始站位" AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="200.0" />
-      <Label fx:id="lineseatLb" layoutX="200.0" layoutY="204.0" prefHeight="50.0" prefWidth="484.0" style="-fx-font-size: 32; -fx-alignment: center; -fx-background-radius: 4; -fx-border-radius: 4; -fx-border-color: gray; -fx-font-family: 'Microsoft YaHei'; -fx-font-weight: bold;" AnchorPane.leftAnchor="200.0" AnchorPane.topAnchor="204.0" />
-      <Label fx:id="scanLineseatNameLb" layoutX="20.0" layoutY="260.0" prefHeight="50.0" prefWidth="180.0" style="-fx-font-family: 'Microsoft YaHei'; -fx-font-size: 42px; -fx-font-weight: bold; -fx-text-fill: black;" text="扫描站位" AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="260.0" />
-      <Label fx:id="scanLineseatLb" layoutX="200.0" layoutY="264.0" prefHeight="50.0" prefWidth="484.0" style="-fx-font-size: 32; -fx-alignment: center; -fx-background-radius: 4; -fx-border-radius: 4; -fx-border-color: gray; -fx-font-family: 'Microsoft YaHei'; -fx-font-weight: bold;" AnchorPane.leftAnchor="200.0" AnchorPane.topAnchor="264.0" />
-      <Label fx:id="materialNoNameLb" layoutX="20.0" layoutY="320.0" prefHeight="50.0" prefWidth="180.0" style="-fx-font-family: 'Microsoft YaHei'; -fx-font-size: 42px; -fx-font-weight: bold;" text="原始料号" AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="320.0" />
-      <Label fx:id="materialNoLb" layoutX="200.0" layoutY="324.0" prefHeight="50.0" prefWidth="484.0" style="-fx-font-size: 32; -fx-alignment: center; -fx-background-radius: 4; -fx-border-radius: 4; -fx-border-color: gray; -fx-font-family: 'Microsoft YaHei'; -fx-font-weight: bold;" AnchorPane.leftAnchor="200.0" AnchorPane.topAnchor="324.0" />
-      <Label fx:id="scanMaterialNoNameLb" layoutX="20.0" layoutY="380.0" prefHeight="50.0" prefWidth="180.0" style="-fx-font-family: 'Microsoft YaHei'; -fx-font-size: 42px; -fx-font-weight: bold;" text="扫描料号" AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="380.0" />
-      <Label fx:id="scanMaterialNoLb" layoutX="200.0" layoutY="384.0" prefHeight="50.0" prefWidth="484.0" style="-fx-font-size: 32; -fx-alignment: center; -fx-background-radius: 4; -fx-border-radius: 4; -fx-border-color: gray; -fx-font-family: 'Microsoft YaHei'; -fx-font-weight: bold;" AnchorPane.leftAnchor="200.0" AnchorPane.topAnchor="384.0" />
-      <Label fx:id="resultLb" layoutX="737.0" layoutY="234.0" prefHeight="220.0" prefWidth="620.0" style="-fx-background-color: green; -fx-alignment: center; -fx-font-size: 160; -fx-text-fill: white; -fx-font-family: 'Microsoft YaHei';" text="结  果" AnchorPane.leftAnchor="737.0" AnchorPane.rightAnchor="9.0" />
-      <Label fx:id="typeLb" layoutX="737.0" layoutY="14.0" prefHeight="220.0" prefWidth="620.0" style="-fx-alignment: center; -fx-background-color: green; -fx-font-size: 160; -fx-text-fill: white; -fx-font-family: 'Microsoft YaHei';" text="操  作" AnchorPane.leftAnchor="737.0" AnchorPane.rightAnchor="9.0" />
-      <TableView fx:id="DataTv" layoutX="11.0" layoutY="458.0" prefHeight="480.0" prefWidth="1344.0" AnchorPane.bottomAnchor="22.0" AnchorPane.leftAnchor="11.0" AnchorPane.rightAnchor="11.0" AnchorPane.topAnchor="458.0">
+      <Label fx:id="operatorLb" layoutX="280.0" layoutY="14.0" prefHeight="50.0" prefWidth="110.0" style="-fx-font-size: 22; -fx-alignment: center; -fx-background-radius: 4; -fx-border-radius: 4; -fx-border-color: gray; -fx-font-family: 'Microsoft YaHei'; -fx-font-weight: bold;" AnchorPane.topAnchor="14.0" />
+      <Label fx:id="workOrderLb" layoutX="10.0" layoutY="65.0" prefHeight="50.0" prefWidth="60.0" style="-fx-font-family: 'Microsoft YaHei'; -fx-font-size: 28; -fx-font-weight: bold;" text="工单" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="65.0" />
+      <ComboBox fx:id="workOrderCb" layoutX="70.0" layoutY="69.0" prefHeight="50.0" prefWidth="315.0" style="-fx-font-size: 20; -fx-font-weight: bold;" AnchorPane.leftAnchor="75.0" />
+      <Label fx:id="boardTybeLb" layoutX="10.0" layoutY="120.0" prefHeight="50.0" prefWidth="120.0" style="-fx-font-family: 'Microsoft YaHei'; -fx-font-size: 28; -fx-font-weight: bold;" text="板面类型" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="120.0" />
+      <ComboBox fx:id="boardTybeCb" layoutX="130.0" layoutY="124.0" prefHeight="50.0" prefWidth="125.0" style="-fx-font-size: 20;" AnchorPane.leftAnchor="130.0" AnchorPane.topAnchor="124.0" />
+      <Button fx:id="resetBt" layoutX="260.0" layoutY="124.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="130.0" style="-fx-font-size: 24px; -fx-font-family: 'Microsoft YaHei'; -fx-font-weight: bold;" text="重置状态" />
+      <Label fx:id="lineseatNameLb" layoutX="10.0" layoutY="175.0" prefHeight="50.0" prefWidth="120.0" style="-fx-font-family: 'Microsoft YaHei'; -fx-font-size: 28; -fx-font-weight: bold;" text="原始站位" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="175.0" />
+      <Label fx:id="lineseatLb" layoutX="130.0" layoutY="179.0" prefHeight="45.0" prefWidth="260.0" style="-fx-font-size: 22; -fx-alignment: center; -fx-background-radius: 4; -fx-border-radius: 4; -fx-border-color: gray; -fx-font-family: 'Microsoft YaHei'; -fx-font-weight: bold;" AnchorPane.leftAnchor="130.0" AnchorPane.topAnchor="179.0" />
+      <Label fx:id="scanLineseatNameLb" layoutX="10.0" layoutY="230.0" prefHeight="50.0" prefWidth="120.0" style="-fx-font-family: 'Microsoft YaHei'; -fx-font-size: 28; -fx-font-weight: bold;" text="扫描站位" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="230.0" />
+      <Label fx:id="scanLineseatLb" layoutX="130.0" layoutY="234.0" prefHeight="45.0" prefWidth="260.0" style="-fx-font-size: 22; -fx-alignment: center; -fx-background-radius: 4; -fx-border-radius: 4; -fx-border-color: gray; -fx-font-family: 'Microsoft YaHei'; -fx-font-weight: bold;" AnchorPane.leftAnchor="130.0" AnchorPane.topAnchor="234.0" />
+      <Label fx:id="materialNoNameLb" layoutX="10.0" layoutY="285.0" prefHeight="50.0" prefWidth="120.0" style="-fx-font-family: 'Microsoft YaHei'; -fx-font-size: 28; -fx-font-weight: bold;" text="原始料号" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="285.0" />
+      <Label fx:id="materialNoLb" layoutX="130.0" layoutY="289.0" prefHeight="45.0" prefWidth="260.0" style="-fx-font-size: 22; -fx-alignment: center; -fx-background-radius: 4; -fx-border-radius: 4; -fx-border-color: gray; -fx-font-family: 'Microsoft YaHei'; -fx-font-weight: bold;" AnchorPane.leftAnchor="130.0" AnchorPane.topAnchor="289.0" />
+      <Label fx:id="scanMaterialNoNameLb" layoutX="10.0" layoutY="340.0" prefHeight="50.0" prefWidth="120.0" style="-fx-font-family: 'Microsoft YaHei'; -fx-font-size: 28; -fx-font-weight: bold;" text="扫描料号" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="340.0" />
+      <Label fx:id="scanMaterialNoLb" layoutX="130.0" layoutY="344.0" prefHeight="45.0" prefWidth="260.0" style="-fx-font-size: 32; -fx-alignment: center; -fx-background-radius: 4; -fx-border-radius: 4; -fx-border-color: gray; -fx-font-family: 'Microsoft YaHei'; -fx-font-weight: bold;" AnchorPane.leftAnchor="130.0" AnchorPane.topAnchor="344.0" />
+      <Label fx:id="resultLb" layoutX="410.0" layoutY="200.0" prefHeight="150.0" prefWidth="380.0" style="-fx-background-color: green; -fx-alignment: center; -fx-font-size: 140; -fx-text-fill: white; -fx-font-family: 'Microsoft YaHei';" text="结  果" AnchorPane.rightAnchor="10.0" />
+      <Label fx:id="typeLb" layoutX="410.0" layoutY="10.0" maxWidth="380.0" prefHeight="150.0" prefWidth="380.0" style="-fx-alignment: center; -fx-background-color: green; -fx-font-size: 140; -fx-text-fill: white; -fx-font-family: 'Microsoft YaHei';" text="操  作" AnchorPane.rightAnchor="10.0" />
+      <TableView fx:id="DataTv" layoutX="10.0" layoutY="400.0" prefHeight="180.0" prefWidth="780.0" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="400.0">
          <columns>
-            <TableColumn fx:id="lineseatCl" prefWidth="192.0" sortable="false" text="站  位" />
-            <TableColumn id="store_issue_result" fx:id="storeIssueResultCl" prefWidth="192.0" sortable="false" text="发  料" />
-            <TableColumn fx:id="feedResultCl" prefWidth="192.0" sortable="false" text="上  料" />
-            <TableColumn fx:id="changeResultCl" prefWidth="192.0" sortable="false" text="换  料" />
-            <TableColumn fx:id="checkResultCl" prefWidth="192.0" sortable="false" text="核  料" />
-            <TableColumn fx:id="checkAllResultCl" prefWidth="192.0" sortable="false" text="全 检" />
-            <TableColumn fx:id="firstCheckAllResultCl" prefWidth="192.0" sortable="false" text="首  检" />
+            <TableColumn fx:id="lineseatCl" prefWidth="111.0" sortable="false" text="站  位" />
+            <TableColumn id="store_issue_result" fx:id="storeIssueResultCl" prefWidth="111.0" sortable="false" text="发  料" />
+            <TableColumn fx:id="feedResultCl" prefWidth="111.0" sortable="false" text="上  料" />
+            <TableColumn fx:id="changeResultCl" prefWidth="111.0" sortable="false" text="换  料" />
+            <TableColumn fx:id="checkResultCl" prefWidth="111.0" sortable="false" text="核  料" />
+            <TableColumn fx:id="checkAllResultCl" minWidth="0.0" prefWidth="111.0" sortable="false" text="全 检" />
+            <TableColumn fx:id="firstCheckAllResultCl" minWidth="0.0" prefWidth="111.0" sortable="false" text="首  检" />
          </columns>
       </TableView>
-      <Label fx:id="versionLb" alignment="BOTTOM_CENTER" layoutX="538.0" layoutY="909.0" prefHeight="15.0" prefWidth="334.0" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="538.0" AnchorPane.rightAnchor="494.0" />
+      <Label fx:id="versionLb" alignment="BOTTOM_CENTER" layoutX="225.0" layoutY="585.0" prefHeight="15.0" prefWidth="350.0" style="-fx-alignment: center;" text="V2.1.0 © 2018 几米物联技术有限公司  All rights reserved." AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="225.0" AnchorPane.rightAnchor="225.0" />
    </children>
 </AnchorPane>
