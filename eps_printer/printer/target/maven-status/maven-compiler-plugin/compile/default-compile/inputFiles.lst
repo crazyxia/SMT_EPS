@@ -1,0 +1,16 @@
+E:\eclipse-workspace\eps_printer\printer\src\main\java\com\jimi\smt\eps\printer\entity\StockLogExample.java
+E:\eclipse-workspace\eps_printer\printer\src\main\java\com\jimi\smt\eps\printer\app\Main.java
+E:\eclipse-workspace\eps_printer\printer\src\main\java\com\jimi\smt\eps\printer\util\MybatisHelper.java
+E:\eclipse-workspace\eps_printer\printer\src\main\java\com\jimi\smt\eps\printer\util\ExcelHelper.java
+E:\eclipse-workspace\eps_printer\printer\src\main\java\com\jimi\smt\eps\printer\controller\MainController.java
+E:\eclipse-workspace\eps_printer\printer\src\main\java\com\jimi\smt\eps\printer\controller\IdController.java
+E:\eclipse-workspace\eps_printer\printer\src\main\java\com\jimi\smt\eps\printer\entity\User.java
+E:\eclipse-workspace\eps_printer\printer\src\main\java\com\jimi\smt\eps\printer\entity\Material.java
+E:\eclipse-workspace\eps_printer\printer\src\main\java\com\jimi\smt\eps\printer\mapper\UserMapper.java
+E:\eclipse-workspace\eps_printer\printer\src\main\java\com\jimi\smt\eps\printer\util\QRCodeUtil.java
+E:\eclipse-workspace\eps_printer\printer\src\main\java\com\jimi\smt\eps\printer\entity\StockLog.java
+E:\eclipse-workspace\eps_printer\printer\src\main\java\com\jimi\smt\eps\printer\mapper\StockLogMapper.java
+E:\eclipse-workspace\eps_printer\printer\src\main\java\com\jimi\smt\eps\printer\controller\ConfigController.java
+E:\eclipse-workspace\eps_printer\printer\src\main\java\com\jimi\smt\eps\printer\entity\MaterialProperties.java
+E:\eclipse-workspace\eps_printer\printer\src\main\java\com\jimi\smt\eps\printer\entity\UserExample.java
+E:\eclipse-workspace\eps_printer\printer\src\main\java\com\jimi\smt\eps\printer\controller\RfidController.java
