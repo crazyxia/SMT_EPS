@@ -36,7 +36,7 @@ public class TimeoutTimer {
 	private static final String CHECK_ALL_CYCLE_TIME = "check_all_cycle_time";
 	private static final String CHECK_AFTER_CHANGE_TIME = "check_after_change_time";
 	//产线数量
-	private static final int LINE_SIZE = 8;
+	private static final int LINE_SIZE = 5;
 	//线锁
 	private Object[] lineLocks; 
 	//产线当前信息
@@ -45,7 +45,7 @@ public class TimeoutTimer {
 	
 	@PostConstruct
 	public void init() {
-		lineLocks = new Object[8];
+		lineLocks = new Object[5];
 		lineInfos = new HashMap<Integer, LineInfo>();
 		for (int i = 0; i < LINE_SIZE; i++) {
 			lineLocks[i] = new Object();
@@ -104,7 +104,7 @@ public class TimeoutTimer {
 	 * 根据数字线号生成字符串，例如7->308 ;0->301
 	 */
 	private static String getLineString(int line) {
-		return "30" + (line + 1);
+		return "" + (line + 1);
 	}
 
 	

@@ -70,7 +70,7 @@ public class ClientSocket {
 		MybatisSession<LoginMapper> loginSession = null;
 		loginSession = MybatisHelper.getMS(MYBATIS_CONFIG_PATH, LoginMapper.class);
 		LoginExample example = new LoginExample();
-		example.createCriteria().andLineEqualTo("30" + (this.line + 1));
+		example.createCriteria().andLineEqualTo("" + (this.line + 1));
 		List<Login> logins = loginSession.getMapper().selectByExample(example);
 		loginSession.getSession().close();
 		if(!logins.isEmpty()) {

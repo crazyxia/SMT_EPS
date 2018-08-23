@@ -18,7 +18,7 @@ import okhttp3.Response;
 
 public class HttpHelper {
 	
-	private static final String URL = "http://localhost:8080/eps_server/program/";
+	private static final String URL = "http://192.168.66.9:8080/eps_server/program/";
 	
 	private final OkHttpClient client = new OkHttpClient();
 	

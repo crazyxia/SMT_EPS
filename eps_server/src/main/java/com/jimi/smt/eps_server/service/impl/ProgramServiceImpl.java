@@ -463,6 +463,7 @@ public class ProgramServiceImpl implements ProgramService {
 		displayExample.createCriteria()
 			.andLineEqualTo(line);
 		Display display = displayMapper.selectByExample(displayExample).get(0);
+		int flag = 0;
 		//判断是否是停止监控
 		if(workOrder == null && boardType == null) {
 			display.setWorkOrder(null);
@@ -471,6 +472,18 @@ public class ProgramServiceImpl implements ProgramService {
 			List<ProgramItemVisit> programItemVisits = getVisits(line, workOrder, boardType);
 			if(programItemVisits.isEmpty()) {
 				return "failed_not_exist";
+			}
+			for (ProgramItemVisit programItemVisit : programItemVisits) {
+				if(programItemVisit.getFirstCheckAllResult()!=1) {
+					flag = 1;
+					break;
+				}
+			}
+			if(flag == 1) {
+				for (ProgramItemVisit programItemVisit : programItemVisits) {										
+					programItemVisit.setCheckAllTime(new Date());
+					programItemVisitMapper.updateByPrimaryKey(programItemVisit);					
+				}	
 			}
 			display.setWorkOrder(workOrder);
 			display.setBoardType(boardType);

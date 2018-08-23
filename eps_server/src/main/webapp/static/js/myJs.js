@@ -3,7 +3,7 @@ $(function () {
     var timer1 = null; //控制播放的定时器
     var timer2 = null;  //控制获取数据的定时器
     var timer3 = null;   //获取时间的定时器
-    var lineNum = "308"
+    var lineNum = "5"
     var key = 0;
     $("#line").on("change", function () {
         for (var i = 1; i < divs.length; i++) {    //将第一个后面的div和section全部放到后面去

@@ -2,7 +2,7 @@
 .combo-box{
 	-fx-alignment: center;
     -fx-text-fill: black;
-    -fx-font-size: 26px;
+    -fx-font-size: 24px;
     -fx-font-weight: bold;
     -fx-font-family:'Microsoft YaHei';
 }
@@ -15,7 +15,7 @@
 }
 
 .table-column{
-	-fx-font-size: 46;
+	-fx-font-size: 36;
 	-fx-alignment: center;
 	-fx-font-family:'STSong';
 }

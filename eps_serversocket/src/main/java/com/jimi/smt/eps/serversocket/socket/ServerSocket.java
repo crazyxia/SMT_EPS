@@ -5,12 +5,13 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+
 import com.jimi.smt.eps.serversocket.constant.Line;
-import com.jimi.smt.eps.serversocket.entity.BoardNum;
 import com.jimi.smt.eps.serversocket.entity.Display;
 import com.jimi.smt.eps.serversocket.entity.DisplayExample;
 import com.jimi.smt.eps.serversocket.entity.Log;
@@ -19,7 +20,6 @@ import com.jimi.smt.eps.serversocket.entity.LoginExample;
 import com.jimi.smt.eps.serversocket.entity.Program;
 import com.jimi.smt.eps.serversocket.entity.ProgramExample;
 import com.jimi.smt.eps.serversocket.entity.ProgramExample.Criteria;
-import com.jimi.smt.eps.serversocket.mapper.BoardNumMapper;
 import com.jimi.smt.eps.serversocket.mapper.DisplayMapper;
 import com.jimi.smt.eps.serversocket.mapper.LogMapper;
 import com.jimi.smt.eps.serversocket.mapper.LoginMapper;
@@ -27,6 +27,7 @@ import com.jimi.smt.eps.serversocket.mapper.ProgramMapper;
 import com.jimi.smt.eps.serversocket.pack.BoardNumPackage;
 import com.jimi.smt.eps.serversocket.pack.LoginPackage;
 import com.jimi.smt.eps.serversocket.pack.LoginReplyPackage;
+import com.jimi.smt.eps.serversocket.util.IniReader;
 import com.jimi.smt.eps.serversocket.util.MybatisHelper;
 import com.jimi.smt.eps.serversocket.util.MybatisHelper.MybatisSession;
 
@@ -49,7 +50,7 @@ public class ServerSocket {
 
     private SyncCommunicator communicator;
 
-    private static final int LOCAL_PORT = 23333;
+    private int listen_server_port;
 
     private static final String PACKAGE_PATH = "com.jimi.smt.eps.serversocket.pack";
 
@@ -65,15 +66,23 @@ public class ServerSocket {
      */
     private int alreadyProductOld;
 
+    /**
+     * 各项配置的文件
+     */
+    private static final String INI_CONFIG_PATH = "/home/jimi/smt/config.ini";
+    
     public ServerSocket() {
-        communicator = new SyncCommunicator(LOCAL_PORT, PACKAGE_PATH);
+        IniReader.setIni(INI_CONFIG_PATH);
+        Map<String, String> map = IniReader.getItem("port");
+        listen_server_port = Integer.parseInt(map.get("listen_server_port"));
+        communicator = new SyncCommunicator(listen_server_port , PACKAGE_PATH);
     }
 
     /**
      * 打开端口，启动套接字服务器
      */
     public void open() {
-        logger.info("SMT server socket is running now!");
+        logger.info("SMT ServerSocket is running now!");
         communicator.startServer(new OnPackageArrivedListener() {
 
             @Override
@@ -83,10 +92,8 @@ public class ServerSocket {
                     MybatisSession<LoginMapper> loginSession = null;
                     MybatisSession<DisplayMapper> displaySession = null;
                     MybatisSession<ProgramMapper> programSession = null;
-                    MybatisSession<BoardNumMapper> boardNumSession = null;
                     logSession = MybatisHelper.getMS(MYBATIS_CONFIG_PATH, LogMapper.class);
                     loginSession = MybatisHelper.getMS(MYBATIS_CONFIG_PATH, LoginMapper.class);
-                    boardNumSession = MybatisHelper.getMS(MYBATIS_CONFIG_PATH, BoardNumMapper.class);
                     displaySession = MybatisHelper.getMS(MYBATIS_CONFIG_PATH, DisplayMapper.class, "smt");
                     programSession = MybatisHelper.getMS(MYBATIS_CONFIG_PATH, ProgramMapper.class, "smt");
                     // 处理登录包逻辑
@@ -107,16 +114,16 @@ public class ServerSocket {
                             // loginSession.getMapper().updateByPrimaryKey(login);
                             // loginSession.commit();
                         } else {
-                            loginReplyPackage.setLine(Line.L30X);
+                            loginReplyPackage.setLine(Line.LX);
                             loginReplyPackage.setTimestamp(new Date());
                         }
                         // 处理板子数量上传包逻辑
                     } else if (p instanceof BoardNumPackage) {
-                        BoardNumPackage boardNumPackage = (BoardNumPackage) p;
-                        /* if (boardNumPackage.getLine().toString().equals("L308")) { */
+                        BoardNumPackage boardNumPackage = (BoardNumPackage) p;                        
                         DisplayExample displayExample = new DisplayExample();
+                        int length = boardNumPackage.getLine().toString().length();
                         displayExample.createCriteria()
-                                .andLineEqualTo(boardNumPackage.getLine().toString().substring(1, 4));
+                                .andLineEqualTo(boardNumPackage.getLine().toString().substring(1, length));
                         List<Display> displays = displaySession.getMapper().selectByExample(displayExample);
                         if (!displays.isEmpty()) {
                             Display display = displays.get(0);
@@ -125,29 +132,21 @@ public class ServerSocket {
                                 Criteria criteria = programExample.createCriteria();
                                 criteria.andWorkOrderEqualTo(display.getWorkOrder());
                                 criteria.andBoardTypeEqualTo(display.getBoardType());
-                                criteria.andLineEqualTo(boardNumPackage.getLine().toString().substring(1, 4));
+                                criteria.andLineEqualTo(boardNumPackage.getLine().toString().substring(1, length));
+                                criteria.andStateEqualTo(1);
                                 List<Program> programs = programSession.getMapper().selectByExample(programExample);
                                 if (!programs.isEmpty()) {
                                     Program programFirst = programs.get(0);
                                     structure = programFirst.getStructure();
                                     alreadyProductOld = programFirst.getAlreadyProduct();
                                     Program program = new Program();
-                                    // criteria.andIdEqualTo(programFirst.getId());
                                     program.setAlreadyProduct(
                                             (boardNumPackage.getBoardNum()) * structure + alreadyProductOld);
                                     programSession.getMapper().updateByExampleSelective(program, programExample);
                                     programSession.commit();
                                 }
                             }
-                        }
-                        /*
-                         * } else { BoardNum boardNum = new BoardNum(); String line =
-                         * boardNumPackage.getLine().toString(); line = line.substring(1,
-                         * line.length()); boardNum.setLine(line);
-                         * boardNum.setNum(boardNumPackage.getBoardNum());
-                         * boardNum.setTime(boardNumPackage.getTimestamp());
-                         * boardNumSession.getMapper().insert(boardNum); boardNumSession.commit(); }
-                         */
+                        }                        
                     }
                     // 创建日志：收到的包
                     Log pLog = createLogByPackage(p);

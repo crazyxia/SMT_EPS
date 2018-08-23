@@ -90,13 +90,13 @@ public class StatusServiceImpl implements StatusService {
 		List<StatusDetail> statusDetails = new ArrayList<>();
 		List<String> line = new ArrayList<>();
 		for (int i = 1; i <= 8; i++) {
-			line.add("30"+String.valueOf(i));
+			line.add(""+String.valueOf(i));
 			statusDetails.add(new StatusDetail());
 			statusDetails.get(i-1).setLine(line.get(i-1).toString());
 		}
 		//根据每条产线进行分类
 		for(Operation operation:operations) {
-			for (int i = 1; i <= 8; i++) {
+			for (int i = 1; i <= 5; i++) {
 				if (operation.getLine().equals(line.get(i-1))){
 					count(operation, statusDetails.get(i-1));
 					break;

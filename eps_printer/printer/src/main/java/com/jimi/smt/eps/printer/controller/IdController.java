@@ -101,6 +101,7 @@ public class IdController implements Initializable {
 		
 		@Override
 		protected void failed() {
+			getException().printStackTrace();
 			error(errorMsg);
 		}
 	}

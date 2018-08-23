@@ -1,16 +1,14 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.jimi.smt</groupId>
 	<artifactId>eps.serversocket</artifactId>
-	<version>1.2.1</version>
+	<version>2.0.0</version>
 	<packaging>jar</packaging>
 
 	<name>eps.serversocket</name>
 	<url>http://maven.apache.org</url>
-
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -107,26 +105,19 @@
 		</plugins>
 	</build>
 
-	<repositories>
-		<repository>
-			<!-- Maven 自带的中央仓库使用的Id为central 如果其他的仓库声明也是用该Id 就会覆盖中央仓库的配置 -->
-			<id>nexus</id>
-			<name>nexus</name>
-			<url>http://10.10.11.110:7071/nexus/content/repositories/thirdparty/</url>
-		</repository>
-	</repositories>
-	
+
 	<dependencies>
+
 		<dependency>
 			<groupId>cc.darhao</groupId>
 			<artifactId>DaUtils</artifactId>
-			<version>1.0</version>
+			<version>1.0-SNAPHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>cc.darhao</groupId>
 			<artifactId>jiminal</artifactId>
-			<version>1.0</version>
+			<version>1.0-SNAPHOT</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/junit/junit -->
@@ -173,6 +164,12 @@
 			<artifactId>mybatis</artifactId>
 			<version>3.4.2</version>
 		</dependency>
+		
+		<dependency>
+            <groupId>org.ini4j</groupId>
+            <artifactId>ini4j</artifactId>
+            <version>0.5.4</version>
+        </dependency>
 
 	</dependencies>
 

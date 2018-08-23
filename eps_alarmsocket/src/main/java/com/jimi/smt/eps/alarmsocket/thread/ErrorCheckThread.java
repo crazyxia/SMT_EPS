@@ -18,6 +18,7 @@ import com.jimi.smt.eps.alarmsocket.mapper.ConfigMapper;
 import com.jimi.smt.eps.alarmsocket.mapper.ProgramItemVisitMapper;
 import com.jimi.smt.eps.alarmsocket.mapper.ProgramMapper;
 import com.jimi.smt.eps.alarmsocket.socket.ClientSocket;
+import com.jimi.smt.eps.alarmsocket.util.IniReader;
 import com.jimi.smt.eps.alarmsocket.util.MybatisHelper;
 import com.jimi.smt.eps.alarmsocket.util.MybatisHelper.MybatisSession;
 
@@ -60,12 +61,17 @@ public class ErrorCheckThread extends Thread {
 	/**
 	 * 产线数量
 	 */
-	private static final int lineSize = 8;
+	private int error_check_cycle;
 	
 	/**
 	 * 检测周期
 	 */
-	private static final long cycle = 3000;
+	private long line_size;
+	
+	/**
+     * 各项配置的文件
+     */
+    private static final String INI_CONFIG_PATH = "/home/jimi/smt/config.ini";
 	
 	
 	public ErrorCheckThread() throws Exception {
@@ -79,7 +85,11 @@ public class ErrorCheckThread extends Thread {
 	 */
 	private void init() {
 		clientSockets = new HashMap<Integer,ClientSocket>();
-		for(int i = 0; i < lineSize; i++) {
+		IniReader.setIni(INI_CONFIG_PATH);
+        Map<String, String> map_check = IniReader.getItem("check");
+        error_check_cycle  = Integer.parseInt(map_check.get("error_check_cycle"));       
+        line_size  = Integer.parseInt(map_check.get("line_size"));
+		for(int i = 0; i < line_size; i++) {
 			try {
 				clientSockets.put(i, new ClientSocket(i));
 			} catch (Exception e) {
@@ -94,7 +104,7 @@ public class ErrorCheckThread extends Thread {
 	 */
 	private void initCounters() throws IOException {
 		lineErrorsCounters = new HashMap<Integer, CenterControllerErrorCounter>();;
-		for(int i = 0; i < lineSize; i++) {
+		for(int i = 0; i < line_size; i++) {
 			lineErrorsCounters.put(i, new CenterControllerErrorCounter());
 		}
 		//设置报警模式
@@ -231,7 +241,7 @@ public class ErrorCheckThread extends Thread {
 	 * 根据统计结果发送指令
 	 */
 	private void sendCmdByCounters() {
-		for(int i = 0; i < lineSize; i++) {
+		for(int i = 0; i < line_size; i++) {
 			if(clientSockets.get(i) == null) {
 				continue;
 			}
@@ -269,7 +279,7 @@ public class ErrorCheckThread extends Thread {
 		while(true) {
 			//轮询间隔
 			try {
-				sleep(cycle);
+				sleep(error_check_cycle);
 				//初始化“线别-报警设备错误统计”实体
 				initCounters();
 				//遍历visits进行错误扫描

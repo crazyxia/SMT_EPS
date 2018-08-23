@@ -5,15 +5,12 @@ $(function () {
     var sendArray = [];   //存放要传输的数据
     var flag = 0;    //用于判断是否执行
 //存储同一线号的数据
-    var $300 = [];
-    var $301 = [];
-    var $302 = [];
-    var $303 = [];
-    var $304 = [];
-    var $305 = [];
-    var $306 = [];
-    var $307 = [];
-    var $308 = [];
+    var $0 = [];
+    var $1 = [];
+    var $2 = [];
+    var $3 = [];
+    var $4 = [];
+    var $5 = [];    
 //    查询按钮
     $("#searchBtn").hover(function () {
         $(this).addClass("ui-state-hover");
@@ -33,54 +30,43 @@ $(function () {
             dataType: "json",
             data: {},
             success: function (data) {
-                $300 = [];
-                $301 = [];
-                $302 = [];
-                $303 = [];
-                $304 = [];
-                $305 = [];
-                $306 = [];
-                $307 = [];
-                $308 = [];
+                $0 = [];
+                $1 = [];
+                $2 = [];
+                $3 = [];
+                $4 = [];
+                $5 = [];
+                
 
 
                 var dataLength = data.length;
                 var tempArray = [];
                 for (var i = 0; i < dataLength; i++) {
                     var $value = data[i].line;
-                    if (data[i].line === '301') {
-                        $300.push(JSON.parse(JSON.stringify(data[i])));
+                    if (data[i].line === '1') {
+                        $0.push(JSON.parse(JSON.stringify(data[i])));
                     }
 
                     switch ($value) {
-                        case "301" :
-                            $301.push(data[i]);
+                        case "1" :
+                            $1.push(data[i]);
                             break;
-                        case "302" :
-                            $302.push(data[i]);
+                        case "2" :
+                            $2.push(data[i]);
                             break;
-                        case "303" :
-                            $303.push(data[i]);
+                        case "3" :
+                            $3.push(data[i]);
                             break;
-                        case "304" :
-                            $304.push(data[i]);
+                        case "4" :
+                            $4.push(data[i]);
                             break;
-                        case "305" :
-                            $305.push(data[i]);
-                            break;
-                        case "306" :
-                            $306.push(data[i]);
-                            break;
-                        case "307" :
-                            $307.push(data[i]);
-                            break;
-                        case "308" :
-                            $308.push(data[i]);
-                            break;
+                        case "5" :
+                            $5.push(data[i]);
+                            break;                        
                     }
                 }
-                for (var j = 0; j < $300.length; j++) {
-                    $300[j].value = "";
+                for (var j = 0; j < $0.length; j++) {
+                    $0[j].value = "";
                 }
                 //301线
                 // for (var i = 1; i < 9; i++) {
@@ -88,7 +74,7 @@ $(function () {
                 // }
 
                 //总配置框
-                createAllTable($300, 4);
+                createAllTable($0, 4);
 
                 //产线下拉框
                 $("#lineChoice").on("change", function () {
@@ -118,8 +104,8 @@ $(function () {
             //将所有数组放到array中
             //console.log($301);
             if (select(lineChoice, flag) !== false) {
-                for (var i = 1; i < 9; i++) {
-                    getAndPush(eval("$30" + i))
+                for (var i = 1; i < 6; i++) {
+                    getAndPush(eval("$" + i))
                 }
                 var $newJson = JSON.stringify(sendArray);
                 $.ajax({
@@ -253,99 +239,69 @@ $(function () {
                 //     }
                 // }
                 if (t === 0) {
-                    createAllTable($300, 4);
+                    createAllTable($0, 4);
                 } else if (t === 1){
-                    for( var i = 1 ; i < 9 ; i++){
-                        if ( !getConMain(eval("$30" + i), 0)) {
+                    for( var i = 1 ; i < 6 ; i++){
+                        if ( !getConMain(eval("$" + i), 0)) {
                             return false;
                         }
                     }
                 }
                 break;
-            case "301" :
+            case "1" :
                 $timeId1 = 0;   //保证ID一直一致
                 if (t == 0) {
-                    createTable($301);
+                    createTable($1);
                 } else if (t == 1) {
-                    if (!getConMain($301, $timeId1)) {
+                    if (!getConMain($1, $timeId1)) {
                         return false;
                     }
 
                 }
                 break;
-            case "302" :
-                $timeId1 = $301.length;
+            case "2" :
+                $timeId1 = $1.length;
                 if (t == 0) {
-                    createTable($302);
+                    createTable($2);
                 } else if (t == 1) {
-                    if (!getConMain($302, $timeId1)) {
+                    if (!getConMain($2, $timeId1)) {
                         return false;
                     }
 
                 }
                 break;
-            case "303" :
-                $timeId1 = $301.length + $302.length;
+            case "3" :
+                $timeId1 = $1.length + $2.length;
                 if (t == 0) {
-                    createTable($303);
+                    createTable($3);
                 } else if (t == 1) {
-                    if (!getConMain($303, $timeId1)) {
+                    if (!getConMain($3, $timeId1)) {
                         return false;
                     }
 
                 }
                 break;
-            case "304" :
-                $timeId1 = $301.length + $302.length + $303.length;
+            case "4" :
+                $timeId1 = $1.length + $2.length + $3.length;
                 if (t == 0) {
-                    createTable($304);
+                    createTable($4);
                 } else if (t == 1) {
-                    if (!getConMain($304, $timeId1)) {
+                    if (!getConMain($4, $timeId1)) {
                         return false;
                     }
                 }
                 break;
-            case "305" :
-                $timeId1 = $301.length + $302.length + $303.length + $304.length;
+            case "5" :
+                $timeId1 = $1.length + $2.length + $3.length + $4.length;
                 if (t == 0) {
-                    createTable($305);
+                    createTable($5);
                 }
                 else if (t == 1) {
-                    if (!getConMain($305, $timeId1)) {
+                    if (!getConMain($5, $timeId1)) {
                         return false;
                     }
                 }
-                break;
-            case "306" :
-                $timeId1 = $301.length + $302.length + $303.length + $304.length + $305.length;
-                if (t == 0) {
-                    createTable($306);
-                } else if (t == 1) {
-                    if (!getConMain($306, $timeId1)) {
-                        return false;
-                    }
-                }
-                break;
-            case "307" :
-                $timeId1 = $301.length + $302.length + $303.length + $304.length + $305.length + $306.length;
-                if (t == 0) {
-                    createTable($307);
-                } else if (t == 1) {
-                    if (!getConMain($307, $timeId1)) {
-                        return false;
-                    }
-                }
-                break;
-            case "308" :
-                $timeId1 = $301.length + $302.length + $303.length + $304.length + $305.length + $306.length + $307.length;
-                if (t == 0) {
-                    createTable($308);
-                } else if (t == 1) {
-                    if (!getConMain($308, $timeId1)) {
-                        return false;
-                    }
-                }
-                break;
+                break;            
         }
     }
 

@@ -18,14 +18,11 @@
                 <span>产线设置筛选：</span>
                 <select id="lineChoice">
                     <option value=100>统一</option>
-                    <option value=0>301</option>
-                    <option value=1>302</option>
-                    <option value=2>303</option>
-                    <option value=3>304</option>
-                    <option value=4>305</option>
-                    <option value=5>306</option>
-                    <option value=6>307</option>
-                    <option value=7>308</option>
+                    <option value=0>1</option>
+                    <option value=1>2</option>
+                    <option value=2>3</option>
+                    <option value=3>4</option>
+                    <option value=4>5</option>                    
                 </select>
             </div>
             <button id="searchBtn" class="searchBtn ui-state-default ui-corner-all ui-corner-top">产线查询</button>
