@@ -58,35 +58,34 @@ public class ProgramServiceImpl implements ProgramService {
 	private ProgramItemToProgramItemVisitFiller programItemToProgramItemVisitFiller;
 	@Autowired
 	private TimeoutTimer timeoutTimer;
-	
-	
+
 	@Override
 	public List<Map<String, Object>> upload(MultipartFile programFile, Integer boardType) throws IOException {
-		//读文件
+		// 读文件
 		ExcelSpringHelper helper = ExcelSpringHelper.from(programFile);
-		
-		//初始化结果
+
+		// 初始化结果
 		List<Map<String, Object>> resultList = new ArrayList<Map<String, Object>>();
-		
-		//因添加流水号而导致的表格列号偏移量
+
+		// 因添加流水号而导致的表格列号偏移量
 		int offset = 1;
-		
-		//因添加流水号而进行的站位表校验
-		if(helper.getString(0, 0) != null && !"".equals(helper.getString(0, 0))) {
+
+		// 因添加流水号而进行的站位表校验
+		if (helper.getString(0, 0) != null && !"".equals(helper.getString(0, 0))) {
 			throw new RuntimeException("站位表版本错误：请使用带有序列号的站位表");
 		}
-		
-		//校验头部
+
+		// 校验头部
 		final String header = "SMT FEEDER LIST";
-		if(!header.equals(helper.getString(1, 0 + offset))) {
+		if (!header.equals(helper.getString(1, 0 + offset))) {
 			throw new RuntimeException("头部错误：没有找到\"SMT FEEDER LIST\"标题栏");
 		}
-		
-		//分割解析工单和线号
+
+		// 分割解析工单和线号
 		String[] workOrders = helper.getString(4, 6 + offset).split("\\+");
 		String[] lines = helper.getString(3, 6 + offset).split("\\+");
-		
-		//创建所有工单
+
+		// 创建所有工单
 		List<Program> programs = new ArrayList<Program>(workOrders.length * lines.length);
 		for (String line : lines) {
 			for (String workOrder : workOrders) {
@@ -110,51 +109,48 @@ public class ProgramServiceImpl implements ProgramService {
 				programs.add(program);
 			}
 		}
-		
+
 		for (Program program : programs) {
-			//初始化结果Item
-			Map<String, Object> result = new HashMap<String , Object>();
+			// 初始化结果Item
+			Map<String, Object> result = new HashMap<String, Object>();
 			int sum = helper.getBook().getNumberOfSheets();
 			result.put("real_parse_num", sum);
 			result.put("plan_parse_num", sum);
 			result.put("action_name", "上传");
-			
-			//覆盖：如果“未开始”的工单列表中存在板面类型、工单号、线号同时一致的工单项目，将被新文件内容覆盖
+
+			// 覆盖：如果“未开始”的工单列表中存在板面类型、工单号、线号同时一致的工单项目，将被新文件内容覆盖
 			ProgramExample programExample = new ProgramExample();
-			programExample.createCriteria()
-				.andWorkOrderEqualTo(program.getWorkOrder())
-				.andBoardTypeEqualTo(program.getBoardType())
-				.andLineEqualTo(program.getLine())
-				.andStateEqualTo(0);
-			//如果存在符合条件的工单
+			programExample.createCriteria().andWorkOrderEqualTo(program.getWorkOrder())
+					.andBoardTypeEqualTo(program.getBoardType()).andLineEqualTo(program.getLine()).andStateEqualTo(0);
+			// 如果存在符合条件的工单
 			List<Program> programs2 = programMapper.selectByExample(programExample);
-			if(!programs2.isEmpty()) {
+			if (!programs2.isEmpty()) {
 				programMapper.updateByExampleSelective(program, programExample);
 				ProgramItemExample programItemExample = new ProgramItemExample();
 				programItemExample.createCriteria().andProgramIdEqualTo(programs2.get(0).getId());
 				programItemMapper.deleteByExample(programItemExample);
 				result.put("action_name", "覆盖");
-			}else {
+			} else {
 				programMapper.insertSelective(program);
 			}
-			
-			//打印到控制台
+
+			// 打印到控制台
 			FieldUtil.print(program);
-			
-			//填充表项
-			for(int i = 0; i < sum; i++) {
+
+			// 填充表项
+			for (int i = 0; i < sum; i++) {
 				helper.switchSheet(i);
-				for(int j = 9; j < helper.getBook().getSheetAt(i).getLastRowNum() - 3; j++) {
+				for (int j = 9; j < helper.getBook().getSheetAt(i).getLastRowNum() - 3; j++) {
 					ProgramItem programItem = new ProgramItem();
-					//空表判断
-					if(helper.getString(j, 0 + offset).equals("")) {
+					// 空表判断
+					if (helper.getString(j, 0 + offset).equals("")) {
 						int temp = (int) result.get("real_parse_num");
 						result.put("real_parse_num", temp--);
 						break;
 					}
-					//排除手盖
+					// 排除手盖
 					String lineseat = helper.getString(j, 0 + offset);
-					if("手盖".equals(lineseat)) {
+					if ("手盖".equals(lineseat)) {
 						continue;
 					}
 					programItem.setLineseat(formatLineseat(lineseat));
@@ -164,65 +160,62 @@ public class ProgramServiceImpl implements ProgramService {
 					programItem.setPosition(helper.getString(j, 4 + offset));
 					programItem.setQuantity(helper.getInt(j, 5 + offset));
 					programItem.setSerialNo(helper.getInt(j, -1 + offset));
-					//设置programId
+					// 设置programId
 					programItem.setProgramId(program.getId());
-					//忽略重复项
+					// 忽略重复项
 					try {
-						//插入表项
+						// 插入表项
 						programItemMapper.insert(programItem);
-						//打印到控制台
+						// 打印到控制台
 						FieldUtil.print(programItem);
-					}catch (DuplicateKeyException e) {
+					} catch (DuplicateKeyException e) {
 					}
 				}
 			}
 			resultList.add(result);
 		}
-		
+
 		return resultList;
 	}
-
 
 	@Override
 	public List<ProgramVO> list(String programName, String fileName, String line, String workOrder, Integer state,
 			String ordBy) {
 		ProgramExample programExample = new ProgramExample();
 		ProgramExample.Criteria programCriteria = programExample.createCriteria();
-		
-		 //排序
-		if(ordBy == null) {
-			//默认按时间降序
+
+		// 排序
+		if (ordBy == null) {
+			// 默认按时间降序
 			programExample.setOrderByClause("create_time desc");
-		}else {
+		} else {
 			programExample.setOrderByClause(ordBy);
 		}
-		
-		 //筛选程序名
-		if(programName != null && !programName.equals("")) {
+
+		// 筛选程序名
+		if (programName != null && !programName.equals("")) {
 			programCriteria.andProgramNameEqualTo(programName);
 		}
-		 //筛选文件名
-		if(fileName != null && !fileName.equals("")) {
+		// 筛选文件名
+		if (fileName != null && !fileName.equals("")) {
 			programCriteria.andFileNameEqualTo(fileName);
 		}
-		 //筛选线别
-		if(line != null && !line.equals("")) {
+		// 筛选线别
+		if (line != null && !line.equals("")) {
 			programCriteria.andLineEqualTo(line);
 		}
-		 //筛选工单号
-		if(workOrder != null && !workOrder.equals("")) {
+		// 筛选工单号
+		if (workOrder != null && !workOrder.equals("")) {
 			programCriteria.andWorkOrderEqualTo(workOrder);
 		}
-		 //筛选状态
-		if(state != null) {
+		// 筛选状态
+		if (state != null) {
 			programCriteria.andStateEqualTo(state);
 		}
-		
+
 		List<Program> programs = programMapper.selectByExample(programExample);
 		return programToProgramVOFiller.fill(programs);
 	}
-
-
 
 	@Override
 	public List<ProgramItemVO> listItem(String id) {
@@ -231,61 +224,61 @@ public class ProgramServiceImpl implements ProgramService {
 		return programItemToProgramItemVOFiller.fill(programItemMapper.selectByExample(example));
 	}
 
-
 	@Override
 	public String updateItem(List<EditProgramItemBO> BOs) {
-		//获取ProgramId
+		// 获取ProgramId
 		String oldProgramId = BOs.get(0).getProgramId();
 		String newProgramId = UuidUtil.get32UUID();
-		
-		//判断旧Program是否存在
+
+		// 判断旧Program是否存在
 		ProgramExample programExample = new ProgramExample();
 		programExample.createCriteria().andIdEqualTo(oldProgramId);
 		List<Program> programs = programMapper.selectByExample(programExample);
-		if(programs == null || programs.isEmpty()) {
+		if (programs == null || programs.isEmpty()) {
 			ResultUtil.failed("找不到站位表，ID不存在");
 			throw new RuntimeException("failed_program_not_found");
 		}
-		
-		//创建新Program
+
+		// 创建新Program
 		Program newProgram = new Program();
-		
-		//从旧Program复制属性
+
+		// 从旧Program复制属性
 		Program oldProgram = programs.get(0);
 		FieldUtil.copy(oldProgram, newProgram);
-		
-		//根据旧Program状态设置新Program状态
-		if(oldProgram.getState() > 1) {
+
+		// 根据旧Program状态设置新Program状态
+		if (oldProgram.getState() > 1) {
 			ResultUtil.failed("只能编辑未开始和进行中的工单");
 			throw new RuntimeException("failed_illegal_state");
-		}else if(oldProgram.getState() == 1){
+		} else if (oldProgram.getState() == 1) {
 			newProgram.setState(1);
 		}
-		
-		//作废旧Program
+
+		// 作废旧Program
 		oldProgram.setState(3);
-		
-		//对新Program进行赋值
+
+		// 对新Program进行赋值
 		newProgram.setId(newProgramId);
 		newProgram.setCreateTime(new Date());
-		
-		//提交新旧Program
+
+		// 提交新旧Program
 		programMapper.updateByPrimaryKey(oldProgram);
 		programMapper.insert(newProgram);
-		
-		//获取旧的Program_Item，根据修改记录，生成新的Item并插入
+
+		// 获取旧的Program_Item，根据修改记录，生成新的Item并插入
 		ProgramItemExample programItemExample = new ProgramItemExample();
 		programItemExample.createCriteria().andProgramIdEqualTo(oldProgramId);
 		List<ProgramItem> items = programItemMapper.selectByExample(programItemExample);
 		for (EditProgramItemBO bo : BOs) {
 			ProgramItem newItem = new ProgramItem();
 			FieldUtil.copy(bo, newItem);
-			for (int i = 0; i < items.size() ; i++) {
-				ProgramItem programItem = items.get(i); 
-				//匹配记录
-				if(bo.getTargetLineseat().equals(programItem.getLineseat()) && bo.getTargetMaterialNo().equals(programItem.getMaterialNo())) {
+			for (int i = 0; i < items.size(); i++) {
+				ProgramItem programItem = items.get(i);
+				// 匹配记录
+				if (bo.getTargetLineseat().equals(programItem.getLineseat())
+						&& bo.getTargetMaterialNo().equals(programItem.getMaterialNo())) {
 					int index = items.indexOf(programItem);
-					//执行编辑操作
+					// 执行编辑操作
 					switch (bo.getOperation()) {
 					case 0:
 						items.add(index, newItem);
@@ -300,143 +293,137 @@ public class ProgramServiceImpl implements ProgramService {
 						break;
 					}
 					break;
-				}else if(bo.getTargetLineseat().equals("") && bo.getTargetMaterialNo().equals("") && bo.getOperation() == 0) {
-					//如果目标站位和料号为空并且操作类型为增加，则追加在列表尾部
+				} else if (bo.getTargetLineseat().equals("") && bo.getTargetMaterialNo().equals("")
+						&& bo.getOperation() == 0) {
+					// 如果目标站位和料号为空并且操作类型为增加，则追加在列表尾部
 					items.add(newItem);
 					break;
 				}
 			}
 		}
-		//插入数据库
+		// 插入数据库
 		try {
 			for (ProgramItem programItem : items) {
-				//设置新id
+				// 设置新id
 				programItem.setProgramId(newProgramId);
-				//插入
+				// 插入
 				programItemMapper.insert(programItem);
 			}
 		} catch (DuplicateKeyException e) {
-			//主键重复
+			// 主键重复
 			ResultUtil.failed("Item主键重复");
 			throw new RuntimeException("failed_item_key_duplicate");
 		}
-		
-		//如果状态为进行中，则用旧visit表数据覆盖新visit数据（匹配的记录就覆盖，不匹配的就跳过）
-		if(newProgram.getState() == 1) {
+
+		// 如果状态为进行中，则用旧visit表数据覆盖新visit数据（匹配的记录就覆盖，不匹配的就跳过）
+		if (newProgram.getState() == 1) {
 			List<ProgramItemVisit> newVisits = programItemToProgramItemVisitFiller.fill(items);
 			ProgramItemVisitExample programItemVisitExample = new ProgramItemVisitExample();
 			programItemVisitExample.createCriteria().andProgramIdEqualTo(oldProgramId);
 			List<ProgramItemVisit> oldVisits = programItemVisitMapper.selectByExample(programItemVisitExample);
-			if(oldVisits == null || oldVisits.isEmpty()) {
+			if (oldVisits == null || oldVisits.isEmpty()) {
 				ResultUtil.failed("找不到VisitItem，ID不存在");
 				throw new RuntimeException("failed_visit_not_found");
 			}
 			for (ProgramItemVisit newVisit : newVisits) {
 				for (ProgramItemVisit oldVisit : oldVisits) {
-					if(newVisit.getLineseat().equals(oldVisit.getLineseat()) && newVisit.getMaterialNo().equals(oldVisit.getMaterialNo())) {
-						//覆盖数据
+					if (newVisit.getLineseat().equals(oldVisit.getLineseat())
+							&& newVisit.getMaterialNo().equals(oldVisit.getMaterialNo())) {
+						// 覆盖数据
 						FieldUtil.copy(oldVisit, newVisit);
-						//设置新id
+						// 设置新id
 						newVisit.setProgramId(newProgramId);
 					}
-					//删除旧visit数据
+					// 删除旧visit数据
 					programItemVisitMapper.deleteByPrimaryKey(oldVisit);
 				}
-				//插入新visit数据
+				// 插入新visit数据
 				programItemVisitMapper.insert(newVisit);
 			}
 		}
 		return "succeed";
 	}
 
-
 	@Override
 	public boolean cancel(String id) {
 		ProgramExample example = new ProgramExample();
 		example.createCriteria().andIdEqualTo(id);
-		//状态判断
+		// 状态判断
 		List<Program> programs = programMapper.selectByExample(example);
-		if(programs.isEmpty()) {
+		if (programs.isEmpty()) {
 			return false;
 		}
 		Program program = programs.get(0);
-		if(program.getState() >= 2) {
+		if (program.getState() >= 2) {
 			ResultUtil.failed("状态不可逆");
 			return false;
 		}
 		Program program2 = new Program();
 		program2.setState(3);
 		int result = programMapper.updateByExampleSelective(program2, example);
-		if(result != 0) {
-			//清除ProgramItemVisit
+		if (result != 0) {
+			// 清除ProgramItemVisit
 			clearVisits(program.getId());
 			return true;
-		}else {
+		} else {
 			return false;
 		}
 	}
-
-
 
 	@Override
 	public boolean finish(String id) {
 		ProgramExample example = new ProgramExample();
 		example.createCriteria().andIdEqualTo(id);
-		//状态判断
+		// 状态判断
 		List<Program> programs = programMapper.selectByExample(example);
-		if(programs.isEmpty()) {
+		if (programs.isEmpty()) {
 			return false;
 		}
 		Program program = programs.get(0);
-		if(program.getState() >= 2) {
+		if (program.getState() >= 2) {
 			ResultUtil.failed("状态不可逆");
 			return false;
 		}
 		Program program2 = new Program();
 		program2.setState(2);
 		int result = programMapper.updateByExampleSelective(program2, example);
-		if(result != 0) {
-			//清除ProgramItemVisit
+		if (result != 0) {
+			// 清除ProgramItemVisit
 			clearVisits(program.getId());
 			return true;
-		}else {
+		} else {
 			return false;
 		}
 	}
-
-
 
 	@Override
 	public String start(String id) {
 		ProgramExample example = new ProgramExample();
 		example.createCriteria().andIdEqualTo(id);
-		//状态判断
+		// 状态判断
 		List<Program> programs = programMapper.selectByExample(example);
-		if(programs.isEmpty()) {
+		if (programs.isEmpty()) {
 			ResultUtil.failed("id不存在");
 			return "failed_id_not_exist";
 		}
 		Program program = programs.get(0);
-		if(program.getState() >= 1) {
+		if (program.getState() >= 1) {
 			ResultUtil.failed("状态不可逆");
 			return "failed_state_error";
 		}
-		//判断是否存在已开始的相同工单（相同的定义：工单号、板面类型、线号均一致）
+		// 判断是否存在已开始的相同工单（相同的定义：工单号、板面类型、线号均一致）
 		ProgramExample example2 = new ProgramExample();
-		example2.createCriteria()
-			.andLineEqualTo(program.getLine())
-			.andWorkOrderEqualTo(program.getWorkOrder())
-			.andBoardTypeEqualTo(program.getBoardType())
-			.andStateEqualTo(1);
+		example2.createCriteria().andLineEqualTo(program.getLine()).andWorkOrderEqualTo(program.getWorkOrder())
+				.andBoardTypeEqualTo(program.getBoardType()).andStateEqualTo(1);
 		List<Program> programs2 = programMapper.selectByExample(example2);
-		if(!programs2.isEmpty()) {
+		if (!programs2.isEmpty()) {
 			ResultUtil.failed("已存在相同的正在进行的工单");
 			return "failed_already_started";
 		}
 		Program program2 = new Program();
 		program2.setState(1);
 		int result = programMapper.updateByExampleSelective(program2, example);
-		//初始化Program_Item_Visit
+		// 初始化Program_Item_Visit
 		ProgramItemExample programItemExample = new ProgramItemExample();
 		programItemExample.createCriteria().andProgramIdEqualTo(program.getId());
 		List<ProgramItem> programItems = programItemMapper.selectByExample(programItemExample);
@@ -444,33 +431,43 @@ public class ProgramServiceImpl implements ProgramService {
 		for (ProgramItemVisit programItemVisit : programItemVisits) {
 			programItemVisitMapper.insertSelective(programItemVisit);
 		}
-		if(result != 0) {
+		if (result != 0) {
 			return "succeed";
-		}else {
+		} else {
 			return "failed_unknown";
 		}
 	}
 
-
-
 	@Override
 	public String switchWorkOrder(String line, String workOrder, Integer boardType) {
-		if(line == null || line.equals("")) {
+		if (line == null || line.equals("")) {
 			return "succeed";
 		}
-		//获取Display
+		// 获取Display
 		DisplayExample displayExample = new DisplayExample();
-		displayExample.createCriteria()
-			.andLineEqualTo(line);
+		displayExample.createCriteria().andLineEqualTo(line);
 		Display display = displayMapper.selectByExample(displayExample).get(0);
-		//判断是否是停止监控
-		if(workOrder == null && boardType == null) {
+		int flag = 0;
+		// 判断是否是停止监控
+		if (workOrder == null && boardType == null) {
 			display.setWorkOrder(null);
 			display.setBoardType(null);
-		}else {
+		} else {
 			List<ProgramItemVisit> programItemVisits = getVisits(line, workOrder, boardType);
-			if(programItemVisits.isEmpty()) {
+			if (programItemVisits.isEmpty()) {
 				return "failed_not_exist";
+			}
+			for (ProgramItemVisit programItemVisit : programItemVisits) {
+				if (programItemVisit.getFirstCheckAllResult() != 1) {
+					flag = 1;
+					break;
+				}
+			}
+			if (flag == 1) {
+				for (ProgramItemVisit programItemVisit : programItemVisits) {
+					programItemVisit.setCheckAllTime(new Date());
+					programItemVisitMapper.updateByPrimaryKey(programItemVisit);
+				}
 			}
 			display.setWorkOrder(workOrder);
 			display.setBoardType(boardType);
@@ -479,31 +476,31 @@ public class ProgramServiceImpl implements ProgramService {
 		return "succeed";
 	}
 
-
 	@Override
 	public String operate(String line, String workOrder, Integer boardType, Integer type, String lineseat,
 			String materialNo, String scanLineseat, String scanMaterialNo, Integer operationResult) {
 		List<ProgramItemVisit> programItemVisits = getVisits(line, workOrder, boardType);
-		if(programItemVisits.isEmpty()) {
+		if (programItemVisits.isEmpty()) {
 			return "failed_not_exist";
 		}
 		for (ProgramItemVisit programItemVisit : programItemVisits) {
-			if(programItemVisit.getLineseat().equals(lineseat) && programItemVisit.getMaterialNo().equals(materialNo)) {
+			if (programItemVisit.getLineseat().equals(lineseat)
+					&& programItemVisit.getMaterialNo().equals(materialNo)) {
 				programItemVisit.setScanLineseat(scanLineseat);
 				programItemVisit.setScanMaterialNo(scanMaterialNo);
 				switch (type) {
-				//核料
+				// 核料
 				case 2:
 					programItemVisit.setLastOperationType(2);
 					programItemVisit.setLastOperationTime(new Date());
 					programItemVisit.setCheckTime(new Date());
 					programItemVisit.setCheckResult(operationResult);
-					//如果核料成功，把换料结果也置为成功
-					if(operationResult == 1) {
+					// 如果核料成功，把换料结果也置为成功
+					if (operationResult == 1) {
 						programItemVisit.setChangeResult(1);
 					}
 					break;
-				//全检
+				// 全检
 				case 3:
 					programItemVisit.setLastOperationType(3);
 					programItemVisit.setLastOperationTime(new Date());
@@ -522,11 +519,10 @@ public class ProgramServiceImpl implements ProgramService {
 		return "failed_not_exist_item";
 	}
 
-
 	@Override
 	public String reset(String line, String workOrder, Integer boardType) {
 		List<ProgramItemVisit> programItemVisits = getVisits(line, workOrder, boardType);
-		if(programItemVisits.isEmpty()) {
+		if (programItemVisits.isEmpty()) {
 			return "failed_not_exist";
 		}
 		synchronized (timeoutTimer.getLock(line)) {
@@ -544,39 +540,31 @@ public class ProgramServiceImpl implements ProgramService {
 		return "succeed";
 	}
 
-	
 	@Override
-	public List<ProgramItemVisit> getVisits(String line, String workOrder, Integer boardType){
+	public List<ProgramItemVisit> getVisits(String line, String workOrder, Integer boardType) {
 		ProgramExample programExample = new ProgramExample();
-		programExample.createCriteria()
-			.andLineEqualTo(line)
-			.andWorkOrderEqualTo(workOrder)
-			.andBoardTypeEqualTo(boardType)
-			.andStateEqualTo(1);
+		programExample.createCriteria().andLineEqualTo(line).andWorkOrderEqualTo(workOrder)
+				.andBoardTypeEqualTo(boardType).andStateEqualTo(1);
 		List<Program> programs = programMapper.selectByExample(programExample);
-		if(! programs.isEmpty()) {
+		if (!programs.isEmpty()) {
 			String programId = programs.get(0).getId();
-			//查询Visits
+			// 查询Visits
 			ProgramItemVisitExample programItemVisitExample = new ProgramItemVisitExample();
-			programItemVisitExample.createCriteria()
-				.andProgramIdEqualTo(programId);
+			programItemVisitExample.createCriteria().andProgramIdEqualTo(programId);
 			return programItemVisitMapper.selectByExample(programItemVisitExample);
 		}
 		return new ArrayList<ProgramItemVisit>();
 	}
-	
 
 	@Override
 	public void updateVisit(ProgramItemVisit visit) {
 		programItemVisitMapper.updateByPrimaryKey(visit);
 	}
-	
-	
+
 	@Override
 	public List<Display> listDisplays() {
 		return displayMapper.selectByExample(null);
 	}
-
 
 	private void clearVisits(String programId) {
 		ProgramItemVisitExample programItemVisitExample = new ProgramItemVisitExample();
@@ -584,17 +572,175 @@ public class ProgramServiceImpl implements ProgramService {
 		programItemVisitMapper.deleteByExample(programItemVisitExample);
 	}
 
-
 	private String formatLineseat(String in) {
 		try {
 			String[] array = in.split("-");
 			array[0] = Integer.valueOf(array[0]) <= 9 ? "0" + array[0] : array[0];
 			array[1] = Integer.valueOf(array[1]) <= 9 ? "0" + array[1] : array[1];
 			return array[0] + "-" + array[1];
-		}catch (NumberFormatException | PatternSyntaxException e) {
+		} catch (NumberFormatException | PatternSyntaxException e) {
 			return in;
 		}
 	}
 
-	
+	@Override
+	public List<Program> selectWorkingProgram(String line) {
+		return programMapper.selectWorkingProgram(line);
+	}
+
+	@Override
+	public List<ProgramItem> selectProgramItem(String line, String workOrder, Integer boardType) {
+		Program program = new Program();
+		program.setBoardType(boardType);
+		program.setLine(line);
+		program.setWorkOrder(workOrder);
+		return programItemMapper.selectProgramItem(program);
+	}
+
+	@Override
+	public int updateItemVisit(ProgramItemVisit programItemVisit) {
+		int type = programItemVisit.getLastOperationType();
+		int result = 0;
+		switch (type) {
+		case 0:
+			ProgramItemVisitExample example_0 = new ProgramItemVisitExample();
+			example_0.createCriteria().andProgramIdEqualTo(programItemVisit.getProgramId())
+			.andLineseatEqualTo(programItemVisit.getLineseat());
+			programItemVisit.setLastOperationTime(new Date());
+			programItemVisit.setFeedTime(new Date());
+			result = programItemVisitMapper.updateByExampleSelective(programItemVisit, example_0);
+			break;
+		case 1:
+			ProgramItemVisitExample example_1 = new ProgramItemVisitExample();
+			example_1.createCriteria().andProgramIdEqualTo(programItemVisit.getProgramId())
+			.andLineseatEqualTo(programItemVisit.getLineseat());
+			programItemVisit.setLastOperationTime(new Date());
+			programItemVisit.setChangeTime(new Date());
+			programItemVisit.setCheckResult(2);
+			result = programItemVisitMapper.updateByExampleSelective(programItemVisit, example_1);
+			break;
+		case 2:
+			ProgramItemVisitExample example_2 = new ProgramItemVisitExample();
+			example_2.createCriteria().andProgramIdEqualTo(programItemVisit.getProgramId())
+			.andLineseatEqualTo(programItemVisit.getLineseat());
+			programItemVisit.setLastOperationTime(new Date());
+			programItemVisit.setCheckTime(new Date());
+			result = programItemVisitMapper.updateByExampleSelective(programItemVisit, example_2);
+			break;
+		case 3:
+			ProgramItemVisitExample example_3 = new ProgramItemVisitExample();
+			example_3.createCriteria().andProgramIdEqualTo(programItemVisit.getProgramId())
+			.andLineseatEqualTo(programItemVisit.getLineseat());
+			programItemVisit.setLastOperationTime(new Date());
+			programItemVisit.setCheckAllTime(new Date());
+			result = programItemVisitMapper.updateByExampleSelective(programItemVisit, example_3);
+			break;
+		case 4:
+			ProgramItemVisitExample example_4 = new ProgramItemVisitExample();
+			example_4.createCriteria().andProgramIdEqualTo(programItemVisit.getProgramId())
+			.andLineseatEqualTo(programItemVisit.getLineseat());
+			programItemVisit.setLastOperationTime(new Date());
+			programItemVisit.setStoreIssueTime(new Date());
+			result = programItemVisitMapper.updateByExampleSelective(programItemVisit, example_4);
+			break;
+		case 5:
+			ProgramItemVisitExample example_5 = new ProgramItemVisitExample();
+			example_5.createCriteria().andProgramIdEqualTo(programItemVisit.getProgramId())
+			.andLineseatEqualTo(programItemVisit.getLineseat());
+			programItemVisit.setLastOperationTime(new Date());
+			programItemVisit.setFirstCheckAllTime(new Date());
+			result = programItemVisitMapper.updateByExampleSelective(programItemVisit, example_5);
+			break;
+		default:
+			System.out.println("什么操作都不是");
+		}
+		return result;
+	}
+
+	@Override
+	public int resetCheckAll(String programId) {
+		ProgramItemVisitExample example = new ProgramItemVisitExample();
+		example.createCriteria().andProgramIdEqualTo(programId);
+		ProgramItemVisit programItemVisit = new ProgramItemVisit();
+		programItemVisit.setCheckAllResult(1);
+		programItemVisit.setCheckAllTime(new Date());
+		return programItemVisitMapper.updateByExampleSelective(programItemVisit, example);
+	}
+
+	@Override
+	public int selectLine(String line) {
+		List<String> lines = programMapper.selectLine();
+		int result = 0;
+		for(int i = 0; i < lines.size(); i++ ) {
+			if(!lines.get(i).equals("") && lines.get(i).equals(line)) {
+				result = 1;
+				break;
+			}
+		}
+		return result;
+	}
+
+	@Override
+	public int checkIsReset(String programId, int type) {
+		int result = 0;
+		switch(type)
+		{
+		case 2:
+			ArrayList<ProgramItemVisit> feedLists = programItemVisitMapper.selectFeedAndTime(programId);			
+			for (ProgramItemVisit list : feedLists) {
+				if(list.getLastOperationTime() != null && 
+						(list.getFeedResult() == 2 || list.getFeedResult() == 3)) {
+					result = 1;
+					break;
+				}
+			}
+			break;
+		case 5:
+			ArrayList<ProgramItemVisit> alllists = programItemVisitMapper.selectAllAndTime(programId);
+			for (ProgramItemVisit list : alllists) {
+				if(list.getLastOperationTime() != null && 
+						(list.getFeedResult() == 2 || list.getFeedResult() == 3)) {
+					result = 1;
+					break;
+				}
+			}
+			break;
+		case 6:
+			ArrayList<ProgramItemVisit> firstAllLists = programItemVisitMapper.selectFirstAllAndTime(programId);
+			for (ProgramItemVisit list : firstAllLists) {
+				if(list.getLastOperationTime() != null && 
+						(list.getFeedResult() == 2 || list.getFeedResult() == 3)) {
+					result = 1;
+					break;
+				}
+			}
+			break;
+		default:
+			System.out.println("超出程序范围");		
+		}
+		return result;
+	}
+
+	@Override
+	public String isAllDone(String programId, int type) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String isChangeSucceed(String programId, String lineseat) {
+		String result = "成功";
+		ProgramItemVisit programItemVisit = new ProgramItemVisit();
+		programItemVisit.setProgramId(programId);
+		programItemVisit.setLineseat(lineseat);
+		List<Integer> list = programItemVisitMapper.selectChangeResult(programItemVisit);
+		for (Integer changeResult : list) {
+			if(changeResult == 0) {
+				result = "失败";
+				break;
+			}
+		}
+		return result;
+	}
+
 }

@@ -7,6 +7,8 @@ import java.util.Map;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.jimi.smt.eps_server.entity.Display;
+import com.jimi.smt.eps_server.entity.Program;
+import com.jimi.smt.eps_server.entity.ProgramItem;
 import com.jimi.smt.eps_server.entity.ProgramItemVisit;
 import com.jimi.smt.eps_server.entity.bo.EditProgramItemBO;
 import com.jimi.smt.eps_server.entity.vo.ProgramItemVO;
@@ -132,4 +134,20 @@ public interface ProgramService {
 	 * @return
 	 */
 	List<Display> listDisplays();
+	
+	List<Program> selectWorkingProgram(String line);
+	
+	List<ProgramItem> selectProgramItem(String line, String workOrder, Integer boardType);
+	
+	int updateItemVisit(ProgramItemVisit programItemVisit);
+	
+	int resetCheckAll(String programId);
+	
+	int selectLine(String line);
+	
+	int checkIsReset(String programId, int type);
+	
+	String isAllDone(String programId, int type);
+	
+	String isChangeSucceed(String programId, String lineseat);
 }

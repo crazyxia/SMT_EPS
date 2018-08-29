@@ -7,6 +7,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
@@ -14,7 +15,9 @@ import org.springframework.web.servlet.ModelAndView;
 import com.jimi.smt.eps_server.annotation.Open;
 import com.jimi.smt.eps_server.annotation.Role;
 import com.jimi.smt.eps_server.annotation.Role.RoleType;
+import com.jimi.smt.eps_server.entity.Operation;
 import com.jimi.smt.eps_server.entity.Page;
+import com.jimi.smt.eps_server.entity.ResultJson;
 import com.jimi.smt.eps_server.entity.vo.ClientReport;
 import com.jimi.smt.eps_server.entity.vo.DisplayReport;
 import com.jimi.smt.eps_server.entity.vo.OperationReport;
@@ -176,5 +179,19 @@ public class OperationController {
 		return displayReport;
 	}
 	
-	
+	@Open
+	@ResponseBody
+	@RequestMapping("/add")
+	public ResultJson add(@RequestBody Operation operation) {
+		int result = operationService.add(operation);
+		ResultJson resultJson = new ResultJson();
+		if(result==1) {
+			resultJson.setCode(1);
+			resultJson.setMsg("操作成功");			
+		}else {
+			resultJson.setCode(0);
+			resultJson.setMsg("操作失败");	
+		}
+		return resultJson;				
+	}	
 }

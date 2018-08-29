@@ -7,6 +7,10 @@ import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import com.jimi.smt.eps_server.annotation.Open;
+import com.jimi.smt.eps_server.controller.UserController;
+import com.jimi.smt.eps_server.entity.vo.UserVO;
+import com.jimi.smt.eps_server.util.TokenBox;
+
 
 /**
  * 登录拦截器，对带有@Open注解的方法无需登录
@@ -22,16 +26,13 @@ public class LoginInterceptor extends HandlerInterceptorAdapter {
 			if(open != null) {
 				return true;
 			}
+			String token = request.getParameter(TokenBox.TOKEN_ID_KEY_NAME);
+			UserVO user = TokenBox.get(token, UserController.SESSION_KEY_LOGIN_USER);
 			//如果已登录则放行
-			if(request.getSession().getAttribute("logined") != null) {
+			if(user != null) {
 				return true;
 			}
-			//如果是POST则返回JSON否则跳转到登录界面
-			if(request.getMethod().equals("POST")) {
-				response.getWriter().println("{\"result\":\"failed_access_denied\"}");
-			}else {
-				request.getRequestDispatcher("/WEB-INF/jsp/user/goLogin.jsp").forward(request, response);
-			}
+			
 			return false;
 		}
 		return true;

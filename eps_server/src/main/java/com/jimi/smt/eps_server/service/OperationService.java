@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 
+import com.jimi.smt.eps_server.entity.Operation;
 import com.jimi.smt.eps_server.entity.Page;
 import com.jimi.smt.eps_server.entity.vo.ClientReport;
 import com.jimi.smt.eps_server.entity.vo.DisplayReport;
@@ -95,5 +96,8 @@ public interface OperationService {
 	 * @throws ParseException 
 	 */
 	List<StockLogVO> listStockLogs(String operator, String materialNo, String custom, String position, String startTime, String endTime) throws ParseException;
+	
+	
+	int add(Operation operation);
 	
 }

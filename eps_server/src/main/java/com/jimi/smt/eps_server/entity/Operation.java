@@ -141,5 +141,5 @@ public class Operation {
 
     public void setBoardType(Integer boardType) {
         this.boardType = boardType;
-    }
+    }	
 }

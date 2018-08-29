@@ -437,5 +437,12 @@ public class OperationServiceImpl implements OperationService {
   		return stockLogToStockLogVOFiller.fill(stockLogMapper.selectByExample(stockLogExample));
 	}
 
+	@Override
+	public int add(Operation operation) {		
+		operation.setTime(new Date());
+		System.out.println(operation);
+		return operationMapper.insert(operation);
+	}
+
 
 }

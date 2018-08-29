@@ -431,4 +431,27 @@
       and material_no = #{materialNo,jdbcType=VARCHAR}
       and program_id = #{programId,jdbcType=VARCHAR}
   </update>
+  <select id="selectFeedAndTime" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    feed_result,last_operation_time
+    from program_item_visit
+    where program_id = #{programId,jdbcType=VARCHAR}
+  </select>
+  <select id="selectAllAndTime" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    check_all_result,last_operation_time
+    from program_item_visit
+    where program_id = #{programId,jdbcType=VARCHAR}
+  </select>
+  <select id="selectFirstAllAndTime" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    first_check_all_result,last_operation_time 
+    from program_item_visit
+    where program_id = #{programId,jdbcType=VARCHAR}
+  </select>
+  <select id="selectChangeResult" parameterMap="BaseResultMap" resultMap="java.lang.Integer">    
+            SELECT change_result 
+            FROM program_item_visit 
+            WHERE program_id = #{programId,jdbcType=VARCHAR} AND lineseat = #{lineseat,jdbcType=VARCHAR}           
+  </select>
 </mapper>

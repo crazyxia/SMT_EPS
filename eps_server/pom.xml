@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.jimi.smt</groupId>
@@ -8,16 +7,16 @@
 	<version>1.6.1</version>
 	<name>eps_server Maven Webapp</name>
 	<url>http://maven.apache.org</url>
-
-
+	
 	<repositories>
-		<repository>
-			<!-- Maven 自带的中央仓库使用的Id为central 如果其他的仓库声明也是用该Id 就会覆盖中央仓库的配置 -->
-			<id>nexus</id>
-			<name>nexus</name>
-			<url>http://10.10.11.110:7071/nexus/content/repositories/thirdparty/</url>
-		</repository>
-	</repositories>
+        <repository>
+            <!-- Maven 自带的中央仓库使用的Id为central 如果其他的仓库声明也是用该Id 就会覆盖中央仓库的配置 -->
+            <id>nexus</id>
+            <name>nexus</name>
+            <url>http://10.10.11.110:7071/nexus/content/repositories/thirdparty/</url>
+        </repository>
+    </repositories>
+
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -40,7 +39,7 @@
 				</configuration>
 			</plugin>
 
-
+			
 			<!-- tomcat插件 -->
 			<plugin>
 				<groupId>org.apache.tomcat.maven</groupId>
@@ -52,7 +51,7 @@
 					<username>darhao</username>
 					<password>darhao776323</password>
 					<server>tomcat7</server>
-
+					
 				</configuration>
 			</plugin>
 
@@ -100,7 +99,7 @@
 		<dependency>
 			<groupId>cc.darhao</groupId>
 			<artifactId>DaUtils</artifactId>
-			<version>1.0</version>
+			<version>1.0-SNAPHOT</version>
 		</dependency>
 
 		<!-- 添加Spring依赖 -->
@@ -295,6 +294,18 @@
 			<artifactId>javase</artifactId>
 			<version>3.0.0</version>
 		</dependency>
+		
+		<dependency>
+            <groupId>cc.darhao</groupId>
+            <artifactId>DaUtils</artifactId>
+            <version>1.0-SNAPHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>cc.darhao</groupId>
+            <artifactId>jiminal</artifactId>
+            <version>1.0-SNAPHOT</version>
+        </dependency>
 
 	</dependencies>
 </project>

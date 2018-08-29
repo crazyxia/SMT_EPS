@@ -8,6 +8,9 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import com.jimi.smt.eps_server.annotation.Open;
 import com.jimi.smt.eps_server.annotation.Role;
+import com.jimi.smt.eps_server.controller.UserController;
+import com.jimi.smt.eps_server.entity.vo.UserVO;
+import com.jimi.smt.eps_server.util.TokenBox;
 
 /**
  * 权限拦截器，对带有@Role注解的方法进行选择性放行
@@ -28,8 +31,13 @@ public class JurisdictionInterceptor extends HandlerInterceptorAdapter {
 				return true;
 			}
 			//如果是管理员，则放行
-			String loginedRoleName = (String) request.getSession().getAttribute("logined");
+			/*String loginedRoleName = (String) request.getSession().getAttribute("logined");
 			if("超级管理员".equals(loginedRoleName)) {
+				
+			}*/
+			String token = request.getParameter(TokenBox.TOKEN_ID_KEY_NAME);
+			UserVO user = TokenBox.get(token, UserController.SESSION_KEY_LOGIN_USER);
+			if(user != null && user.getType() == 3) {
 				return true;
 			}
 			//如果没有注解，则拦截
@@ -40,7 +48,7 @@ public class JurisdictionInterceptor extends HandlerInterceptorAdapter {
 			}
 			//角色与权限匹配则放行
 			for (Role.RoleType roleName : role.value()) {
-				if(roleName.toString().equals(loginedRoleName)) {
+				if(roleName.toString().equals(user.getTypeName())) {
 					return true;
 				}
 			}

@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.jimi.smt.eps_server.annotation.Log;
+import com.jimi.smt.eps_server.annotation.Role;
+import com.jimi.smt.eps_server.annotation.Role.RoleType;
 import com.jimi.smt.eps_server.entity.MaterialInfo;
 import com.jimi.smt.eps_server.service.MaterialService;
 import com.jimi.smt.eps_server.util.ResultUtil;
@@ -25,6 +27,7 @@ public class MaterialController {
 		return new ModelAndView("material/goManage");
 	}
 	
+	@Role(RoleType.IPQC)
 	@Log
 	@ResponseBody
 	@RequestMapping("/add")
@@ -42,6 +45,7 @@ public class MaterialController {
 		}
 	}
 	
+	@Role(RoleType.IPQC)
 	@Log
 	@ResponseBody
 	@RequestMapping("/update")
@@ -58,6 +62,7 @@ public class MaterialController {
 		}
 	}
 	
+	@Role(RoleType.IPQC)
 	@Log
 	@ResponseBody
 	@RequestMapping("/delete")
@@ -74,6 +79,7 @@ public class MaterialController {
 		}
 	}
 	
+	@Role(RoleType.IPQC)
 	@Log
 	@ResponseBody
 	@RequestMapping("/list")

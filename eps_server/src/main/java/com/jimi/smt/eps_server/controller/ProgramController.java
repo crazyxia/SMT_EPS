@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,11 +17,17 @@ import com.jimi.smt.eps_server.annotation.Log;
 import com.jimi.smt.eps_server.annotation.Open;
 import com.jimi.smt.eps_server.annotation.Role;
 import com.jimi.smt.eps_server.annotation.Role.*;
+import com.jimi.smt.eps_server.entity.Program;
+import com.jimi.smt.eps_server.entity.ProgramItem;
+import com.jimi.smt.eps_server.entity.ProgramItemVisit;
+import com.jimi.smt.eps_server.entity.ResultJson;
 import com.jimi.smt.eps_server.entity.bo.EditProgramItemBO;
 import com.jimi.smt.eps_server.entity.vo.ProgramItemVO;
+import com.jimi.smt.eps_server.entity.vo.ListResultJson;
 import com.jimi.smt.eps_server.entity.vo.ProgramVO;
 import com.jimi.smt.eps_server.service.ProgramService;
 import com.jimi.smt.eps_server.util.ResultUtil;
+
 
 /**
  * 排位表控制器
@@ -235,4 +242,103 @@ public class ProgramController {
 	}
 	
 	
+	@Open
+	@ResponseBody
+	@RequestMapping("/selectWorkingProgram")
+	public ListResultJson<Program> selectWorkingProgram(String line){
+		int result = programService.selectLine(line);
+		ListResultJson<Program> listResultJson = new ListResultJson<>();
+		if(result==0) {
+			listResultJson.setCode(0);
+			listResultJson.setMsg("此线号不存在");
+			return listResultJson;
+		}
+		List<Program> list = programService.selectWorkingProgram(line);		
+		if(list.size()==0) {
+			listResultJson.setCode(0);
+			listResultJson.setMsg("此线号不存在工单");
+		}else {
+			listResultJson.setCode(1);
+			listResultJson.setMsg("此线号存在工单");
+			listResultJson.setData(list);		
+		}
+		return listResultJson;
+	}
+	
+	
+	@Open
+	@ResponseBody
+	@RequestMapping("/selectProgramItem")
+	public ListResultJson<ProgramItem> selectProgramItem(String line, String workOrder, Integer boardType) {
+		List<ProgramItem> list = programService.selectProgramItem(line, workOrder, boardType);
+		ListResultJson<ProgramItem> listResultJson = new ListResultJson<>();
+		if(list.size()==0) {
+			listResultJson.setCode(0);
+			listResultJson.setMsg("工单不存在");
+		}else {
+			listResultJson.setCode(1);
+			listResultJson.setMsg("工单存在");
+			listResultJson.setData(list);		
+		}
+		return listResultJson;		
+	}
+	
+	
+	@Open
+	@ResponseBody
+	@RequestMapping("/updateItemVisit")
+	public ResultJson updateItemVisit(@RequestBody ProgramItemVisit programItemVisit) {
+		int result = programService.updateItemVisit(programItemVisit);
+		ResultJson resultJson = new ResultJson();
+		if(result > 0) {
+			resultJson.setCode(1);
+			resultJson.setMsg("更新成功");
+		}else {
+			resultJson.setCode(0);
+			resultJson.setMsg("更新失败");
+		}
+		return resultJson;
+	}
+	
+	@Open
+	@ResponseBody
+	@RequestMapping("/resetCheckAll")
+	public int resetCheckAll(String programId) {
+		if(programId == null || programId.equals("")) {
+			return -1;
+		}
+		int result = programService.resetCheckAll(programId);
+		if(result > 0) {
+			return 0;
+		}else {
+			return -1;
+		}	
+	}
+	
+	
+	@Open
+	@ResponseBody
+	@RequestMapping("/checkIsReset")
+	public int checkIsReset(String programId, int type) {				
+		return programService.checkIsReset(programId, type);		
+	}
+	
+	
+	@Open
+	@ResponseBody
+	@RequestMapping("/isAllDone")
+	public String isAllDone(String programId, int type) {
+		
+		
+		return programId;
+		
+	}
+	
+	
+	@Open
+	@ResponseBody
+	@RequestMapping("/isChangeSucceed")
+	public String isChangeSucceed(String programId, String lineseat) {				
+		return programService.isChangeSucceed(programId, lineseat);		
+	}
 }

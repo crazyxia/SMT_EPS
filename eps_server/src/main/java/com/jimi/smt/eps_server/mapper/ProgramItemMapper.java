@@ -1,5 +1,6 @@
 package com.jimi.smt.eps_server.mapper;
 
+import com.jimi.smt.eps_server.entity.Program;
 import com.jimi.smt.eps_server.entity.ProgramItem;
 import com.jimi.smt.eps_server.entity.ProgramItemExample;
 import com.jimi.smt.eps_server.entity.ProgramItemKey;
@@ -28,4 +29,6 @@ public interface ProgramItemMapper {
     int updateByPrimaryKeySelective(ProgramItem record);
 
     int updateByPrimaryKey(ProgramItem record);
+    
+    List<ProgramItem> selectProgramItem(Program record);
 }
