@@ -21,6 +21,7 @@ import com.jimi.smt.eps_server.annotation.Log;
 import com.jimi.smt.eps_server.annotation.Open;
 import com.jimi.smt.eps_server.entity.ResultJson;
 import com.jimi.smt.eps_server.entity.User;
+import com.jimi.smt.eps_server.entity.filler.UserToUserVOFiller;
 import com.jimi.smt.eps_server.entity.vo.UserVO;
 import com.jimi.smt.eps_server.service.UserService;
 import com.jimi.smt.eps_server.util.QRCodeUtil;
@@ -42,6 +43,8 @@ public class UserController {
 
 	@Autowired
 	private UserService userService;
+	@Autowired
+	private UserToUserVOFiller filler;
 
 	@RequestMapping("/goManage")
 	public ModelAndView goManage() {
@@ -102,7 +105,7 @@ public class UserController {
 			ResultUtil.failed("参数不足");
 			return ResultUtil.failed();
 		}
-		UserVO user = userService.login(id, password);
+		User user = userService.login(id, password);
 		if(user == null || user.getType() < 3) {
 			return ResultUtil.failed("failed_not_admin");
 		}
@@ -120,10 +123,10 @@ public class UserController {
 			}
 		}
 		tokenId = TokenBox.createTokenId();
-		user.setTokenId(tokenId);
-		user.setPassword("***");
-		TokenBox.put(tokenId, SESSION_KEY_LOGIN_USER, user);
-		return ResultUtil.succeed(user);
+		UserVO userVO = filler.fill(user);
+		userVO.setTokenId(tokenId);
+		TokenBox.put(tokenId, SESSION_KEY_LOGIN_USER, userVO);
+		return ResultUtil.succeed(userVO);
 	}
 
 	@Open

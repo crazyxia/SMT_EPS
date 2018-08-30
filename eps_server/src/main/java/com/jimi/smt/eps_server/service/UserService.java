@@ -64,7 +64,7 @@ public interface UserService {
 	 * @param password
 	 * @return
 	 */
-	UserVO login(String id, String password);
+	User login(String id, String password);
 	
 	/**
 	 * 通过id返回用户对象
