@@ -135,19 +135,64 @@ public interface ProgramService {
 	 */
 	List<Display> listDisplays();
 	
+	/**
+	 * 返回当前产线正在进行的工单列表
+	 * @param line
+	 * @return
+	 */
 	List<Program> selectWorkingProgram(String line);
 	
+	/**
+	 * 获取当前工单的料号信息
+	 * @param line
+	 * @param workOrder
+	 * @param boardType
+	 * @return
+	 */
 	List<ProgramItem> selectProgramItem(String line, String workOrder, Integer boardType);
 	
+	/**
+	 * 更新program_item_visit 表日志
+	 * @param programItemVisit
+	 * @return
+	 */
 	int updateItemVisit(ProgramItemVisit programItemVisit);
 	
+	/**
+	 * 首检完成后重置全检时间和全检结果
+	 * @param programId
+	 * @return
+	 */
 	int resetCheckAll(String programId);
 	
+	/**
+	 * 判断是否存在产线
+	 * @param line
+	 * @return
+	 */
 	int selectLine(String line);
 	
+	/**
+	 * 判断工单是否重置了
+	 * @param programId
+	 * @param type
+	 * @return
+	 */
 	int checkIsReset(String programId, int type);
 	
-	String isAllDone(String programId, int type);
+	/**
+	 * 返回某个工单是否全部完成某项操作的结果
+	 * @param programId
+	 * @param type
+	 * @return
+	 */
+	int isAllDone(String programId, int type);
 	
-	String isChangeSucceed(String programId, String lineseat);
+	/**
+	 * 核料时判断某个站位是否换料成功
+	 * @param programId
+	 * @param lineseat
+	 * @return
+	 */
+	int isChangeSucceed(String programId, String lineseat);
 }

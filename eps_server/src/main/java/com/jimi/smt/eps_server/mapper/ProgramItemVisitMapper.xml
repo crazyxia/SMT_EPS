@@ -449,9 +449,83 @@
     from program_item_visit
     where program_id = #{programId,jdbcType=VARCHAR}
   </select>
-  <select id="selectChangeResult" parameterMap="BaseResultMap" resultMap="java.lang.Integer">    
-            SELECT change_result 
-            FROM program_item_visit 
-            WHERE program_id = #{programId,jdbcType=VARCHAR} AND lineseat = #{lineseat,jdbcType=VARCHAR}           
-  </select>
+  <update id="updateFeedResult" parameterType="com.jimi.smt.eps_server.entity.ProgramItemVisit" >
+    update program_item_visit
+    set scan_lineseat = #{scanLineseat,jdbcType=VARCHAR},
+      scan_material_no = #{scanMaterialNo,jdbcType=VARCHAR},
+      last_operation_type = #{lastOperationType,jdbcType=INTEGER},     
+      feed_result = #{feedResult,jdbcType=INTEGER},
+      feed_time = #{feedTime,jdbcType=TIMESTAMP},      
+      last_operation_time = #{lastOperationTime,jdbcType=TIMESTAMP}
+    where lineseat = #{lineseat,jdbcType=VARCHAR}
+      and program_id = #{programId,jdbcType=VARCHAR}
+  </update>
+  <update id="updateChangeResult" parameterType="com.jimi.smt.eps_server.entity.ProgramItemVisit" >
+    update program_item_visit
+    set scan_lineseat = #{scanLineseat,jdbcType=VARCHAR},
+      scan_material_no = #{scanMaterialNo,jdbcType=VARCHAR},
+      last_operation_type = #{lastOperationType,jdbcType=INTEGER},     
+      change_result = #{changeResult,jdbcType=INTEGER},
+      change_time = #{changeTime,jdbcType=TIMESTAMP},
+      check_result = #{checkResult,jdbcType=INTEGER},      
+      last_operation_time = #{lastOperationTime,jdbcType=TIMESTAMP}
+    where lineseat = #{lineseat,jdbcType=VARCHAR}
+      and program_id = #{programId,jdbcType=VARCHAR}
+  </update>
+  <update id="updateCheckFailResult" parameterType="com.jimi.smt.eps_server.entity.ProgramItemVisit" >
+    update program_item_visit
+    set scan_lineseat = #{scanLineseat,jdbcType=VARCHAR},
+      scan_material_no = #{scanMaterialNo,jdbcType=VARCHAR},
+      last_operation_type = #{lastOperationType,jdbcType=INTEGER},     
+      check_time = #{changeTime,jdbcType=TIMESTAMP},
+      check_result = #{checkResult,jdbcType=INTEGER},      
+      last_operation_time = #{lastOperationTime,jdbcType=TIMESTAMP}
+    where lineseat = #{lineseat,jdbcType=VARCHAR}
+      and program_id = #{programId,jdbcType=VARCHAR}
+  </update>
+  <update id="updateCheckSucceedResult" parameterType="com.jimi.smt.eps_server.entity.ProgramItemVisit" >
+    update program_item_visit
+    set scan_lineseat = #{scanLineseat,jdbcType=VARCHAR},
+      scan_material_no = #{scanMaterialNo,jdbcType=VARCHAR},
+      last_operation_type = #{lastOperationType,jdbcType=INTEGER},     
+      check_time = #{changeTime,jdbcType=TIMESTAMP},
+      check_result = #{checkResult,jdbcType=INTEGER},
+      change_result = #{changeResult,jdbcType=INTEGER},      
+      last_operation_time = #{lastOperationTime,jdbcType=TIMESTAMP}
+    where lineseat = #{lineseat,jdbcType=VARCHAR}
+      and program_id = #{programId,jdbcType=VARCHAR}
+  </update>
+  <update id="updateAllResult" parameterType="com.jimi.smt.eps_server.entity.ProgramItemVisit" >
+    update program_item_visit
+    set scan_lineseat = #{scanLineseat,jdbcType=VARCHAR},
+      scan_material_no = #{scanMaterialNo,jdbcType=VARCHAR},
+      last_operation_type = #{lastOperationType,jdbcType=INTEGER},     
+      check_all_result = #{checkAllResult,jdbcType=INTEGER},
+      check_all_time = #{checkAllTime,jdbcType=TIMESTAMP},      
+      last_operation_time = #{lastOperationTime,jdbcType=TIMESTAMP}
+    where lineseat = #{lineseat,jdbcType=VARCHAR}
+      and program_id = #{programId,jdbcType=VARCHAR}
+  </update>
+  <update id="updateStoreResult" parameterType="com.jimi.smt.eps_server.entity.ProgramItemVisit" >
+    update program_item_visit
+    set scan_lineseat = #{scanLineseat,jdbcType=VARCHAR},
+      scan_material_no = #{scanMaterialNo,jdbcType=VARCHAR},
+      last_operation_type = #{lastOperationType,jdbcType=INTEGER},     
+      store_issue_result = #{storeIssueResult,jdbcType=INTEGER},
+      store_issue_time = #{storeIssueTime,jdbcType=TIMESTAMP},     
+      last_operation_time = #{lastOperationTime,jdbcType=TIMESTAMP}
+    where lineseat = #{lineseat,jdbcType=VARCHAR}
+      and program_id = #{programId,jdbcType=VARCHAR}
+  </update>
+  <update id="updateFirstAllResult" parameterType="com.jimi.smt.eps_server.entity.ProgramItemVisit" >
+    update program_item_visit
+    set scan_lineseat = #{scanLineseat,jdbcType=VARCHAR},
+      scan_material_no = #{scanMaterialNo,jdbcType=VARCHAR},
+      last_operation_type = #{lastOperationType,jdbcType=INTEGER},     
+      first_check_all_result = #{firstCheckAllResult,jdbcType=INTEGER},
+      first_check_all_time = #{firstCheckAllTime,jdbcType=TIMESTAMP},    
+      last_operation_time = #{lastOperationTime,jdbcType=TIMESTAMP}
+    where lineseat = #{lineseat,jdbcType=VARCHAR}
+      and program_id = #{programId,jdbcType=VARCHAR}
+  </update>  
 </mapper>

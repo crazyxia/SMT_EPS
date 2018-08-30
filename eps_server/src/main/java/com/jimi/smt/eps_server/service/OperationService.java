@@ -98,6 +98,11 @@ public interface OperationService {
 	List<StockLogVO> listStockLogs(String operator, String materialNo, String custom, String position, String startTime, String endTime) throws ParseException;
 	
 	
+	/**
+	 * 添加操作日志
+	 * @param operation
+	 * @return
+	 */
 	int add(Operation operation);
 	
 }

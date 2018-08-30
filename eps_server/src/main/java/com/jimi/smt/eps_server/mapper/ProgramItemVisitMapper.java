@@ -37,5 +37,17 @@ public interface ProgramItemVisitMapper {
     
     ArrayList<ProgramItemVisit> selectFirstAllAndTime(String programId);
     
-    List<Integer> selectChangeResult(ProgramItemVisit record);
+    int updateFeedResult(ProgramItemVisit record);
+    
+    int updateChangeResult(ProgramItemVisit record);
+    
+    int updateCheckFailResult(ProgramItemVisit record);
+    
+    int updateCheckSucceedResult(ProgramItemVisit record);
+    
+    int updateAllResult(ProgramItemVisit record);
+    
+    int updateStoreResult(ProgramItemVisit record);
+    
+    int updateFirstAllResult(ProgramItemVisit record);
 }

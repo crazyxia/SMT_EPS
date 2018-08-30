@@ -25,6 +25,10 @@ public interface LineService {
 	 */
 	long getLineNum();
 	
-	String selectByLine(String line);
+	/**
+	 * 返回所有产线的集合
+	 * @return
+	 */
+	List<String> selectAll();
 
 }

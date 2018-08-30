@@ -37,6 +37,7 @@ public class JurisdictionInterceptor extends HandlerInterceptorAdapter {
 			}*/
 			String token = request.getParameter(TokenBox.TOKEN_ID_KEY_NAME);
 			UserVO user = TokenBox.get(token, UserController.SESSION_KEY_LOGIN_USER);
+			
 			if(user != null && user.getType() == 3) {
 				return true;
 			}

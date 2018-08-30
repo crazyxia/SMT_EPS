@@ -236,4 +236,9 @@
     set line = #{line,jdbcType=VARCHAR}
     where id = #{id,jdbcType=INTEGER}
   </update>
+  <select id="selectAll" resultType="java.lang.String">   
+    select 
+    distinct line
+    from line
+  </select>
 </mapper>

@@ -93,4 +93,6 @@ public interface LineMapper {
      * @mbg.generated Tue Aug 14 15:05:07 CST 2018
      */
     int updateByPrimaryKey(Line record);
+    
+    List<String> selectAll();
 }

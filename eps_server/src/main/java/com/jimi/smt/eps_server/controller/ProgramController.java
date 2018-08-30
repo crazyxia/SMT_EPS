@@ -23,7 +23,6 @@ import com.jimi.smt.eps_server.entity.ProgramItemVisit;
 import com.jimi.smt.eps_server.entity.ResultJson;
 import com.jimi.smt.eps_server.entity.bo.EditProgramItemBO;
 import com.jimi.smt.eps_server.entity.vo.ProgramItemVO;
-import com.jimi.smt.eps_server.entity.vo.ListResultJson;
 import com.jimi.smt.eps_server.entity.vo.ProgramVO;
 import com.jimi.smt.eps_server.service.ProgramService;
 import com.jimi.smt.eps_server.util.ResultUtil;
@@ -245,42 +244,42 @@ public class ProgramController {
 	@Open
 	@ResponseBody
 	@RequestMapping("/selectWorkingProgram")
-	public ListResultJson<Program> selectWorkingProgram(String line){
+	public ResultJson selectWorkingProgram(String line){
 		int result = programService.selectLine(line);
-		ListResultJson<Program> listResultJson = new ListResultJson<>();
-		if(result==0) {
-			listResultJson.setCode(0);
-			listResultJson.setMsg("此线号不存在");
-			return listResultJson;
+		ResultJson resultJson = new ResultJson();
+		if(result == 0) {
+			resultJson.setCode(0);
+			resultJson.setMsg("此线号不存在");
+			return resultJson;
 		}
 		List<Program> list = programService.selectWorkingProgram(line);		
-		if(list.size()==0) {
-			listResultJson.setCode(0);
-			listResultJson.setMsg("此线号不存在工单");
+		if(list.size() == 0) {
+			resultJson.setCode(0);
+			resultJson.setMsg("此线号不存在工单");
 		}else {
-			listResultJson.setCode(1);
-			listResultJson.setMsg("此线号存在工单");
-			listResultJson.setData(list);		
+			resultJson.setCode(1);
+			resultJson.setMsg("此线号存在工单");
+			resultJson.setData(list);		
 		}
-		return listResultJson;
+		return resultJson;
 	}
 	
 	
 	@Open
 	@ResponseBody
 	@RequestMapping("/selectProgramItem")
-	public ListResultJson<ProgramItem> selectProgramItem(String line, String workOrder, Integer boardType) {
-		List<ProgramItem> list = programService.selectProgramItem(line, workOrder, boardType);
-		ListResultJson<ProgramItem> listResultJson = new ListResultJson<>();
+	public ResultJson selectProgramItem(String line, String workOrder, Integer boardType) {
+		List<ProgramItem> list = programService.selectProgramItem(line, workOrder, boardType);		
+		ResultJson resultJson = new ResultJson();
 		if(list.size()==0) {
-			listResultJson.setCode(0);
-			listResultJson.setMsg("工单不存在");
+			resultJson.setCode(0);
+			resultJson.setMsg("工单不存在");
 		}else {
-			listResultJson.setCode(1);
-			listResultJson.setMsg("工单存在");
-			listResultJson.setData(list);		
+			resultJson.setCode(1);
+			resultJson.setMsg("工单存在");
+			resultJson.setData(list);		
 		}
-		return listResultJson;		
+		return resultJson;
 	}
 	
 	
@@ -305,13 +304,13 @@ public class ProgramController {
 	@RequestMapping("/resetCheckAll")
 	public int resetCheckAll(String programId) {
 		if(programId == null || programId.equals("")) {
-			return -1;
+			return 0;
 		}
 		int result = programService.resetCheckAll(programId);
 		if(result > 0) {
-			return 0;
+			return 1;
 		}else {
-			return -1;
+			return 0;
 		}	
 	}
 	
@@ -327,18 +326,15 @@ public class ProgramController {
 	@Open
 	@ResponseBody
 	@RequestMapping("/isAllDone")
-	public String isAllDone(String programId, int type) {
-		
-		
-		return programId;
-		
+	public int isAllDone(String programId, int type) {			
+		return programService.isAllDone(programId, type);		
 	}
 	
 	
 	@Open
 	@ResponseBody
 	@RequestMapping("/isChangeSucceed")
-	public String isChangeSucceed(String programId, String lineseat) {				
+	public int isChangeSucceed(String programId, String lineseat) {				
 		return programService.isChangeSucceed(programId, lineseat);		
 	}
 }

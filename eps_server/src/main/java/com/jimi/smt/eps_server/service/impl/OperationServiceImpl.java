@@ -440,7 +440,6 @@ public class OperationServiceImpl implements OperationService {
 	@Override
 	public int add(Operation operation) {		
 		operation.setTime(new Date());
-		System.out.println(operation);
 		return operationMapper.insert(operation);
 	}
 

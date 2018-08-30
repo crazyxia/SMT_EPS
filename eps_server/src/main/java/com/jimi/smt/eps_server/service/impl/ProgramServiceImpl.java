@@ -599,57 +599,44 @@ public class ProgramServiceImpl implements ProgramService {
 
 	@Override
 	public int updateItemVisit(ProgramItemVisit programItemVisit) {
-		int type = programItemVisit.getLastOperationType();
 		int result = 0;
+		int type = programItemVisit.getLastOperationType();
 		switch (type) {
 		case 0:
-			ProgramItemVisitExample example_0 = new ProgramItemVisitExample();
-			example_0.createCriteria().andProgramIdEqualTo(programItemVisit.getProgramId())
-			.andLineseatEqualTo(programItemVisit.getLineseat());
 			programItemVisit.setLastOperationTime(new Date());
 			programItemVisit.setFeedTime(new Date());
-			result = programItemVisitMapper.updateByExampleSelective(programItemVisit, example_0);
+			result = programItemVisitMapper.updateFeedResult(programItemVisit);
+			System.out.println(result);
 			break;
 		case 1:
-			ProgramItemVisitExample example_1 = new ProgramItemVisitExample();
-			example_1.createCriteria().andProgramIdEqualTo(programItemVisit.getProgramId())
-			.andLineseatEqualTo(programItemVisit.getLineseat());
 			programItemVisit.setLastOperationTime(new Date());
 			programItemVisit.setChangeTime(new Date());
 			programItemVisit.setCheckResult(2);
-			result = programItemVisitMapper.updateByExampleSelective(programItemVisit, example_1);
+			result = programItemVisitMapper.updateChangeResult(programItemVisit);
 			break;
 		case 2:
-			ProgramItemVisitExample example_2 = new ProgramItemVisitExample();
-			example_2.createCriteria().andProgramIdEqualTo(programItemVisit.getProgramId())
-			.andLineseatEqualTo(programItemVisit.getLineseat());
 			programItemVisit.setLastOperationTime(new Date());
 			programItemVisit.setCheckTime(new Date());
-			result = programItemVisitMapper.updateByExampleSelective(programItemVisit, example_2);
+			if (programItemVisit.getCheckResult() != null && programItemVisit.getCheckResult() == 0) {
+				result = programItemVisitMapper.updateCheckFailResult(programItemVisit);
+			} else if (programItemVisit.getCheckResult() != null && programItemVisit.getCheckResult() == 1) {
+				result = programItemVisitMapper.updateCheckSucceedResult(programItemVisit);
+			}
 			break;
 		case 3:
-			ProgramItemVisitExample example_3 = new ProgramItemVisitExample();
-			example_3.createCriteria().andProgramIdEqualTo(programItemVisit.getProgramId())
-			.andLineseatEqualTo(programItemVisit.getLineseat());
 			programItemVisit.setLastOperationTime(new Date());
 			programItemVisit.setCheckAllTime(new Date());
-			result = programItemVisitMapper.updateByExampleSelective(programItemVisit, example_3);
+			result = programItemVisitMapper.updateAllResult(programItemVisit);
 			break;
 		case 4:
-			ProgramItemVisitExample example_4 = new ProgramItemVisitExample();
-			example_4.createCriteria().andProgramIdEqualTo(programItemVisit.getProgramId())
-			.andLineseatEqualTo(programItemVisit.getLineseat());
 			programItemVisit.setLastOperationTime(new Date());
 			programItemVisit.setStoreIssueTime(new Date());
-			result = programItemVisitMapper.updateByExampleSelective(programItemVisit, example_4);
+			result = programItemVisitMapper.updateStoreResult(programItemVisit);
 			break;
 		case 5:
-			ProgramItemVisitExample example_5 = new ProgramItemVisitExample();
-			example_5.createCriteria().andProgramIdEqualTo(programItemVisit.getProgramId())
-			.andLineseatEqualTo(programItemVisit.getLineseat());
 			programItemVisit.setLastOperationTime(new Date());
 			programItemVisit.setFirstCheckAllTime(new Date());
-			result = programItemVisitMapper.updateByExampleSelective(programItemVisit, example_5);
+			result = programItemVisitMapper.updateFirstAllResult(programItemVisit);
 			break;
 		default:
 			System.out.println("什么操作都不是");
@@ -669,10 +656,11 @@ public class ProgramServiceImpl implements ProgramService {
 
 	@Override
 	public int selectLine(String line) {
+		// 得到所有产线的集合
 		List<String> lines = programMapper.selectLine();
 		int result = 0;
-		for(int i = 0; i < lines.size(); i++ ) {
-			if(!lines.get(i).equals("") && lines.get(i).equals(line)) {
+		for (int i = 0; i < lines.size(); i++) {
+			if (!lines.get(i).equals("") && lines.get(i).equals(line)) {
 				result = 1;
 				break;
 			}
@@ -683,61 +671,135 @@ public class ProgramServiceImpl implements ProgramService {
 	@Override
 	public int checkIsReset(String programId, int type) {
 		int result = 0;
-		switch(type)
-		{
-		case 2:
-			ArrayList<ProgramItemVisit> feedLists = programItemVisitMapper.selectFeedAndTime(programId);			
+		List<Integer> results = new ArrayList<>();
+		List<Integer> times = new ArrayList<>();
+		int allResult = 1;
+		int allTime = 0;
+		switch (type) {
+		case 0:
+			ArrayList<ProgramItemVisit> feedLists = programItemVisitMapper.selectFeedAndTime(programId);
 			for (ProgramItemVisit list : feedLists) {
-				if(list.getLastOperationTime() != null && 
-						(list.getFeedResult() == 2 || list.getFeedResult() == 3)) {
-					result = 1;
-					break;
+
+				results.add(list.getFeedResult());
+				if (list.getLastOperationTime() == null) {
+					times.add(0);
+				} else {
+					times.add(1);
+				}
+			}
+			break;
+		case 3:
+			ArrayList<ProgramItemVisit> allLists = programItemVisitMapper.selectAllAndTime(programId);
+
+			for (ProgramItemVisit list : allLists) {
+				results.add(list.getCheckAllResult());
+				if (list.getLastOperationTime() == null) {
+					times.add(0);
+				} else {
+					times.add(1);
 				}
 			}
 			break;
 		case 5:
-			ArrayList<ProgramItemVisit> alllists = programItemVisitMapper.selectAllAndTime(programId);
-			for (ProgramItemVisit list : alllists) {
-				if(list.getLastOperationTime() != null && 
-						(list.getFeedResult() == 2 || list.getFeedResult() == 3)) {
-					result = 1;
-					break;
-				}
-			}
-			break;
-		case 6:
 			ArrayList<ProgramItemVisit> firstAllLists = programItemVisitMapper.selectFirstAllAndTime(programId);
 			for (ProgramItemVisit list : firstAllLists) {
-				if(list.getLastOperationTime() != null && 
-						(list.getFeedResult() == 2 || list.getFeedResult() == 3)) {
-					result = 1;
-					break;
+				results.add(list.getFirstCheckAllResult());
+				if (list.getLastOperationTime() == null) {
+					times.add(0);
+				} else {
+					times.add(1);
 				}
 			}
 			break;
 		default:
-			System.out.println("超出程序范围");		
+			System.out.println("超出程序范围");
+			return 0;
+		}
+		for (Integer integer : results) {
+			if (integer != 2 && integer != 3) {
+				allResult = 0;
+				break;
+			}
+		}
+		for (Integer integer : times) {
+			if (integer == 1) {
+				allTime = 1;
+				break;
+			}
+		}
+		if (allResult == 1 && allTime == 1) {
+			result = 1;
 		}
 		return result;
 	}
 
 	@Override
-	public String isAllDone(String programId, int type) {
-		// TODO Auto-generated method stub
-		return null;
+	public int isAllDone(String programId, int type) {
+		int result = 1;
+		switch (type) {
+		case 4:
+			ProgramItemVisitExample example_1 = new ProgramItemVisitExample();
+			example_1.createCriteria().andProgramIdEqualTo(programId);
+			List<ProgramItemVisit> list_1 = programItemVisitMapper.selectByExample(example_1);
+			for (ProgramItemVisit programItemVisit : list_1) {
+				if (programItemVisit.getStoreIssueResult() != 1) {
+					result = 0;
+					break;
+				}
+			}
+			break;
+		case 0:
+			ProgramItemVisitExample example_2 = new ProgramItemVisitExample();
+			example_2.createCriteria().andProgramIdEqualTo(programId);
+			List<ProgramItemVisit> list_2 = programItemVisitMapper.selectByExample(example_2);
+			for (ProgramItemVisit programItemVisit : list_2) {
+				if (programItemVisit.getFeedResult() != 1) {
+					result = 0;
+					break;
+				}
+			}
+			break;
+		case 3:
+			ProgramItemVisitExample example_3 = new ProgramItemVisitExample();
+			example_3.createCriteria().andProgramIdEqualTo(programId);
+			List<ProgramItemVisit> list_3 = programItemVisitMapper.selectByExample(example_3);
+			for (ProgramItemVisit programItemVisit : list_3) {
+				if (programItemVisit.getCheckAllResult() != 1) {
+					result = 0;
+					break;
+				}
+			}
+			break;
+		case 5:
+			ProgramItemVisitExample example_4 = new ProgramItemVisitExample();
+			example_4.createCriteria().andProgramIdEqualTo(programId);
+			List<ProgramItemVisit> list_4 = programItemVisitMapper.selectByExample(example_4);
+			for (ProgramItemVisit programItemVisit : list_4) {
+				if (programItemVisit.getFirstCheckAllResult() != 1) {
+					result = 0;
+					break;
+				}
+			}
+			break;
+		default:
+			System.out.println("超出程序范围");
+			result = 0;
+		}
+		return result;
 	}
 
 	@Override
-	public String isChangeSucceed(String programId, String lineseat) {
-		String result = "成功";
-		ProgramItemVisit programItemVisit = new ProgramItemVisit();
-		programItemVisit.setProgramId(programId);
-		programItemVisit.setLineseat(lineseat);
-		List<Integer> list = programItemVisitMapper.selectChangeResult(programItemVisit);
-		for (Integer changeResult : list) {
-			if(changeResult == 0) {
-				result = "失败";
-				break;
+	public int isChangeSucceed(String programId, String lineseat) {
+		int result = 1;
+		ProgramItemVisitExample example = new ProgramItemVisitExample();
+		example.createCriteria().andProgramIdEqualTo(programId).andLineseatEqualTo(lineseat);
+		List<ProgramItemVisit> list = programItemVisitMapper.selectByExample(example);
+		if (list.size() > 0) {
+			for (ProgramItemVisit programItemVisit : list) {
+				if (programItemVisit.getChangeResult() == 0) {
+					result = 0;
+					break;
+				}
 			}
 		}
 		return result;

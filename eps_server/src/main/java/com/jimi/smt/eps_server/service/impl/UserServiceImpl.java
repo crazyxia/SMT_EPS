@@ -84,19 +84,6 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public UserVO login(String id, String password) {
 		User user = userMapper.selectByPrimaryKey(id);
-		if(user == null || user.getType() < 3) {
-			//return "failed_not_admin";
-			throw new RuntimeException("failed_not_admin");
-		}
-		if(user.getEnabled() == false) {			
-			//return "failed_not_enabled";
-			throw new RuntimeException("failed_not_enabled");
-		}
-		if(user.getPassword() != null && !user.getPassword().equals(password)) {
-			//return "failed_wrong_password";
-			throw new RuntimeException("failed_wrong_password");
-		}
-		
 		//return filler.fill(user).getTypeName();
 		return filler.fill(user);
 	}

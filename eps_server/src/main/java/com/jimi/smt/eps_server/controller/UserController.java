@@ -19,8 +19,8 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.jimi.smt.eps_server.annotation.Log;
 import com.jimi.smt.eps_server.annotation.Open;
+import com.jimi.smt.eps_server.entity.ResultJson;
 import com.jimi.smt.eps_server.entity.User;
-import com.jimi.smt.eps_server.entity.vo.UserResultJson;
 import com.jimi.smt.eps_server.entity.vo.UserVO;
 import com.jimi.smt.eps_server.service.UserService;
 import com.jimi.smt.eps_server.util.QRCodeUtil;
@@ -103,6 +103,15 @@ public class UserController {
 			return ResultUtil.failed();
 		}
 		UserVO user = userService.login(id, password);
+		if(user == null || user.getType() < 3) {
+			return ResultUtil.failed("failed_not_admin");
+		}
+		if(user.getEnabled() == false) {			
+			return ResultUtil.failed("failed_not_enabled");
+		}
+		if(user.getPassword() != null && !user.getPassword().equals(password)) {
+			return ResultUtil.failed("failed_wrong_password");
+		}
 		String tokenId = request.getParameter(TokenBox.TOKEN_ID_KEY_NAME);
 		if(tokenId != null) {
 			UserVO user2 = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
@@ -112,6 +121,7 @@ public class UserController {
 		}
 		tokenId = TokenBox.createTokenId();
 		user.setTokenId(tokenId);
+		user.setPassword("***");
 		TokenBox.put(tokenId, SESSION_KEY_LOGIN_USER, user);
 		return ResultUtil.succeed(user);
 	}
@@ -153,22 +163,22 @@ public class UserController {
 	@Open
 	@ResponseBody
 	@RequestMapping("selectById")
-	public UserResultJson selectUserById(String id) {
+	public ResultJson selectUserById(String id) {
 		User user = userService.selectUserById(id);
-		UserResultJson userResultJson = new UserResultJson();
+		ResultJson resultJson = new ResultJson();		
 		if (user == null) {
-			userResultJson.setCode(0);
-			userResultJson.setMsg("操作员不存在");
+			resultJson.setCode(0);
+			resultJson.setMsg("操作员不存在");
 		} else {
 			if (!user.getEnabled()) {
-				userResultJson.setCode(-1);
-				userResultJson.setMsg("操作员离职");
+				resultJson.setCode(-1);
+				resultJson.setMsg("操作员离职");
 			} else {
-				userResultJson.setCode(1);
-				userResultJson.setMsg("操作员存在");
-				userResultJson.setData(user);
+				resultJson.setCode(1);
+				resultJson.setMsg("操作员存在");				
+				resultJson.setData(user);
 			}
 		}
-		return userResultJson;
+		return resultJson;
 	}
 }
