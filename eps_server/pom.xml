@@ -298,13 +298,13 @@
 		<dependency>
             <groupId>cc.darhao</groupId>
             <artifactId>DaUtils</artifactId>
-            <version>1.0-SNAPHOT</version>
+            <version>1.0</version>
         </dependency>
 
         <dependency>
             <groupId>cc.darhao</groupId>
             <artifactId>jiminal</artifactId>
-            <version>1.0-SNAPHOT</version>
+            <version>1.0</version>
         </dependency>
 
 	</dependencies>
