@@ -805,6 +805,15 @@ public class ProgramServiceImpl implements ProgramService {
 		program.setWorkOrder(workOrder);
 		program.setBoardType(boardType);
 		return programMapper.selectLastOperatorByProgram(program);
+	}
+
+	@Override
+	public String getProgramId(String line, String workOrder, Integer boardType) {
+		Program program = new Program();
+		program.setLine(line);
+		program.setWorkOrder(workOrder);
+		program.setBoardType(boardType);
+		return programMapper.selectProgramId(program);
 	}	
 
 }

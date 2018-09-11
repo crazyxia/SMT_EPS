@@ -182,6 +182,8 @@ public class DisplayController implements Initializable {
 	private static final String GET_OPERATOR_ACTION = "program/selectLastOperatorByProgram";
 	// 查询工单操作请求
 	private static final String GET_ITEMVISIT_ACTION = "program/selectItemVisitByProgram";
+	
+	private Map<String, String> map = new HashMap<>();
 
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		initVersionLb();
@@ -332,7 +334,7 @@ public class DisplayController implements Initializable {
 				if (newValue != null && newValue.intValue() >= 0) {
 					String line = lineCb.getItems().get(newValue.intValue());
 					resetWorkOrderCb(line);
-					Map<String, String> map = new HashMap<>();
+					map.clear();
 					map.put("id", newValue.intValue() + 1 + "");
 					String response = sendRequest(GET_USER_ACTION, map);
 					CenterLogin login = null;
@@ -372,7 +374,7 @@ public class DisplayController implements Initializable {
 							: lineCb.getSelectionModel().getSelectedItem().toString();
 					String workOrder = workOrderCb.getItems().get(newValue.intValue());
 					if (!line.equals("") && !workOrder.equals("")) {
-						Map<String, String> map = new HashMap<>();
+						map.clear();
 						map.put("line", line);
 						map.put("workOrder", workOrder);
 						String response = sendRequest(GET_BOARDTYPE_ACTION, map);
@@ -431,7 +433,7 @@ public class DisplayController implements Initializable {
 											logger.info("接收重置包：" + rLog.getData());
 											if (reply.getControlResult().equals(ControlResult.SUCCEED)) {
 												// 发送选择工单请求
-												Map<String, String> map = new HashMap<>();
+												map.clear();
 												map.put("line", line);
 												map.put("workOrder", workOrder);
 												map.put("boardType", boardTypeNo.toString());
@@ -505,7 +507,7 @@ public class DisplayController implements Initializable {
 					Optional<ButtonType> optional = new Alert(AlertType.WARNING, "你确定要重置该工单的状态吗？\n这会初始化除发料以外的所有状态",
 							ButtonType.YES, ButtonType.CANCEL).showAndWait();
 					if (optional != null && optional.get().equals(ButtonType.YES)) {
-						Map<String, String> map = new HashMap<>();
+						map.clear();
 						String line = lineCb.getSelectionModel().getSelectedItem().toString();
 						String workOrder = workOrderCb.getSelectionModel().getSelectedItem().toString();
 						Integer boardTypeNo = getBoardTypeNo(boardType);
@@ -731,7 +733,7 @@ public class DisplayController implements Initializable {
 				: boardTybeCb.getSelectionModel().getSelectedItem().toString();
 		if (!line.equals("") && !workOrder.equals("") && !boardType.equals("")) {
 			Integer boardTypeNo = getBoardTypeNo(boardType);
-			Map<String, String> map = new HashMap<>();
+			map.clear();
 			map.put("line", line);
 			map.put("workOrder", workOrder);
 			map.put("boardType", boardTypeNo.toString());
@@ -890,7 +892,7 @@ public class DisplayController implements Initializable {
 	private void resetWorkOrderCb(String line) {
 		workOrderCb.getItems().clear();
 		boardTybeCb.getItems().clear();
-		Map<String, String> map = new HashMap<>();
+		map.clear();
 		map.put("line", line);
 		String response = sendRequest(GET_WORKORDER_ACTION, map);
 		if (!response.equals("[]")) {
@@ -1019,7 +1021,7 @@ public class DisplayController implements Initializable {
 	 * @param line
 	 */
 	private void sendHttpCloseRequest(String line) {
-		Map<String, String> map = new HashMap<>();
+		map.clear();
 		map.put("line", line);
 		try {
 			httpHelper.requestHttp(SWITCH_ACTION, map, new okhttp3.Callback() {

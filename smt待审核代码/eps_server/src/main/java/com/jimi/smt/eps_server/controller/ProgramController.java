@@ -342,4 +342,15 @@ public class ProgramController {
 	public String selectLastOperatorByProgram(String line, String workOrder, Integer boardType) {
 		return programService.selectLastOperatorByProgram(line, workOrder, boardType);
 	}
+	
+	@Open
+	@ResponseBody
+	@RequestMapping("/getProgramId")
+	public ResultUtil getProgramId(String line, String workOrder, Integer boardType) {
+		String result = programService.getProgramId(line, workOrder, boardType);
+		if(result == null) {
+			return ResultUtil.failed("fail");
+		}
+		return ResultUtil.succeed(result);
+	}
 }

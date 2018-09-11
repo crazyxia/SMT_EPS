@@ -124,12 +124,12 @@ public class ServerSocket {
 	/**
 	 * 所有线别的报警模块列表
 	 */
-	public Map<Integer, ClientSocket> clientSockets;
+	private Map<Integer, ClientSocket> clientSockets;
 
 	/**
 	 * 所有线别列表
 	 */
-	public Map<Integer, Line> listMap = new HashMap<>();
+	private Map<Integer, Line> listMap = new HashMap<>();
 
 	/**
 	 * 产线数量

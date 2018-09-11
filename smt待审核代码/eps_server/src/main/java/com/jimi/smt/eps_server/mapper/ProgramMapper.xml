@@ -558,4 +558,13 @@
     where operation.line = #{line,jdbcType=VARCHAR} and operation.work_order = #{workOrder,jdbcType=VARCHAR} and operation.board_type = #{boardType,jdbcType=INTEGER}
     ORDER BY operation.time DESC LIMIT 1
   </select>
+  <select id="selectProgramId" parameterType="com.jimi.smt.eps_server.entity.Program" resultType="java.lang.String">
+    select id
+    from program
+    where
+    line = #{line,jdbcType=VARCHAR} and 
+    work_order = #{workOrder,jdbcType=VARCHAR} and 
+    board_type = #{boardType,jdbcType=INTEGER} and 
+    state = 1  
+  </select>
 </mapper>

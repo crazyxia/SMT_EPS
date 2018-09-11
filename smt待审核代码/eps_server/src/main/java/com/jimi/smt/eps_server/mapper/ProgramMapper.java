@@ -109,4 +109,6 @@ public interface ProgramMapper {
     List<String> selectWorkingBoardType(Program record);
     
     String selectLastOperatorByProgram(Program record);
+    
+    String selectProgramId(Program record);
 }

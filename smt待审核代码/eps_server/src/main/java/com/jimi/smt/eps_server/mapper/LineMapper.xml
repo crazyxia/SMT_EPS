@@ -238,11 +238,8 @@
   </update>
   <select id="selectAll" resultType="java.lang.String">   
     select 
-    distinct line
+    line
     from line
     order by id asc
-  </select>
-  <select id="selectLine" resultType="java.lang.String">    
-            SELECT distinct line FROM line                          
-  </select>
+  </select> 
 </mapper>

@@ -63,9 +63,9 @@ public class IdController implements Initializable {
 				// base64解码（去掉最后一个附加的等号）
 				id = new String(Base64.getDecoder().decode(value.substring(0, value.length() - 1)));
 				// 查询数据库是否存在该职工
-				Map<String, String> mapFirst = new HashMap<>();
-				mapFirst.put("id", id);
-				String response = httpHelper.requestHttp(GET_USER_ACTION, mapFirst);
+				Map<String, String> map = new HashMap<>();
+				map.put("id", id);
+				String response = httpHelper.requestHttp(GET_USER_ACTION, map);
 				User user = JSON.parseObject(response, User.class);
 				if (user == null) {
 					// 大小写反转再解码，兼容扫描枪bug
@@ -80,10 +80,10 @@ public class IdController implements Initializable {
 						chars[i] = c;
 					}
 					String value2 = new String(chars);
-					id = new String(Base64.getDecoder().decode(value2.substring(0, value2.length() - 1)));
-					Map<String, String> mapSecond = new HashMap<>();
-					mapSecond.put("id", id);
-					response = httpHelper.requestHttp(GET_USER_ACTION, mapSecond);
+					id = new String(Base64.getDecoder().decode(value2.substring(0, value2.length() - 1)));					
+					map.clear();
+					map.put("id", id);				
+					response = httpHelper.requestHttp(GET_USER_ACTION, map);
 					user = JSON.parseObject(response, User.class);
 					if (user == null) {
 						errorMsg = "该职工不存在或已离职";

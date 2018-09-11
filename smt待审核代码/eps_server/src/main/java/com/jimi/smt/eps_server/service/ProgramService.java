@@ -220,4 +220,13 @@ public interface ProgramService {
 	 * @return
 	 */
 	String selectLastOperatorByProgram(String line, String workOrder, Integer boardType);
+	
+	/**
+	 * 返回工单id
+	 * @param line
+	 * @param workOrder
+	 * @param boardType
+	 * @return
+	 */
+	String getProgramId(String line, String workOrder, Integer boardType);
 }
