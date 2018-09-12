@@ -15,6 +15,16 @@ public class UserVO extends User {
 	private String classTypeName;
 	
 	private String isEnabled;
+	
+	private String tokenId;
+
+	public String getTokenId() {
+		return tokenId;
+	}
+
+	public void setTokenId(String tokenId) {
+		this.tokenId = tokenId;
+	}
 
 	public String getTypeName() {
 		return typeName;

@@ -122,4 +122,14 @@ public class StockLog {
     public void setTargetBoardType(Integer targetBoardType) {
         this.targetBoardType = targetBoardType;
     }
+
+	@Override
+	public String toString() {
+		return "StockLog [id=" + id + ", timestamp=" + timestamp + ", materialNo=" + materialNo + ", quantity="
+				+ quantity + ", operator=" + operator + ", operationTime=" + operationTime + ", position=" + position
+				+ ", custom=" + custom + ", productionDate=" + productionDate + ", targetWorkOrder=" + targetWorkOrder
+				+ ", targetLine=" + targetLine + ", targetBoardType=" + targetBoardType + "]";
+	}
+    
+    
 }

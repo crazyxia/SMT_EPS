@@ -13,9 +13,11 @@ import org.springframework.stereotype.Component;
 
 import com.jimi.smt.eps_server.entity.Config;
 import com.jimi.smt.eps_server.entity.Display;
+import com.jimi.smt.eps_server.entity.Line;
 import com.jimi.smt.eps_server.entity.ProgramItemVisit;
 import com.jimi.smt.eps_server.entity.bo.LineInfo;
 import com.jimi.smt.eps_server.service.ConfigService;
+import com.jimi.smt.eps_server.service.LineService;
 import com.jimi.smt.eps_server.service.ProgramService;
 
 /**
@@ -31,23 +33,47 @@ public class TimeoutTimer {
 	private ProgramService programService;
 	@Autowired
 	private ConfigService configService;
+	@Autowired
+	private LineService lineService;
 	
-	//键名
+	/**
+	 * Config配置项
+	 */
 	private static final String CHECK_ALL_CYCLE_TIME = "check_all_cycle_time";
 	private static final String CHECK_AFTER_CHANGE_TIME = "check_after_change_time";
-	//产线数量
-	private static final int LINE_SIZE = 8;
-	//线锁
+	
+	/**
+	 * 产线数量
+	 */
+	private int lineSize;
+	
+	/**
+	 * 线锁
+	 */
 	private Object[] lineLocks; 
-	//产线当前信息
+	
+	/**
+	 * 产线当前信息
+	 */
 	private Map<Integer, LineInfo> lineInfos;
+	
+	/**
+	 * 所有线别列表
+	 */
+	public Map<Integer, Line> listMap = new HashMap<>();
 	
 	
 	@PostConstruct
 	public void init() {
-		lineLocks = new Object[8];
-		lineInfos = new HashMap<Integer, LineInfo>();
-		for (int i = 0; i < LINE_SIZE; i++) {
+		lineSize = (int)lineService.getLineNum();
+		List<Line> lists = lineService.list();
+		for (int i = 0; i < lineSize; i++) {
+			Line line = lists.get(i);
+			listMap.put(line.getId() - 1, line);
+		}
+		lineLocks = new Object[lineSize];
+		lineInfos = new HashMap<Integer, LineInfo>();	
+		for (int i = 0; i < lineSize; i++) {
 			lineLocks[i] = new Object();
 			lineInfos.put(i, new LineInfo());
 		}
@@ -55,7 +81,7 @@ public class TimeoutTimer {
 	
 	
 	/**
-	 * 每隔N秒检查是否有超时项目
+	 * 每隔5秒检查是否有超时项目
 	 */
 	@Scheduled(cron = "0/5 * * * * ?")
 	public void check(){
@@ -64,7 +90,7 @@ public class TimeoutTimer {
 		//设置当前工单和板面类型
 		setWorkOrderAndBoardType();
 		//遍历所有线别进行检查
-		for (int i = 0; i < LINE_SIZE; i++) {
+		for (int i = 0; i < lineSize; i++) {
 			//锁住对应线别
 			synchronized (lineLocks[i]) {
 				//判断是否有工单在被监控
@@ -93,18 +119,25 @@ public class TimeoutTimer {
 	
 	
 	/**
-	 * 根据字符串线号生成数字，例如308->7 ;301->0
+	 * 根据字符串线号得到id
 	 */
-	private static int getLineNO(String line) {
-		return Integer.parseInt(line.substring(line.length() - 1, line.length())) - 1;
+	private int getLineNO(String line) {
+		int number = 0;
+		for (int i = 0; i < lineSize; i++) {
+			if (listMap.get(i).getLine().equals(line)) {
+				number = i;
+				break;
+			}
+		}
+		return number;
 	}
 	
 	
 	/**
-	 * 根据数字线号生成字符串，例如7->308 ;0->301
+	 * 根据id得到字符串线号
 	 */
-	private static String getLineString(int line) {
-		return "30" + (line + 1);
+	private String getLineString(int id) {
+		return lineService.getLineById(id);
 	}
 
 	
@@ -114,9 +147,13 @@ public class TimeoutTimer {
 	private void checkTimeout(List<ProgramItemVisit> programItemVisits, int line) {
 		for (ProgramItemVisit programItemVisit : programItemVisits) {
 			//全检超时检测
+			//当前全检时间加上设置的超时时间
 			long temp = programItemVisit.getCheckAllTime().getTime() + lineInfos.get(line).getCheckAllTimeout() * 60 * 1000;
+			//当前时间是否大于全检超时后的时间
 			boolean isCheckAllTimeout = new Date().getTime() > temp;
+			//是否已经正常首检
 			boolean hasFirstCheckAll = programItemVisit.getFirstCheckAllResult() == 1;
+			//全检结果是否不为超时
 			boolean isNotInCheckAllTimeoutState = programItemVisit.getCheckAllResult() != 3;
 			if(isCheckAllTimeout  && hasFirstCheckAll && isNotInCheckAllTimeoutState) {
 				for (ProgramItemVisit programItemVisit2 : programItemVisits) {
@@ -164,7 +201,7 @@ public class TimeoutTimer {
 
 
 	/**
-	 * 根绝Display表设置工单号和板面类型
+	 * 根据Display表设置工单号和板面类型
 	 */
 	private void setWorkOrderAndBoardType() {
 		List<Display> displays = programService.listDisplays();

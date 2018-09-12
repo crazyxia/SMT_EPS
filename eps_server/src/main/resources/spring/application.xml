@@ -3,7 +3,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:mvc="http://www.springframework.org/schema/mvc"
 	xmlns:tx="http://www.springframework.org/schema/tx"
-	xmlns:task="http://www.springframework.org/schema/task"
+	xmlns:task="http://www.springframework.org/schema/task"	
 	xsi:schemaLocation="    
            http://www.springframework.org/schema/beans    
            http://www.springframework.org/schema/beans/spring-beans-3.0.xsd    
@@ -25,7 +25,23 @@
 		class="org.springframework.web.multipart.commons.CommonsMultipartResolver" />
 
 	<!-- mvc开关 -->
-	<mvc:annotation-driven />
+	<!-- utf-8编码 -->
+    <mvc:annotation-driven>
+        <mvc:message-converters register-defaults="true">
+            <bean class="org.springframework.http.converter.StringHttpMessageConverter">
+                <constructor-arg value="UTF-8" />
+            </bean>
+            <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+            <property name="objectMapper">
+                <bean class="com.fasterxml.jackson.databind.ObjectMapper">
+                    <property name="serializationInclusion">
+                        <value type="com.fasterxml.jackson.annotation.JsonInclude.Include">NON_NULL</value>
+                    </property>
+                </bean>
+            </property>
+        </bean>            
+        </mvc:message-converters>       
+    </mvc:annotation-driven>
 	<!-- 定时器开关-->
 	<task:annotation-driven /> 
 	
@@ -49,11 +65,11 @@
 	<mvc:resources mapping="/static/**" location="/static/" />
 
 	<!-- 配置SpringMVC的视图解析器 -->
-	<bean
+	<!-- <bean
 		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
 		<property name="prefix" value="/WEB-INF/jsp/" />
 		<property name="suffix" value=".jsp" />
-	</bean>
+	</bean> -->
 
 
 	<!-- 引入jdbc配置文件 -->
@@ -62,6 +78,7 @@
 		<property name="locations">
 			<list>
 				<value>classpath:properties/jdbc.properties</value>
+				<!-- <value>file:${user.dir}/jdbc.properties</value> -->
 				<!--要是有多个配置文件，只需在这里继续添加即可 -->
 			</list>
 		</property>
@@ -123,5 +140,6 @@
         <aop:advisor advice-ref="txAdvice" pointcut-ref="serviceOperation" />  
     </aop:config>  
 	
+	<bean id ="TokenBox" class="com.jimi.smt.eps_server.util.TokenBox" scope="singleton" init-method="begin"/>
 
 </beans>  

@@ -27,4 +27,6 @@ public interface StockLogMapper {
     int updateByPrimaryKeySelective(StockLog record);
 
     int updateByPrimaryKey(StockLog record);
+    
+    void insertList(List<StockLog> list);
 }

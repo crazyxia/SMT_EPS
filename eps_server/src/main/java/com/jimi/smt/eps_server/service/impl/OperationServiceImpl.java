@@ -198,12 +198,12 @@ public class OperationServiceImpl implements OperationService {
 	
 	@Override
 	public ResponseEntity<byte[]> downloadClientReport(String client, String programNo, String line, String orderNo,
-			String workOrderNo, String startTime, String endTime) throws ParseException, IOException {
-		ExcelSpringHelper helper = ExcelSpringHelper.create();
+			String workOrderNo, String startTime, String endTime) throws ParseException, IOException, OutOfMemoryError {
+		ExcelSpringHelper helper = ExcelSpringHelper.create(true);
 		//获取数据
 		List<ClientReport> clientReports = listClientReport(client, programNo, line, orderNo, workOrderNo, startTime, endTime);
-		helper.fill(clientReports);
-		return helper.getDownloadEntity("客户报表.xls", true);
+		helper.fill(clientReports);	
+		return helper.getDownloadEntity("客户报表.xlsx", true);
 	}
 
 	
@@ -325,7 +325,7 @@ public class OperationServiceImpl implements OperationService {
 	
 	@Override
 	public ResponseEntity<byte[]> downloadOperationReport(String operator, String client, String line, String workOrderNo,
-			String startTime, String endTime, Integer type) throws ParseException, IOException {
+			String startTime, String endTime, Integer type) throws ParseException, IOException, OutOfMemoryError {
 		List<OperationReport> operationReports = listOperationReport(operator, client, line, workOrderNo, startTime, endTime, type);
 		ExcelSpringHelper helper = ExcelSpringHelper.create();
 		//解析操作类型
@@ -348,8 +348,8 @@ public class OperationServiceImpl implements OperationService {
 			break;
 		default:
 			break;
-		}
-		helper.fill(operationReports, title);
+		}		
+		helper.fill(operationReports, title);		
 		return helper.getDownloadEntity(title + ".xls", true);
 	}
 
@@ -436,6 +436,14 @@ public class OperationServiceImpl implements OperationService {
   		
   		return stockLogToStockLogVOFiller.fill(stockLogMapper.selectByExample(stockLogExample));
 	}
+
+	@Override
+	public int add(Operation operation) {		
+		operation.setTime(new Date());
+		return operationMapper.insert(operation);
+	}
+
+	
 
 
 }

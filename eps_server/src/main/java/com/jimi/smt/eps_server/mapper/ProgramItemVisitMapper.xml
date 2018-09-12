@@ -431,4 +431,129 @@
       and material_no = #{materialNo,jdbcType=VARCHAR}
       and program_id = #{programId,jdbcType=VARCHAR}
   </update>
+  <select id="selectFeedAndTime" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    feed_result,last_operation_time
+    from program_item_visit
+    where program_id = #{programId,jdbcType=VARCHAR}
+  </select>
+  <select id="selectAllAndTime" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    check_all_result,last_operation_time
+    from program_item_visit
+    where program_id = #{programId,jdbcType=VARCHAR}
+  </select>
+  <select id="selectFirstAllAndTime" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    first_check_all_result,last_operation_time 
+    from program_item_visit
+    where program_id = #{programId,jdbcType=VARCHAR}
+  </select>
+  <update id="updateFeedResult" parameterType="com.jimi.smt.eps_server.entity.ProgramItemVisit" >
+    update program_item_visit
+    set scan_lineseat = #{scanLineseat,jdbcType=VARCHAR},
+      scan_material_no = #{scanMaterialNo,jdbcType=VARCHAR},
+      last_operation_type = #{lastOperationType,jdbcType=INTEGER},     
+      feed_result = #{feedResult,jdbcType=INTEGER},
+      feed_time = #{feedTime,jdbcType=TIMESTAMP},      
+      last_operation_time = #{lastOperationTime,jdbcType=TIMESTAMP}
+    where lineseat = #{lineseat,jdbcType=VARCHAR}
+      and program_id = #{programId,jdbcType=VARCHAR}
+  </update>
+  <update id="updateChangeResult" parameterType="com.jimi.smt.eps_server.entity.ProgramItemVisit" >
+    update program_item_visit
+    set scan_lineseat = #{scanLineseat,jdbcType=VARCHAR},
+      scan_material_no = #{scanMaterialNo,jdbcType=VARCHAR},
+      last_operation_type = #{lastOperationType,jdbcType=INTEGER},     
+      change_result = #{changeResult,jdbcType=INTEGER},
+      change_time = #{changeTime,jdbcType=TIMESTAMP},
+      check_result = #{checkResult,jdbcType=INTEGER},      
+      last_operation_time = #{lastOperationTime,jdbcType=TIMESTAMP}
+    where lineseat = #{lineseat,jdbcType=VARCHAR}
+      and program_id = #{programId,jdbcType=VARCHAR}
+  </update>
+  <update id="updateCheckFailResult" parameterType="com.jimi.smt.eps_server.entity.ProgramItemVisit" >
+    update program_item_visit
+    set scan_lineseat = #{scanLineseat,jdbcType=VARCHAR},
+      scan_material_no = #{scanMaterialNo,jdbcType=VARCHAR},
+      last_operation_type = #{lastOperationType,jdbcType=INTEGER},     
+      check_time = #{changeTime,jdbcType=TIMESTAMP},
+      check_result = #{checkResult,jdbcType=INTEGER},      
+      last_operation_time = #{lastOperationTime,jdbcType=TIMESTAMP}
+    where lineseat = #{lineseat,jdbcType=VARCHAR}
+      and program_id = #{programId,jdbcType=VARCHAR}
+  </update>
+  <update id="updateCheckSucceedResult" parameterType="com.jimi.smt.eps_server.entity.ProgramItemVisit" >
+    update program_item_visit
+    set scan_lineseat = #{scanLineseat,jdbcType=VARCHAR},
+      scan_material_no = #{scanMaterialNo,jdbcType=VARCHAR},
+      last_operation_type = #{lastOperationType,jdbcType=INTEGER},     
+      check_time = #{changeTime,jdbcType=TIMESTAMP},
+      check_result = #{checkResult,jdbcType=INTEGER},
+      change_result = #{changeResult,jdbcType=INTEGER},      
+      last_operation_time = #{lastOperationTime,jdbcType=TIMESTAMP}
+    where lineseat = #{lineseat,jdbcType=VARCHAR}
+      and program_id = #{programId,jdbcType=VARCHAR}
+  </update>
+  <update id="updateAllResult" parameterType="com.jimi.smt.eps_server.entity.ProgramItemVisit" >
+    update program_item_visit
+    set scan_lineseat = #{scanLineseat,jdbcType=VARCHAR},
+      scan_material_no = #{scanMaterialNo,jdbcType=VARCHAR},
+      last_operation_type = #{lastOperationType,jdbcType=INTEGER},     
+      check_all_result = #{checkAllResult,jdbcType=INTEGER},
+      check_all_time = #{checkAllTime,jdbcType=TIMESTAMP},      
+      last_operation_time = #{lastOperationTime,jdbcType=TIMESTAMP}
+    where lineseat = #{lineseat,jdbcType=VARCHAR}
+      and program_id = #{programId,jdbcType=VARCHAR}
+  </update>
+  <update id="updateStoreResult" parameterType="com.jimi.smt.eps_server.entity.ProgramItemVisit" >
+    update program_item_visit
+    set scan_lineseat = #{scanLineseat,jdbcType=VARCHAR},
+      scan_material_no = #{scanMaterialNo,jdbcType=VARCHAR},
+      last_operation_type = #{lastOperationType,jdbcType=INTEGER},     
+      store_issue_result = #{storeIssueResult,jdbcType=INTEGER},
+      store_issue_time = #{storeIssueTime,jdbcType=TIMESTAMP},     
+      last_operation_time = #{lastOperationTime,jdbcType=TIMESTAMP}
+    where lineseat = #{lineseat,jdbcType=VARCHAR}
+      and program_id = #{programId,jdbcType=VARCHAR}
+  </update>
+  <update id="updateFirstAllResult" parameterType="com.jimi.smt.eps_server.entity.ProgramItemVisit" >
+    update program_item_visit
+    set scan_lineseat = #{scanLineseat,jdbcType=VARCHAR},
+      scan_material_no = #{scanMaterialNo,jdbcType=VARCHAR},
+      last_operation_type = #{lastOperationType,jdbcType=INTEGER},     
+      first_check_all_result = #{firstCheckAllResult,jdbcType=INTEGER},
+      first_check_all_time = #{firstCheckAllTime,jdbcType=TIMESTAMP},    
+      last_operation_time = #{lastOperationTime,jdbcType=TIMESTAMP}
+    where lineseat = #{lineseat,jdbcType=VARCHAR}
+      and program_id = #{programId,jdbcType=VARCHAR}
+  </update>
+  <select id="selectItemVisitByProgram" parameterType="com.jimi.smt.eps_server.entity.Program" resultMap="BaseResultMap">
+    (select
+    <include refid="Base_Column_List" />
+    from program_item_visit
+    inner join program on program.id = program_item_visit.program_id
+    where line = #{line,jdbcType=VARCHAR}
+    and work_order = #{workOrder,jdbcType=VARCHAR}
+    and board_type = #{boardType,jdbcType=INTEGER}
+    and (store_issue_result = 0 OR feed_result = 0 OR change_result = 0 OR (check_all_result % 3) = 0 OR (check_result % 3) = 0 OR first_check_all_result = 0))
+    union
+    (select
+    <include refid="Base_Column_List" />
+    from program_item_visit
+    inner join program on program.id = program_item_visit.program_id
+    where line = #{line,jdbcType=VARCHAR}
+    and work_order = #{workOrder,jdbcType=VARCHAR}
+    and board_type = #{boardType,jdbcType=INTEGER}
+    and (change_result = 4))
+    union
+    (select
+    <include refid="Base_Column_List" />
+    from program_item_visit
+    inner join program on program.id = program_item_visit.program_id
+    where line = #{line,jdbcType=VARCHAR}
+    and work_order = #{workOrder,jdbcType=VARCHAR}
+    and board_type = #{boardType,jdbcType=INTEGER}
+    and (store_issue_result != 0 OR feed_result != 0 OR (change_result % 4) !=0 OR (check_all_result % 3) != 0 OR (check_result % 3) != 0 OR first_check_all_result != 0))
+  </select>  
 </mapper>

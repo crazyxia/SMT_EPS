@@ -2,6 +2,7 @@ package com.jimi.smt.eps_server.mapper;
 
 import com.jimi.smt.eps_server.entity.Operation;
 import com.jimi.smt.eps_server.entity.OperationExample;
+
 import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
@@ -27,4 +28,6 @@ public interface OperationMapper {
     int updateByPrimaryKeySelective(Operation record);
 
     int updateByPrimaryKey(Operation record);
+    
+    
 }

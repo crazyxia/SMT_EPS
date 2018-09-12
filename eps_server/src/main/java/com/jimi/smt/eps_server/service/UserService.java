@@ -2,6 +2,7 @@ package com.jimi.smt.eps_server.service;
 
 import java.util.List;
 
+import com.jimi.smt.eps_server.entity.User;
 import com.jimi.smt.eps_server.entity.vo.UserVO;
 
 /**
@@ -63,6 +64,12 @@ public interface UserService {
 	 * @param password
 	 * @return
 	 */
-	String login(String id, String password);
+	User login(String id, String password);
 	
+	/**
+	 * 通过id返回用户对象
+	 * @param id
+	 * @return
+	 */
+	User selectUserById(String id);
 }

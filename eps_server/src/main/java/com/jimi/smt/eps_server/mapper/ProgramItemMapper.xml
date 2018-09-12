@@ -11,6 +11,13 @@
     <result column="quantity" property="quantity" jdbcType="INTEGER" />
     <result column="serial_no" property="serialNo" jdbcType="INTEGER" />
   </resultMap>
+  <resultMap id="selectProgramItemMap" type="com.jimi.smt.eps_server.entity.ProgramItem" >
+    <id column="program_id" property="programId" jdbcType="VARCHAR" />
+    <id column="lineseat" property="lineseat" jdbcType="VARCHAR" />
+    <id column="material_no" property="materialNo" jdbcType="VARCHAR" />
+    <result column="alternative" property="alternative" jdbcType="BIT" />    
+    <result column="serial_no" property="serialNo" jdbcType="INTEGER" />
+  </resultMap>
   <sql id="Example_Where_Clause" >
     <where >
       <foreach collection="oredCriteria" item="criteria" separator="or" >
@@ -256,4 +263,11 @@
       and lineseat = #{lineseat,jdbcType=VARCHAR}
       and material_no = #{materialNo,jdbcType=VARCHAR}
   </update>
+  <select id="selectProgramItem" parameterType="java.lang.String" resultMap="selectProgramItemMap" >
+    select
+    program_id,lineseat,material_no,alternative,serial_no
+    from program_item
+    where program_id = #{programId,jdbcType=VARCHAR}
+    order by lineseat,serial_no,material_no
+  </select>
 </mapper>

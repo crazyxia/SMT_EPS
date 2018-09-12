@@ -303,4 +303,17 @@
       target_board_type = #{targetBoardType,jdbcType=INTEGER}
     where id = #{id,jdbcType=INTEGER}
   </update>
+  <insert id="insertList" parameterType="java.util.List" >
+    insert into stock_log (id, timestamp, material_no, 
+      quantity, operator, operation_time, 
+      position, custom, production_date, target_work_order, 
+      target_line, target_board_type)
+    values 
+    <foreach collection="list" item="item" index= "index" separator =",">
+    (#{item.id,jdbcType=INTEGER}, #{item.timestamp,jdbcType=VARCHAR}, #{item.materialNo,jdbcType=VARCHAR}, 
+      #{item.quantity,jdbcType=INTEGER}, #{item.operator,jdbcType=VARCHAR}, #{item.operationTime,jdbcType=TIMESTAMP}, 
+      #{item.position,jdbcType=VARCHAR}, #{item.custom,jdbcType=VARCHAR}, #{item.productionDate,jdbcType=TIMESTAMP}, #{item.targetWorkOrder,jdbcType=VARCHAR}, 
+      #{item.targetLine,jdbcType=VARCHAR}, #{item.targetBoardType,jdbcType=INTEGER})
+    </foreach>
+  </insert>
 </mapper>

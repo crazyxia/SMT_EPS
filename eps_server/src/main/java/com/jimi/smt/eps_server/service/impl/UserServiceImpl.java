@@ -82,19 +82,13 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public String login(String id, String password) {
+	public User login(String id, String password) {
 		User user = userMapper.selectByPrimaryKey(id);
-		if(user == null || user.getType() < 3) {
-			return "failed_not_admin";
-		}
-		if(user.getEnabled() == false) {
-			return "failed_not_enabled";
-		}
-		if(user.getPassword() != null && !user.getPassword().equals(password)) {
-			return "failed_wrong_password";
-		}
-		
-		return filler.fill(user).getTypeName();
+		//return filler.fill(user).getTypeName();
+		return user;
 	}
-
+	
+	public User selectUserById(String id) {	
+		return userMapper.selectByPrimaryKey(id);		
+	}
 }

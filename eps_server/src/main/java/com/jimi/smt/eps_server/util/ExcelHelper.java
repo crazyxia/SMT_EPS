@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.management.RuntimeErrorException;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
@@ -308,6 +310,8 @@ public class ExcelHelper{
 			field.setAccessible(true);
 			try {
 				set(rowNum, e.col(), field.get(entity), style);
+			} catch (OutOfMemoryError e1) {
+				throw new RuntimeErrorException(e1, "内存溢出");
 			} catch (IllegalArgumentException | IllegalAccessException e1) {
 				logger.error("调用ExcelHelper.fill()中field.get()方法时出错");
 				e1.printStackTrace();
@@ -391,10 +395,10 @@ public class ExcelHelper{
 				//填写表体
 				field.setAccessible(true);
 				try {
-					set(i+1, e.col(), field.get(entity), bodyStyle);
-				} catch (IllegalArgumentException | IllegalAccessException e1) {
+					set(i+1, e.col(), field.get(entity), bodyStyle);				
+				}catch (IllegalArgumentException | IllegalAccessException e2) {
 					logger.error("调用ExcelHelper.fill()中field.get()方法时出错");
-					e1.printStackTrace();
+					e2.printStackTrace();
 				}
 			}
 		}

@@ -28,4 +28,6 @@ public interface ProgramItemMapper {
     int updateByPrimaryKeySelective(ProgramItem record);
 
     int updateByPrimaryKey(ProgramItem record);
+    
+    List<ProgramItem> selectProgramItem(String programId);
 }
