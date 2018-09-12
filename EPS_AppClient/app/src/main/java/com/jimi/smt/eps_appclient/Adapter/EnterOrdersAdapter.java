@@ -10,7 +10,6 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 
 import com.jimi.smt.eps_appclient.R;
-import com.jimi.smt.eps_appclient.Unit.Program;
 
 import java.util.List;
 
@@ -25,13 +24,13 @@ import java.util.List;
 
 public class EnterOrdersAdapter extends BaseAdapter {
     private final String TAG = "EnterOrdersAdapter";
-    private List<Program> programList;
+    private List<com.jimi.smt.eps_appclient.Beans.Program.ProgramBean> programList;
     private Context mContext;
     private LayoutInflater layoutInflater;
     private ViewHolder viewHolder;
 
 
-    public EnterOrdersAdapter(Context context, List<Program> programs) {
+    public EnterOrdersAdapter(Context context, List<com.jimi.smt.eps_appclient.Beans.Program.ProgramBean> programs) {
         this.mContext = context;
         this.programList = programs;
         this.layoutInflater = LayoutInflater.from(context);
@@ -65,11 +64,11 @@ public class EnterOrdersAdapter extends BaseAdapter {
             viewHolder = (ViewHolder) convertView.getTag();
         }
         //显示工单
-        Program program = programList.get(position);
+        com.jimi.smt.eps_appclient.Beans.Program.ProgramBean program = programList.get(position);
         String board_type = "";
-        viewHolder.tv_order.setText(program.getWork_order());
+        viewHolder.tv_order.setText(program.getWorkOrder());
         //0：默认 1：AB面 2：A面 3:B面
-        switch (program.getBoard_type()) {
+        switch (program.getBoardType()) {
             case 0:
                 board_type = "默认";
                 break;

@@ -1,7 +1,6 @@
 package com.jimi.smt.eps_appclient.Activity;
 
 import android.annotation.SuppressLint;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -44,7 +43,6 @@ public class QCActivity extends FragmentActivity implements View.OnClickListener
     private TextView tv_check_some;
     private TextView tv_check_all;
     private GlobalData globalData;
-    //    private CustomViewPager viewpager_qc;
     private QCActivityInterface qcActivityInterface;
     public LoadingDialog updateDialog;
     private InfoDialog infoDialog;
@@ -77,19 +75,19 @@ public class QCActivity extends FragmentActivity implements View.OnClickListener
         EventBus.getDefault().register(this);
         initView();
         //设置选中标题
-//        setSelectTabTitle(0);
         setTabSelection(0);
     }
 
     //监听订阅的消息
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEventMainThread(EvenBusTest event) {
-        Log.d(TAG, "onEventMainThread - " + event.getUpdated());
         if (event.getUpdated() == 0) {
+            Log.d(TAG, "onEventMainThread - " + event.getUpdated());
             showUpdateDialog();
         }
     }
 
+    // TODO: 2018/9/12
     private void showUpdateDialog() {
         Log.d(TAG, "showUpdateDialog");
         if (infoDialog != null && infoDialog.isShowing()) {
@@ -116,34 +114,12 @@ public class QCActivity extends FragmentActivity implements View.OnClickListener
 
     //初始化布局
     private void initView() {
-        ImageView iv_QC_back = (ImageView) findViewById(R.id.iv_QC_back);
-        tv_check_some = (TextView) findViewById(R.id.tv_check_some);
-        tv_check_all = (TextView) findViewById(R.id.tv_check_all);
-//        viewpager_qc = (CustomViewPager) findViewById(R.id.viewpager_QC);
+        ImageView iv_QC_back =  findViewById(R.id.iv_QC_back);
+        tv_check_some =  findViewById(R.id.tv_check_some);
+        tv_check_all =  findViewById(R.id.tv_check_all);
         iv_QC_back.setOnClickListener(this);
         tv_check_some.setOnClickListener(this);
         tv_check_all.setOnClickListener(this);
-        /*
-        //fragment集合
-        final List<Fragment> fragmentList=new ArrayList<Fragment>();
-        fragmentList.add(new CheckMaterialFragment());
-        fragmentList.add(new CheckAllMaterialFragment());
-        //fragment适配器
-        FragmentPagerAdapter fragmentPagerAdapter=new FragmentPagerAdapter(getSupportFragmentManager()) {
-            @Override
-            public Fragment getItem(int position) {
-                return fragmentList.get(position);
-            }
-
-            @Override
-            public int getCount() {
-                return fragmentList.size();
-            }
-        };
-        //设置适配器
-        viewpager_qc.setAdapter(fragmentPagerAdapter);
-        viewpager_qc.setScanScroll(false);
-        */
     }
 
     @Override
@@ -155,15 +131,11 @@ public class QCActivity extends FragmentActivity implements View.OnClickListener
 
             case R.id.tv_check_some://抽检
                 //设置选中标题
-//                setSelectTabTitle(0);
-//                viewpager_qc.setCurrentItem(0);
                 setTabSelection(0);
                 break;
 
             case R.id.tv_check_all://全捡
                 //设置选中标题
-//                setSelectTabTitle(1);
-//                viewpager_qc.setCurrentItem(1);
                 setTabSelection(1);
                 break;
         }
@@ -174,24 +146,6 @@ public class QCActivity extends FragmentActivity implements View.OnClickListener
     public void onBackPressed() {
         exit();
     }
-
-/*
-
-    //设置选中页面时标题
-    private void setSelectTabTitle(int tab){
-        resetTitle();
-        switch (tab){
-            case 0:
-                globalData.setOperType(Constants.CHECKMATERIAL);
-                tv_check_some.setBackgroundResource(R.drawable.factory_feed_click_shape);
-                break;
-            case 1:
-                globalData.setOperType(Constants.CHECKALLMATERIAL);
-                tv_check_all.setBackgroundResource(R.drawable.factory_checkall_click_shape);
-                break;
-        }
-    }
-*/
 
     private void setTabSelection(int index) {
         FragmentTransaction transaction = fragmentManager.beginTransaction();
@@ -302,26 +256,14 @@ public class QCActivity extends FragmentActivity implements View.OnClickListener
         infoDialog = new InfoDialog(this,
                 R.layout.info_dialog_layout, itemResIds, titleMsg, msgStype);
 
-        infoDialog.setOnDialogItemClickListener(new InfoDialog.OnDialogItemClickListener() {
-            @Override
-            public void OnDialogItemClick(InfoDialog dialog, View view) {
-                switch (view.getId()) {
-                    case R.id.info_trust:
-                        dialog.dismiss();
-//                        clearAndSetFocus();
-//                        checkType = 1;
-//                        getFirstCheckAllResult();
-//                        qcActivityInterface.infoDialogClick_callBack();
-                        break;
-                }
+        infoDialog.setOnDialogItemClickListener((dialog, view) -> {
+            switch (view.getId()) {
+                case R.id.info_trust:
+                    dialog.dismiss();
+                    break;
             }
         });
-        infoDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialogInterface) {
-                qcActivityInterface.infoDialogClick_callBack();
-            }
-        });
+        infoDialog.setOnDismissListener(dialogInterface -> qcActivityInterface.infoDialogClick_callBack());
         infoDialog.show();
     }
 

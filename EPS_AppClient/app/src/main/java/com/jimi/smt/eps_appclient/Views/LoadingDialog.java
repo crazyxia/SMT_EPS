@@ -31,9 +31,9 @@ public class LoadingDialog extends Dialog {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.dialog_loading);
-        tv_title = (TextView) findViewById(R.id.tv);
+        tv_title =  findViewById(R.id.tv);
         tv_title.setText(mTitle);
-        LinearLayout linearLayout = (LinearLayout) this.findViewById(R.id.LinearLayout);
+        LinearLayout linearLayout =  this.findViewById(R.id.LinearLayout);
         linearLayout.getBackground().setAlpha(230);
     }
 }

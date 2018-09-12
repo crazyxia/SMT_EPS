@@ -55,6 +55,7 @@ public class InputDialog extends Dialog implements TextView.OnEditorActionListen
         super.onCreate(savedInstanceState);
         //设置对话框弹出样式
         Window window = getWindow();
+        assert window != null;
         window.setGravity(Gravity.CENTER);//居中
         //设置布局
         setContentView(layoutId);

@@ -1,5 +1,6 @@
 package com.jimi.smt.eps_appclient.Dao;
 
+import com.jimi.smt.eps_appclient.Beans.Material;
 import com.jimi.smt.eps_appclient.Func.Log;
 import com.jimi.smt.eps_appclient.gen.FLCheckAllDao;
 import com.jimi.smt.eps_appclient.gen.FeedDao;
@@ -22,9 +23,17 @@ import java.util.List;
 public class GreenDaoUtil {
 
     private static String TAG = "GreenDaoUtil";
+    private static GreenDaoUtil greenDaoUtil = null;
 
     public GreenDaoUtil() {
 
+    }
+
+    public static GreenDaoUtil getGreenDaoUtil() {
+        if (null == greenDaoUtil) {
+            greenDaoUtil = new GreenDaoUtil();
+        }
+        return greenDaoUtil;
     }
 
     //更新数据
@@ -190,6 +199,33 @@ public class GreenDaoUtil {
         return updateRes;
     }
 
+    //更新上料结果
+    public boolean updateFeed(String operator, Material.MaterialBean bean) {
+        boolean updateRes = false;
+        QueryBuilder<Feed> queryBuilder = getFeedDao().queryBuilder();
+        queryBuilder.where(FeedDao.Properties.Operator.eq(operator),
+                FeedDao.Properties.Order.eq(bean.getWorkOrder()),
+                FeedDao.Properties.Line.eq(bean.getLine()),
+                FeedDao.Properties.Board_type.eq(bean.getBoardType()),
+                FeedDao.Properties.OrgLineSeat.eq(bean.getLineseat()));
+        List<Feed> feedList = queryBuilder.list();
+        if (null != feedList && feedList.size() > 0) {
+            for (Feed feed : feedList) {
+                feed.setScanLineSeat(bean.getScanlineseat());
+                feed.setScanMaterial(bean.getScanMaterial());
+                feed.setResult(bean.getResult());
+                feed.setRemark(bean.getRemark());
+            }
+            try {
+                getFeedDao().updateInTx(feedList);
+                updateRes = true;
+            } catch (Exception e) {
+                Log.d(TAG, "updateFeed - " + e.toString());
+            }
+        }
+        return updateRes;
+    }
+
     //更新某一项发料结果
     public boolean updateWare(Ware ware) {
         boolean updateRes = false;
@@ -230,17 +266,14 @@ public class GreenDaoUtil {
     public boolean updateAllFeed(List<Feed> feeds) {
         boolean updateRes = false;
         try {
-            GreenDaoManager.getInstance().getmDaoSession().runInTx(new Runnable() {
-                @Override
-                public void run() {
-                    for (Feed feed : feeds) {
-                        feed.setScanLineSeat("");
-                        feed.setScanMaterial("");
-                        feed.setResult("");
-                        feed.setRemark("");
-                    }
-                    getFeedDao().updateInTx(feeds);
+            GreenDaoManager.getInstance().getmDaoSession().runInTx(() -> {
+                for (Feed feed : feeds) {
+                    feed.setScanLineSeat("");
+                    feed.setScanMaterial("");
+                    feed.setResult("");
+                    feed.setRemark("");
                 }
+                getFeedDao().updateInTx(feeds);
             });
             updateRes = true;
         } catch (Exception e) {

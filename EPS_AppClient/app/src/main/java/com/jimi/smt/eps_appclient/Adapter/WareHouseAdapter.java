@@ -8,9 +8,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import com.jimi.smt.eps_appclient.Func.Log;
+import com.jimi.smt.eps_appclient.Beans.Material;
 import com.jimi.smt.eps_appclient.R;
-import com.jimi.smt.eps_appclient.Unit.MaterialItem;
 
 import java.util.List;
 
@@ -26,11 +25,11 @@ import java.util.List;
 public class WareHouseAdapter extends BaseAdapter {
     private final String TAG = "WareHouseAdapter";
     private Context context;
-    private List<MaterialItem> materialItems;
+    private List<Material.MaterialBean> materialItems;
     private LayoutInflater layoutInflater;
     private ViewHolder viewHolder;
 
-    public WareHouseAdapter(Context context, List<MaterialItem> materialItems) {
+    public WareHouseAdapter(Context context, List<Material.MaterialBean> materialItems) {
         this.context = context;
         this.materialItems = materialItems;
         this.layoutInflater = LayoutInflater.from(context);
@@ -56,26 +55,24 @@ public class WareHouseAdapter extends BaseAdapter {
         if (convertView == null) {
             viewHolder = new ViewHolder();
             convertView = layoutInflater.inflate(R.layout.warehouse_item, null);
-            viewHolder.tv_ware_serial_no = (TextView) convertView.findViewById(R.id.tv_ware_serial_no);
-            viewHolder.tv_lineSeat = (TextView) convertView.findViewById(R.id.tv_wareLineSeat);
-            viewHolder.tv_material = (TextView) convertView.findViewById(R.id.tv_wareMaterial);
-            viewHolder.tv_remark = (TextView) convertView.findViewById(R.id.tv_wareRemark);
-            viewHolder.tv_scanMaterial = (TextView) convertView.findViewById(R.id.tv_wareScanMaterial);
+            viewHolder.tv_ware_serial_no = convertView.findViewById(R.id.tv_ware_serial_no);
+            viewHolder.tv_lineSeat = convertView.findViewById(R.id.tv_wareLineSeat);
+            viewHolder.tv_material = convertView.findViewById(R.id.tv_wareMaterial);
+            viewHolder.tv_remark = convertView.findViewById(R.id.tv_wareRemark);
+            viewHolder.tv_scanMaterial = convertView.findViewById(R.id.tv_wareScanMaterial);
             convertView.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
         }
         //显示结果
-        MaterialItem materialItem = materialItems.get(position);
+        Material.MaterialBean materialItem = materialItems.get(position);
         viewHolder.tv_ware_serial_no.setText(String.valueOf(materialItem.getSerialNo()));
-        viewHolder.tv_lineSeat.setText(materialItem.getOrgLineSeat());
-        viewHolder.tv_material.setText(materialItem.getOrgMaterial());
+        viewHolder.tv_lineSeat.setText(materialItem.getLineseat());
+        viewHolder.tv_material.setText(materialItem.getMaterialNo());
         viewHolder.tv_remark.setText(materialItem.getRemark());
         viewHolder.tv_scanMaterial.setText(materialItem.getScanMaterial());
         //被匹配的项
-        Log.d(TAG, "position=" + position);
-        Log.d(TAG, "OrgLineSeat" + materialItem.getOrgLineSeat());
-        Log.d(TAG, "result=" + materialItem.getResult());
+
         if (materialItem.getResult() != null && materialItem.getResult().equalsIgnoreCase("PASS")) {
             viewHolder.tv_ware_serial_no.setBackgroundColor(Color.GREEN);
             viewHolder.tv_material.setBackgroundColor(Color.GREEN);

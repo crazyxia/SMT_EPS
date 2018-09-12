@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.Context;
 
+import com.jimi.smt.eps_appclient.Beans.Material;
 import com.jimi.smt.eps_appclient.Dao.GreenDaoManager;
 
 import java.util.ArrayList;
@@ -34,32 +35,16 @@ public class GlobalData extends Application {
         return context;
     }
 
-//    private final String appCacheDir = getCacheDir().getAbsolutePath();
-
-//    public String getAppCacheDir() {
-//        return appCacheDir;
-//    }
 
     //料号表
-    private List<MaterialItem> materialItems = new ArrayList<MaterialItem>();
+    private List<Material.MaterialBean> materialBeans = new ArrayList<>();
 
-    public List<MaterialItem> getMaterialItems() {
-        return materialItems;
+    public List<Material.MaterialBean> getMaterialBeans() {
+        return materialBeans;
     }
 
-    public void setMaterialItems(List<MaterialItem> materialItems) {
-        this.materialItems = materialItems;
-    }
-
-    //program_item_visit表
-    private List<ProgramItemVisit> programItemVisits = new ArrayList<ProgramItemVisit>();
-
-    public List<ProgramItemVisit> getProgramItemVisits() {
-        return programItemVisits;
-    }
-
-    public void setProgramItemVisits(List<ProgramItemVisit> programItemVisits) {
-        this.programItemVisits = programItemVisits;
+    public void setMaterialBeans(List<Material.MaterialBean> materialBeans) {
+        this.materialBeans = materialBeans;
     }
 
     //操作员
@@ -115,6 +100,17 @@ public class GlobalData extends Application {
 
     public void setUpdateType(int updateType) {
         this.updateType = updateType;
+    }
+
+    //工单的programId
+    private String programId;
+
+    public String getProgramId() {
+        return programId;
+    }
+
+    public void setProgramId(String programId) {
+        this.programId = programId;
     }
 
     //操作线号 301 - 308

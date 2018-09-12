@@ -18,6 +18,7 @@ public class Feed {
 
     @Id(autoincrement = true)
     private Long feed_id;
+    private String programId;//工单的programId
     private String order;//工单号
     private String operator;//操作员
     private int board_type;//版面类型
@@ -29,16 +30,17 @@ public class Feed {
     private String Result;         //结果
     private String Remark;         //失败原因
     private int SerialNo;           //流水号
-    private Byte Alternative;    //是否属于替料
+    private boolean Alternative;    //是否属于替料
     @Transient
     private int state;//工单状态,为1,不写进数据库
 
-    @Generated(hash = 338756017)
-    public Feed(Long feed_id, String order, String operator, int board_type,
-                String line, String OrgLineSeat, String OrgMaterial,
+    @Generated(hash = 797418797)
+    public Feed(Long feed_id, String programId, String order, String operator,
+                int board_type, String line, String OrgLineSeat, String OrgMaterial,
                 String ScanLineSeat, String ScanMaterial, String Result, String Remark,
-                int SerialNo, Byte Alternative) {
+                int SerialNo, boolean Alternative) {
         this.feed_id = feed_id;
+        this.programId = programId;
         this.order = order;
         this.operator = operator;
         this.board_type = board_type;
@@ -63,6 +65,14 @@ public class Feed {
 
     public void setFeed_id(Long feed_id) {
         this.feed_id = feed_id;
+    }
+
+    public String getProgramId() {
+        return this.programId;
+    }
+
+    public void setProgramId(String programId) {
+        this.programId = programId;
     }
 
     public String getOrder() {
@@ -153,12 +163,13 @@ public class Feed {
         this.SerialNo = SerialNo;
     }
 
-    public Byte getAlternative() {
+    public boolean getAlternative() {
         return this.Alternative;
     }
 
-    public void setAlternative(Byte Alternative) {
+    public void setAlternative(boolean Alternative) {
         this.Alternative = Alternative;
     }
+
 
 }

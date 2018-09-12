@@ -19,24 +19,20 @@ import android.widget.Toast;
 
 import com.jimi.smt.eps_appclient.Fragment.ChangeMaterialFragment;
 import com.jimi.smt.eps_appclient.Fragment.CheckAllMaterialFragment;
-import com.jimi.smt.eps_appclient.Fragment.FeedLoginFragment;
 import com.jimi.smt.eps_appclient.Fragment.FeedMaterialFragment;
-import com.jimi.smt.eps_appclient.Func.DBService;
+import com.jimi.smt.eps_appclient.Func.GlobalFunc;
 import com.jimi.smt.eps_appclient.Func.Log;
 import com.jimi.smt.eps_appclient.R;
 import com.jimi.smt.eps_appclient.Service.RefreshCacheService;
 import com.jimi.smt.eps_appclient.Unit.Constants;
 import com.jimi.smt.eps_appclient.Unit.EvenBusTest;
 import com.jimi.smt.eps_appclient.Unit.GlobalData;
-import com.jimi.smt.eps_appclient.Unit.ProgramItemVisit;
 import com.jimi.smt.eps_appclient.Views.LoadingDialog;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * 类名:FactoryLineActivity
@@ -47,7 +43,6 @@ import java.util.List;
 public class FactoryLineActivity extends FragmentActivity implements View.OnClickListener {
 
     private final String TAG = "FactoryLineActivity";
-    private FeedLoginFragment feedLoginFragment;
     private FeedMaterialFragment feedMaterialFragment;
     private ChangeMaterialFragment changeMaterialFragment;
     private CheckAllMaterialFragment checkAllMaterialFragment;
@@ -59,13 +54,11 @@ public class FactoryLineActivity extends FragmentActivity implements View.OnClic
     private GlobalData globalData;
     public LinearLayout factory_parent;
     private LoadingDialog loadingDialog;
-    //program_item_visit表
-    private List<ProgramItemVisit> programItemVisits = new ArrayList<ProgramItemVisit>();
-    private static final int REFRESH_ITEMS = 138;
     private static final int EXIT = 139;
     // 定义一个变量，来标识是否退出
     private static boolean isExit = false;
     public LoadingDialog updateDialog;
+    private GlobalFunc globalFunc;
 
     @SuppressLint("HandlerLeak")
     private Handler mFactoryHandler = new Handler() {
@@ -73,18 +66,6 @@ public class FactoryLineActivity extends FragmentActivity implements View.OnClic
         public void handleMessage(Message msg) {
 
             switch (msg.what) {
-                case REFRESH_ITEMS:
-                    //取消弹出窗
-                    if (loadingDialog != null && loadingDialog.isShowing()) {
-                        loadingDialog.cancel();
-                        loadingDialog.dismiss();
-                    }
-                    if (getFeedResult(programItemVisits)) {
-                        setTabSelection(0);
-                    } else {
-                        setTabSelection(1);
-                    }
-                    break;
                 case EXIT:
                     isExit = false;
                     break;
@@ -102,6 +83,7 @@ public class FactoryLineActivity extends FragmentActivity implements View.OnClic
         //使屏幕常亮
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         globalData = (GlobalData) getApplication();
+        globalFunc = new GlobalFunc(this);
         //开启服务
         startService(new Intent(this, RefreshCacheService.class));
         //注册订阅
@@ -110,17 +92,16 @@ public class FactoryLineActivity extends FragmentActivity implements View.OnClic
         initView();
         fragmentManager = getSupportFragmentManager();
 
-        //判断是否上料完成
-        getProgramItemVisits(globalData.getLine(), globalData.getWork_order(), globalData.getBoard_type());
+        setTabSelection(0);
     }
 
     //初始化布局
     private void initView() {
-        ImageView iv_factory_back = (ImageView) findViewById(R.id.iv_factory_back);
-        factory_parent = (LinearLayout) findViewById(R.id.factory_parent);
-        tv_factory_feed = (TextView) findViewById(R.id.tv_factory_feed);
-        tv_factory_change = (TextView) findViewById(R.id.tv_factory_change);
-        tv_factory_checkAll = (TextView) findViewById(R.id.tv_factory_checkAll);
+        ImageView iv_factory_back = findViewById(R.id.iv_factory_back);
+        factory_parent = findViewById(R.id.factory_parent);
+        tv_factory_feed = findViewById(R.id.tv_factory_feed);
+        tv_factory_change = findViewById(R.id.tv_factory_change);
+        tv_factory_checkAll = findViewById(R.id.tv_factory_checkAll);
         iv_factory_back.setOnClickListener(this);
         tv_factory_feed.setOnClickListener(this);
         tv_factory_change.setOnClickListener(this);
@@ -136,6 +117,7 @@ public class FactoryLineActivity extends FragmentActivity implements View.OnClic
         }
     }
 
+    // TODO: 2018/9/12  
     private void showUpdateDialog() {
         Log.d(TAG, "showUpdateDialog");
         updateDialog = new LoadingDialog(this, "站位表更新...");
@@ -145,7 +127,7 @@ public class FactoryLineActivity extends FragmentActivity implements View.OnClic
             @Override
             public void run() {
                 try {
-                    Thread.sleep(2000);
+                    Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -169,51 +151,24 @@ public class FactoryLineActivity extends FragmentActivity implements View.OnClic
 
             case R.id.tv_factory_feed://上料
 
-                if (oldFragmentIndex != 0 && oldFragmentIndex != 1) {
-                    //判断是否上料完成
-                    getProgramItemVisits(globalData.getLine(), globalData.getWork_order(), globalData.getBoard_type());
+                if (oldFragmentIndex != 0) {
+                    setTabSelection(0);
                 }
 
                 break;
 
             case R.id.tv_factory_change://换料
-                setTabSelection(2);
+                if (oldFragmentIndex != 1) {
+                    setTabSelection(1);
+                }
                 break;
 
             case R.id.tv_factory_checkAll://全检
-                setTabSelection(3);
+                if (oldFragmentIndex != 2) {
+                    setTabSelection(2);
+                }
                 break;
         }
-    }
-
-    //获取ProgramItemVisits
-    private void getProgramItemVisits(final String line, final String order, final int boardType) {
-        loadingDialog = new LoadingDialog(this, "正在加载...");
-        loadingDialog.setCanceledOnTouchOutside(false);
-        loadingDialog.show();
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                programItemVisits = new DBService().getProgramItemVisits(line, order, boardType);
-                Message message = Message.obtain();
-                message.what = REFRESH_ITEMS;
-                mFactoryHandler.sendMessage(message);
-            }
-        }).start();
-    }
-
-    //判断所有上料结果
-    private boolean getFeedResult(List<ProgramItemVisit> programItemVisits) {
-        boolean feedResult = true;
-        if (programItemVisits != null && programItemVisits.size() > 0) {
-            for (ProgramItemVisit itemVisit : programItemVisits) {
-                if (itemVisit.getFeed_result() != 1) {
-                    feedResult = false;
-                    break;
-                }
-            }
-        }
-        return feedResult;
     }
 
     public void setTabSelection(int index) {
@@ -226,17 +181,6 @@ public class FactoryLineActivity extends FragmentActivity implements View.OnClic
             case 0:
                 globalData.setOperType(Constants.FEEDMATERIAL);
                 tv_factory_feed.setBackgroundResource(R.drawable.factory_feed_click_shape);
-                if (feedLoginFragment == null) {
-                    feedLoginFragment = new FeedLoginFragment();
-                    transaction.add(R.id.factory_layouts_content, feedLoginFragment);
-                } else {
-                    transaction.show(feedLoginFragment);
-                }
-                break;
-
-            case 1:
-                globalData.setOperType(Constants.FEEDMATERIAL);
-                tv_factory_feed.setBackgroundResource(R.drawable.factory_feed_click_shape);
                 if (feedMaterialFragment == null) {
                     feedMaterialFragment = new FeedMaterialFragment();
                     transaction.add(R.id.factory_layouts_content, feedMaterialFragment);
@@ -245,7 +189,7 @@ public class FactoryLineActivity extends FragmentActivity implements View.OnClic
                 }
                 break;
 
-            case 2:
+            case 1:
                 globalData.setOperType(Constants.CHANGEMATERIAL);
                 tv_factory_change.setBackgroundResource(R.drawable.factory_change_click_shape);
                 if (changeMaterialFragment == null) {
@@ -256,7 +200,7 @@ public class FactoryLineActivity extends FragmentActivity implements View.OnClic
                 }
                 break;
 
-            case 3:
+            case 2:
                 globalData.setOperType(Constants.CHECKALLMATERIAL);
                 tv_factory_checkAll.setBackgroundResource(R.drawable.factory_checkall_click_shape);
                 if (checkAllMaterialFragment == null) {
@@ -284,9 +228,6 @@ public class FactoryLineActivity extends FragmentActivity implements View.OnClic
      * @param transaction 用于对Fragment执行操作的事务
      */
     private void hideFragments(FragmentTransaction transaction) {
-        if (feedLoginFragment != null) {
-            transaction.hide(feedLoginFragment);
-        }
         if (feedMaterialFragment != null) {
             transaction.hide(feedMaterialFragment);
         }
@@ -327,35 +268,6 @@ public class FactoryLineActivity extends FragmentActivity implements View.OnClic
         }
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        Log.i(TAG, "onStart");
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        Log.i(TAG, "onSaveInstanceState");
-        super.onSaveInstanceState(outState);
-    }
-
-    @Override
-    public void onResume() {
-        Log.i(TAG, "onResume");
-        super.onResume();
-    }
-
-    @Override
-    public void onStop() {
-        Log.i(TAG, "onStop");
-        super.onStop();
-    }
-
-    @Override
-    public void onPause() {
-        Log.i(TAG, "onPause");
-        super.onPause();
-    }
 
     @Override
     public void onDestroy() {
@@ -365,6 +277,21 @@ public class FactoryLineActivity extends FragmentActivity implements View.OnClic
         //关闭服务
         stopService(new Intent(this, RefreshCacheService.class));
         super.onDestroy();
+    }
+
+    private void showLoading() {
+        dismissLoading();
+        loadingDialog = new LoadingDialog(this, "正在加载...");
+        loadingDialog.setCanceledOnTouchOutside(false);
+        loadingDialog.show();
+    }
+
+    private void dismissLoading() {
+        //取消弹出窗
+        if (loadingDialog != null && loadingDialog.isShowing()) {
+            loadingDialog.cancel();
+            loadingDialog.dismiss();
+        }
     }
 
 }

@@ -8,8 +8,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import com.jimi.smt.eps_appclient.Beans.Material;
 import com.jimi.smt.eps_appclient.R;
-import com.jimi.smt.eps_appclient.Unit.MaterialItem;
 
 import java.util.List;
 
@@ -24,9 +24,9 @@ import java.util.List;
 public class MaterialAdapter extends BaseAdapter {
     private ViewHolder mViewHolder;
     private LayoutInflater mLayoutInflater;
-    private List<MaterialItem> materialItems;
+    private List<Material.MaterialBean> materialItems;
 
-    public MaterialAdapter(Context context, List<MaterialItem> list) {
+    public MaterialAdapter(Context context, List<Material.MaterialBean> list) {
         mLayoutInflater = LayoutInflater.from(context);
         materialItems = list;
     }
@@ -51,13 +51,13 @@ public class MaterialAdapter extends BaseAdapter {
         if (convertView == null) {
             mViewHolder = new ViewHolder();
             convertView = mLayoutInflater.inflate(R.layout.feedmaterial_item, null);
-            mViewHolder.tv_serialNo = (TextView) convertView.findViewById(R.id.tv_serial_no);
-            mViewHolder.tv_orgLineSeat = (TextView) convertView.findViewById(R.id.tv_orgLineSeat);
-            mViewHolder.tv_orgMaterial = (TextView) convertView.findViewById(R.id.tv_orgMaterial);
-            mViewHolder.tv_scanLineSeat = (TextView) convertView.findViewById(R.id.tv_scanLineSeat);
-            mViewHolder.tv_scanMaterial = (TextView) convertView.findViewById(R.id.tv_scanMaterial);
-            mViewHolder.tv_Result = (TextView) convertView.findViewById(R.id.tv_Result);
-            mViewHolder.tv_Remark = (TextView) convertView.findViewById(R.id.tv_Remark);
+            mViewHolder.tv_serialNo = convertView.findViewById(R.id.tv_serial_no);
+            mViewHolder.tv_orgLineSeat = convertView.findViewById(R.id.tv_orgLineSeat);
+            mViewHolder.tv_orgMaterial = convertView.findViewById(R.id.tv_orgMaterial);
+            mViewHolder.tv_scanLineSeat = convertView.findViewById(R.id.tv_scanLineSeat);
+            mViewHolder.tv_scanMaterial = convertView.findViewById(R.id.tv_scanMaterial);
+            mViewHolder.tv_Result = convertView.findViewById(R.id.tv_Result);
+            mViewHolder.tv_Remark = convertView.findViewById(R.id.tv_Remark);
 
             convertView.setTag(mViewHolder);
         } else {
@@ -65,11 +65,11 @@ public class MaterialAdapter extends BaseAdapter {
         }
 
         //显示相关测试结果
-        MaterialItem materialItem = materialItems.get(position);
+        Material.MaterialBean materialItem = materialItems.get(position);
         mViewHolder.tv_serialNo.setText(String.valueOf(materialItem.getSerialNo()));
-        mViewHolder.tv_orgLineSeat.setText(materialItem.getOrgLineSeat());
-        mViewHolder.tv_orgMaterial.setText(materialItem.getOrgMaterial());
-        mViewHolder.tv_scanLineSeat.setText(materialItem.getScanLineSeat());
+        mViewHolder.tv_orgLineSeat.setText(materialItem.getLineseat());
+        mViewHolder.tv_orgMaterial.setText(materialItem.getMaterialNo());
+        mViewHolder.tv_scanLineSeat.setText(materialItem.getScanlineseat());
         mViewHolder.tv_scanMaterial.setText(materialItem.getScanMaterial());
         mViewHolder.tv_Result.setText(materialItem.getResult());
         mViewHolder.tv_Remark.setText(materialItem.getRemark());

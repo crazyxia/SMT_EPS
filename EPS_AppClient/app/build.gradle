@@ -16,7 +16,7 @@ android {
         minSdkVersion 18
         targetSdkVersion 26
         versionCode 14
-        versionName "SMT防错料系统-v1.10.5"
+        versionName "SMT防错料系统-v2.0.0"
         multiDexEnabled true
 
         //添加部分
@@ -52,18 +52,19 @@ android {
 
 dependencies {
     implementation 'com.android.support.constraint:constraint-layout:1.1.0'
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile files('libs/mysql-connector-java-5.1.46-bin.jar')
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation files('libs/mysql-connector-java-5.1.46-bin.jar')
     //    compile files('libs/Jiminal-1.0-SNAPHOT.jar')
-    compile 'org.greenrobot:eventbus:3.0.0'
-    compile 'com.android.support:appcompat-v7:26.1.0'
-    compile 'com.android.support:support-v4:26.1.0'
+    implementation 'org.greenrobot:eventbus:3.0.0'
+    implementation 'com.android.support:appcompat-v7:26.1.0'
+    implementation 'com.android.support:support-v4:26.1.0'
     //    compile 'com.android.support:appcompat-v7:22.2.1'
     //    compile 'com.android.support:support-v4:22.2.1'
-    compile 'com.zhy:okhttputils:2.6.2'
-    compile 'com.android.support:multidex:1.0.2'
-    compile 'cc.fussen:cachelibrary:1.5.1'
+    implementation 'com.zhy:okhttputils:2.6.2'
+    implementation 'com.android.support:multidex:1.0.2'
+    implementation 'cc.fussen:cachelibrary:1.5.1'
     // GreenDao 配置
-    compile 'org.greenrobot:greendao:3.2.2'
+    implementation 'org.greenrobot:greendao:3.2.2'
     //消息传输
+    implementation 'com.google.code.gson:gson:2.8.5'
 }

@@ -33,7 +33,10 @@ public class Constants {
     //apk地址
     public static final String DOWNLOAD_URL = "http://39.108.231.15/SMT_EPS_APK";
     //线号301-308
-    public static final String[] lines = {"301", "302", "303", "304", "305", "306", "307", "308"};
+//    public static final String[] lines = {"301", "302", "303", "304", "305", "306", "307", "308"};
+    //贵州
+    public static final String[] lines = {"1", "2", "3", "4"};
+
     //开启或关闭工位检测
     public static final boolean isCheckWorkType = true;
     //缓存功能
@@ -43,13 +46,22 @@ public class Constants {
     //实时更新功能
     public static final boolean liveUpdate = true;
     //ip地址（测试）
-//    public static final String urlBase = "http://10.10.11.111:8080/eps_server";
+//    public static final String urlBase = "http://10.10.11.153:8080/eps_server";
     //ip地址（生产）
-    public static final String urlBase = "http://192.168.2.9:8080/eps_server";
+//    public static final String urlBase = "http://192.168.2.9:8080/eps_server";
+    //ip地址（贵州）
+//    public static final String urlBase = "http://192.168.66.9:8080/eps_server";
+    //测试 10.10.11.186:8080/eps_server
+//    public static final String urlBase = "http://10.10.11.186:8080/eps_server";
+    public static final String urlBase = "http://10.10.11.110:8080/eps_server";
+
     //数据库
-//    public static String dataBaseUrl = "jdbc:mysql://10.10.11.111:3306/smt_eps";//MYSQL测试数据库连接Url
-    public static final String dataBaseUrl = "jdbc:mysql://192.168.2.9:3306/smt_eps";//工厂用内网
+//    public static String dataBaseUrl = "jdbc:mysql://10.10.11.153:3306/smt_eps?useSSL=false&serverTimezone=GMT%2B8";//MYSQL测试数据库连接Url
+//    public static final String dataBaseUrl = "jdbc:mysql://192.168.2.9:3306/smt_eps";//工厂用内网
+    public static final String dataBaseUrl = "jdbc:mysql://192.168.66.9:3306/smt_eps";//贵州工厂用内网
     public static final String user = "root";//用户名
-    //    public static final String password = "9777";//密码
-    public static final String password = "newttl!@#$1234";//密码
+    //        public static final String password = "123456";//密码
+//    public static final String password = "newttl!@#$1234";//密码
+    public static final String password = "jimi";//密码
+
 }

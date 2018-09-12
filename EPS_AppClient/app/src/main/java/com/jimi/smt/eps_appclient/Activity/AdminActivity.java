@@ -132,7 +132,7 @@ public class AdminActivity extends Activity implements View.OnClickListener {
                 //先判断网络是否连接
                 boolean net = globalFunc.isNetWorkConnected();
                 if (!net) {
-                    showInfo("警告", "请检查网络连接是否正常!");
+                    showInfo();
                 }
                 break;
             default:
@@ -141,30 +141,26 @@ public class AdminActivity extends Activity implements View.OnClickListener {
     }
 
     //弹出提示消息窗口
-    private boolean showInfo(String title, String message) {
+    private void showInfo() {
         //对话框所有控件id
         int itemResIds[] = new int[]{R.id.dialog_title_view,
                 R.id.dialog_title, R.id.tv_alert_info, R.id.info_trust};
         //标题和内容
-        String titleMsg[] = new String[]{title, message};
+        String titleMsg[] = new String[]{"警告", "请检查网络连接是否正常!"};
         //内容的样式
         int msgStype[] = new int[]{22, Color.RED};
         InfoDialog infoDialog = new InfoDialog(this,
                 R.layout.info_dialog_layout, itemResIds, titleMsg, msgStype);
 
-        infoDialog.setOnDialogItemClickListener(new InfoDialog.OnDialogItemClickListener() {
-            @Override
-            public void OnDialogItemClick(InfoDialog dialog, View view) {
-                switch (view.getId()) {
-                    case R.id.info_trust:
-                        dialog.dismiss();
-                        break;
-                }
+        infoDialog.setOnDialogItemClickListener((dialog, view) -> {
+            switch (view.getId()) {
+                case R.id.info_trust:
+                    dialog.dismiss();
+                    break;
             }
         });
         infoDialog.show();
 
-        return true;
     }
 
 

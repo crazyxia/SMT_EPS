@@ -1,11 +1,9 @@
 package com.jimi.smt.eps_appclient.Fragment;
 
-import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
@@ -13,26 +11,29 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
+import android.widget.Toast;
 
 import com.jimi.smt.eps_appclient.Activity.FactoryLineActivity;
 import com.jimi.smt.eps_appclient.Adapter.MaterialAdapter;
+import com.jimi.smt.eps_appclient.Beans.Material;
+import com.jimi.smt.eps_appclient.Beans.Operation;
 import com.jimi.smt.eps_appclient.Dao.Feed;
 import com.jimi.smt.eps_appclient.Dao.GreenDaoUtil;
-import com.jimi.smt.eps_appclient.Func.DBService;
 import com.jimi.smt.eps_appclient.Func.GlobalFunc;
+import com.jimi.smt.eps_appclient.Func.HttpUtils;
 import com.jimi.smt.eps_appclient.Func.Log;
+import com.jimi.smt.eps_appclient.Interfaces.OkHttpInterface;
 import com.jimi.smt.eps_appclient.R;
 import com.jimi.smt.eps_appclient.Unit.Constants;
 import com.jimi.smt.eps_appclient.Unit.EvenBusTest;
-import com.jimi.smt.eps_appclient.Unit.FeedCacheBean;
 import com.jimi.smt.eps_appclient.Unit.GlobalData;
-import com.jimi.smt.eps_appclient.Unit.MaterialItem;
-import com.jimi.smt.eps_appclient.Unit.ProgramItemVisit;
 import com.jimi.smt.eps_appclient.Views.InfoDialog;
 import com.jimi.smt.eps_appclient.Views.LoadingDialog;
 import com.jimi.smt.eps_appclient.Views.MyEditTextDel;
@@ -40,9 +41,12 @@ import com.jimi.smt.eps_appclient.Views.MyEditTextDel;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+
 
 /**
  * 类名:FeedMaterialFragment
@@ -52,17 +56,13 @@ import java.util.List;
  * 版本号:V1.0
  * 修改记录:
  */
-public class FeedMaterialFragment extends Fragment implements OnEditorActionListener {
+public class FeedMaterialFragment extends Fragment implements OnEditorActionListener, OkHttpInterface {
     private transient final String TAG = this.getClass().getSimpleName();
     //全局变量
     private transient GlobalData globalData;
-    //FeedMaterialFragment缓存对象
-    private FeedCacheBean feedCacheBean;
-
     //上料视图
     private transient View vFeedMaterialFragment;
     //操作员　站位　料号
-    private transient TextView edt_Operation;
     private transient MyEditTextDel edt_LineSeat;
     private transient MyEditTextDel edt_Material;
     private transient FactoryLineActivity mActivity;
@@ -72,20 +72,13 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
     private transient MaterialAdapter materialAdapter;
 
     //上料本地数据表
-    private List<Feed> feedList = new ArrayList<Feed>();
-    //全部上料结果
-    private boolean allFeedResult = false;
+    private List<Feed> feedList = new ArrayList<>();
     //是否恢复缓存
     private boolean isRestoreCache = false;
     //当前上料时用到的排位料号表
-    private ArrayList<MaterialItem> lFeedMaterialItem = new ArrayList<MaterialItem>();
+    private List<Material.MaterialBean> mFeedMaterialBeans = new ArrayList<>();
     //扫描的站位在列表中的位置
-    private ArrayList<Integer> scanLineIndex = new ArrayList<Integer>();
-    //program_item_visit表
-    private ArrayList<ProgramItemVisit> programItemVisits = new ArrayList<ProgramItemVisit>();
-
-    //当前上料项
-    private int curFeedMaterialId = 0;
+    private ArrayList<Integer> scanLineIndex = new ArrayList<>();
     //成功上料数
     private int sucFeedCount = 0;
     //料号表的总数
@@ -94,150 +87,14 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
     private int matchFeedMaterialId = -1;
     private transient GlobalFunc globalFunc;
     private transient LoadingDialog loadingDialog;
-
-    private static final int STORE_ALL_FAIL = 101;//未全部发料
-    private static final int PROGRAM_UPDATE = 102;//站位表更新
-    private static final int STORE_SUCCESS = 108;
-    private static final int STORE_FAIL = 109;
-    private static final int REFRESH_ITEMS = 110;
-    private static final int RESET = 111;//重置
-    private static final int OPERATING = 112;//操作
-    private static final int RESET_SHOUWTIP = 113;//重置并提示
-
+    private HttpUtils mHttpUtils;
+    private int checkResetCondition = -1;
+    private int checkWareCondition = -1;
     private boolean mHidden = false;
-    @SuppressLint("HandlerLeak")
-    private transient Handler feedHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            //取消弹出窗
-            if (loadingDialog != null && loadingDialog.isShowing()) {
-                loadingDialog.cancel();
-                loadingDialog.dismiss();
-            }
-            switch (msg.what) {
-                case STORE_SUCCESS:
-                    //更新显示
-                    materialAdapter.notifyDataSetChanged();
-                    edt_Material.requestFocus();
-                    break;
+    private MyEditTextDel edt_pwd;
+    private AlertDialog feedLoginDialog;
 
-                case STORE_FAIL:
-                    //未发料
-                    for (int a = 0; a < scanLineIndex.size(); a++) {
-                        lFeedMaterialItem.get(scanLineIndex.get(a))
-                                .setResultRemark("WARN", "该料号未发料");
-                    }
-                    //更新显示
-                    materialAdapter.notifyDataSetChanged();
-                    feedNextMaterial();
-                    break;
 
-                case REFRESH_ITEMS:
-                    //全部上料完成
-                    if (getFeedResult(programItemVisits)) {
-                        //清空上料页面结果
-                        clearFeedDisplay();
-                        //跳转到上料登录
-                        mActivity.setTabSelection(0);
-                    } else {
-                        //未完成上料 todo
-
-                    }
-                    break;
-
-                case PROGRAM_UPDATE:
-                    String titleMsg[] = new String[]{"站位表更新!", "仓库未完成发料!"};
-                    int msgStyle[] = new int[]{22, Color.argb(255, 219, 201, 36)};
-                    showInfo(titleMsg, msgStyle, false, 2);
-                    break;
-
-                case STORE_ALL_FAIL:
-                    String titleMsgStr[] = new String[]{"提示", "仓库未完成发料!"};
-                    int msgStyles[] = new int[]{22, Color.argb(255, 219, 201, 36)};
-                    showInfo(titleMsgStr, msgStyles, false, 2);
-                    break;
-
-                case RESET://重置
-                    clearFeedDisplay();
-                    clearLineSeatMaterialScan();
-                    break;
-
-                case OPERATING://操作
-                    beginOperat((String) msg.obj);
-                    break;
-
-                case RESET_SHOUWTIP://重置并提示
-                    String titleMsgs[] = new String[]{"提示", "仓库未完成发料!"};
-                    int msgStyleStr[] = new int[]{22, Color.argb(255, 219, 201, 36)};
-                    showInfo(titleMsgs, msgStyleStr, false, 2);
-                    clearFeedDisplay();
-                    clearLineSeatMaterialScan();
-                    break;
-
-            }
-        }
-    };
-
-    //判断所有上料结果
-    private boolean getFeedResult(List<ProgramItemVisit> programItemVisits) {
-        boolean feedResult = true;
-        if (programItemVisits != null && programItemVisits.size() > 0) {
-            for (ProgramItemVisit itemVisit : programItemVisits) {
-                if (itemVisit.getFeed_result() != 1) {
-                    feedResult = false;
-                    break;
-                }
-            }
-        }
-        return feedResult;
-    }
-
-    //判断所有发料结果
-    private boolean getWareResult(List<ProgramItemVisit> programItemVisits) {
-        boolean wareResult = true;
-        if (programItemVisits != null && programItemVisits.size() > 0) {
-            for (ProgramItemVisit itemVisit : programItemVisits) {
-                if (itemVisit.getStore_issue_result() != 1) {
-                    wareResult = false;
-                    break;
-                }
-            }
-        }
-        return wareResult;
-    }
-
-    //清空上料页面结果
-    private void clearFeedDisplay() {
-        sucFeedCount = 0;
-        allCount = 0;
-        for (int i = 0; i < lFeedMaterialItem.size(); i++) {
-            MaterialItem materialItem = lFeedMaterialItem.get(i);
-            materialItem.setScanLineSeat("");
-            materialItem.setScanMaterial("");
-            materialItem.setResult("");
-            materialItem.setRemark("");
-            if (Constants.isCache) {
-                Feed feed = feedList.get(i);
-                feed.setScanLineSeat("");
-                feed.setScanMaterial("");
-                feed.setResult("");
-                feed.setRemark("");
-            }
-
-            allCount++;
-        }
-        materialAdapter.notifyDataSetChanged();
-    }
-
-    /**
-     * @param inflater
-     * @param container
-     * @param savedInstanceState
-     * @return
-     * @author connie
-     * @time 2017-9-22
-     * @describe 创建视图
-     */
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -247,20 +104,22 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
         Intent intent = getActivity().getIntent();
         savedInstanceState = intent.getExtras();
 
-        globalData.setOperator(savedInstanceState.getString("operatorNum"));
+        globalData.setOperator(savedInstanceState != null ? savedInstanceState.getString("operatorNum") : null);
 
         if (mActivity.updateDialog != null && mActivity.updateDialog.isShowing()) {
             mActivity.updateDialog.cancel();
             mActivity.updateDialog.dismiss();
         }
-        getVisitsAndInitCache("", globalData.getLine(), globalData.getWork_order(), globalData.getBoard_type(), 2);
+
+        checkResetCondition = 2;
+        showLoading();
+        mHttpUtils.isReset(globalData.getProgramId(), Constants.FEEDMATERIAL);
 
         initViews(savedInstanceState);
         initEvents();
         initData();//初始化数据
 
         return vFeedMaterialFragment;
-
     }
 
     @Override
@@ -269,6 +128,7 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
         Log.i(TAG, "onCreate");
         //注册订阅
         EventBus.getDefault().register(this);
+        mHttpUtils = new HttpUtils(this);
         mActivity = (FactoryLineActivity) getActivity();
         globalData = (GlobalData) getActivity().getApplication();
         globalFunc = new GlobalFunc(getActivity());
@@ -295,19 +155,6 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
 
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        Log.i(TAG, "onActivityCreated");
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        Log.i(TAG, "onStart");
-    }
-
-
-    @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
         Log.i(TAG, "onHiddenChanged - " + hidden);
@@ -317,45 +164,12 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                 mActivity.updateDialog.cancel();
                 mActivity.updateDialog.dismiss();
             }
-            getVisitsAndInitCache("", globalData.getLine(), globalData.getWork_order(), globalData.getBoard_type(), 2);
+            checkResetCondition = 2;
+            showLoading();
+            mHttpUtils.isReset(globalData.getProgramId(), Constants.FEEDMATERIAL);
         }
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        Log.i(TAG, "onSaveInstanceState");
-        super.onSaveInstanceState(outState);
-    }
-
-    @Override
-    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
-        super.onViewStateRestored(savedInstanceState);
-        Log.i(TAG, "onViewStateRestored");
-    }
-
-    @Override
-    public void onResume() {
-        Log.i(TAG, "onResume");
-        super.onResume();
-    }
-
-    @Override
-    public void onDetach() {
-        Log.i(TAG, "onDetach");
-        super.onDetach();
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        Log.d(TAG, "onStop");
-    }
-
-    @Override
-    public void onPause() {
-        Log.i(TAG, "onPause");
-        super.onPause();
-    }
 
     @Override
     public void onDestroy() {
@@ -373,12 +187,12 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
      */
     private void initViews(Bundle bundle) {
         Log.i(TAG, "initViews");
-        TextView tv_feed_order = (TextView) vFeedMaterialFragment.findViewById(R.id.tv_feed_order);
-        edt_Operation = (TextView) vFeedMaterialFragment.findViewById(R.id.tv_feed_Operation);
-        edt_LineSeat = (MyEditTextDel) vFeedMaterialFragment.findViewById(R.id.edt_feed_lineseat);
-        edt_Material = (MyEditTextDel) vFeedMaterialFragment.findViewById(R.id.edt_feed_material);
+        TextView tv_feed_order = vFeedMaterialFragment.findViewById(R.id.tv_feed_order);
+        TextView edt_Operation = vFeedMaterialFragment.findViewById(R.id.tv_feed_Operation);
+        edt_LineSeat = vFeedMaterialFragment.findViewById(R.id.edt_feed_lineseat);
+        edt_Material = vFeedMaterialFragment.findViewById(R.id.edt_feed_material);
 
-        lv_FeedMaterial = (ListView) vFeedMaterialFragment.findViewById(R.id.feed_list_view);
+        lv_FeedMaterial = vFeedMaterialFragment.findViewById(R.id.feed_list_view);
         tv_feed_order.setText(bundle.getString("orderNum"));
         edt_Operation.setText(bundle.getString("operatorNum"));
 
@@ -388,28 +202,30 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
     //监听订阅的消息
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEventMainThread(EvenBusTest event) {
-        Log.d(TAG, "onEventMainThread - " + event.getUpdated());
+//        Log.d(TAG, "onEventMainThread - " + event.getUpdated());
         if (event.getUpdated() == 0) {
+            Log.d(TAG, "onEventMainThread - " + event.getUpdated());
+            Log.d(TAG, "event.getFeedList() - " + event.getFeedList().size());
+
             if (Constants.isCache) {
                 if (event.getFeedList() != null && event.getFeedList().size() > 0) {
                     //更新页面
                     feedList.clear();
                     feedList.addAll(event.getFeedList());
-                    curFeedMaterialId = 0;
                     sucFeedCount = 0;
                     //填充数据
-                    lFeedMaterialItem.clear();
+                    mFeedMaterialBeans.clear();
                     for (Feed feed : feedList) {
-                        MaterialItem materialItem = new MaterialItem(feed.getOrder(), feed.getBoard_type(), feed.getLine(),
-                                feed.getSerialNo(), feed.getAlternative(), feed.getOrgLineSeat(), feed.getOrgMaterial(),
+                        Material.MaterialBean bean = new Material.MaterialBean(feed.getOrder(), feed.getBoard_type(), feed.getLine(),
+                                feed.getProgramId(), feed.getSerialNo(), feed.getAlternative(), feed.getOrgLineSeat(), feed.getOrgMaterial(),
                                 feed.getScanLineSeat(), feed.getScanMaterial(), feed.getResult(), feed.getRemark());
-                        lFeedMaterialItem.add(materialItem);
+                        mFeedMaterialBeans.add(bean);
                         //获取成功上料
-                        if (feed.getResult().equalsIgnoreCase("PASS")) {
+                        if ((null != feed.getResult()) && (feed.getResult().equalsIgnoreCase("PASS"))) {
                             sucFeedCount++;
                         }
                     }
-                    allCount = lFeedMaterialItem.size();
+                    allCount = mFeedMaterialBeans.size();
                     //更新显示
                     materialAdapter.notifyDataSetChanged();
                     //重新开始扫描站位
@@ -422,33 +238,38 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                         mActivity.updateDialog.cancel();
                         mActivity.updateDialog.dismiss();
                     }
-                    getVisitsAndInitCache("", globalData.getLine(), globalData.getWork_order(), globalData.getBoard_type(), 1);
+                    checkWareCondition = 2;
+                    showLoading();
+                    mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.STORE_ISSUE);
+
                 }
             }
 
         }
     }
 
-    /**
-     * @author connie
-     * @time 2017-9-22
-     * @describe 初始化事件
-     */
+    //初始化事件
     private void initEvents() {
         Log.i(TAG, "initEvents");
         edt_LineSeat.setOnEditorActionListener(this);
         edt_Material.setOnEditorActionListener(this);
-        edt_Material.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus) {
-                    if (TextUtils.isEmpty(edt_LineSeat.getText().toString().trim())) {
-                        edt_Material.setCursorVisible(false);
-                        edt_LineSeat.setText("");
-                        edt_LineSeat.requestFocus();
-                    } else {
-                        edt_Material.setCursorVisible(true);
-                    }
+        edt_LineSeat.setOnFocusChangeListener((v, haFocus) -> {
+            if (haFocus) {
+                if (feedLoginDialog != null && feedLoginDialog.isShowing()) {
+                    edt_LineSeat.setCursorVisible(false);
+                    edt_pwd.requestFocus();
+                }
+            }
+        });
+
+        edt_Material.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus) {
+                if (TextUtils.isEmpty(edt_LineSeat.getText().toString().trim())) {
+                    edt_Material.setCursorVisible(false);
+                    edt_LineSeat.setText("");
+                    edt_LineSeat.requestFocus();
+                } else {
+                    edt_Material.setCursorVisible(true);
                 }
             }
         });
@@ -457,38 +278,24 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
         lv_FeedMaterial.setFocusable(false);
     }
 
-    /**
-     * @author connie
-     * @time 2017-9-22
-     * @describe 初始化数据
-     */
+    //初始化数据
     private void initData() {
         Log.i(TAG, "initData");
-        allFeedResult = false;
-        curFeedMaterialId = 0;
         sucFeedCount = 0;
         //填充数据
-        lFeedMaterialItem.clear();
-
+        mFeedMaterialBeans.clear();
         //没有缓存
         if (!isRestoreCache) {
-            List<MaterialItem> materialItems = globalData.getMaterialItems();
-            for (MaterialItem materialItem : materialItems) {
-                MaterialItem feedMaterialItem = new MaterialItem(materialItem.getOrder(), materialItem.getBoardType(),
-                        materialItem.getLine(), materialItem.getSerialNo(), materialItem.getAlternative(), materialItem.getOrgLineSeat(), materialItem.getOrgMaterial(),
-                        "", "", "", "");
-                lFeedMaterialItem.add(feedMaterialItem);
-
-                if (Constants.isCache) {
+            mFeedMaterialBeans = globalData.getMaterialBeans();
+            if (Constants.isCache) {
+                for (Material.MaterialBean bean : mFeedMaterialBeans) {
                     //保存缓存到数据库中
-                    Feed feed = new Feed(null, globalData.getWork_order(), globalData.getOperator(), globalData.getBoard_type(),
-                            globalData.getLine(), materialItem.getOrgLineSeat(), materialItem.getOrgMaterial(),
-                            "", "", "", "", materialItem.getSerialNo(), materialItem.getAlternative());
+                    Feed feed = new Feed(null, bean.getProgramId(), bean.getWorkOrder(), globalData.getOperator(),
+                            bean.getBoardType(), bean.getLine(), bean.getLineseat(), bean.getMaterialNo(), bean.getScanlineseat(),
+                            bean.getScanMaterial(), bean.getResult(), bean.getRemark(), bean.getSerialNo(), bean.isAlternative());
                     feedList.add(feed);
                 }
-            }
-            //保存到数据库中
-            if (Constants.isCache) {
+                //保存到数据库中
                 boolean cacheResult = new GreenDaoUtil().insertMultiFeedMaterial(feedList);
                 Log.d(TAG, "cacheResult - " + cacheResult);
             }
@@ -496,41 +303,33 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
         //存在缓存
         else {
             for (Feed feed : feedList) {
-                MaterialItem materialItem = new MaterialItem(feed.getOrder(), feed.getBoard_type(), feed.getLine(),
-                        feed.getSerialNo(), feed.getAlternative(), feed.getOrgLineSeat(), feed.getOrgMaterial(),
+                Material.MaterialBean bean = new Material.MaterialBean(feed.getOrder(), feed.getBoard_type(), feed.getLine(),
+                        feed.getProgramId(), feed.getSerialNo(), feed.getAlternative(), feed.getOrgLineSeat(), feed.getOrgMaterial(),
                         feed.getScanLineSeat(), feed.getScanMaterial(), feed.getResult(), feed.getRemark());
-                lFeedMaterialItem.add(materialItem);
+                mFeedMaterialBeans.add(bean);
                 //获取成功上料
-                if (feed.getResult().equalsIgnoreCase("PASS")) {
+                if ((null != feed.getResult()) && (feed.getResult().equalsIgnoreCase("PASS"))) {
                     sucFeedCount++;
                 }
             }
 
             //todo 需要更新全局变量为本地数据库的
-            globalData.setMaterialItems(lFeedMaterialItem);
+            globalData.setMaterialBeans(mFeedMaterialBeans);
         }
-
-        allCount = lFeedMaterialItem.size();
+        allCount = mFeedMaterialBeans.size();
         //设置Adapter
-        materialAdapter = new MaterialAdapter(this.getActivity(), lFeedMaterialItem);
+        materialAdapter = new MaterialAdapter(this.getActivity(), mFeedMaterialBeans);
         lv_FeedMaterial.setAdapter(materialAdapter);
 
         matchFeedMaterialId = -1;
     }
 
-
-    /**
-     * @param textView 　触发的控件
-     * @param i
-     * @param keyEvent 　key事件
-     * @return
-     */
     @Override
     public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
         Log.i(TAG, "onEditorAction");
         //回车键
         if (i == EditorInfo.IME_ACTION_SEND ||
-                (keyEvent != null && keyEvent.getKeyCode() == keyEvent.KEYCODE_ENTER)) {
+                (keyEvent != null && keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
             Log.i(TAG, "keyEvent:" + keyEvent.getAction());
             switch (keyEvent.getAction()) {
                 //抬上
@@ -550,30 +349,10 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                                 //站位
                                 scanValue = globalFunc.getLineSeat(scanValue);
                                 edt_LineSeat.setText(scanValue);
-                                getVisitsAndInitCache(scanValue, globalData.getLine(), globalData.getWork_order(), globalData.getBoard_type(), 3);
-                                /*
-                                Log.i(TAG, "lineseat:" + scanValue);
-                                //相同站位在列表中的位置
-                                for (int j = 0; j < lFeedMaterialItem.size(); j++) {
-                                    MaterialItem materialItem = lFeedMaterialItem.get(j);
-                                    //扫到的站位在表中存在
-                                    if (materialItem.getOrgLineSeat().equalsIgnoreCase(scanValue)) {
-                                        scanLineIndex.add(j);
-                                        matchFeedMaterialId = j;
-                                        materialItem.setScanLineSeat(scanValue);
-                                    }
-                                }
-                                //无匹配的站位
-                                if (matchFeedMaterialId < 0) {
-                                    //重新上料
-                                    feedNextMaterial();
-                                    return true;
-                                } else {
-                                    //检验该站位是否发料
-                                    boolean storeIssue = getOperateLastType(lFeedMaterialItem.get(matchFeedMaterialId), scanLineIndex);
-                                    Log.d(TAG, "storeIssue--" + storeIssue);
-                                }
-                                */
+
+                                checkWareCondition = 3;
+                                showLoading();
+                                mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.STORE_ISSUE);
 
                                 break;
 
@@ -591,20 +370,22 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
 
                                 //只有一个料
                                 if (scanLineIndex.size() == 1) {
-                                    MaterialItem singleMaterialItem = lFeedMaterialItem.get(scanLineIndex.get(0));
+                                    Material.MaterialBean singleMaterialItem = mFeedMaterialBeans.get(scanLineIndex.get(0));
                                     singleMaterialItem.setScanMaterial(scanValue);
-                                    if (singleMaterialItem.getOrgMaterial().equalsIgnoreCase(scanValue)) {
-                                        singleMaterialItem.setResultRemark("PASS", "上料成功");
+                                    if (singleMaterialItem.getMaterialNo().equalsIgnoreCase(scanValue)) {
+                                        singleMaterialItem.setResult("PASS");
+                                        singleMaterialItem.setRemark("上料成功");
                                         //成功次数加1
                                         sucFeedCount++;
                                     } else {
-                                        singleMaterialItem.setResultRemark("FAIL", "料号与站位不相符");
+                                        singleMaterialItem.setResult("FAIL");
+                                        singleMaterialItem.setRemark("料号与站位不相符");
                                     }
-                                    //保存缓存
-                                    cacheFeedResult(scanLineIndex.get(0), singleMaterialItem);
+
                                     //添加显示日志
                                     globalData.setUpdateType(Constants.FEEDMATERIAL);
-                                    globalFunc.updateVisitLog(globalData, singleMaterialItem);
+                                    com.jimi.smt.eps_appclient.Beans.ProgramItemVisit itemVisit = com.jimi.smt.eps_appclient.Beans.ProgramItemVisit.getProgramItemVisit(Constants.FEEDMATERIAL, singleMaterialItem);
+                                    mHttpUtils.updateVisit(singleMaterialItem, itemVisit, 1);
                                     //当前上料索引
                                     matchFeedMaterialId = scanLineIndex.get(0);
                                 }
@@ -622,9 +403,9 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                                 materialAdapter.notifyDataSetChanged();
                                 //增加数据库日志
                                 globalData.setOperType(Constants.FEEDMATERIAL);
-                                globalFunc.AddDBLog(globalData, lFeedMaterialItem.get(matchFeedMaterialId));
-                                //上下一个料
-                                feedNextMaterial();
+
+                                Operation operation = Operation.getOperation(globalData.getOperator(), Constants.FEEDMATERIAL, mFeedMaterialBeans.get(matchFeedMaterialId));
+                                mHttpUtils.addOperation(operation);
                                 break;
                         }
                     } else {
@@ -641,159 +422,57 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
         return false;
     }
 
-    private boolean beginOperat(String scanValue) {
+    private void beginOperate(String scanValue) {
         Log.i(TAG, "lineseat:" + scanValue);
         scanLineIndex.clear();
         //相同站位在列表中的位置
-        for (int j = 0; j < lFeedMaterialItem.size(); j++) {
-            MaterialItem materialItem = lFeedMaterialItem.get(j);
+        for (int j = 0; j < mFeedMaterialBeans.size(); j++) {
+            Material.MaterialBean materialItem = mFeedMaterialBeans.get(j);
             //扫到的站位在表中存在
-            if (materialItem.getOrgLineSeat().equalsIgnoreCase(scanValue)) {
+            if (materialItem.getLineseat().equalsIgnoreCase(scanValue)) {
                 scanLineIndex.add(j);
                 matchFeedMaterialId = j;
-                materialItem.setScanLineSeat(scanValue);
+                materialItem.setScanlineseat(scanValue);
             }
         }
         //无匹配的站位
         if (matchFeedMaterialId < 0) {
             //重新上料
             feedNextMaterial();
-            return true;
-        } else {
-            //检验该站位是否发料
-            boolean storeIssue = getOperateLastType(lFeedMaterialItem.get(matchFeedMaterialId), scanLineIndex);
-            Log.d(TAG, "storeIssue--" + storeIssue);
-        }
-        return false;
-    }
-
-    //获取ProgramItemVisits同时清空缓存的上料结果
-    private void getVisitsAndInitCache(String scanValue, final String line, final String order, final int boardType, int condition) {
-        Log.d(TAG, "getVisitsAndInitCache - " + condition);
-        loadingDialog = new LoadingDialog(getActivity(), "正在加载...");
-        loadingDialog.setCanceledOnTouchOutside(false);
-        loadingDialog.show();
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Message message = Message.obtain();
-                message.obj = scanValue;
-                //检测是否重置
-                int checkReset = DBService.getDbService().isProgramVisitReseted(globalData.getLine(), globalData.getWork_order(),
-                        globalData.getBoard_type(), Constants.FEEDMATERIAL);
-                //本地数据
-                boolean reseted = true;
-                for (MaterialItem materialItem : lFeedMaterialItem) {
-                    if (materialItem.getResult().equalsIgnoreCase("PASS") || materialItem.getResult().equalsIgnoreCase("FAIL")) {
-                        reseted = false;
-                    }
-                }
-                Log.d(TAG, "getVisitsAndInitCache - condition - " + condition);
-                Log.d(TAG, "getVisitsAndInitCache - checkReset - " + checkReset);
-                Log.d(TAG, "getVisitsAndInitCache - reseted - " + reseted);
-                if (condition == 3) {//扫站位时
-                    if (checkReset == 1) {
-                        if (!reseted) {
-                            //重置
-                            message.what = RESET;
-                        } else {
-                            //操作
-                            message.what = OPERATING;
-                        }
-                    } else if (checkReset == 0) {
-                        //操作
-                        message.what = OPERATING;
-                    }
-                } else {
-                    programItemVisits = new DBService().getProgramItemVisits(line, order, boardType);
-                    boolean wareResult = getWareResult(programItemVisits);
-                    if (condition == 0) {
-                        if (Constants.isCache) {
-                            boolean result = new GreenDaoUtil().updateAllFeed(feedList);
-                            Log.d(TAG, "updateAllFeed - " + result);
-                        }
-                        message.what = REFRESH_ITEMS;
-                    } else if (condition == 1) {
-                        if (!wareResult) {
-                            message.what = PROGRAM_UPDATE;
-                        }
-                    } else if (condition == 2) {
-                        if (!wareResult) {
-                            message.what = STORE_ALL_FAIL;
-                            if (checkReset == 1 && !reseted) {
-                                message.what = RESET_SHOUWTIP;
-                            }
-                        } else {
-                            if (checkReset == 1 && !reseted) {
-                                message.what = RESET;
-                            }
-                        }
-                    }
-                }
-                feedHandler.sendMessage(message);
-            }
-        }).start();
-    }
-
-    //检验该站位是否发料
-    private boolean getOperateLastType(final MaterialItem materialItem, final ArrayList<Integer> sameLineIndex) {
-        final boolean storeIssue[] = {false};
-        //判断工位检测功能是否打开
-        if (Constants.isCheckWorkType) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    //检验该站位是否发料(主替料即多个相同站位)
-                    List<Integer> storeResult = new DBService().getStoreResult(materialItem);
-                    for (Integer result : storeResult) {
-                        //不为空
-                        if (result == 1) {
-                            storeIssue[0] = true;
-                        }
-                        Log.d(TAG, "storeIssue[0]--" + storeIssue[0]);
-                        Log.d(TAG, "result--" + result);
-                    }
-                    Message message = Message.obtain();
-                    if (storeIssue[0]) {
-                        message.what = STORE_SUCCESS;
-                    } else {
-                        message.what = STORE_FAIL;
-                    }
-                    feedHandler.sendMessage(message);
-                }
-            }).start();
         } else {
             //更新显示
             materialAdapter.notifyDataSetChanged();
             edt_Material.requestFocus();
         }
 
-        return storeIssue[0];
     }
 
-    private boolean checkMultiItem(ArrayList<Integer> integers, String mScanValue) {
-        boolean result = true;
+    private void checkMultiItem(ArrayList<Integer> integers, String mScanValue) {
+        Material.MaterialBean bean = new Material.MaterialBean();
         //多个相同的站位,即有替换料
         for (int z = 0; z < integers.size(); z++) {
-            MaterialItem multiMaterialItem = lFeedMaterialItem.get(integers.get(z));
+            Material.MaterialBean multiMaterialItem = mFeedMaterialBeans.get(integers.get(z));
             int serialNo;
-            byte alternative;
+            boolean alternative;
             multiMaterialItem.setScanMaterial(mScanValue);
-            if (multiMaterialItem.getOrgMaterial().equalsIgnoreCase(multiMaterialItem.getScanMaterial())) {
+            if (multiMaterialItem.getMaterialNo().equalsIgnoreCase(multiMaterialItem.getScanMaterial())) {
                 serialNo = multiMaterialItem.getSerialNo();
-                alternative = multiMaterialItem.getAlternative();
+                alternative = multiMaterialItem.isAlternative();
                 Log.d(TAG, "alternative - " + alternative);
                 for (int x = 0; x < integers.size(); x++) {
-                    MaterialItem innerMaterialItem = lFeedMaterialItem.get(integers.get(x));
+                    Log.d(TAG, "innerMaterialItem - " + x);
+                    Material.MaterialBean innerMaterialItem = mFeedMaterialBeans.get(integers.get(x));
                     innerMaterialItem.setScanMaterial(mScanValue);
                     innerMaterialItem.setResult("PASS");
                     if (x == z) {
                         //扫描的是该料号
                         matchFeedMaterialId = integers.get(x);
                         innerMaterialItem.setRemark("上料成功");
+                        //赋值
+                        bean = innerMaterialItem;
                     } else {
                         //扫描的不是该料号
-                        if (alternative == 1) {
+                        if (alternative) {
                             //上的料是替换料
                             innerMaterialItem.setRemark("替料" + serialNo + "上料成功");
                         } else {
@@ -802,53 +481,82 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                         }
                     }
 
-                    //保存缓存
-                    cacheFeedResult(integers.get(x), innerMaterialItem);
-
                     //成功次数加1
                     sucFeedCount++;
-                    //添加显示日志
-                    globalData.setUpdateType(Constants.FEEDMATERIAL);
-                    globalFunc.updateVisitLog(globalData, innerMaterialItem);
                 }
-                result = true;
-                //跳出循环
-                return true;
+                //跳出外部循环
+                break;
             } else {
                 multiMaterialItem.setResult("FAIL");
                 multiMaterialItem.setRemark("料号与站位不相符");
                 //都不相符,默认操作的是第一个
                 matchFeedMaterialId = integers.get(0);
-                //保存缓存
-                cacheFeedResult(integers.get(z), multiMaterialItem);
-                //添加显示日志
-                globalData.setUpdateType(Constants.FEEDMATERIAL);
-                globalFunc.updateVisitLog(globalData, multiMaterialItem);
-                result = false;
+                //赋值
+                bean = multiMaterialItem;
             }
         }
 
-        return result;
+        //添加显示
+        globalData.setUpdateType(Constants.FEEDMATERIAL);
+        com.jimi.smt.eps_appclient.Beans.ProgramItemVisit itemVisit = com.jimi.smt.eps_appclient.Beans.ProgramItemVisit.getProgramItemVisit(Constants.FEEDMATERIAL, bean);
+        mHttpUtils.updateVisit(bean, itemVisit, 1);
     }
 
     //更新上料缓存
-    private void cacheFeedResult(int index, MaterialItem materialItem) {
+    private void cacheFeedResult(ArrayList<Integer> lineIndex, Material.MaterialBean materialItem) {
+        Log.d(TAG, "cacheFeedResult - " + lineIndex.size());
         if (Constants.isCache) {
             //保存缓存
-            Feed feed = feedList.get(index);
-            feed.setScanLineSeat(materialItem.getScanLineSeat());
-            feed.setScanMaterial(materialItem.getScanMaterial());
-            feed.setResult(materialItem.getResult());
-            feed.setRemark(materialItem.getRemark());
-            new GreenDaoUtil().updateFeed(feed);
+            for (int i = 0, len = lineIndex.size(); i < len; i++) {
+                Feed feed = feedList.get(lineIndex.get(i));
+                feed.setScanLineSeat(materialItem.getScanlineseat());
+                feed.setScanMaterial(materialItem.getScanMaterial());
+                feed.setResult(materialItem.getResult());
+                feed.setRemark(materialItem.getRemark());
+                new GreenDaoUtil().updateFeed(feed);
+            }
         }
     }
 
-    /**
-     * @author connie
-     * @time 2017-9-22
-     * @describe 上下一个料
-     */
+    //更新visit表失败，清除显示
+    private void clearDisplay(ArrayList<Integer> lineIndex) {
+        Log.d(TAG, "clearDisplay - " + lineIndex.size());
+
+        for (int i = 0, len = lineIndex.size(); i < len; i++) {
+            Material.MaterialBean bean = mFeedMaterialBeans.get(lineIndex.get(i));
+            bean.setResult("");
+            bean.setRemark("");
+            bean.setScanlineseat("");
+            bean.setScanMaterial("");
+        }
+        materialAdapter.notifyDataSetChanged();
+        clearLineSeatMaterialScan();
+    }
+
+    //清空上料页面结果
+    private void clearFeedDisplay() {
+        sucFeedCount = 0;
+        allCount = 0;
+        for (int i = 0; i < mFeedMaterialBeans.size(); i++) {
+            Material.MaterialBean materialItem = mFeedMaterialBeans.get(i);
+            materialItem.setScanlineseat("");
+            materialItem.setScanMaterial("");
+            materialItem.setResult("");
+            materialItem.setRemark("");
+            if (Constants.isCache) {
+                Feed feed = feedList.get(i);
+                feed.setScanLineSeat("");
+                feed.setScanMaterial("");
+                feed.setResult("");
+                feed.setRemark("");
+            }
+
+            allCount++;
+        }
+        materialAdapter.notifyDataSetChanged();
+    }
+
+    //上下一个料
     private void feedNextMaterial() {
         //清空站位位置表
         scanLineIndex.clear();
@@ -858,17 +566,15 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
             lv_FeedMaterial.setSelection(matchFeedMaterialId);
             matchFeedMaterialId = -1;
         } else {
-            //排位表不存在此站位或料号
-            curFeedMaterialId--;
             //弹出提示框
             String titleMsg[] = new String[]{"提示", "排位表不存在此站位或料号!!!"};
             int msgStyle[] = new int[]{22, Color.RED};
             showInfo(titleMsg, msgStyle, false, 0);
         }
 
-        Log.d(TAG, "sucFeedCount-" + sucFeedCount
-                + "\nlFeedMaterialItem-" + lFeedMaterialItem.size() + "\nallCount-" + allCount);
-        if (sucFeedCount < lFeedMaterialItem.size() || sucFeedCount < allCount) {
+        Log.d(TAG, "sucFeedCount-" + sucFeedCount + " \n mFeedMaterialBeans-" + mFeedMaterialBeans.size() + " \n allCount-" + allCount);
+
+        if (sucFeedCount < mFeedMaterialBeans.size() || sucFeedCount < allCount) {
             clearLineSeatMaterialScan();
         } else {
             //上料结束,显示结果
@@ -880,7 +586,7 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
     private void showFeedMaterialResult() {
         //默认上料结果是PASS
         boolean feedResult = true;
-        for (MaterialItem feedMaterialItem : lFeedMaterialItem) {
+        for (Material.MaterialBean feedMaterialItem : mFeedMaterialBeans) {
             if (!feedMaterialItem.getResult().equalsIgnoreCase("PASS")) {
                 feedResult = false;
                 break;
@@ -901,12 +607,6 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
 
     //弹出消息窗口
     private boolean showInfo(String[] titleMsg, int[] msgStyle, final boolean result, final int resultType) {
-        /*
-        if (loadingDialog != null && loadingDialog.isShowing()){
-            loadingDialog.cancel();
-            loadingDialog.dismiss();
-        }
-        */
         //对话框所有控件id
         int itemResIds[] = new int[]{R.id.dialog_title_view,
                 R.id.dialog_title, R.id.tv_alert_info, R.id.info_trust};
@@ -914,35 +614,79 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
         InfoDialog infoDialog = new InfoDialog(getActivity(),
                 R.layout.info_dialog_layout, itemResIds, titleMsg, msgStyle);
 
-        infoDialog.setOnDialogItemClickListener(new InfoDialog.OnDialogItemClickListener() {
-            @Override
-            public void OnDialogItemClick(InfoDialog dialog, View view) {
-                switch (view.getId()) {
-                    case R.id.info_trust:
-                        dialog.dismiss();
-                        clearLineSeatMaterialScan();
-                        if (result) {
-                            //获取ProgramItemVisits同时清空缓存的上料结果
-                            getVisitsAndInitCache("", globalData.getLine(), globalData.getWork_order(), globalData.getBoard_type(), 0);
-                        } else {
-                            if (resultType == 1) {
-                                //将未成功数加到
-                                for (MaterialItem feedMaterialItem : lFeedMaterialItem) {
-                                    if (!feedMaterialItem.getResult().equalsIgnoreCase("PASS")) {
-                                        allCount++;
-                                    }
+        infoDialog.setOnDialogItemClickListener((dialog, view) -> {
+            switch (view.getId()) {
+                case R.id.info_trust:
+                    dialog.dismiss();
+                    clearLineSeatMaterialScan();
+                    if (result) {
+
+                        showFeedLoginWin();
+
+                    } else {
+                        if (resultType == 1) {
+                            //将未成功数加到
+                            for (Material.MaterialBean feedMaterialItem : mFeedMaterialBeans) {
+                                if (!feedMaterialItem.getResult().equalsIgnoreCase("PASS")) {
+                                    allCount++;
                                 }
-                            } else if (resultType == 2) {
-                                //未发料
                             }
                         }
-                        break;
-                }
+                    }
+                    break;
             }
         });
         infoDialog.show();
 
         return true;
+    }
+
+    //弹出解锁上料
+    private void showFeedLoginWin() {
+        Log.d(TAG, "showFeedLoginWin");
+        dismissFeedLogin();
+        feedLoginDialog = new AlertDialog.Builder(this.getContext()).create();
+        feedLoginDialog.show();
+        Window window = feedLoginDialog.getWindow();
+        assert window != null;
+        window.setContentView(R.layout.fragment_feed_login);
+        window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
+//        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE | WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+        feedLoginDialog.setCancelable(false);
+        edt_pwd = window.findViewById(R.id.edt_pwd);
+        edt_pwd.setFocusable(true);
+        edt_pwd.setFocusableInTouchMode(true);
+        edt_pwd.requestFocus();
+        window.findViewById(R.id.btn_unlock).setOnClickListener(view -> unlock());
+        window.findViewById(R.id.btn_cancel).setOnClickListener(view -> {
+            feedLoginDialog.dismiss();
+            mActivity.setTabSelection(1);
+        });
+    }
+
+    private void dismissFeedLogin() {
+        if (feedLoginDialog != null && feedLoginDialog.isShowing()) {
+            feedLoginDialog.dismiss();
+        }
+    }
+
+    //检测密码是否正确,正确则登陆
+    private void unlock() {
+        if (!TextUtils.isEmpty(edt_pwd.getText().toString().trim())) {
+            String pwd = edt_pwd.getText().toString().trim();
+            if (pwd.equalsIgnoreCase(Constants.feedPwd)) {
+                //重置visit表
+                showLoading();
+                mHttpUtils.reset(globalData.getLine(), globalData.getWork_order(), globalData.getBoard_type());
+            } else {
+                Toast.makeText(mActivity.getApplicationContext(), "密码错误", Toast.LENGTH_SHORT).show();
+                edt_pwd.setText("");
+                edt_pwd.requestFocus();
+            }
+        } else {
+            Toast.makeText(mActivity.getApplicationContext(), "请输入密码", Toast.LENGTH_SHORT).show();
+            edt_pwd.requestFocus();
+        }
     }
 
     //清除扫描数据
@@ -953,4 +697,190 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
     }
 
 
+    @Override
+    public void showHttpResponse(int code, Object request, String response) {
+        dismissLoading();
+        Log.d(TAG, "showHttpResponse - " + response);
+        switch (code) {
+            case HttpUtils.CodeCheckIsReset:
+                int checkReset = Integer.valueOf(response);
+                //本地数据是否重置
+                boolean reseted = true;
+                for (Material.MaterialBean materialItem : mFeedMaterialBeans) {
+                    if (null != materialItem.getResult()) {
+                        if (materialItem.getResult().equals("PASS") || materialItem.getResult().equals("FAIL")) {
+                            reseted = false;
+                            break;
+                        }
+                    }
+                }
+                switch (checkResetCondition) {
+                    case 2://切换到上料页面时
+                        if (checkReset == 1 && !reseted) {
+                            //重置，判断发料
+                            checkWareCondition = 0;
+                            showLoading();
+                            mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.STORE_ISSUE);
+                        } else {
+                            //判断发料
+                            checkWareCondition = 1;
+                            showLoading();
+                            mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.STORE_ISSUE);
+                        }
+                        break;
+
+                    case 3://扫站位时
+                        if (checkReset == 1) {
+                            if (!reseted) {
+                                //重置
+                                clearFeedDisplay();
+                                clearLineSeatMaterialScan();
+                            } else {
+                                //操作
+                                beginOperate(edt_LineSeat.getText().toString().trim());
+                            }
+                        } else if (checkReset == 0) {
+                            //操作
+                            beginOperate(edt_LineSeat.getText().toString().trim());
+                        }
+                        break;
+                }
+
+                break;
+
+            case HttpUtils.CodeIsAllDone:
+                int checkWareOrFeed = Integer.valueOf(response);
+                int type = (Integer) ((Object[]) request)[1];
+                if (type == 4) {
+                    switch (checkWareCondition) {
+                        case 0:
+                            if (checkWareOrFeed == 0) {
+                                String titleMsgs[] = new String[]{"提示", "仓库未完成发料!"};
+                                int msgStyleStr[] = new int[]{22, Color.argb(255, 219, 201, 36)};
+                                showInfo(titleMsgs, msgStyleStr, false, 2);
+                                clearFeedDisplay();
+                                clearLineSeatMaterialScan();
+                            } else {
+                                clearFeedDisplay();
+                                clearLineSeatMaterialScan();
+                            }
+                            break;
+
+                        case 1:
+                            if (checkWareOrFeed == 0) {
+                                String titleMsgStr[] = new String[]{"提示", "仓库未完成发料!"};
+                                int msgStyles[] = new int[]{22, Color.argb(255, 219, 201, 36)};
+                                showInfo(titleMsgStr, msgStyles, false, 2);
+                            } else {
+                                mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FEEDMATERIAL);
+                            }
+                            break;
+
+                        case 2:
+                            if (checkWareOrFeed == 0) {
+                                dismissFeedLogin();
+                                String titleMsg[] = new String[]{"站位表更新!", "仓库未完成发料!"};
+                                int msgStyle[] = new int[]{22, Color.argb(255, 219, 201, 36)};
+                                showInfo(titleMsg, msgStyle, false, 2);
+                            }
+                            break;
+
+                        case 3://扫站位时
+                            if (checkWareOrFeed == 0) {
+                                String titleMsgStr[] = new String[]{"提示", "仓库未完成发料!"};
+                                int msgStyles[] = new int[]{22, Color.argb(255, 219, 201, 36)};
+                                showInfo(titleMsgStr, msgStyles, false, 2);
+                            } else if (checkWareOrFeed == 1) {
+                                checkResetCondition = 3;
+                                showLoading();
+                                mHttpUtils.isReset(globalData.getProgramId(), Constants.FEEDMATERIAL);
+                            }
+
+                            break;
+                    }
+                } else if (type == 0) {
+                    if (checkWareOrFeed == 1) {
+                        showFeedLoginWin();
+                    }
+                }
+
+                break;
+
+            case HttpUtils.CodeAddOperate:
+                break;
+
+            case HttpUtils.CodeAddVisit:
+                int resCode = -1;
+                try {
+                    JSONObject jsonObject = new JSONObject(response);
+                    resCode = jsonObject.getInt("code");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    Log.d(TAG, "showHttpResponse - " + e.toString());
+                }
+                if (resCode == 1) {
+                    cacheFeedResult(scanLineIndex, mFeedMaterialBeans.get(scanLineIndex.get(0)));
+                    feedNextMaterial();
+                } else if (resCode == 0) {
+                    globalFunc.showInfo("提示", "上料失败!", "请重新上料");
+                    clearDisplay(scanLineIndex);
+                }
+                break;
+
+            case HttpUtils.CodeReset://失败 failed_not_exist ; 成功 succeed
+                String result = "";
+                try {
+                    JSONObject jsonObject = new JSONObject(response);
+                    result = jsonObject.getString("result");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    Log.d(TAG, "showHttpResponse - " + response);
+                }
+                if (result.equalsIgnoreCase("failed_not_exist")) {
+                    globalFunc.showInfo("警告", "请检查网络连接是否正常!", "请连接网络!");
+                } else if (result.equalsIgnoreCase("succeed")) {
+                    //清空上料结果
+                    if (Constants.isCache) {
+                        boolean updateAllFeed = new GreenDaoUtil().updateAllFeed(feedList);
+                        Log.d(TAG, "updateAllFeed - " + updateAllFeed);
+                    }
+                    //清空上料页面结果
+                    clearFeedDisplay();
+                    edt_pwd.setText("");
+                    dismissFeedLogin();
+
+                }
+                break;
+        }
+    }
+
+    @Override
+    public void showHttpError(int code, Object request, String s) {
+        dismissLoading();
+        Log.d(TAG, "showHttpError - " + s);
+        globalFunc.showInfo("警告", "请检查网络连接是否正常!", "请连接网络!");
+        switch (code) {
+            case HttpUtils.CodeAddOperate://添加操作日志
+                break;
+            case HttpUtils.CodeAddVisit://更新visit表
+                //更新失败,网络访问失败
+                clearDisplay(scanLineIndex);
+                break;
+        }
+    }
+
+    private void showLoading() {
+        dismissLoading();
+        loadingDialog = new LoadingDialog(getActivity(), "正在加载...");
+        loadingDialog.setCanceledOnTouchOutside(false);
+        loadingDialog.show();
+    }
+
+    private void dismissLoading() {
+        //取消弹出窗
+        if (loadingDialog != null && loadingDialog.isShowing()) {
+            loadingDialog.cancel();
+            loadingDialog.dismiss();
+        }
+    }
 }

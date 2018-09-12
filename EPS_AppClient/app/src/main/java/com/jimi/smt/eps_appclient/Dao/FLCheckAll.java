@@ -16,12 +16,13 @@ import org.greenrobot.greendao.annotation.Generated;
 public class FLCheckAll {
     @Id(autoincrement = true)
     private Long flcheck_id;
+    private String programId;//工单programId
     private String order;//工单号
     private String operator;//操作员
     private int board_type;//版面类型
     private String line;//线号
     private int SerialNo;           //流水号
-    private Byte Alternative;    //是否属于替料
+    private boolean Alternative;    //是否属于替料
     private String OrgLineSeat;    //当前站位表站位
     private String OrgMaterial;    //当前站位表料号
     private String ScanLineSeat;   //扫描的站位
@@ -29,12 +30,14 @@ public class FLCheckAll {
     private String Result;         //结果
     private String Remark;         //失败原因
 
-    @Generated(hash = 2052522823)
-    public FLCheckAll(Long flcheck_id, String order, String operator,
-                      int board_type, String line, int SerialNo, Byte Alternative,
-                      String OrgLineSeat, String OrgMaterial, String ScanLineSeat,
-                      String ScanMaterial, String Result, String Remark) {
+    @Generated(hash = 436643456)
+    public FLCheckAll(Long flcheck_id, String programId, String order,
+                      String operator, int board_type, String line, int SerialNo,
+                      boolean Alternative, String OrgLineSeat, String OrgMaterial,
+                      String ScanLineSeat, String ScanMaterial, String Result,
+                      String Remark) {
         this.flcheck_id = flcheck_id;
+        this.programId = programId;
         this.order = order;
         this.operator = operator;
         this.board_type = board_type;
@@ -59,6 +62,14 @@ public class FLCheckAll {
 
     public void setFlcheck_id(Long flcheck_id) {
         this.flcheck_id = flcheck_id;
+    }
+
+    public String getProgramId() {
+        return this.programId;
+    }
+
+    public void setProgramId(String programId) {
+        this.programId = programId;
     }
 
     public String getOrder() {
@@ -101,11 +112,11 @@ public class FLCheckAll {
         this.SerialNo = SerialNo;
     }
 
-    public Byte getAlternative() {
+    public boolean getAlternative() {
         return this.Alternative;
     }
 
-    public void setAlternative(Byte Alternative) {
+    public void setAlternative(boolean Alternative) {
         this.Alternative = Alternative;
     }
 
@@ -156,5 +167,6 @@ public class FLCheckAll {
     public void setRemark(String Remark) {
         this.Remark = Remark;
     }
+
 
 }
