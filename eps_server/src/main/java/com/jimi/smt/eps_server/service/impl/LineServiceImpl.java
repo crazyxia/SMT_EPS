@@ -35,6 +35,18 @@ public class LineServiceImpl implements LineService {
 		return lineMapper.selectAll();
 	}
 
-
+	@Override
+	public int selectLine(String line) {
+		List<String> lines = lineMapper.selectAll();
+		int result = 0;
+		for (int i = 0; i < lines.size(); i++) {
+			if (!lines.get(i).equals("") && lines.get(i).equals(line)) {
+				result = 1;
+				break;
+			}
+		}
+		return result;
+	}
+	
 
 }

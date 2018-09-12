@@ -103,6 +103,12 @@ public interface ProgramMapper {
     List<Program> selectByWorkOrderAndBoardType();
     
     List<Program> selectWorkingProgram(String line);
+           
+    List<String> selectWorkingOrder(String line);
     
-    List<String> selectLine();
+    List<String> selectWorkingBoardType(Program record);
+    
+    String selectLastOperatorByProgram(Program record);
+    
+    String selectProgramId(Program record);
 }

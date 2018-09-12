@@ -81,14 +81,14 @@ public class ClientSocket {
 	 * 连接中控
 	 * @throws Exception
 	 */
-	public ClientSocket(String line, CenterLoginMapper centerLogin, SocketLogMapper socketLogMapper,
+	public ClientSocket(String line, CenterLoginMapper centerLoginMapper, SocketLogMapper socketLogMapper,
 			CenterStateMapper centerStateMapper) throws Exception {
 		this.line = line;
 		this.socketLogMapper = socketLogMapper;
 		this.centerStateMapper = centerStateMapper;
 		CenterLoginExample example = new CenterLoginExample();
 		example.createCriteria().andLineEqualTo(this.line);
-		List<CenterLogin> logins = centerLogin.selectByExample(example);
+		List<CenterLogin> logins = centerLoginMapper.selectByExample(example);
 		if (!logins.isEmpty()) {
 			// 尝试连接中控
 			ip = logins.get(0).getIp();

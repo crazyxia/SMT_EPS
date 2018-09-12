@@ -126,16 +126,8 @@ public class TokenBox {
 			session.put(LAST_ACCESS_TIME_KEY_NAME, new Date().getTime());
 		}
 		
-		
-		/**
-		 * 单元测试
-		 */
-		public static void main(String[] args) {
-			start(30);
 			
-		}
 		public static void begin() {
-			start(30);
-			
+			start(30);			
 		} 
 }

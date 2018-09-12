@@ -18,12 +18,13 @@ import javafx.stage.Stage;
 
 /**
  * 配置页面控制器
+ * 
  * @author 沫熊工作室 <a href="http://www.darhao.cc">www.darhao.cc</a>
  */
 public class ConfigController implements Initializable {
 
 	private Logger logger = LogManager.getRootLogger();
-	
+
 	@FXML
 	private TextField marginLeftTf;
 	@FXML
@@ -34,9 +35,9 @@ public class ConfigController implements Initializable {
 	private Button adjustBt;
 	@FXML
 	private Label tipLb;
-	
+
 	private Stage stage;
-	
+
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		try {
@@ -55,23 +56,23 @@ public class ConfigController implements Initializable {
 		}
 	}
 
-	
 	public void onAdjustClick() {
 		try {
 			Integer.parseInt(marginLeftTf.getText());
 			Integer.parseInt(marginTopTf.getText());
 			int resolution = Integer.parseInt(resolutionTf.getText());
-			if(resolution <= 0) {
+			if (resolution <= 0) {
 				error("分辨率必须为正整数");
 				logger.error("分辨率必须为正整数");
 				return;
 			}
-			TextFileUtil.writeToFile("e.cfg", marginLeftTf.getText() + "," + marginTopTf.getText() + "," + resolutionTf.getText());
+			TextFileUtil.writeToFile("e.cfg",
+					marginLeftTf.getText() + "," + marginTopTf.getText() + "," + resolutionTf.getText());
 			stage.close();
 		} catch (IOException e) {
 			error("保存失败");
 			logger.error("e.cfg文件保存失败");
-		}catch(NumberFormatException e) {
+		} catch (NumberFormatException e) {
 			error("只能填整数");
 			logger.error("只能填整数");
 		}

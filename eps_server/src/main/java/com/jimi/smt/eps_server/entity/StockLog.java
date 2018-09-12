@@ -14,6 +14,8 @@ public class StockLog {
     private String operator;
 
     private Date operationTime;
+    
+    private Date productionDate;
 
     private String position;
 
@@ -112,4 +114,12 @@ public class StockLog {
     public void setTargetBoardType(Integer targetBoardType) {
         this.targetBoardType = targetBoardType;
     }
+
+	public Date getProductionDate() {
+		return productionDate;
+	}
+
+	public void setProductionDate(Date productionDate) {
+		this.productionDate = productionDate;
+	}
 }

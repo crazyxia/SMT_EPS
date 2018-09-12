@@ -12,11 +12,12 @@ import com.jimi.smt.eps_server.service.LineService;
 
 /**
  * 产线控制器
+ * @author HCJ
  */
 @Controller
 @RequestMapping("/line")
 public class LineController {
-	
+
 	@Autowired
 	private LineService lineService;
 
@@ -26,6 +27,5 @@ public class LineController {
 	public List<String> selectAll() {
 		return lineService.selectAll();
 	}
-		
-	
+
 }

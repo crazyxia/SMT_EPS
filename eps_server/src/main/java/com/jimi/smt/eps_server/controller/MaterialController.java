@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.servlet.ModelAndView;
 
 import com.jimi.smt.eps_server.annotation.Log;
 import com.jimi.smt.eps_server.annotation.Role;
@@ -21,11 +20,7 @@ public class MaterialController {
 
 	@Autowired
 	private MaterialService materialService;
-	
-	@RequestMapping("/goManage")
-	public ModelAndView goConfig() {
-		return new ModelAndView("material/goManage");
-	}
+		
 	
 	@Role(RoleType.IPQC)
 	@Log
@@ -83,8 +78,7 @@ public class MaterialController {
 	@Log
 	@ResponseBody
 	@RequestMapping("/list")
-	public List<MaterialInfo> list(Integer id, String materialNo, Integer perifdOfValidity, String orderBy) {
-		
+	public List<MaterialInfo> list(Integer id, String materialNo, Integer perifdOfValidity, String orderBy) {		
 		return materialService.list(id, materialNo, perifdOfValidity, orderBy);
 	}
 }

@@ -99,7 +99,7 @@ public interface ProgramService {
 	 * @param scanLineseat 
 	 * @return
 	 */
-	String operate(String line, String workOrder, Integer boardType, Integer type, String lineseat, String materialNo, String scanLineseat, String scanMaterialNo, Integer operationResult);
+	String operate(String line, String workOrder, Integer boardType, Integer type, String lineseat, String scanLineseat, String scanMaterialNo, Integer operationResult);
 	
 	
 	/**
@@ -127,8 +127,7 @@ public interface ProgramService {
 	 * @param visit
 	 */
 	void updateVisit(ProgramItemVisit visit);
-	
-	
+			
 	/**
 	 * 列出所有实时监控程序选择的对应工单
 	 * @return
@@ -149,7 +148,7 @@ public interface ProgramService {
 	 * @param boardType
 	 * @return
 	 */
-	List<ProgramItem> selectProgramItem(String line, String workOrder, Integer boardType);
+	List<ProgramItem> selectProgramItem(String programId);
 	
 	/**
 	 * 更新program_item_visit 表日志
@@ -164,14 +163,7 @@ public interface ProgramService {
 	 * @return
 	 */
 	int resetCheckAll(String programId);
-	
-	/**
-	 * 判断是否存在产线
-	 * @param line
-	 * @return
-	 */
-	int selectLine(String line);
-	
+			
 	/**
 	 * 判断工单是否重置了
 	 * @param programId
@@ -195,4 +187,46 @@ public interface ProgramService {
 	 * @return
 	 */
 	int isChangeSucceed(String programId, String lineseat);
+	
+	/**
+	 * 返回工单的集合
+	 * @param line
+	 * @return
+	 */
+	List<String> selectWorkingOrder(String line);
+	
+	/**
+	 * 返回版面类型的集合
+	 * @param line
+	 * @param workOrder
+	 * @return
+	 */
+	List<String> selectWorkingBoardType(String line, String workOrder);
+	
+	/**
+	 * 返回ProgramItemVisit集合
+	 * @param line
+	 * @param workOrder
+	 * @param boardType
+	 * @return
+	 */
+	List<ProgramItemVisit> selectItemVisitByProgram(String line, String workOrder, int boardType);
+	
+	/**
+	 * 返回最新操作的操作员
+	 * @param line
+	 * @param workOrder
+	 * @param boardType
+	 * @return
+	 */
+	String selectLastOperatorByProgram(String line, String workOrder, Integer boardType);
+	
+	/**
+	 * 返回工单id
+	 * @param line
+	 * @param workOrder
+	 * @param boardType
+	 * @return
+	 */
+	String getProgramId(String line, String workOrder, Integer boardType);
 }

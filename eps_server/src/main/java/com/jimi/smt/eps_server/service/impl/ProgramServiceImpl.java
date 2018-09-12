@@ -478,14 +478,13 @@ public class ProgramServiceImpl implements ProgramService {
 
 	@Override
 	public String operate(String line, String workOrder, Integer boardType, Integer type, String lineseat,
-			String materialNo, String scanLineseat, String scanMaterialNo, Integer operationResult) {
+			String scanLineseat, String scanMaterialNo, Integer operationResult) {
 		List<ProgramItemVisit> programItemVisits = getVisits(line, workOrder, boardType);
 		if (programItemVisits.isEmpty()) {
 			return "failed_not_exist";
 		}
 		for (ProgramItemVisit programItemVisit : programItemVisits) {
-			if (programItemVisit.getLineseat().equals(lineseat)
-					&& programItemVisit.getMaterialNo().equals(materialNo)) {
+			if (programItemVisit.getLineseat().equals(lineseat)) {
 				programItemVisit.setScanLineseat(scanLineseat);
 				programItemVisit.setScanMaterialNo(scanMaterialNo);
 				switch (type) {
@@ -512,11 +511,10 @@ public class ProgramServiceImpl implements ProgramService {
 				}
 				synchronized (timeoutTimer.getLock(line)) {
 					updateVisit(programItemVisit);
-				}
-				return "succeed";
+				}				
 			}
 		}
-		return "failed_not_exist_item";
+		return "succeed";
 	}
 
 	@Override
@@ -589,12 +587,11 @@ public class ProgramServiceImpl implements ProgramService {
 	}
 
 	@Override
-	public List<ProgramItem> selectProgramItem(String line, String workOrder, Integer boardType) {
-		Program program = new Program();
-		program.setBoardType(boardType);
-		program.setLine(line);
-		program.setWorkOrder(workOrder);
-		return programItemMapper.selectProgramItem(program);
+	public List<ProgramItem> selectProgramItem(String programId) {
+		if(programId != null) {
+			return programItemMapper.selectProgramItem(programId);
+		}
+		return null;	
 	}
 
 	@Override
@@ -606,7 +603,6 @@ public class ProgramServiceImpl implements ProgramService {
 			programItemVisit.setLastOperationTime(new Date());
 			programItemVisit.setFeedTime(new Date());
 			result = programItemVisitMapper.updateFeedResult(programItemVisit);
-			System.out.println(result);
 			break;
 		case 1:
 			programItemVisit.setLastOperationTime(new Date());
@@ -653,21 +649,7 @@ public class ProgramServiceImpl implements ProgramService {
 		programItemVisit.setCheckAllTime(new Date());
 		return programItemVisitMapper.updateByExampleSelective(programItemVisit, example);
 	}
-
-	@Override
-	public int selectLine(String line) {
-		// 得到所有产线的集合
-		List<String> lines = programMapper.selectLine();
-		int result = 0;
-		for (int i = 0; i < lines.size(); i++) {
-			if (!lines.get(i).equals("") && lines.get(i).equals(line)) {
-				result = 1;
-				break;
-			}
-		}
-		return result;
-	}
-
+	
 	@Override
 	public int checkIsReset(String programId, int type) {
 		int result = 0;
@@ -679,7 +661,6 @@ public class ProgramServiceImpl implements ProgramService {
 		case 0:
 			ArrayList<ProgramItemVisit> feedLists = programItemVisitMapper.selectFeedAndTime(programId);
 			for (ProgramItemVisit list : feedLists) {
-
 				results.add(list.getFeedResult());
 				if (list.getLastOperationTime() == null) {
 					times.add(0);
@@ -690,7 +671,6 @@ public class ProgramServiceImpl implements ProgramService {
 			break;
 		case 3:
 			ArrayList<ProgramItemVisit> allLists = programItemVisitMapper.selectAllAndTime(programId);
-
 			for (ProgramItemVisit list : allLists) {
 				results.add(list.getCheckAllResult());
 				if (list.getLastOperationTime() == null) {
@@ -736,23 +716,20 @@ public class ProgramServiceImpl implements ProgramService {
 	@Override
 	public int isAllDone(String programId, int type) {
 		int result = 1;
+		ProgramItemVisitExample example = new ProgramItemVisitExample();
+		example.createCriteria().andProgramIdEqualTo(programId);
+		List<ProgramItemVisit> list = programItemVisitMapper.selectByExample(example);
 		switch (type) {
-		case 4:
-			ProgramItemVisitExample example_1 = new ProgramItemVisitExample();
-			example_1.createCriteria().andProgramIdEqualTo(programId);
-			List<ProgramItemVisit> list_1 = programItemVisitMapper.selectByExample(example_1);
-			for (ProgramItemVisit programItemVisit : list_1) {
+		case 4:			
+			for (ProgramItemVisit programItemVisit : list) {
 				if (programItemVisit.getStoreIssueResult() != 1) {
 					result = 0;
 					break;
 				}
 			}
 			break;
-		case 0:
-			ProgramItemVisitExample example_2 = new ProgramItemVisitExample();
-			example_2.createCriteria().andProgramIdEqualTo(programId);
-			List<ProgramItemVisit> list_2 = programItemVisitMapper.selectByExample(example_2);
-			for (ProgramItemVisit programItemVisit : list_2) {
+		case 0:			
+			for (ProgramItemVisit programItemVisit : list) {
 				if (programItemVisit.getFeedResult() != 1) {
 					result = 0;
 					break;
@@ -760,21 +737,15 @@ public class ProgramServiceImpl implements ProgramService {
 			}
 			break;
 		case 3:
-			ProgramItemVisitExample example_3 = new ProgramItemVisitExample();
-			example_3.createCriteria().andProgramIdEqualTo(programId);
-			List<ProgramItemVisit> list_3 = programItemVisitMapper.selectByExample(example_3);
-			for (ProgramItemVisit programItemVisit : list_3) {
+			for (ProgramItemVisit programItemVisit : list) {
 				if (programItemVisit.getCheckAllResult() != 1) {
 					result = 0;
 					break;
 				}
 			}
 			break;
-		case 5:
-			ProgramItemVisitExample example_4 = new ProgramItemVisitExample();
-			example_4.createCriteria().andProgramIdEqualTo(programId);
-			List<ProgramItemVisit> list_4 = programItemVisitMapper.selectByExample(example_4);
-			for (ProgramItemVisit programItemVisit : list_4) {
+		case 5:			
+			for (ProgramItemVisit programItemVisit : list) {
 				if (programItemVisit.getFirstCheckAllResult() != 1) {
 					result = 0;
 					break;
@@ -804,5 +775,45 @@ public class ProgramServiceImpl implements ProgramService {
 		}
 		return result;
 	}
+
+	@Override
+	public List<String> selectWorkingOrder(String line) {		
+		return programMapper.selectWorkingOrder(line);
+	}
+
+	@Override
+	public List<String> selectWorkingBoardType(String line, String workOrder) {
+		Program program = new Program();
+		program.setLine(line);
+		program.setWorkOrder(workOrder);
+		return programMapper.selectWorkingBoardType(program);
+	}
+
+	@Override
+	public List<ProgramItemVisit> selectItemVisitByProgram(String line, String workOrder, int boardType) {
+		Program program = new Program();
+		program.setLine(line);
+		program.setWorkOrder(workOrder);
+		program.setBoardType(boardType);
+		return programItemVisitMapper.selectItemVisitByProgram(program);
+	}
+	
+	@Override
+	public String selectLastOperatorByProgram(String line, String workOrder, Integer boardType) {
+		Program program = new Program();
+		program.setLine(line);
+		program.setWorkOrder(workOrder);
+		program.setBoardType(boardType);
+		return programMapper.selectLastOperatorByProgram(program);
+	}
+
+	@Override
+	public String getProgramId(String line, String workOrder, Integer boardType) {
+		Program program = new Program();
+		program.setLine(line);
+		program.setWorkOrder(workOrder);
+		program.setBoardType(boardType);
+		return programMapper.selectProgramId(program);
+	}	
 
 }

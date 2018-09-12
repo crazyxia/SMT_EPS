@@ -2,7 +2,6 @@ package com.jimi.smt.eps.display.constant;
 
 /**
  * 中控受控后返回码常量
- * @author 沫熊工作�? <a href="http://www.darhao.cc">www.darhao.cc</a>
  */
 public enum ErrorCode {
 	/**
@@ -11,7 +10,7 @@ public enum ErrorCode {
 	SUCCEED,
 	
 	/**
-	 * 继电器故�?
+	 * 继电器故障
 	 */
 	RELAY_FAILURE,
 }

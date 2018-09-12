@@ -527,5 +527,33 @@
       last_operation_time = #{lastOperationTime,jdbcType=TIMESTAMP}
     where lineseat = #{lineseat,jdbcType=VARCHAR}
       and program_id = #{programId,jdbcType=VARCHAR}
-  </update>  
+  </update>
+  <select id="selectItemVisitByProgram" parameterType="com.jimi.smt.eps_server.entity.Program" resultMap="BaseResultMap">
+    (select
+    <include refid="Base_Column_List" />
+    from program_item_visit
+    inner join program on program.id = program_item_visit.program_id
+    where line = #{line,jdbcType=VARCHAR}
+    and work_order = #{workOrder,jdbcType=VARCHAR}
+    and board_type = #{boardType,jdbcType=INTEGER}
+    and (store_issue_result = 0 OR feed_result = 0 OR change_result = 0 OR (check_all_result % 3) = 0 OR (check_result % 3) = 0 OR first_check_all_result = 0))
+    union
+    (select
+    <include refid="Base_Column_List" />
+    from program_item_visit
+    inner join program on program.id = program_item_visit.program_id
+    where line = #{line,jdbcType=VARCHAR}
+    and work_order = #{workOrder,jdbcType=VARCHAR}
+    and board_type = #{boardType,jdbcType=INTEGER}
+    and (change_result = 4))
+    union
+    (select
+    <include refid="Base_Column_List" />
+    from program_item_visit
+    inner join program on program.id = program_item_visit.program_id
+    where line = #{line,jdbcType=VARCHAR}
+    and work_order = #{workOrder,jdbcType=VARCHAR}
+    and board_type = #{boardType,jdbcType=INTEGER}
+    and (store_issue_result != 0 OR feed_result != 0 OR (change_result % 4) !=0 OR (check_all_result % 3) != 0 OR (check_result % 3) != 0 OR first_check_all_result != 0))
+  </select>  
 </mapper>

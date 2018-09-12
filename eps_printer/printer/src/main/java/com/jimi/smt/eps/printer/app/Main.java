@@ -20,20 +20,20 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
 import javafx.stage.Stage;
 
-public class Main extends Application{
+public class Main extends Application {
 
 	private MainController mainController;
-	
-	private static final String VERSION = "1.5";
-	
+
+	private static final String VERSION = "1.6";
+
 	private static final String FILE_NAME = "EPS_Printer-" + VERSION + ".jar";
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-		//确保只有一个实例启动
-		if(isRunning()) {
+		// 确保只有一个实例启动
+		if (isRunning()) {
 			new Alert(AlertType.WARNING, "另一个实例已经在运行中，请勿重复运行！", ButtonType.OK).show();
-			new Thread(()->{
+			new Thread(() -> {
 				try {
 					Thread.sleep(3000);
 				} catch (InterruptedException e) {
@@ -41,52 +41,50 @@ public class Main extends Application{
 				}
 				System.exit(0);
 			}).start();
-		}else {
+		} else {
 			clearDeadProcess();
 			FXMLLoader loader = new FXMLLoader(ResourcesUtil.getResourceURL("fxml/app.fxml"));
 			Parent root = loader.load();
-			//把Stage存入MainController
+			// 把Stage存入MainController
 			mainController = loader.getController();
-	        mainController.setPrimaryStage(primaryStage);
-	        //显示
-	        primaryStage.setTitle("防错料系统 - 条码打印器 " + VERSION);
-	        primaryStage.setScene(new Scene(root));
-	        primaryStage.show();
+			mainController.setPrimaryStage(primaryStage);
+			// 显示
+			primaryStage.setTitle("防错料系统 - 条码打印器 " + VERSION);
+			primaryStage.setScene(new Scene(root));
+			primaryStage.show();
 		}
 	}
-	
-	
-	
+
 	/**
 	 * 程序入口
+	 * 
 	 * @param args
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
 		ConfigurationSource source;
 		try {
 			source = new ConfigurationSource(ResourcesUtil.getResourceAsStream("log4j/log4j.xml"));
-			Configurator.initialize(null, source);   
+			Configurator.initialize(null, source);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		launch(args);
 	}
-	
-	
+
 	@Override
 	public void stop() throws Exception {
 		mainController.getPrinterSocket().close();
-		//发送RFID程序关闭指令
+		// 发送RFID程序关闭指令
 		MainController.getRfidSocket().getOutputStream().write('0');
 		MainController.getRfidSocket().close();
 	}
-	
-	
+
 	/**
 	 * 判断是否已经有一个实例在运行
+	 * 
 	 * @return
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public static boolean isRunning() throws IOException {
 		String line = null;
@@ -103,14 +101,15 @@ public class Main extends Application{
 		}
 		return false;
 	}
-	
+
 	/**
 	 * 清除僵尸进程
-	 * @throws IOException 
+	 * 
+	 * @throws IOException
 	 */
 	public static void clearDeadProcess() throws IOException {
 		Runtime.getRuntime().exec("taskkill /im printer.exe /f");
 		Runtime.getRuntime().exec("taskkill /im SMT_EPS_RFID_WRITER.exe /f");
 	}
-	
+
 }

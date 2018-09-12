@@ -1,18 +1,17 @@
 package com.jimi.smt.eps.display.constant;
 
 /**
- * 操作受控设备的工作方�?
- * @author 沫熊工作�? <a href="http://www.darhao.cc">www.darhao.cc</a>
+ * 操作受控设备的工作方式
  */
 public enum Operation {
 	
 	/**
-	 * �?
+	 * 关
 	 */
 	OFF,
 	
 	/**
-	 * �?
+	 * 开
 	 */
 	ON,
 	

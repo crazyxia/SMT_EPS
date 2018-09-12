@@ -58,14 +58,15 @@ public class ExcelSpringHelper extends ExcelHelper{
 	 */
 	public ResponseEntity<byte[]> getDownloadEntity(String downloadFileName, boolean autoColumnWidth) throws IOException {
 		//设置头信息	
-		HttpHeaders headers = new HttpHeaders(); 
+		HttpHeaders headers = new HttpHeaders();
+		//将utf-8字节数组转化为iso-8859-1
 		String filename = new String((downloadFileName).getBytes("utf-8"), "iso-8859-1");
 		headers.setContentDispositionFormData("attachment", filename);   
 		headers.setContentType(MediaType.parseMediaType("application/x-xls")); 
 		//返回流
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		write(bos, autoColumnWidth);
-		return new ResponseEntity<byte[]>(bos.toByteArray(), headers, HttpStatus.CREATED);    
+		write(bos, autoColumnWidth);		
+		return new ResponseEntity<byte[]>(bos.toByteArray(), headers, HttpStatus.OK);    
 	}
 	
 	

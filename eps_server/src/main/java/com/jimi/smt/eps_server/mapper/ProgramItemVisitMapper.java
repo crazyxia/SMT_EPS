@@ -1,5 +1,6 @@
 package com.jimi.smt.eps_server.mapper;
 
+import com.jimi.smt.eps_server.entity.Program;
 import com.jimi.smt.eps_server.entity.ProgramItemVisit;
 import com.jimi.smt.eps_server.entity.ProgramItemVisitExample;
 import com.jimi.smt.eps_server.entity.ProgramItemVisitKey;
@@ -50,4 +51,6 @@ public interface ProgramItemVisitMapper {
     int updateStoreResult(ProgramItemVisit record);
     
     int updateFirstAllResult(ProgramItemVisit record);
+    
+    List<ProgramItemVisit> selectItemVisitByProgram(Program record);
 }

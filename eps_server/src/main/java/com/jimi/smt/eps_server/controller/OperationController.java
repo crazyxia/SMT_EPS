@@ -10,7 +10,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.servlet.ModelAndView;
 
 import com.jimi.smt.eps_server.annotation.Open;
 import com.jimi.smt.eps_server.annotation.Role;
@@ -29,6 +28,7 @@ import com.jimi.smt.eps_server.util.ResultUtil;
 
 /**
  * 操作日志控制器
+ * 
  * @author 沫熊工作室 <a href="http://www.darhao.cc">www.darhao.cc</a>
  */
 @Controller
@@ -37,50 +37,19 @@ public class OperationController {
 
 	@Autowired
 	private OperationService operationService;
-	
-	
-	@RequestMapping("/goClientReport")
-	public ModelAndView goClientReport() {
-		return new ModelAndView("operation/goClientReport");
-	}
-	
-	
-	@RequestMapping("/goIPQCReport")
-	public ModelAndView goIPQCReport() {
-		return new ModelAndView("operation/goIPQCReport");
-	}
-	
-	
-	@RequestMapping("/goStoreReport")
-	public ModelAndView goStoreReport() {
-		return new ModelAndView("operation/goStoreReport");
-	}
-	
-	
-	@Open
-	@RequestMapping("/goDisplayReport")
-	public ModelAndView goDisplayReport() {
-		return new ModelAndView("operation/goDisplayReport");
-	}
-	
-	
-	@Open
-	@RequestMapping("/goDisplayReport2")
-	public ModelAndView goDisplayReport2() {
-		return new ModelAndView("operation/goDisplayReport2");
-	}
-	
-	
-	//分页查询客户报表
+
+	// 分页查询客户报表
 	@Role(RoleType.IPQC)
 	@ResponseBody
 	@RequestMapping("/listClientReport")
-	public PageVO<ClientReport> listClientReportByPage(String client, String programNo, String line, String orderNo, String workOrderNo, String startTime, String endTime, Integer currentPage) {	
+	public PageVO<ClientReport> listClientReportByPage(String client, String programNo, String line, String orderNo,
+			String workOrderNo, String startTime, String endTime, Integer currentPage) {
 		try {
 			Page page = new Page();
 			page.setCurrentPage(currentPage);
-			PageVO<ClientReport> pageVO= new PageVO<ClientReport>();
-			pageVO.setList(operationService.listClientReportByPage(client, programNo, line, orderNo, workOrderNo, startTime, endTime, page));
+			PageVO<ClientReport> pageVO = new PageVO<ClientReport>();
+			pageVO.setList(operationService.listClientReportByPage(client, programNo, line, orderNo, workOrderNo,
+					startTime, endTime, page));
 			pageVO.setPage(page);
 			return pageVO;
 		} catch (ParseException e) {
@@ -88,27 +57,30 @@ public class OperationController {
 		}
 		return null;
 	}
-	
-	
+
 	@Role(RoleType.IPQC)
 	@RequestMapping("/downloadClientReport")
-	public ResponseEntity<byte[]> downloadClientReport(String client, String programNo, String line, String orderNo, String workOrderNo, String startTime, String endTime){
+	public ResponseEntity<byte[]> downloadClientReport(String client, String programNo, String line, String orderNo,
+			String workOrderNo, String startTime, String endTime) {
 		try {
-			return operationService.downloadClientReport(client, programNo, line, orderNo, workOrderNo, startTime, endTime);
+			return operationService.downloadClientReport(client, programNo, line, orderNo, workOrderNo, startTime,
+					endTime);
 		} catch (ParseException e) {
 			ResultUtil.failed("日期格式不正确", e);
 		} catch (IOException e) {
 			ResultUtil.failed("IO异常", e);
+		} catch (OutOfMemoryError e) {
+			ResultUtil.failed("内存溢出", e);
 		}
 		return null;
 	}
-	
-	
+
 	@Role(RoleType.IPQC)
 	@ResponseBody
 	@RequestMapping("/listOperationReport")
-	public List<OperationReport> listOperationReport(String operator, String client, String line, String workOrderNo, String startTime, String endTime, Integer type) {
-		if(type == null) {
+	public List<OperationReport> listOperationReport(String operator, String client, String line, String workOrderNo,
+			String startTime, String endTime, Integer type) {
+		if (type == null) {
 			ResultUtil.failed("参数不足");
 			return null;
 		}
@@ -119,12 +91,13 @@ public class OperationController {
 		}
 		return null;
 	}
-	
+
 	@Role(RoleType.IPQC)
 	@ResponseBody
 	@RequestMapping("/listOperationReportSummary")
-	public List<OperationReportSummary> listOperationReportSummary(String line, String workOrderNo, String startTime, String endTime, Integer type) {
-		if(type == null) {
+	public List<OperationReportSummary> listOperationReportSummary(String line, String workOrderNo, String startTime,
+			String endTime, Integer type) {
+		if (type == null) {
 			ResultUtil.failed("参数不足");
 			return null;
 		}
@@ -135,30 +108,33 @@ public class OperationController {
 		}
 		return null;
 	}
-	
-	
+
 	@Role(RoleType.IPQC)
 	@RequestMapping("/downloadOperationReport")
-	public ResponseEntity<byte[]> downloadOperationReport(String operator, String client, String line, String workOrderNo, String startTime, String endTime, Integer type){
-		if(type == null) {
+	public ResponseEntity<byte[]> downloadOperationReport(String operator, String client, String line,
+			String workOrderNo, String startTime, String endTime, Integer type) {
+		if (type == null) {
 			ResultUtil.failed("参数不足");
 			return null;
 		}
 		try {
-			return operationService.downloadOperationReport(operator, client, line, workOrderNo, startTime, endTime, type);
+			return operationService.downloadOperationReport(operator, client, line, workOrderNo, startTime, endTime,
+					type);
 		} catch (ParseException e) {
 			ResultUtil.failed("日期格式不正确", e);
 		} catch (IOException e) {
 			ResultUtil.failed("IO异常", e);
+		} catch (OutOfMemoryError e) {
+			ResultUtil.failed("内存溢出", e);
 		}
 		return null;
 	}
-	
-	
+
 	@Role(RoleType.IPQC)
 	@ResponseBody
 	@RequestMapping("/listStockLogs")
-	public List<StockLogVO> listStockLogs(String operator, String materialNo, String custom, String position, String startTime, String endTime) {
+	public List<StockLogVO> listStockLogs(String operator, String materialNo, String custom, String position,
+			String startTime, String endTime) {
 		try {
 			return operationService.listStockLogs(operator, materialNo, custom, position, startTime, endTime);
 		} catch (ParseException e) {
@@ -166,32 +142,32 @@ public class OperationController {
 		}
 		return null;
 	}
-	
-	
+
 	@Open
 	@ResponseBody
 	@RequestMapping("/listDisplayReport")
 	public DisplayReport listDisplayReport(String line) {
-		if(line == null || line.equals("")) {
+		if (line == null || line.equals("")) {
 			return null;
 		}
 		DisplayReport displayReport = operationService.listDisplayReport(line);
 		return displayReport;
 	}
-	
+
 	@Open
 	@ResponseBody
 	@RequestMapping("/add")
 	public ResultJson add(@RequestBody Operation operation) {
 		int result = operationService.add(operation);
 		ResultJson resultJson = new ResultJson();
-		if(result==1) {
+		if (result == 1) {
 			resultJson.setCode(1);
-			resultJson.setMsg("操作成功");			
-		}else {
+			resultJson.setMsg("操作成功");
+		} else {
 			resultJson.setCode(0);
-			resultJson.setMsg("操作失败");	
+			resultJson.setMsg("操作失败");
 		}
-		return resultJson;				
-	}	
+		return resultJson;
+	}
+
 }

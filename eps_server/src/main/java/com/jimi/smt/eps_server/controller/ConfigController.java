@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.servlet.ModelAndView;
 
 import com.alibaba.fastjson.JSONObject;
 import com.jimi.smt.eps_server.annotation.Log;
@@ -24,34 +23,26 @@ public class ConfigController {
 
 	@Autowired
 	private ConfigService configService;
-	
-	
-	@RequestMapping("/goConfig")
-	public ModelAndView goConfig() {
-		return new ModelAndView("config/goConfig");
-	}
-	
-	
+
 	@Log
 	@ResponseBody
 	@RequestMapping("/set")
 	public ResultUtil set(String configs) {
 		List<Config> configList = JSONObject.parseArray(configs, Config.class);
-		if(configList != null && !configList.isEmpty()) {
+		if (configList != null && !configList.isEmpty()) {
 			if (configService.set(configList)) {
 				return ResultUtil.succeed();
-			}else {
+			} else {
 				return ResultUtil.failed();
 			}
 		}
 		return ResultUtil.failed("参数JSON格式不对");
 	}
-	
-	
+
 	@ResponseBody
 	@RequestMapping("/list")
 	public List<Config> list() {
 		return configService.list();
 	}
-	
+
 }

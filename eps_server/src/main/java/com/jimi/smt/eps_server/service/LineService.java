@@ -30,5 +30,13 @@ public interface LineService {
 	 * @return
 	 */
 	List<String> selectAll();
+	
+	/**
+	 * 返回是否有这条产线的结果
+	 * @param line
+	 * @return
+	 */
+	int selectLine(String line);
+	
 
 }

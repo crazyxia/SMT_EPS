@@ -1,8 +1,7 @@
 package com.jimi.smt.eps.display.constant;
 
 /**
- * 板子数清零原因常�?
- * @author 沫熊工作�? <a href="http://www.darhao.cc">www.darhao.cc</a>
+ * 板子数清零原因常量
  */
 public enum BoardResetReson {
 	

@@ -3,19 +3,18 @@ package com.jimi.smt.eps_server.controller;
 import java.awt.Font;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.util.Base64;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.servlet.ModelAndView;
 
 import com.jimi.smt.eps_server.annotation.Log;
 import com.jimi.smt.eps_server.annotation.Open;
@@ -27,35 +26,25 @@ import com.jimi.smt.eps_server.service.UserService;
 import com.jimi.smt.eps_server.util.QRCodeUtil;
 import com.jimi.smt.eps_server.util.ResultUtil;
 import com.jimi.smt.eps_server.util.TokenBox;
-
+import org.apache.commons.io.*;
 import cc.darhao.dautils.api.FontImageUtil;
 
 /**
  * 用户控制器
- * 
  * @author 沫熊工作室 <a href="http://www.darhao.cc">www.darhao.cc</a>
  */
 @Controller
 @RequestMapping("/user")
 public class UserController {
-	
+
+	private static final Object lock = new Object();
+
 	public static final String SESSION_KEY_LOGIN_USER = "loginUser";
 
 	@Autowired
 	private UserService userService;
 	@Autowired
 	private UserToUserVOFiller filler;
-
-	@RequestMapping("/goManage")
-	public ModelAndView goManage() {
-		return new ModelAndView("user/goManage");
-	}
-
-	@Open
-	@RequestMapping("/goLogin")
-	public ModelAndView goLogin() {
-		return new ModelAndView("user/goLogin");
-	}
 
 	@Log
 	@ResponseBody
@@ -106,19 +95,19 @@ public class UserController {
 			return ResultUtil.failed();
 		}
 		User user = userService.login(id, password);
-		if(user == null || user.getType() < 3) {
+		if (user == null || user.getType() < 3) {
 			return ResultUtil.failed("failed_not_admin");
 		}
-		if(user.getEnabled() == false) {			
+		if (user.getEnabled() == false) {
 			return ResultUtil.failed("failed_not_enabled");
 		}
-		if(user.getPassword() != null && !user.getPassword().equals(password)) {
+		if (user.getPassword() != null && !user.getPassword().equals(password)) {
 			return ResultUtil.failed("failed_wrong_password");
 		}
 		String tokenId = request.getParameter(TokenBox.TOKEN_ID_KEY_NAME);
-		if(tokenId != null) {
+		if (tokenId != null) {
 			UserVO user2 = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
-			if(user2 != null && user.getId().equals(user2.getId())) {
+			if (user2 != null && user.getId().equals(user2.getId())) {
 				return ResultUtil.failed("请勿重复登录！");
 			}
 		}
@@ -130,45 +119,42 @@ public class UserController {
 	}
 
 	@Open
+	@ResponseBody
 	@RequestMapping("/getCodePic")
-	public ModelAndView getCodePic(HttpServletResponse response, HttpSession session, String id, Integer size)
-			throws Exception {
+	public ResultUtil getCodePic(HttpSession session, String id) throws Exception {
 		if (id == null || id.equals("")) {
-			return new ModelAndView("user/goManage");
+			return ResultUtil.failed("参数不足");
 		}
-		// 从session读取size
-		if (size == null) {
-			if (session.getAttribute("code_size") == null) {
-				size = 300;
-			} else {
-				size = (Integer) session.getAttribute("code_size");
-			}
-		}
-		// 把size存到session
-		session.setAttribute("code_size", size);
-		response.setContentType("image/png");
 		// 生成加密信息
 		String encodedId = new String(Base64.getEncoder().encode(id.getBytes()));
 		encodedId += "?";
 		// 生成二维码
 		Font font = new Font("宋体", Font.PLAIN, 128 / id.length());
-		FileOutputStream fileOutputStream = new FileOutputStream(
-				new File(session.getServletContext().getRealPath("/static/temp.png")));
-		BufferedImage textImage = FontImageUtil.createImage(id, font, 64, 64);
-		QRCodeUtil.encode(encodedId, textImage, "", fileOutputStream, false);
-		// 传递参数
-		ModelAndView modelAndView = new ModelAndView("user/getCodePic");
-		modelAndView.addObject("id", id);
-		modelAndView.addObject("size", size);
-		return modelAndView;
+		FileOutputStream fileOutputStream = null;
+		String fileName = "";
+		synchronized (lock) {
+			fileName = "codePic";
+			String filePath = session.getServletContext().getRealPath("/static/png");
+			File file = new File(filePath);
+			if (file.exists()) {
+				FileUtils.deleteDirectory(file);
+			}
+			file.mkdirs();
+			fileName = fileName + System.currentTimeMillis() + ".png";
+			fileOutputStream = new FileOutputStream(new File(filePath + File.separator + fileName));
+			BufferedImage textImage = FontImageUtil.createImage(id, font, 64, 64);
+			QRCodeUtil.encode(encodedId, textImage, "", fileOutputStream, false);
+			fileOutputStream.close();
+		}
+		return ResultUtil.succeed("/static/png/" + fileName);
 	}
 
 	@Open
 	@ResponseBody
-	@RequestMapping("selectById")
+	@RequestMapping("/selectById")
 	public ResultJson selectUserById(String id) {
 		User user = userService.selectUserById(id);
-		ResultJson resultJson = new ResultJson();		
+		ResultJson resultJson = new ResultJson();
 		if (user == null) {
 			resultJson.setCode(0);
 			resultJson.setMsg("操作员不存在");
@@ -178,10 +164,41 @@ public class UserController {
 				resultJson.setMsg("操作员离职");
 			} else {
 				resultJson.setCode(1);
-				resultJson.setMsg("操作员存在");				
+				resultJson.setMsg("操作员存在");
 				resultJson.setData(user);
 			}
 		}
 		return resultJson;
+	}
+
+	public static File[] findFile(String filePath, String fileName) {
+		File dir = new File(filePath);
+		File[] tempFile = dir.listFiles(new FileFilter() {
+
+			@Override
+			public boolean accept(File file) {
+
+				String name = file.getName();
+				if (name.contains(fileName)) {
+					return true;
+				}
+				return false;
+			}
+		});
+		if (tempFile == null || tempFile.length <= 0) {
+			return null;
+		}
+		return tempFile;
+	}
+
+	@Open
+	@ResponseBody
+	@RequestMapping("/select")
+	public User select(String id) {
+		User user = userService.selectUserById(id);
+		if (user != null && user.getEnabled()) {
+			return user;
+		}
+		return null;
 	}
 }

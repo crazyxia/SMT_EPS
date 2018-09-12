@@ -95,4 +95,6 @@ public interface LineMapper {
     int updateByPrimaryKey(Line record);
     
     List<String> selectAll();
+    
+    List<String> selectLine();
 }

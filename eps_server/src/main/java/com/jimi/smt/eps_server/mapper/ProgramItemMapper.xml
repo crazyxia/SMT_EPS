@@ -263,15 +263,11 @@
       and lineseat = #{lineseat,jdbcType=VARCHAR}
       and material_no = #{materialNo,jdbcType=VARCHAR}
   </update>
-  <select id="selectProgramItem" parameterType="com.jimi.smt.eps_server.entity.Program" resultMap="selectProgramItemMap" >
+  <select id="selectProgramItem" parameterType="java.lang.String" resultMap="selectProgramItemMap" >
     select
     program_id,lineseat,material_no,alternative,serial_no
-    from program join program_item
-    on program.id = program_item.program_id and 
-    program.line = #{line,jdbcType=VARCHAR} and
-    program.work_order = #{workOrder,jdbcType=VARCHAR} and
-    program.board_type = #{boardType,jdbcType=VARCHAR}
-    where program.state = 1
+    from program_item
+    where program_id = #{programId,jdbcType=VARCHAR}
     order by lineseat,serial_no,material_no
   </select>
 </mapper>

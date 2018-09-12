@@ -2,7 +2,6 @@ package com.jimi.smt.eps.display.pack;
 
 import com.jimi.smt.eps.display.constant.BoardResetReson;
 import com.jimi.smt.eps.display.constant.ClientDevice;
-import com.jimi.smt.eps.display.constant.Line;
 
 import cc.darhao.jiminal.annotation.Parse;
 import cc.darhao.jiminal.annotation.Protocol;
@@ -14,28 +13,28 @@ public class BoardResetPackage extends BasePackage {
 	@Parse({0,1})
 	private ClientDevice ClientDevice;
 	@Parse({1,1})
-	private Line Line;
+	private String line;
 	@Parse({2,1})
 	private BoardResetReson BoardResetReson;
 	
 	public ClientDevice getClientDevice() {
 		return ClientDevice;
 	}
-	public void setClientDevice(ClientDevice ClientDevice) {
-		this.ClientDevice = ClientDevice;
+	public void setClientDevice(ClientDevice clientDevice) {
+		ClientDevice = clientDevice;
 	}
-	public Line getLine() {
-		return Line;
+	public String getLine() {
+		return line;
 	}
-	public void setLine(Line Line) {
-		this.Line = Line;
+	public void setLine(String line) {
+		this.line = line;
 	}
 	public BoardResetReson getBoardResetReson() {
 		return BoardResetReson;
 	}
-	public void setBoardResetReson(BoardResetReson BoardResetReson) {
-		this.BoardResetReson = BoardResetReson;
+	public void setBoardResetReson(BoardResetReson boardResetReson) {
+		BoardResetReson = boardResetReson;
 	}
-
-
+	
+	
 }

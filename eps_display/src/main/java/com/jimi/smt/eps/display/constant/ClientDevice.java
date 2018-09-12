@@ -1,8 +1,7 @@
 package com.jimi.smt.eps.display.constant;
 
 /**
- * 发�?�端设备类型常量
- * @author 沫熊工作�? <a href="http://www.darhao.cc">www.darhao.cc</a>
+ * 发送端设备类型常量
  */
 public enum ClientDevice {
 	

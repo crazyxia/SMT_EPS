@@ -19,21 +19,13 @@ import com.jimi.smt.eps.display.app.Main;
 import com.jimi.smt.eps.display.constant.BoardResetReson;
 import com.jimi.smt.eps.display.constant.ClientDevice;
 import com.jimi.smt.eps.display.constant.ControlResult;
-import com.jimi.smt.eps.display.constant.Line;
-import com.jimi.smt.eps.display.entity.Log;
-import com.jimi.smt.eps.display.entity.Login;
-import com.jimi.smt.eps.display.entity.Program;
+import com.jimi.smt.eps.display.entity.SocketLog;
+import com.jimi.smt.eps.display.entity.CenterLogin;
 import com.jimi.smt.eps.display.entity.ProgramItemVisit;
 import com.jimi.smt.eps.display.entity.ResultData;
-import com.jimi.smt.eps.display.mapper.LoginMapper;
-import com.jimi.smt.eps.display.mapper.OperationMapper;
-import com.jimi.smt.eps.display.mapper.ProgramItemVisitMapper;
-import com.jimi.smt.eps.display.mapper.ProgramMapper;
 import com.jimi.smt.eps.display.pack.BoardResetPackage;
 import com.jimi.smt.eps.display.pack.BoardResetReplyPackage;
 import com.jimi.smt.eps.display.util.HttpHelper;
-import com.jimi.smt.eps.display.util.MybatisHelper;
-import com.jimi.smt.eps.display.util.MybatisHelper.MybatisSession;
 
 import cc.darhao.dautils.api.BytesParser;
 import cc.darhao.dautils.api.FieldUtil;
@@ -67,24 +59,18 @@ import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import okhttp3.Call;
 import okhttp3.Response;
+import com.alibaba.fastjson.JSON;
 
 public class DisplayController implements Initializable {
 
-	// Mybatis的配置文件路径
-	private static final String MYBATIS_CONFIG_PATH = "mybatis/mybatis-config.xml";
-
 	private static final String PACKAGE_PATH = "com.jimi.smt.eps.display.pack";
-	// 重置请求
-	private static final String RESET_ACTION = "reset";
-	// 选择当前工单请求
-	private static final String SWITCH_ACTION = "switch";
 	// 刷新表格数据线程的启动延时时间
 	private static final Integer TIME_DELAY = 0;
 	// 刷线表格数据线程的启动间隔时间
 	private static final Integer TIME_PERIOD = 5000;
 	// 默认结果
 	private static final Integer DEFAULT_RESULT = 2;
-	
+
 	private static final boolean IS_NETWORK = true;
 	// 定时器是否更新数据
 	private static boolean isUpdate = false;
@@ -159,14 +145,7 @@ public class DisplayController implements Initializable {
 
 	// http连接
 	HttpHelper httpHelper = new HttpHelper();
-	// 数据库数据连接
-	private MybatisSession<ProgramItemVisitMapper> programItemVisitSession;
 
-	private MybatisSession<ProgramMapper> programSession;
-
-	private MybatisSession<OperationMapper> operationSession;
-
-	private MybatisSession<LoginMapper> loginSession;
 	// 定时器
 	private static Timer updateTimer = new Timer(true);
 	// 表格数据
@@ -174,15 +153,40 @@ public class DisplayController implements Initializable {
 	// 日志记录
 	private Logger logger = LogManager.getRootLogger();
 
+	// 异步通讯器
 	AsyncCommunicator asyncCommunicator = null;
-
+	// 板子数量重置包
 	BoardResetPackage boardResetPackage = new BoardResetPackage();
+
+	private List<String> lines = null;
+	// 返回的结果
+	private String result;
+
+	private List<ProgramItemVisit> programItemVisits;
+	// 操作员
+	private String operator;
+
+	// 重置请求
+	private static final String RESET_ACTION = "program/reset";
+	// 选择当前工单请求
+	private static final String SWITCH_ACTION = "program/switch";
+	// 查询所有产线请求
+	private static final String GET_LINE_ACTION = "line/selectAll";
+	// 查询用户请求
+	private static final String GET_USER_ACTION = "login/selectById";
+	// 查询工单请求
+	private static final String GET_WORKORDER_ACTION = "program/selectWorkingOrder";
+	// 查询版面类型请求
+	private static final String GET_BOARDTYPE_ACTION = "program/selectWorkingBoardType";
+	// 查询操作员请求
+	private static final String GET_OPERATOR_ACTION = "program/selectLastOperatorByProgram";
+	// 查询工单操作请求
+	private static final String GET_ITEMVISIT_ACTION = "program/selectItemVisitByProgram";
 	
-	private List<String> lines = null; 
+	private Map<String, String> map = new HashMap<>();
 
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		initVersionLb();
-		initSession();
 		initlineCb();
 		initDatatTV();
 		resetBtListener();
@@ -191,34 +195,20 @@ public class DisplayController implements Initializable {
 		boardTypeChangeListener();
 		// 定时任务：刷新表单
 		timeTask();
-		
-	}
 
-	
-	/**
-	 * 初始化session，该类session可以使用缓存，表中数据不常变化
-	 */
-	private void initSession() {
-		try {
-			programSession = MybatisHelper.getMS(MYBATIS_CONFIG_PATH,ProgramMapper.class,"smt");
-			operationSession = MybatisHelper.getMS(MYBATIS_CONFIG_PATH, OperationMapper.class, "smt");
-			loginSession = MybatisHelper.getMS(MYBATIS_CONFIG_PATH, LoginMapper.class, "socket");
-		} catch (IOException e) {
-			logger.error("数据库session创建失败");
-			e.printStackTrace();
-		}
 	}
 
 	private void initVersionLb() {
-		versionLb.setText("V"+Main.getVersion()+" © 2018 几米物联技术有限公司  All rights reserved.");
+		versionLb.setText("V" + Main.getVersion() + " © 2018 几米物联技术有限公司  All rights reserved.");
 	}
-	
+
 	/**
 	 * 初始化线号选择框
+	 * 
+	 * @throws IOException
 	 */
 	public void initlineCb() {
-
-		lines = loginSession.getMapper().selectLine();
+		lines = JSON.parseArray(sendRequest(GET_LINE_ACTION, null), String.class);
 		ObservableList<String> lineList = FXCollections.observableArrayList(lines);
 		lineCb.getItems().clear();
 		lineCb.setItems(lineList);
@@ -226,7 +216,7 @@ public class DisplayController implements Initializable {
 
 	/**
 	 * 初始化表格
-	 */ 
+	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void initDatatTV() {
 
@@ -238,22 +228,21 @@ public class DisplayController implements Initializable {
 		checkAllResultCl.setCellValueFactory(new PropertyValueFactory<ResultData, Integer>("checkAllResult"));
 		firstCheckAllResultCl.setCellValueFactory(new PropertyValueFactory<ResultData, Integer>("firstCheckAllResult"));
 		lineseatCl.setCellFactory(new Callback<TableColumn, TableCell>() {
-				public TableCell<ResultData, String> call(TableColumn pColumn) {
-					return new TableCell<ResultData, String>() {
+			public TableCell<ResultData, String> call(TableColumn pColumn) {
+				return new TableCell<ResultData, String>() {
 
-						@Override
-						public void updateItem(String item, boolean empty) {
+					@Override
+					public void updateItem(String item, boolean empty) {
 
-							super.updateItem(item, empty);
-							this.setStyle("-fx-font-size: "+((((senceWidth-18)/7-111)/12)+22)+"px;" + 
-									"	-fx-alignment: center;" + 
-									"	-fx-font-family:'STXiHei';" + 
-									"	-fx-font-weight: bold;");
-							this.setText(item);
-						}
-					};
-				}
-			});
+						super.updateItem(item, empty);
+						this.setStyle("-fx-font-size: " + ((((senceWidth - 18) / 7 - 111) / 12) + 22) + "px;"
+								+ "	-fx-alignment: center;" + "	-fx-font-family:'STXiHei';"
+								+ "	-fx-font-weight: bold;");
+						this.setText(item);
+					}
+				};
+			}
+		});
 		initcell(storeIssueResultCl);
 		initcell(feedResultCl);
 		initcell(changeResultCl);
@@ -262,9 +251,9 @@ public class DisplayController implements Initializable {
 		initcell(firstCheckAllResultCl);
 	}
 
-
 	/**
 	 * 初始化表格中某一列的每个单元格
+	 * 
 	 * @param tableColumn 列
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -278,10 +267,9 @@ public class DisplayController implements Initializable {
 					public void updateItem(Integer item, boolean empty) {
 
 						super.updateItem(item, empty);
-						this.setStyle("-fx-font-size:"+((((senceWidth-18)/7-111)/12)+22)+"px;" + 
-								"	-fx-alignment: center;" + 
-								"	-fx-font-family:'STXiHei';" + 
-								"	-fx-font-weight: bold;");
+						this.setStyle("-fx-font-size:" + ((((senceWidth - 18) / 7 - 111) / 12) + 22) + "px;"
+								+ "	-fx-alignment: center;" + "	-fx-font-family:'STXiHei';"
+								+ "	-fx-font-weight: bold;");
 						this.setText(null);
 						if (!empty) {
 							if (item.toString().equals("0")) {
@@ -296,7 +284,7 @@ public class DisplayController implements Initializable {
 							} else if (item.toString().equals("3")) {
 								this.setText("×");
 								this.setTextFill(Color.ORANGE);
-							}else if (item.toString().equals("4")) {
+							} else if (item.toString().equals("4")) {
 								this.setText("◎");
 								this.setTextFill(Color.PURPLE);
 							}
@@ -334,8 +322,8 @@ public class DisplayController implements Initializable {
 			}
 		}, TIME_DELAY, TIME_PERIOD);
 	}
-	
-	/*
+
+	/**
 	 * 线号选择框文本内容变更监听器
 	 */
 	public void lineCbChangeListener() {
@@ -345,34 +333,35 @@ public class DisplayController implements Initializable {
 			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
 				if (newValue != null && newValue.intValue() >= 0) {
 					String line = lineCb.getItems().get(newValue.intValue());
-					Login login = null;
-					try {
-						resetWorkOrderCb(line);
-						login = loginSession.getMapper().selectByLine(line);
-					} catch (Exception e) {
-						logger.error("数据库连接出错");
-						e.printStackTrace();
+					resetWorkOrderCb(line);
+					map.clear();
+					map.put("id", newValue.intValue() + 1 + "");
+					String response = sendRequest(GET_USER_ACTION, map);
+					CenterLogin login = null;
+					if (!response.equals("")) {
+						login = JSON.parseObject(response, CenterLogin.class);
+						String remoteIp = login.getIp();
+						int port = 23334;
+						if (asyncCommunicator != null) {
+							asyncCommunicator.close();
+						}
+						asyncCommunicator = new AsyncCommunicator(remoteIp, port, PACKAGE_PATH);
+						// boardResetPackage.setLine(Line.values()[newValue.intValue()+1]);
+						boardResetPackage.setLine(newValue.intValue() + 1 + "");
+						boardResetPackage.setClientDevice(ClientDevice.PC);
+						boardResetPackage.setBoardResetReson(BoardResetReson.WORK_ORDER_RESTART);
+						logger.info(" IP: " + remoteIp + "  PORT: " + port + " LINE: " + line);
+						clearText();
+					} else {
+						httpFail(GET_USER_ACTION, !IS_NETWORK, null);
 					}
-					String remoteIp = login.getIp();
-					// String remoteIp = "10.10.11.119";
-					int port = 23334;
-					if (asyncCommunicator != null) {
-						asyncCommunicator.close();
-					}
-					asyncCommunicator = new AsyncCommunicator(remoteIp, port, PACKAGE_PATH);
-					boardResetPackage.setLine(Line.values()[newValue.intValue()+1]);
-					boardResetPackage.setClientDevice(ClientDevice.PC);
-					boardResetPackage.setBoardResetReson(BoardResetReson.WORK_ORDER_RESTART);
-					logger.info("IP:" + remoteIp + "  PORT:" + port+"LINE:"+boardResetPackage.getLine());
-					clearText();
 				}
-
 			}
 		});
 	}
 
 	/**
-	 * 工单选择框文本内容变更监听器 
+	 * 工单选择框文本内容变更监听器
 	 */
 	public void workOrderChangeListener() {
 
@@ -385,15 +374,20 @@ public class DisplayController implements Initializable {
 							: lineCb.getSelectionModel().getSelectedItem().toString();
 					String workOrder = workOrderCb.getItems().get(newValue.intValue());
 					if (!line.equals("") && !workOrder.equals("")) {
-						Program program = new Program();
-						program.setLine(line);
-						program.setWorkOrder(workOrder);
-						List<String> boardTypes = programSession.getMapper().SelectByWorkOrderAndLine(program);
-						ObservableList<String> boardTybeList = FXCollections
-								.observableArrayList(getBoardType(boardTypes));
-						boardTybeCb.getItems().clear();
-						boardTybeCb.setItems(boardTybeList);
-						clearText();
+						map.clear();
+						map.put("line", line);
+						map.put("workOrder", workOrder);
+						String response = sendRequest(GET_BOARDTYPE_ACTION, map);
+						if (!response.equals("[]")) {
+							List<String> boardTypes = JSON.parseArray(response, String.class);
+							ObservableList<String> boardTybeList = FXCollections
+									.observableArrayList(getBoardType(boardTypes));
+							boardTybeCb.getItems().clear();
+							boardTybeCb.setItems(boardTybeList);
+							clearText();
+						} else {
+							httpFail(GET_BOARDTYPE_ACTION, !IS_NETWORK, null);
+						}
 					}
 				}
 
@@ -403,7 +397,7 @@ public class DisplayController implements Initializable {
 	}
 
 	/**
-	 *  板面类型选择框文本内容变更监听器
+	 * 板面类型选择框文本内容变更监听器
 	 */
 	public void boardTypeChangeListener() {
 		boardTybeCb.getSelectionModel();
@@ -431,50 +425,31 @@ public class DisplayController implements Initializable {
 
 									@Override
 									public void onReplyPackageArrived(BasePackage r) {
-										Log sLog = createLogByPackage(boardResetPackage);
+										SocketLog sLog = createLogByPackage(boardResetPackage);
 										logger.info("发送重置包：" + sLog.getData());
 										if (r != null && r instanceof BoardResetReplyPackage) {
 											BoardResetReplyPackage reply = (BoardResetReplyPackage) r;
-											Log rLog = createLogByPackage(reply);
+											SocketLog rLog = createLogByPackage(reply);
 											logger.info("接收重置包：" + rLog.getData());
 											if (reply.getControlResult().equals(ControlResult.SUCCEED)) {
-												try {
-													// 发送选择工单请求
-													Map<String, String> map = new HashMap<>();
-													map.put("line", line);
-													map.put("workOrder", workOrder);
-													map.put("boardType", boardTypeNo.toString());
-													httpHelper.requestHttp(SWITCH_ACTION, map, new okhttp3.Callback() {
-
+												// 发送选择工单请求
+												map.clear();
+												map.put("line", line);
+												map.put("workOrder", workOrder);
+												map.put("boardType", boardTypeNo.toString());
+												String response = sendRequest(SWITCH_ACTION, map);
+												if (response.equals("{\"result\":\"succeed\"}")) {
+													Platform.runLater(new Runnable() {
 														@Override
-														public void onResponse(Call call, Response response)
-																throws IOException {
-															if (response.body().string()
-																	.equals("{\"result\":\"succeed\"}")) {
-																Platform.runLater(new Runnable() {
-																	@Override
-																	public void run() {
-																		isUpdate = true;
-																		setDisableCb(false);
-																		resetBt.setDisable(false);
-																		updateText();
-																	}
-																});
-															} else {
-																httpFail(SWITCH_ACTION, !IS_NETWORK, line);
-															}
-														}
-
-														@Override
-														public void onFailure(Call call, IOException e) {
-															httpFail(SWITCH_ACTION, IS_NETWORK, line);
-															e.printStackTrace();
+														public void run() {
+															isUpdate = true;
+															setDisableCb(false);
+															resetBt.setDisable(false);
+															updateText();
 														}
 													});
-
-												} catch (IOException e) {
-													httpFail(SWITCH_ACTION, IS_NETWORK, line);
-													e.printStackTrace();
+												} else {
+													httpFail(SWITCH_ACTION, !IS_NETWORK, line);
 												}
 											} else {
 												resetProductNbFail(!IS_NETWORK, line);
@@ -532,44 +507,27 @@ public class DisplayController implements Initializable {
 					Optional<ButtonType> optional = new Alert(AlertType.WARNING, "你确定要重置该工单的状态吗？\n这会初始化除发料以外的所有状态",
 							ButtonType.YES, ButtonType.CANCEL).showAndWait();
 					if (optional != null && optional.get().equals(ButtonType.YES)) {
-						try {
-							Map<String, String> map = new HashMap<>();
-							String line = lineCb.getSelectionModel().getSelectedItem().toString();
-							String workOrder = workOrderCb.getSelectionModel().getSelectedItem().toString();
-							Integer boardTypeNo = getBoardTypeNo(boardType);
-							map.put("line", line);
-							map.put("workOrder", workOrder);
-							map.put("boardType", boardTypeNo.toString());
-							setDisableCb(true);
-							resetBt.setDisable(true);
-							httpHelper.requestHttp(RESET_ACTION, map, new okhttp3.Callback() {
-
+						map.clear();
+						String line = lineCb.getSelectionModel().getSelectedItem().toString();
+						String workOrder = workOrderCb.getSelectionModel().getSelectedItem().toString();
+						Integer boardTypeNo = getBoardTypeNo(boardType);
+						map.put("line", line);
+						map.put("workOrder", workOrder);
+						map.put("boardType", boardTypeNo.toString());
+						setDisableCb(true);
+						resetBt.setDisable(true);
+						String response = sendRequest(RESET_ACTION, map);
+						if (response != null && response.equals("{\"result\":\"succeed\"}")) {
+							Platform.runLater(new Runnable() {
 								@Override
-								public void onResponse(Call call, Response response) throws IOException {
-									if (response != null && response.body().string().equals("{\"result\":\"succeed\"}")) {
-										Platform.runLater(new Runnable() {
-											@Override
-											public void run() {
-												setDisableCb(false);
-												resetBt.setDisable(false);
-												updateText();
-											}
-										});
-									} else {
-										httpFail(RESET_ACTION, !IS_NETWORK, null);
-									}
-								}
-
-								@Override
-								public void onFailure(Call call, IOException e) {
-									httpFail(RESET_ACTION, IS_NETWORK, null);
-									e.printStackTrace();
+								public void run() {
+									setDisableCb(false);
+									resetBt.setDisable(false);
+									updateText();
 								}
 							});
-
-						} catch (Exception e) {
-							httpFail(RESET_ACTION, IS_NETWORK, null);
-							e.printStackTrace();
+						} else {
+							httpFail(RESET_ACTION, !IS_NETWORK, null);
 						}
 					}
 				}
@@ -577,12 +535,11 @@ public class DisplayController implements Initializable {
 		});
 	}
 
-	
-
 	/**
 	 * 重置工单生产数量失败
+	 * 
 	 * @param network 是否是网络原因
-	 * @param line 重置失败的线号
+	 * @param line    重置失败的线号
 	 */
 	private void resetProductNbFail(boolean network, String line) {
 		Platform.runLater(new Runnable() {
@@ -602,12 +559,13 @@ public class DisplayController implements Initializable {
 		});
 
 	}
-	
+
 	/**
 	 * 发送http请求失败
-	 * @param action http请求类型，switch还是reset
+	 * 
+	 * @param action    http请求类型
 	 * @param isNetwork 是否是网络问题
-	 * @param line 线号
+	 * @param line      线号
 	 */
 	private void httpFail(String action, boolean isNetwork, String line) {
 		if (action.equals(SWITCH_ACTION)) {
@@ -643,12 +601,114 @@ public class DisplayController implements Initializable {
 					resetBt.setDisable(false);
 				}
 			});
+			return;
+		}
+		if (action.equals(GET_LINE_ACTION)) {
+			Platform.runLater(new Runnable() {
+				@Override
+				public void run() {
+					if (isNetwork) {
+						logger.error("查询所有产线失败，select_all请求失败，网络连接出错");
+						new Alert(AlertType.ERROR, "查询所有产线失败，请检查你的网络连接", ButtonType.OK).show();
+					} else {
+						logger.error("查询所有产线失败，服务器内部原因");
+						new Alert(AlertType.ERROR, "查询所有产线失败，服务器内部错误", ButtonType.OK).show();
+					}
+					setDisableCb(false);
+					resetBt.setDisable(false);
+				}
+			});
+			return;
+		}
+		if (action.equals(GET_USER_ACTION)) {
+			Platform.runLater(new Runnable() {
+				@Override
+				public void run() {
+					if (isNetwork) {
+						logger.error("查询登录对象失败，select_id请求失败，网络连接出错");
+						new Alert(AlertType.ERROR, "查询登录对象失败，请检查你的网络连接", ButtonType.OK).show();
+					} else {
+						logger.error("查询登录对象失败，服务器内部原因");
+						new Alert(AlertType.ERROR, "查询登录对象失败，服务器内部错误", ButtonType.OK).show();
+					}
+					setDisableCb(false);
+					resetBt.setDisable(false);
+				}
+			});
+			return;
+		}
+		if (action.equals(GET_WORKORDER_ACTION)) {
+			Platform.runLater(new Runnable() {
+				@Override
+				public void run() {
+					if (isNetwork) {
+						logger.error("查询工单失败，select_workorder请求失败，网络连接出错");
+						new Alert(AlertType.ERROR, "查询工单失败，请检查你的网络连接", ButtonType.OK).show();
+					} else {
+						logger.error("查询工单失败，服务器内部原因");
+						new Alert(AlertType.ERROR, "查询工单失败，服务器内部错误", ButtonType.OK).show();
+					}
+					setDisableCb(false);
+					resetBt.setDisable(false);
+				}
+			});
+			return;
+		}
+		if (action.equals(GET_BOARDTYPE_ACTION)) {
+			Platform.runLater(new Runnable() {
+				@Override
+				public void run() {
+					if (isNetwork) {
+						logger.error("查询版面类型失败，select_boardtype请求失败，网络连接出错");
+						new Alert(AlertType.ERROR, "查询版面类型失败，请检查你的网络连接", ButtonType.OK).show();
+					} else {
+						logger.error("查询版面类型失败，服务器内部原因");
+						new Alert(AlertType.ERROR, "查询版面类型失败，服务器内部错误", ButtonType.OK).show();
+					}
+					setDisableCb(false);
+					resetBt.setDisable(false);
+				}
+			});
+			return;
+		}
+		if (action.equals(GET_OPERATOR_ACTION)) {
+			Platform.runLater(new Runnable() {
+				@Override
+				public void run() {
+					if (isNetwork) {
+						logger.error("查询操作员失败，select_operator请求失败，网络连接出错");
+						new Alert(AlertType.ERROR, "查询操作员失败，请检查你的网络连接", ButtonType.OK).show();
+					} else {
+						logger.error("查询操作员失败，服务器内部原因");
+						new Alert(AlertType.ERROR, "查询操作员失败，服务器内部错误", ButtonType.OK).show();
+					}
+					setDisableCb(false);
+					resetBt.setDisable(false);
+				}
+			});
+			return;
+		}
+		if (action.equals(GET_ITEMVISIT_ACTION)) {
+			Platform.runLater(new Runnable() {
+				@Override
+				public void run() {
+					if (isNetwork) {
+						logger.error("查询工单操作失败，select_itemvisit请求失败，网络连接出错");
+						new Alert(AlertType.ERROR, "查询工单操作失败，请检查你的网络连接", ButtonType.OK).show();
+					} else {
+						logger.error("查询工单操作失败，服务器内部原因");
+						new Alert(AlertType.ERROR, "查询工单操作失败，服务器内部错误", ButtonType.OK).show();
+					}
+					setDisableCb(false);
+					resetBt.setDisable(false);
+				}
+			});
 		}
 	}
-	
 
 	/**
 	 * 设置下拉框的状态
+	 * 
 	 * @param status
 	 */
 	private void setDisableCb(boolean status) {
@@ -656,7 +716,7 @@ public class DisplayController implements Initializable {
 		workOrderCb.setDisable(status);
 		boardTybeCb.setDisable(status);
 	}
-	
+
 	/**
 	 * 更新站位，扫描站位，物料号，扫描物料号，操作员，操作结果以及表格数据
 	 * 
@@ -672,35 +732,29 @@ public class DisplayController implements Initializable {
 		String boardType = boardTybeCb.getSelectionModel().getSelectedItem() == null ? ""
 				: boardTybeCb.getSelectionModel().getSelectedItem().toString();
 		if (!line.equals("") && !workOrder.equals("") && !boardType.equals("")) {
-			try {
-				Integer boardTypeNo = getBoardTypeNo(boardType);
-				Program program = new Program();
-				program.setLine(line);
-				program.setWorkOrder(workOrder);
-				program.setBoardType(boardTypeNo);
-				programItemVisitSession = MybatisHelper.getMS(MYBATIS_CONFIG_PATH, ProgramItemVisitMapper.class,
-						"smt");
-				List<ProgramItemVisit> programItemVisits = programItemVisitSession.getMapper().selectByProgram(program);
-				String operator = operationSession.getMapper().selectOperator(program);
-				operator = operator == null ? "unknown" : operator;
-				if (programItemVisits != null && programItemVisits.size() > 0) {
-					ProgramItemVisit programItemVisit = programItemVisits.get(0);
-					lineseatLb.setText(programItemVisit.getLineseat());
-					scanLineseatLb.setText(programItemVisit.getScanLineseat());
-					materialNoLb.setText(programItemVisit.getMaterialNo());
-					scanMaterialNoLb.setText(programItemVisit.getScanMaterialNo());
-					operatorLb.setText(operator);
-					setTypeAndResult(programItemVisit);
-					tableLsit = FXCollections.observableArrayList(programItemVisitToResultData(programItemVisits));
-					DataTv.setItems(tableLsit);
-				}
-			} catch (IOException e) {
-				logger.error("updateText中ProgramItemVisit表Session创建失败");
-				e.printStackTrace();
-			} finally {
-				if (programItemVisitSession!=null) {
-					programItemVisitSession.colseSession();
-				}	
+			Integer boardTypeNo = getBoardTypeNo(boardType);
+			map.clear();
+			map.put("line", line);
+			map.put("workOrder", workOrder);
+			map.put("boardType", boardTypeNo.toString());
+			String itemVisits = sendRequest(GET_ITEMVISIT_ACTION, map);
+			if (!itemVisits.equals("[]")) {
+				programItemVisits = JSON.parseArray(itemVisits, ProgramItemVisit.class);
+			} else {
+				httpFail(GET_ITEMVISIT_ACTION, !IS_NETWORK, null);
+			}
+			String response = sendRequest(GET_OPERATOR_ACTION, map);
+			operator = response.equals("") ? "unknown" : response;
+			if (programItemVisits != null && programItemVisits.size() > 0) {
+				ProgramItemVisit programItemVisit = programItemVisits.get(0);
+				lineseatLb.setText(programItemVisit.getLineseat());
+				scanLineseatLb.setText(programItemVisit.getScanLineseat());
+				materialNoLb.setText(programItemVisit.getMaterialNo());
+				scanMaterialNoLb.setText(programItemVisit.getScanMaterialNo());
+				operatorLb.setText(operator);
+				setTypeAndResult(programItemVisit);
+				tableLsit = FXCollections.observableArrayList(programItemVisitToResultData(programItemVisits));
+				DataTv.setItems(tableLsit);
 			}
 		}
 	}
@@ -749,44 +803,44 @@ public class DisplayController implements Initializable {
 
 	/**
 	 * 根据操作结果进行显示
+	 * 
 	 * @param result
 	 */
 	private void showResult(Integer result) {
 		String style = "-fx-alignment:center;-fx-text-fill:white;-fx-font-family:'Microsoft YaHei';-fx-font-weight:bold;";
 		String textsize = "";
-		if(senceWidth<800 && senceWidth>600) {
-			textsize="-fx-font-size:140px;";
-		}else if (senceWidth>=800&&senceWidth<1366) {
-			textsize="-fx-font-size:140px;";
-		}else if (senceWidth>=1366) {
-			textsize="-fx-font-size:140px;";
+		if (senceWidth < 800 && senceWidth > 600) {
+			textsize = "-fx-font-size:140px;";
+		} else if (senceWidth >= 800 && senceWidth < 1366) {
+			textsize = "-fx-font-size:140px;";
+		} else if (senceWidth >= 1366) {
+			textsize = "-fx-font-size:140px;";
 		}
 		switch (result) {
 		case 0:
-			typeLb.setStyle(style+textsize+"-fx-background-color:red;");
-			resultLb.setStyle(style+textsize+"-fx-background-color:red;");
+			typeLb.setStyle(style + textsize + "-fx-background-color:red;");
+			resultLb.setStyle(style + textsize + "-fx-background-color:red;");
 			resultLb.setText("FAIL");
 			break;
 		case 1:
-			typeLb.setStyle(style+textsize+"-fx-background-color:green;");
-			resultLb.setStyle(style+textsize+
-					"-fx-background-color:green;");
+			typeLb.setStyle(style + textsize + "-fx-background-color:green;");
+			resultLb.setStyle(style + textsize + "-fx-background-color:green;");
 			resultLb.setText("PASS");
 			break;
 		case 2:
-			typeLb.setStyle(style+textsize+"-fx-background-color:green;");
-			resultLb.setStyle(style+textsize+"-fx-background-color:green;");
+			typeLb.setStyle(style + textsize + "-fx-background-color:green;");
+			resultLb.setStyle(style + textsize + "-fx-background-color:green;");
 			typeLb.setText("操  作");
 			resultLb.setText("结  果");
 			break;
 		case 3:
-			typeLb.setStyle(style+textsize+"-fx-background-color:red;");
-			resultLb.setStyle(style+textsize+"-fx-background-color:red;");
+			typeLb.setStyle(style + textsize + "-fx-background-color:red;");
+			resultLb.setStyle(style + textsize + "-fx-background-color:red;");
 			resultLb.setText("已超时");
 			break;
 		case 4:
-			typeLb.setStyle(style+textsize+"-fx-background-color:purple;");
-			resultLb.setStyle(style+textsize+"-fx-background-color:purple;");
+			typeLb.setStyle(style + textsize + "-fx-background-color:purple;");
+			resultLb.setStyle(style + textsize + "-fx-background-color:purple;");
 			typeLb.setText("已换料");
 			resultLb.setText("请核料");
 			break;
@@ -832,18 +886,27 @@ public class DisplayController implements Initializable {
 
 	/**
 	 * 清空板面类型下拉框，重置工单下拉框内容
+	 * 
 	 * @param line 线号
 	 */
 	private void resetWorkOrderCb(String line) {
 		workOrderCb.getItems().clear();
 		boardTybeCb.getItems().clear();
-		List<String> workorders = programSession.getMapper().selectByLine(line);
-		ObservableList<String> workOrderList = FXCollections.observableArrayList(workorders);
-		workOrderCb.setItems(workOrderList);
+		map.clear();
+		map.put("line", line);
+		String response = sendRequest(GET_WORKORDER_ACTION, map);
+		if (!response.equals("[]")) {
+			List<String> workorders = JSON.parseArray(response, String.class);
+			ObservableList<String> workOrderList = FXCollections.observableArrayList(workorders);
+			workOrderCb.setItems(workOrderList);
+		} else {
+			httpFail(GET_WORKORDER_ACTION, !IS_NETWORK, line);
+		}
 	}
-	
+
 	/**
 	 * 将板面类型数字转化为中文
+	 * 
 	 * @param boardTybes 板面类型数字字符数组
 	 * @return
 	 */
@@ -865,6 +928,7 @@ public class DisplayController implements Initializable {
 
 	/**
 	 * 将板面类型中文转化为数字
+	 * 
 	 * @param boardType
 	 * @return
 	 */
@@ -881,9 +945,10 @@ public class DisplayController implements Initializable {
 		}
 		return boardTypeNo;
 	}
-	
+
 	/**
 	 * 关闭程序事件
+	 * 
 	 * @param primaryStage
 	 */
 	public void closeWindow(Stage primaryStage) {
@@ -902,11 +967,11 @@ public class DisplayController implements Initializable {
 
 								@Override
 								public void onReplyPackageArrived(BasePackage r) {
-									Log sLog = createLogByPackage(boardResetPackage);
+									SocketLog sLog = createLogByPackage(boardResetPackage);
 									logger.info("发送重置包：" + sLog.getData());
 									if (r != null && r instanceof BoardResetReplyPackage) {
 										BoardResetReplyPackage reply = (BoardResetReplyPackage) r;
-										Log rLog = createLogByPackage(reply);
+										SocketLog rLog = createLogByPackage(reply);
 										logger.info("接收重置包：" + rLog.getData());
 										if (!reply.getControlResult().equals(ControlResult.SUCCEED)) {
 											logger.error("关闭时重置工单的生产数目失败，取消工单失败，IP:" + asyncCommunicator.getRemoteIp()
@@ -949,43 +1014,42 @@ public class DisplayController implements Initializable {
 			}
 		});
 	}
-	
+
 	/**
 	 * http关闭请求取消工单
+	 * 
 	 * @param line
 	 */
 	private void sendHttpCloseRequest(String line) {
-		Map<String, String> map = new HashMap<>();
+		map.clear();
 		map.put("line", line);
 		try {
 			httpHelper.requestHttp(SWITCH_ACTION, map, new okhttp3.Callback() {
-
 				@Override
-				public void onResponse(Call call, Response response)
-						throws IOException {
+				public void onResponse(Call call, Response response) throws IOException {
 					if (response.body().string().equals("{\"result\":\"succeed\"}")) {
-						logger.info("关闭时取消工单成功，线号："+line);
+						logger.info("关闭时取消工单成功，线号：" + line);
 					} else {
-						logger.error("关闭时取消工单失败，服务器内部错误，线号："+line);
+						logger.error("关闭时取消工单失败，服务器内部错误，线号：" + line);
 					}
 					System.exit(0);
 				}
 
 				@Override
 				public void onFailure(Call call, IOException e) {
-					logger.error("关闭时取消工单失败，网络连接出错，线号："+line);
+					logger.error("关闭时取消工单失败，网络连接出错，线号：" + line);
 					System.exit(0);
 				}
 			});
 		} catch (IOException httpe) {
-			logger.error("关闭时取消工单失败，网络连接出错，线号："+line);
+			logger.error("关闭时取消工单失败，网络连接出错，线号：" + line);
 			System.exit(0);
-			
 		}
 	}
-	
+
 	/**
 	 * 根据窗口大小调整界面控件大小
+	 * 
 	 * @param primarystage
 	 */
 	public void scenceChangeListener(Stage primarystage) {
@@ -994,107 +1058,131 @@ public class DisplayController implements Initializable {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
 				senceWidth = newValue.intValue();
-				//改变工单下拉框和板面类型下拉框的宽度和字体大小
+				// 改变工单下拉框和板面类型下拉框的宽度和字体大小
 				changeCbSize(senceWidth);
-				//调整文本框控件的大小和字体大小
+				// 调整文本框控件的大小和字体大小
 				changeLbSize(senceWidth);
-				//调整重置工单按钮的位置
-				resetBt.setLayoutX(senceWidth/2 - 140);
-				//调整操作员文本框的大小和位置
+				// 调整重置工单按钮的位置
+				resetBt.setLayoutX(senceWidth / 2 - 140);
+				// 调整操作员文本框的大小和位置
 				changeOperatorSize(senceWidth);
-				//调整表格的每一列的大小和字体大小
+				// 调整表格的每一列的大小和字体大小
 				ObservableList<TableColumn<ResultData, ?>> Columns = DataTv.getColumns();
 				for (TableColumn<ResultData, ?> tableColumn : Columns) {
-					tableColumn.setMinWidth((senceWidth-47)/7);
-					tableColumn.setMaxWidth((senceWidth-47)/7);
-					tableColumn.setStyle("-fx-font-size:"+((((senceWidth-18)/7-111)/20)+18)+"px;" + 
-								"	-fx-alignment: center;" + 
-								"	-fx-font-family:'Microsoft YaHei';" + 
-								"	-fx-font-weight: bolder;");
+					tableColumn.setMinWidth((senceWidth - 47) / 7);
+					tableColumn.setMaxWidth((senceWidth - 47) / 7);
+					tableColumn.setStyle("-fx-font-size:" + ((((senceWidth - 18) / 7 - 111) / 20) + 18) + "px;"
+							+ "	-fx-alignment: center;" + "	-fx-font-family:'Microsoft YaHei';"
+							+ "	-fx-font-weight: bolder;");
 				}
-				//调整单元格的字体大小
+				// 调整单元格的字体大小
 				if (isUpdate) {
 					Platform.runLater(new Runnable() {
-						
+
 						@Override
 						public void run() {
 							updateText();
-							
+
 						}
 					});
 				}
 			}
 		});
 	}
-	
+
 	/**
 	 * 改变工单下拉框和板面类型下拉框的宽度和字体大小
+	 * 
 	 * @param senceWidth
 	 */
 	private void changeCbSize(int senceWidth) {
-		
-		workOrderCb.setMinWidth((senceWidth/2 - 85));
-		workOrderCb.setMaxWidth((senceWidth/2 - 85));
-		workOrderCb.setStyle(workOrderCb.getStyle()+"-fx-font-size:"+(20+(workOrderCb.getMinWidth()-315)/200)+";");
-		boardTybeCb.setMinWidth(125+(senceWidth/2 - 400)/10);
-		boardTybeCb.setMaxWidth(125+(senceWidth/2 - 400)/10);
-		boardTybeCb.setStyle(boardTybeCb.getStyle()+"-fx-font-size:"+(20+(boardTybeCb.getMinWidth()-125)/20)+";");
+
+		workOrderCb.setMinWidth((senceWidth / 2 - 85));
+		workOrderCb.setMaxWidth((senceWidth / 2 - 85));
+		workOrderCb.setStyle(
+				workOrderCb.getStyle() + "-fx-font-size:" + (20 + (workOrderCb.getMinWidth() - 315) / 200) + ";");
+		boardTybeCb.setMinWidth(125 + (senceWidth / 2 - 400) / 10);
+		boardTybeCb.setMaxWidth(125 + (senceWidth / 2 - 400) / 10);
+		boardTybeCb.setStyle(
+				boardTybeCb.getStyle() + "-fx-font-size:" + (20 + (boardTybeCb.getMinWidth() - 125) / 20) + ";");
 	}
-	
+
 	/**
 	 * 改变操作员文本框和线号下拉框的宽度，位置和字体
+	 * 
 	 * @param senceWidth
 	 */
 	private void changeOperatorSize(int senceWidth) {
-		//操作员工号文本框
-		operatorLb.setMinWidth(110+(senceWidth/2 - 400)/10);
-		operatorLb.setLayoutX(senceWidth/2 - operatorLb.getMinWidth()-10);
-		operatorNameLb.setLayoutX(senceWidth/2 -operatorLb.getMinWidth()-100);
-		operatorLb.setStyle(operatorLb.getStyle()+"-fx-font-size:"+(22+(operatorLb.getMinWidth()-110)/10)+";");
-		//线号下拉框
-		lineCb.setMinWidth(115+((senceWidth/2 - operatorLb.getMinWidth()-300)/50));
-		lineCb.setMaxWidth(115+((senceWidth/2 - operatorLb.getMinWidth()-300)/50));
-		lineCb.setStyle(lineCb.getStyle()+"-fx-font-size:"+(20+(lineCb.getMinWidth()-115)/4)+";");
+		// 操作员工号文本框
+		operatorLb.setMinWidth(110 + (senceWidth / 2 - 400) / 10);
+		operatorLb.setLayoutX(senceWidth / 2 - operatorLb.getMinWidth() - 10);
+		operatorNameLb.setLayoutX(senceWidth / 2 - operatorLb.getMinWidth() - 100);
+		operatorLb.setStyle(
+				operatorLb.getStyle() + "-fx-font-size:" + (22 + (operatorLb.getMinWidth() - 110) / 10) + ";");
+		// 线号下拉框
+		lineCb.setMinWidth(115 + ((senceWidth / 2 - operatorLb.getMinWidth() - 300) / 50));
+		lineCb.setMaxWidth(115 + ((senceWidth / 2 - operatorLb.getMinWidth() - 300) / 50));
+		lineCb.setStyle(lineCb.getStyle() + "-fx-font-size:" + (20 + (lineCb.getMinWidth() - 115) / 4) + ";");
 	}
-	
+
 	/**
 	 * 改变文本框的宽度和字体大小
+	 * 
 	 * @param senceWidth
 	 */
 	private void changeLbSize(int senceWidth) {
 		String textStyle = "-fx-alignment:center;-fx-font-family:'Microsoft YaHei';"
 				+ "-fx-background-radius:4;-fx-border-radius:4;-fx-border-color:gray;-fx-font-weight:bold;";
-		double LbSize = ((senceWidth-20)/2)-130;
-		
+		double LbSize = ((senceWidth - 20) / 2) - 130;
+
 		lineseatLb.setMinWidth(LbSize);
 		scanLineseatLb.setMinWidth(LbSize);
 		materialNoLb.setMinWidth(LbSize);
 		scanMaterialNoLb.setMinWidth(LbSize);
-		double textsize = (22+((lineseatLb.getMinWidth()-260)/48));
-		lineseatLb.setStyle(textStyle+";-fx-font-size:"+textsize+"px;");
-		scanLineseatLb.setStyle(textStyle+";-fx-font-size:"+textsize+"px;");
-		materialNoLb.setStyle(textStyle+";-fx-font-size:"+textsize+"px;");
-		scanMaterialNoLb.setStyle(textStyle+";-fx-font-size:"+textsize+"px;");
-		
-		typeLb.setMinWidth(((senceWidth-20)/2)-10);
-		resultLb.setMinWidth(((senceWidth-20)/2)-10);
-		typeLb.setStyle(typeLb.getStyle()+"-fx-font-size:140px;-fx-font-weight:bold;");
-		resultLb.setStyle(resultLb.getStyle()+"-fx-font-size:140px;-fx-font-weight:bold;");
-		
-		
+		double textsize = (22 + ((lineseatLb.getMinWidth() - 260) / 48));
+		lineseatLb.setStyle(textStyle + ";-fx-font-size:" + textsize + "px;");
+		scanLineseatLb.setStyle(textStyle + ";-fx-font-size:" + textsize + "px;");
+		materialNoLb.setStyle(textStyle + ";-fx-font-size:" + textsize + "px;");
+		scanMaterialNoLb.setStyle(textStyle + ";-fx-font-size:" + textsize + "px;");
+
+		typeLb.setMinWidth(((senceWidth - 20) / 2) - 10);
+		resultLb.setMinWidth(((senceWidth - 20) / 2) - 10);
+		typeLb.setStyle(typeLb.getStyle() + "-fx-font-size:140px;-fx-font-weight:bold;");
+		resultLb.setStyle(resultLb.getStyle() + "-fx-font-size:140px;-fx-font-weight:bold;");
+
 	}
 
 	/**
 	 * 根据包创建日志实体
+	 * 
 	 * @param p
 	 * @return
 	 */
-	private Log createLogByPackage(BasePackage p) {
-		Log log = new Log();
+	private SocketLog createLogByPackage(BasePackage p) {
+		SocketLog log = new SocketLog();
 		FieldUtil.copy(p, log);
 		log.setTime(new Date());
 		String data = BytesParser.parseBytesToHexString(PackageParser.serialize(p));
 		log.setData(data);
 		return log;
+	}
+
+	/**
+	 * 发送http请求
+	 * 
+	 * @param action
+	 * @param args
+	 * @author HCJ
+	 * @return
+	 */
+	public String sendRequest(String action, Map<String, String> args) {
+		try {
+			String response = httpHelper.requestHttp(action, args);
+			result = response;
+		} catch (IOException e) {
+			httpFail(action, IS_NETWORK, null);
+			e.printStackTrace();
+		}
+		return result;
 	}
 }

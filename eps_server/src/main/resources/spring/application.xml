@@ -65,11 +65,11 @@
 	<mvc:resources mapping="/static/**" location="/static/" />
 
 	<!-- 配置SpringMVC的视图解析器 -->
-	<bean
+	<!-- <bean
 		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
 		<property name="prefix" value="/WEB-INF/jsp/" />
 		<property name="suffix" value=".jsp" />
-	</bean>
+	</bean> -->
 
 
 	<!-- 引入jdbc配置文件 -->

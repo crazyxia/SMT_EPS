@@ -543,4 +543,28 @@
   <select id="selectLine" resultType="java.lang.String">    
             SELECT distinct line FROM program                          
   </select>
+  <select id="selectWorkingOrder" parameterType="java.lang.String" resultType="java.lang.String">
+    select distinct work_order from program 
+    where line= #{line,jdbcType=VARCHAR} and state=1
+  </select>
+  <select id="selectWorkingBoardType" parameterType="com.jimi.smt.eps_server.entity.Program" resultType="java.lang.String">
+    select board_type from program where work_order= #{workOrder,jdbcType=VARCHAR} and line = #{line,jdbcType=VARCHAR} and state=1
+    order by board_type asc
+  </select>
+  <select id="selectLastOperatorByProgram" parameterType="com.jimi.smt.eps_server.entity.Program" resultType="java.lang.String">
+    select operation.operator
+    from program_item_visit inner join operation on
+    (operation.material_no = program_item_visit.material_no and program_item_visit.`program_id` = operation.`program_id` and program_item_visit.`lineseat` = operation.`lineseat`)
+    where operation.line = #{line,jdbcType=VARCHAR} and operation.work_order = #{workOrder,jdbcType=VARCHAR} and operation.board_type = #{boardType,jdbcType=INTEGER}
+    ORDER BY operation.time DESC LIMIT 1
+  </select>
+  <select id="selectProgramId" parameterType="com.jimi.smt.eps_server.entity.Program" resultType="java.lang.String">
+    select id
+    from program
+    where
+    line = #{line,jdbcType=VARCHAR} and 
+    work_order = #{workOrder,jdbcType=VARCHAR} and 
+    board_type = #{boardType,jdbcType=INTEGER} and 
+    state = 1  
+  </select>
 </mapper>
