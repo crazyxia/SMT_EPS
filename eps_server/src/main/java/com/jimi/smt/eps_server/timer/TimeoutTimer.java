@@ -65,7 +65,7 @@ public class TimeoutTimer {
 	
 	@PostConstruct
 	public void init() {
-		lineSize = (int)lineService.getLineNum();
+		lineSize = (int)lineService.countLineNum();
 		List<Line> lists = lineService.list();
 		for (int i = 0; i < lineSize; i++) {
 			Line line = lists.get(i);
@@ -164,10 +164,15 @@ public class TimeoutTimer {
 				}
 			}
 			//核料超时检测
+			//当前换料时间加上设置的超时时间
 			long temp2 = programItemVisit.getChangeTime().getTime() + lineInfos.get(line).getCheckTimeout() * 60 * 1000;
+			//当前时间是否大于换料超时后的时间
 			boolean isCheckTimeout = new Date().getTime() > temp2;
+			//核料时间是否小于换料时间
 			boolean notYetCheck = programItemVisit.getCheckTime().getTime() < programItemVisit.getChangeTime().getTime();
+			//是否处于待核料状态
 			boolean hasChangeButNeedCheck = programItemVisit.getChangeResult() == 4;
+			//核料状态是否不为超时
 			boolean isNotInCheckTimeoutState = programItemVisit.getCheckResult() != 3;
 			if(isCheckTimeout && notYetCheck && hasChangeButNeedCheck && isNotInCheckTimeoutState) {
 				 programItemVisit.setCheckResult(3);
@@ -210,7 +215,6 @@ public class TimeoutTimer {
 			lineInfos.get(lineNo).setWorkOrder(display.getWorkOrder());
 			lineInfos.get(lineNo).setBoardType(display.getBoardType());
 		}
-	}
-	
+	}	
 	
 }

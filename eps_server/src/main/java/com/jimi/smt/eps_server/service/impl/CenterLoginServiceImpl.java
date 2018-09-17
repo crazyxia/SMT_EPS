@@ -13,6 +13,7 @@ public class CenterLoginServiceImpl implements CenterLoginService {
 	@Autowired
 	private CenterLoginMapper centerLoginMapper;
 
+	
 	@Override
 	public CenterLogin selectById(int id) {
 		return centerLoginMapper.selectByPrimaryKey(id);

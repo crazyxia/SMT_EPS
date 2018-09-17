@@ -15,26 +15,31 @@ public class LineServiceImpl implements LineService {
 	@Autowired
 	private LineMapper lineMapper;
 		
+	
 	@Override
 	public List<Line> list() {
 		return lineMapper.selectByExample(null);
 	}
+	
 	
 	@Override
 	public String getLineById(int id) {
 		return lineMapper.selectByPrimaryKey(id+1).getLine();		
 	}
 
+	
 	@Override
-	public long getLineNum() {
+	public long countLineNum() {
 		return lineMapper.countByExample(null);
 	}
 
+	
 	@Override
 	public List<String> selectAll() {
 		return lineMapper.selectAll();
 	}
 
+	
 	@Override
 	public int selectLine(String line) {
 		List<String> lines = lineMapper.selectAll();
@@ -46,7 +51,5 @@ public class LineServiceImpl implements LineService {
 			}
 		}
 		return result;
-	}
-	
-
+	}	
 }

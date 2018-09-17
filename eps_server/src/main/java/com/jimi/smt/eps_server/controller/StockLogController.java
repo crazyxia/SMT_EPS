@@ -14,6 +14,7 @@ public class StockLogController {
 	@Autowired
 	private StockLogService stockLogService;
 
+	
 	@Open
 	@RequestMapping("/insert")
 	public void insert(String list) {

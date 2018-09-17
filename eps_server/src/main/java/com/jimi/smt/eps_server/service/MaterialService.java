@@ -14,6 +14,7 @@ public interface MaterialService {
 	 */
 	public String add(String materialNo, Integer perifdOfValidity);
 	
+	
 	/**
 	 * 修改对应id的物料保质期信息
 	 * @param id
@@ -23,12 +24,14 @@ public interface MaterialService {
 	 */
 	public String update(Integer id, String materialNo, Integer perifdOfValidity);
 	
+	
 	/**
 	 * 根据id删除物料保质期信息
 	 * @param id
 	 * @return
 	 */
 	public String delete(Integer id);
+	
 	
 	/**
 	 * 根据条件列出物料保质期信息
@@ -41,4 +44,5 @@ public interface MaterialService {
 	 * @return
 	 */
 	public List<MaterialInfo> list(Integer id, String materialNo, Integer perifdOfValidity, String orderBy);
+
 }

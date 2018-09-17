@@ -38,6 +38,7 @@ public class OperationController {
 	@Autowired
 	private OperationService operationService;
 
+	
 	// 分页查询客户报表
 	@Role(RoleType.IPQC)
 	@ResponseBody
@@ -58,6 +59,7 @@ public class OperationController {
 		return null;
 	}
 
+	
 	@Role(RoleType.IPQC)
 	@RequestMapping("/downloadClientReport")
 	public ResponseEntity<byte[]> downloadClientReport(String client, String programNo, String line, String orderNo,
@@ -75,6 +77,7 @@ public class OperationController {
 		return null;
 	}
 
+	
 	@Role(RoleType.IPQC)
 	@ResponseBody
 	@RequestMapping("/listOperationReport")
@@ -92,6 +95,7 @@ public class OperationController {
 		return null;
 	}
 
+	
 	@Role(RoleType.IPQC)
 	@ResponseBody
 	@RequestMapping("/listOperationReportSummary")
@@ -109,6 +113,7 @@ public class OperationController {
 		return null;
 	}
 
+	
 	@Role(RoleType.IPQC)
 	@RequestMapping("/downloadOperationReport")
 	public ResponseEntity<byte[]> downloadOperationReport(String operator, String client, String line,
@@ -130,6 +135,7 @@ public class OperationController {
 		return null;
 	}
 
+	
 	@Role(RoleType.IPQC)
 	@ResponseBody
 	@RequestMapping("/listStockLogs")
@@ -143,6 +149,7 @@ public class OperationController {
 		return null;
 	}
 
+	
 	@Open
 	@ResponseBody
 	@RequestMapping("/listDisplayReport")
@@ -154,6 +161,7 @@ public class OperationController {
 		return displayReport;
 	}
 
+	
 	@Open
 	@ResponseBody
 	@RequestMapping("/add")
@@ -169,5 +177,4 @@ public class OperationController {
 		}
 		return resultJson;
 	}
-
 }

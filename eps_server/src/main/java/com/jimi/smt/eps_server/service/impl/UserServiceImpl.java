@@ -22,6 +22,7 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	private UserToUserVOFiller filler;
 	
+	
 	@Override
 	public String add(String id, Integer classType, String name, Integer type, String password) {
 		if(userMapper.selectByPrimaryKey(id) != null) {
@@ -40,6 +41,7 @@ public class UserServiceImpl implements UserService {
 		return "failed_unknown";
 	}
 
+	
 	@Override
 	public String update(String id, Integer classType, String name, Integer type, String password, Boolean enabled) {
 		if(userMapper.selectByPrimaryKey(id) == null) {
@@ -58,6 +60,7 @@ public class UserServiceImpl implements UserService {
 		return "failed_unknown";
 	}
 
+	
 	@Override
 	public List<UserVO> list(String id, Integer classType, String name, Integer type, String orderBy, Boolean enabled) {
 		UserExample userExample = new UserExample();
@@ -81,6 +84,7 @@ public class UserServiceImpl implements UserService {
 		return filler.fill(userMapper.selectByExample(userExample));
 	}
 
+	
 	@Override
 	public User login(String id, String password) {
 		User user = userMapper.selectByPrimaryKey(id);

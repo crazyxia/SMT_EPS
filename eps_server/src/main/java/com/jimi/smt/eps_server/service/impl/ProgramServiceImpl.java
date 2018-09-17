@@ -59,6 +59,7 @@ public class ProgramServiceImpl implements ProgramService {
 	@Autowired
 	private TimeoutTimer timeoutTimer;
 
+	
 	@Override
 	public List<Map<String, Object>> upload(MultipartFile programFile, Integer boardType) throws IOException {
 		// 读文件
@@ -178,6 +179,7 @@ public class ProgramServiceImpl implements ProgramService {
 		return resultList;
 	}
 
+	
 	@Override
 	public List<ProgramVO> list(String programName, String fileName, String line, String workOrder, Integer state,
 			String ordBy) {
@@ -217,6 +219,7 @@ public class ProgramServiceImpl implements ProgramService {
 		return programToProgramVOFiller.fill(programs);
 	}
 
+	
 	@Override
 	public List<ProgramItemVO> listItem(String id) {
 		ProgramItemExample example = new ProgramItemExample();
@@ -224,6 +227,7 @@ public class ProgramServiceImpl implements ProgramService {
 		return programItemToProgramItemVOFiller.fill(programItemMapper.selectByExample(example));
 	}
 
+	
 	@Override
 	public String updateItem(List<EditProgramItemBO> BOs) {
 		// 获取ProgramId
@@ -344,6 +348,7 @@ public class ProgramServiceImpl implements ProgramService {
 		return "succeed";
 	}
 
+	
 	@Override
 	public boolean cancel(String id) {
 		ProgramExample example = new ProgramExample();
@@ -370,6 +375,7 @@ public class ProgramServiceImpl implements ProgramService {
 		}
 	}
 
+	
 	@Override
 	public boolean finish(String id) {
 		ProgramExample example = new ProgramExample();
@@ -396,6 +402,7 @@ public class ProgramServiceImpl implements ProgramService {
 		}
 	}
 
+	
 	@Override
 	public String start(String id) {
 		ProgramExample example = new ProgramExample();
@@ -438,6 +445,7 @@ public class ProgramServiceImpl implements ProgramService {
 		}
 	}
 
+	
 	@Override
 	public String switchWorkOrder(String line, String workOrder, Integer boardType) {
 		if (line == null || line.equals("")) {
@@ -476,6 +484,7 @@ public class ProgramServiceImpl implements ProgramService {
 		return "succeed";
 	}
 
+	
 	@Override
 	public String operate(String line, String workOrder, Integer boardType, Integer type, String lineseat,
 			String scanLineseat, String scanMaterialNo, Integer operationResult) {
@@ -517,6 +526,7 @@ public class ProgramServiceImpl implements ProgramService {
 		return "succeed";
 	}
 
+	
 	@Override
 	public String reset(String line, String workOrder, Integer boardType) {
 		List<ProgramItemVisit> programItemVisits = getVisits(line, workOrder, boardType);
@@ -538,6 +548,7 @@ public class ProgramServiceImpl implements ProgramService {
 		return "succeed";
 	}
 
+	
 	@Override
 	public List<ProgramItemVisit> getVisits(String line, String workOrder, Integer boardType) {
 		ProgramExample programExample = new ProgramExample();
@@ -554,46 +565,25 @@ public class ProgramServiceImpl implements ProgramService {
 		return new ArrayList<ProgramItemVisit>();
 	}
 
+	
 	@Override
 	public void updateVisit(ProgramItemVisit visit) {
 		programItemVisitMapper.updateByPrimaryKey(visit);
 	}
 
+	
 	@Override
 	public List<Display> listDisplays() {
 		return displayMapper.selectByExample(null);
 	}
 
-	private void clearVisits(String programId) {
-		ProgramItemVisitExample programItemVisitExample = new ProgramItemVisitExample();
-		programItemVisitExample.createCriteria().andProgramIdEqualTo(programId);
-		programItemVisitMapper.deleteByExample(programItemVisitExample);
-	}
-
-	private String formatLineseat(String in) {
-		try {
-			String[] array = in.split("-");
-			array[0] = Integer.valueOf(array[0]) <= 9 ? "0" + array[0] : array[0];
-			array[1] = Integer.valueOf(array[1]) <= 9 ? "0" + array[1] : array[1];
-			return array[0] + "-" + array[1];
-		} catch (NumberFormatException | PatternSyntaxException e) {
-			return in;
-		}
-	}
-
+	
 	@Override
 	public List<Program> selectWorkingProgram(String line) {
 		return programMapper.selectWorkingProgram(line);
 	}
 
-	@Override
-	public List<ProgramItem> selectProgramItem(String programId) {
-		if(programId != null) {
-			return programItemMapper.selectProgramItem(programId);
-		}
-		return null;	
-	}
-
+	
 	@Override
 	public int updateItemVisit(ProgramItemVisit programItemVisit) {
 		int result = 0;
@@ -635,11 +625,12 @@ public class ProgramServiceImpl implements ProgramService {
 			result = programItemVisitMapper.updateFirstAllResult(programItemVisit);
 			break;
 		default:
-			System.out.println("什么操作都不是");
+			break;
 		}
 		return result;
 	}
 
+	
 	@Override
 	public int resetCheckAll(String programId) {
 		ProgramItemVisitExample example = new ProgramItemVisitExample();
@@ -649,6 +640,7 @@ public class ProgramServiceImpl implements ProgramService {
 		programItemVisit.setCheckAllTime(new Date());
 		return programItemVisitMapper.updateByExampleSelective(programItemVisit, example);
 	}
+	
 	
 	@Override
 	public int checkIsReset(String programId, int type) {
@@ -713,6 +705,7 @@ public class ProgramServiceImpl implements ProgramService {
 		return result;
 	}
 
+	
 	@Override
 	public int isAllDone(String programId, int type) {
 		int result = 1;
@@ -759,6 +752,7 @@ public class ProgramServiceImpl implements ProgramService {
 		return result;
 	}
 
+	
 	@Override
 	public int isChangeSucceed(String programId, String lineseat) {
 		int result = 1;
@@ -776,11 +770,13 @@ public class ProgramServiceImpl implements ProgramService {
 		return result;
 	}
 
+	
 	@Override
 	public List<String> selectWorkingOrder(String line) {		
 		return programMapper.selectWorkingOrder(line);
 	}
 
+	
 	@Override
 	public List<String> selectWorkingBoardType(String line, String workOrder) {
 		Program program = new Program();
@@ -789,6 +785,7 @@ public class ProgramServiceImpl implements ProgramService {
 		return programMapper.selectWorkingBoardType(program);
 	}
 
+	
 	@Override
 	public List<ProgramItemVisit> selectItemVisitByProgram(String line, String workOrder, int boardType) {
 		Program program = new Program();
@@ -797,6 +794,7 @@ public class ProgramServiceImpl implements ProgramService {
 		program.setBoardType(boardType);
 		return programItemVisitMapper.selectItemVisitByProgram(program);
 	}
+	
 	
 	@Override
 	public String selectLastOperatorByProgram(String line, String workOrder, Integer boardType) {
@@ -807,6 +805,7 @@ public class ProgramServiceImpl implements ProgramService {
 		return programMapper.selectLastOperatorByProgram(program);
 	}
 
+	
 	@Override
 	public String getProgramId(String line, String workOrder, Integer boardType) {
 		Program program = new Program();
@@ -814,6 +813,25 @@ public class ProgramServiceImpl implements ProgramService {
 		program.setWorkOrder(workOrder);
 		program.setBoardType(boardType);
 		return programMapper.selectProgramId(program);
+	}
+
+	
+	private void clearVisits(String programId) {
+		ProgramItemVisitExample programItemVisitExample = new ProgramItemVisitExample();
+		programItemVisitExample.createCriteria().andProgramIdEqualTo(programId);
+		programItemVisitMapper.deleteByExample(programItemVisitExample);
+	}
+
+	
+	private String formatLineseat(String in) {
+		try {
+			String[] array = in.split("-");
+			array[0] = Integer.valueOf(array[0]) <= 9 ? "0" + array[0] : array[0];
+			array[1] = Integer.valueOf(array[1]) <= 9 ? "0" + array[1] : array[1];
+			return array[0] + "-" + array[1];
+		} catch (NumberFormatException | PatternSyntaxException e) {
+			return in;
+		}
 	}	
 
 }

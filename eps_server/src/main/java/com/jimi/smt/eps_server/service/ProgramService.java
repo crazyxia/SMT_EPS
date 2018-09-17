@@ -8,7 +8,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.jimi.smt.eps_server.entity.Display;
 import com.jimi.smt.eps_server.entity.Program;
-import com.jimi.smt.eps_server.entity.ProgramItem;
 import com.jimi.smt.eps_server.entity.ProgramItemVisit;
 import com.jimi.smt.eps_server.entity.bo.EditProgramItemBO;
 import com.jimi.smt.eps_server.entity.vo.ProgramItemVO;
@@ -127,28 +126,22 @@ public interface ProgramService {
 	 * @param visit
 	 */
 	void updateVisit(ProgramItemVisit visit);
-			
+	
+	
 	/**
 	 * 列出所有实时监控程序选择的对应工单
 	 * @return
 	 */
 	List<Display> listDisplays();
 	
+	
 	/**
 	 * 返回当前产线正在进行的工单列表
 	 * @param line
 	 * @return
 	 */
-	List<Program> selectWorkingProgram(String line);
+	List<Program> selectWorkingProgram(String line);	
 	
-	/**
-	 * 获取当前工单的料号信息
-	 * @param line
-	 * @param workOrder
-	 * @param boardType
-	 * @return
-	 */
-	List<ProgramItem> selectProgramItem(String programId);
 	
 	/**
 	 * 更新program_item_visit 表日志
@@ -157,13 +150,15 @@ public interface ProgramService {
 	 */
 	int updateItemVisit(ProgramItemVisit programItemVisit);
 	
+	
 	/**
 	 * 首检完成后重置全检时间和全检结果
 	 * @param programId
 	 * @return
 	 */
 	int resetCheckAll(String programId);
-			
+		
+	
 	/**
 	 * 判断工单是否重置了
 	 * @param programId
@@ -171,6 +166,7 @@ public interface ProgramService {
 	 * @return
 	 */
 	int checkIsReset(String programId, int type);
+	
 	
 	/**
 	 * 返回某个工单是否全部完成某项操作的结果
@@ -180,6 +176,7 @@ public interface ProgramService {
 	 */
 	int isAllDone(String programId, int type);
 	
+	
 	/**
 	 * 核料时判断某个站位是否换料成功
 	 * @param programId
@@ -188,12 +185,14 @@ public interface ProgramService {
 	 */
 	int isChangeSucceed(String programId, String lineseat);
 	
+	
 	/**
 	 * 返回工单的集合
 	 * @param line
 	 * @return
 	 */
 	List<String> selectWorkingOrder(String line);
+	
 	
 	/**
 	 * 返回版面类型的集合
@@ -202,6 +201,7 @@ public interface ProgramService {
 	 * @return
 	 */
 	List<String> selectWorkingBoardType(String line, String workOrder);
+	
 	
 	/**
 	 * 返回ProgramItemVisit集合
@@ -212,6 +212,7 @@ public interface ProgramService {
 	 */
 	List<ProgramItemVisit> selectItemVisitByProgram(String line, String workOrder, int boardType);
 	
+	
 	/**
 	 * 返回最新操作的操作员
 	 * @param line
@@ -221,6 +222,7 @@ public interface ProgramService {
 	 */
 	String selectLastOperatorByProgram(String line, String workOrder, Integer boardType);
 	
+	
 	/**
 	 * 返回工单id
 	 * @param line
@@ -229,4 +231,5 @@ public interface ProgramService {
 	 * @return
 	 */
 	String getProgramId(String line, String workOrder, Integer boardType);
+	
 }

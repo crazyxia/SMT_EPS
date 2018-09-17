@@ -24,6 +24,7 @@ public class ConfigController {
 	@Autowired
 	private ConfigService configService;
 
+	
 	@Log
 	@ResponseBody
 	@RequestMapping("/set")
@@ -39,6 +40,7 @@ public class ConfigController {
 		return ResultUtil.failed("参数JSON格式不对");
 	}
 
+	
 	@ResponseBody
 	@RequestMapping("/list")
 	public List<Config> list() {

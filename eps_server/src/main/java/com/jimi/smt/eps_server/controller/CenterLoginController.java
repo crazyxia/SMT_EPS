@@ -20,6 +20,7 @@ public class CenterLoginController {
 	@Autowired
 	private CenterLoginService centerLoginService;
 
+	
 	@Open
 	@ResponseBody
 	@RequestMapping("/selectById")

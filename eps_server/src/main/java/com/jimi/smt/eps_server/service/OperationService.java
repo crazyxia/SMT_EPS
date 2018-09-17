@@ -27,6 +27,7 @@ public interface OperationService {
 	 */
 	List<ClientReport> listClientReport(String client, String programNo, String line, String orderNo, String workOrderNo, String startTime, String endTime) throws ParseException;
 	
+	
 	/**
 	 * 根据条件分页列出列表
 	 * @param client
@@ -41,6 +42,7 @@ public interface OperationService {
 	 */
 	List<ClientReport> listClientReportByPage(String client, String programNo, String line, String orderNo, String workOrderNo, String startTime, String endTime, Page page) throws ParseException;
 
+	
 	/**
 	 * 根据条件生成并下载excel
 	 * @return
@@ -49,6 +51,7 @@ public interface OperationService {
 	 */
 	ResponseEntity<byte[]> downloadClientReport(String client, String programNo, String line, String orderNo, String workOrderNo, String startTime, String endTime) throws ParseException, IOException;
 
+	
 	/**
 	 * 根据线号显示实时展示报表
 	 * @param line
@@ -56,12 +59,14 @@ public interface OperationService {
 	 */
 	DisplayReport listDisplayReport(String line);
 
+	
 	/**
 	 * 根据条件列出操作报表
 	 * @return
 	 * @throws ParseException 
 	 */
 	List<OperationReport> listOperationReport(String operator, String client, String line, String workOrderNo, String startTime, String endTime , Integer type) throws ParseException;
+	
 	
 	/**
 	 * 根据条件生成并下载excel
@@ -71,6 +76,7 @@ public interface OperationService {
 	 */
 	ResponseEntity<byte[]> downloadOperationReport(String operator, String client, String line, String workOrderNo, String startTime, String endTime , Integer type) throws ParseException, IOException;
 
+	
 	/**
 	 * 根据条件列出操作报表概要（已按操作员+工单+线号折叠分组），按线号升序
 	 * @param line
@@ -104,7 +110,5 @@ public interface OperationService {
 	 * @return
 	 */
 	int add(Operation operation);
-	
-	
-	
+			
 }

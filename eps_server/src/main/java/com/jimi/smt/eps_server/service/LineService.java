@@ -13,23 +13,27 @@ public interface LineService {
 	 */
 	String getLineById(int id);
 	
+	
 	/**
 	 * 列出所有线别
 	 * @return 
 	 */
 	List<Line> list();
 	
+	
 	/**
 	 * 返回线别数量
 	 * @return 
 	 */
-	long getLineNum();
+	long countLineNum();
+	
 	
 	/**
 	 * 返回所有产线的集合
 	 * @return
 	 */
 	List<String> selectAll();
+	
 	
 	/**
 	 * 返回是否有这条产线的结果
@@ -38,5 +42,4 @@ public interface LineService {
 	 */
 	int selectLine(String line);
 	
-
 }

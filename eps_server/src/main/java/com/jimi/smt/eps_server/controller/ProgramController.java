@@ -17,7 +17,6 @@ import com.jimi.smt.eps_server.annotation.Open;
 import com.jimi.smt.eps_server.annotation.Role;
 import com.jimi.smt.eps_server.annotation.Role.*;
 import com.jimi.smt.eps_server.entity.Program;
-import com.jimi.smt.eps_server.entity.ProgramItem;
 import com.jimi.smt.eps_server.entity.ProgramItemVisit;
 import com.jimi.smt.eps_server.entity.ResultJson;
 import com.jimi.smt.eps_server.entity.bo.EditProgramItemBO;
@@ -41,6 +40,7 @@ public class ProgramController {
 	@Autowired
 	private LineService lineService;
 
+	
 	@Role({ RoleType.ENGINEER, RoleType.PRODUCER })
 	@ResponseBody
 	@RequestMapping("/list")
@@ -49,6 +49,7 @@ public class ProgramController {
 		return programService.list(programName, fileName, line, workOrder, state, ordBy);
 	}
 
+	
 	@Log
 	@Role(RoleType.PRODUCER)
 	@ResponseBody
@@ -65,6 +66,7 @@ public class ProgramController {
 		}
 	}
 
+	
 	@Log
 	@Role(RoleType.PRODUCER)
 	@ResponseBody
@@ -80,6 +82,7 @@ public class ProgramController {
 		}
 	}
 
+	
 	@Log
 	@Role(RoleType.ENGINEER)
 	@ResponseBody
@@ -95,6 +98,7 @@ public class ProgramController {
 		}
 	}
 
+	
 	@Role(RoleType.ENGINEER)
 	@ResponseBody
 	@RequestMapping("/listItem")
@@ -106,6 +110,7 @@ public class ProgramController {
 		return programService.listItem(id);
 	}
 
+	
 	@Log
 	@Role(RoleType.ENGINEER)
 	@ResponseBody
@@ -131,6 +136,7 @@ public class ProgramController {
 		}
 	}
 
+	
 	@Log
 	@Role(RoleType.ENGINEER)
 	@ResponseBody
@@ -183,6 +189,7 @@ public class ProgramController {
 		}
 	}
 
+	
 	@Log
 	@Open
 	@ResponseBody
@@ -196,6 +203,7 @@ public class ProgramController {
 		}
 	}
 
+	
 	@Open
 	@ResponseBody
 	@RequestMapping("/operate")
@@ -210,6 +218,7 @@ public class ProgramController {
 		}
 	}
 
+	
 	@Log
 	@Open
 	@ResponseBody
@@ -223,6 +232,7 @@ public class ProgramController {
 		}
 	}
 
+	
 	@Open
 	@ResponseBody
 	@RequestMapping("/selectWorkingProgram")
@@ -246,11 +256,12 @@ public class ProgramController {
 		return resultJson;
 	}
 
+	
 	@Open
 	@ResponseBody
 	@RequestMapping("/selectProgramItem")
 	public ResultJson selectProgramItem(String programId) {
-		List<ProgramItem> list = programService.selectProgramItem(programId);
+		List<ProgramItemVO> list = programService.listItem(programId);
 		ResultJson resultJson = new ResultJson();
 		if (list.size() == 0) {
 			resultJson.setCode(0);
@@ -263,6 +274,7 @@ public class ProgramController {
 		return resultJson;
 	}
 
+	
 	@Open
 	@ResponseBody
 	@RequestMapping("/updateItemVisit")
@@ -279,6 +291,7 @@ public class ProgramController {
 		return resultJson;
 	}
 
+	
 	@Open
 	@ResponseBody
 	@RequestMapping("/resetCheckAll")
@@ -294,6 +307,7 @@ public class ProgramController {
 		}
 	}
 
+	
 	@Open
 	@ResponseBody
 	@RequestMapping("/checkIsReset")
@@ -301,6 +315,7 @@ public class ProgramController {
 		return programService.checkIsReset(programId, type);
 	}
 
+	
 	@Open
 	@ResponseBody
 	@RequestMapping("/isAllDone")
@@ -308,6 +323,7 @@ public class ProgramController {
 		return programService.isAllDone(programId, type);
 	}
 
+	
 	@Open
 	@ResponseBody
 	@RequestMapping("/isChangeSucceed")
@@ -315,6 +331,7 @@ public class ProgramController {
 		return programService.isChangeSucceed(programId, lineseat);
 	}
 
+	
 	@Open
 	@ResponseBody
 	@RequestMapping("/selectWorkingOrder")
@@ -322,6 +339,7 @@ public class ProgramController {
 		return programService.selectWorkingOrder(line);
 	}
 
+	
 	@Open
 	@ResponseBody
 	@RequestMapping("/selectWorkingBoardType")
@@ -329,6 +347,7 @@ public class ProgramController {
 		return programService.selectWorkingBoardType(line, workOrder);
 	}
 
+	
 	@Open
 	@ResponseBody
 	@RequestMapping("/selectItemVisitByProgram")
@@ -336,12 +355,14 @@ public class ProgramController {
 		return programService.selectItemVisitByProgram(line, workOrder, boardType);
 	}
 
+	
 	@Open
 	@ResponseBody
 	@RequestMapping("/selectLastOperatorByProgram")
 	public String selectLastOperatorByProgram(String line, String workOrder, Integer boardType) {
 		return programService.selectLastOperatorByProgram(line, workOrder, boardType);
 	}
+	
 	
 	@Open
 	@ResponseBody

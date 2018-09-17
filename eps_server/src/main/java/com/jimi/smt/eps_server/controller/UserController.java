@@ -41,11 +41,13 @@ public class UserController {
 
 	public static final String SESSION_KEY_LOGIN_USER = "loginUser";
 
+	
 	@Autowired
 	private UserService userService;
 	@Autowired
 	private UserToUserVOFiller filler;
 
+	
 	@Log
 	@ResponseBody
 	@RequestMapping("/add")
@@ -62,6 +64,7 @@ public class UserController {
 		}
 	}
 
+	
 	@ResponseBody
 	@RequestMapping("/list")
 	public List<UserVO> list(String id, Integer classType, String name, Integer type, String password, String orderBy,
@@ -69,6 +72,7 @@ public class UserController {
 		return userService.list(id, classType, name, type, orderBy, enabled);
 	}
 
+	
 	@Log
 	@ResponseBody
 	@RequestMapping("/update")
@@ -86,6 +90,7 @@ public class UserController {
 		}
 	}
 
+	
 	@Open
 	@ResponseBody
 	@RequestMapping("/login")
@@ -118,6 +123,7 @@ public class UserController {
 		return ResultUtil.succeed(userVO);
 	}
 
+	
 	@Open
 	@ResponseBody
 	@RequestMapping("/getCodePic")
@@ -149,6 +155,7 @@ public class UserController {
 		return ResultUtil.succeed("/static/png/" + fileName);
 	}
 
+	
 	@Open
 	@ResponseBody
 	@RequestMapping("/selectById")
@@ -171,6 +178,7 @@ public class UserController {
 		return resultJson;
 	}
 
+	
 	public static File[] findFile(String filePath, String fileName) {
 		File dir = new File(filePath);
 		File[] tempFile = dir.listFiles(new FileFilter() {
@@ -191,6 +199,7 @@ public class UserController {
 		return tempFile;
 	}
 
+	
 	@Open
 	@ResponseBody
 	@RequestMapping("/select")

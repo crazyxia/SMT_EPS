@@ -7,4 +7,5 @@ public interface StockLogService {
 	 * @param list
 	 */
 	void insert(String list);
+	
 }

@@ -21,12 +21,15 @@ public class StatusDetailsController {
 	
 	@Autowired
 	StatusService statusService;
+	
+	
 	@Open
 	@ResponseBody
 	@RequestMapping("/getStatusDetails")
 	public StatusDetailsVO ListStatusDetailsByHour(String line) {
 		return statusService.ListStatusDetailsByHour(line);
 	}
+	
 	
 	@Open
 	@ResponseBody

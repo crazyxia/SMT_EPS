@@ -15,6 +15,8 @@ public class StockLogServiceImpl implements StockLogService {
 
 	@Autowired
 	private StockLogMapper stockLogMapper;
+	
+	
 	@Override
 	public void insert(String list) {
 		//将字符串类型的JSON转换为集合对象

@@ -22,6 +22,7 @@ public interface UserService {
 	 */
 	String add(String id, Integer classType, String name, Integer type, String password);
 	
+	
 	/**
 	 * 修改指定工号的用户信息
 	 * @param id
@@ -34,6 +35,7 @@ public interface UserService {
 	 */
 	String update(String id, Integer classType, String name, Integer type, String password, Boolean enabled);
 
+	
 	/**
 	 * 根据条件列出用户
 	 * 前三个为查询条件，多选为求交集；
@@ -56,6 +58,7 @@ public interface UserService {
 	 */
 	List<UserVO> list(String id, Integer classType, String name, Integer type, String orderBy, Boolean enabled);
 	
+	
 	/**
 	 * 使用管理员id以及对应的密码进行登录（如果有），
 	 * 只有登录成功后才能使用其他接口，
@@ -66,10 +69,12 @@ public interface UserService {
 	 */
 	User login(String id, String password);
 	
+	
 	/**
 	 * 通过id返回用户对象
 	 * @param id
 	 * @return
 	 */
 	User selectUserById(String id);
+	
 }

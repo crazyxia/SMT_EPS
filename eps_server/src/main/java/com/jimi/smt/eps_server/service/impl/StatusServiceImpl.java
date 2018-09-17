@@ -22,6 +22,7 @@ public class StatusServiceImpl implements StatusService {
 	@Autowired
 	private OperationMapper OperationMapper;
 	
+	
 	@Override
 	public StatusDetailsVO ListStatusDetailsByHour(String line) {
 
@@ -70,6 +71,7 @@ public class StatusServiceImpl implements StatusService {
 		return statusDetailsVO;
 	}
 
+	
 	@Override
 	public List<StatusDetail> ListStatusDetailsByDay() {
 		OperationExample operationExample = new OperationExample();
@@ -111,6 +113,7 @@ public class StatusServiceImpl implements StatusService {
 		return statusDetails;
 	}
 
+	
 	/**
 	 * 清点数目
 	 * @param operation

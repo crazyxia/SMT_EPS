@@ -77,6 +77,7 @@ public class ClientSocket {
 	private SocketLogMapper socketLogMapper;
 	private CenterStateMapper centerStateMapper;
 
+	
 	/**
 	 * 连接中控
 	 * @throws Exception
@@ -104,6 +105,7 @@ public class ClientSocket {
 		}
 	}
 
+	
 	/**
 	 * 发送包到中控接驳台
 	 * @throws IOException

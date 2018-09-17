@@ -55,6 +55,7 @@ public class OperationServiceImpl implements OperationService {
 	@Autowired
 	private StockLogToStockLogVOFiller stockLogToStockLogVOFiller;
 	
+	
 	@Override
 	public List<ClientReport> listClientReport(String client, String programNo, String line, String orderNo,
 			String workOrderNo, String startTime, String endTime) throws ParseException {
@@ -90,9 +91,7 @@ public class OperationServiceImpl implements OperationService {
         operationExample.setOrderByClause("time desc");
         
         List<Operation> operations = operationMapper.selectByExample(operationExample);
-        
-        
-        
+                       
         ProgramExample programExample = new ProgramExample();
         ProgramExample.Criteria programCriteria = programExample.createCriteria();
         //筛选客户
@@ -123,6 +122,7 @@ public class OperationServiceImpl implements OperationService {
 		return clientReports;
 	}
 
+	
 	//测试分页查询客户报表
 	@Override
 	public List<ClientReport> listClientReportByPage(String client, String programNo, String line, String orderNo,
@@ -195,6 +195,7 @@ public class OperationServiceImpl implements OperationService {
 		
 		return clientReports;
 	}
+	
 	
 	@Override
 	public ResponseEntity<byte[]> downloadClientReport(String client, String programNo, String line, String orderNo,
@@ -437,13 +438,10 @@ public class OperationServiceImpl implements OperationService {
   		return stockLogToStockLogVOFiller.fill(stockLogMapper.selectByExample(stockLogExample));
 	}
 
+	
 	@Override
 	public int add(Operation operation) {		
 		operation.setTime(new Date());
 		return operationMapper.insert(operation);
-	}
-
-	
-
-
+	}	
 }
