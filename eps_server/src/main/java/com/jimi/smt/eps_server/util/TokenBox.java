@@ -120,15 +120,15 @@ public class TokenBox {
 	}
 
 	
+	public static void begin() {
+		start(30);
+	}
+
+
 	/**
 	 * 刷新最后一次访问时间
 	 */
 	private static void refreshLastAccessTime(Map<String, Object> session) {
 		session.put(LAST_ACCESS_TIME_KEY_NAME, new Date().getTime());
-	}
-
-	
-	public static void begin() {
-		start(30);
 	}
 }

@@ -32,7 +32,6 @@ public class CheckErrorTimer {
 
 	private ProgramItemVisitMapper programItemVisitMapper;
 
-	
 	/**
 	 * Config配置项
 	 */
@@ -74,7 +73,7 @@ public class CheckErrorTimer {
 	}
 	
 	
-	public synchronized void start() {
+	public void start() {
 		try {
 			// 初始化“线别-报警设备错误统计”实体
 			initCounters();
@@ -94,7 +93,6 @@ public class CheckErrorTimer {
 	private void initCounters() throws IOException {
 		lineErrorsCounters = new HashMap<Integer, CenterControllerErrorCounter>();
 		for (int i = 0; i < lineSize; i++) {
-			System.out.println(i);
 			lineErrorsCounters.put(i, new CenterControllerErrorCounter());
 		}
 		// 设置报警模式
@@ -109,7 +107,6 @@ public class CheckErrorTimer {
 	 */
 	private void setAlarmMode() throws IOException {
 		ConfigExample example = new ConfigExample();
-		System.out.println("数组："+lineErrorsCounters);
 		List<Config> configs = configMapper.selectByExample(example);
 		for (Config config : configs) {
 			int lineNo = getLineNO(config.getLine());

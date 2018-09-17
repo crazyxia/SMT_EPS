@@ -65,11 +65,11 @@ public class ResultUtil {
 		return new ResultUtil(data);
 	}
 
-	private ResultUtil(String result) {
+	public ResultUtil(String result) {
 		this.result = result;
 	}
 	
-	private ResultUtil(Object data) {
+	public ResultUtil(Object data) {
 		this.data = data;
 	}
 

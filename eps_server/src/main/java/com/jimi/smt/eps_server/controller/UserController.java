@@ -40,7 +40,6 @@ public class UserController {
 	private static final Object lock = new Object();
 
 	public static final String SESSION_KEY_LOGIN_USER = "loginUser";
-
 	
 	@Autowired
 	private UserService userService;
