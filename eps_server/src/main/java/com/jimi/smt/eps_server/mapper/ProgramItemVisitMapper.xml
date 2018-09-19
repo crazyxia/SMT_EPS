@@ -533,7 +533,7 @@
     <include refid="Base_Column_List" />
     from program_item_visit
     inner join program on program.id = program_item_visit.program_id
-    where line = #{line,jdbcType=VARCHAR}
+    where line = #{line,jdbcType=INTEGER}
     and work_order = #{workOrder,jdbcType=VARCHAR}
     and board_type = #{boardType,jdbcType=INTEGER}
     and (store_issue_result = 0 OR feed_result = 0 OR change_result = 0 OR (check_all_result % 3) = 0 OR (check_result % 3) = 0 OR first_check_all_result = 0))
@@ -542,7 +542,7 @@
     <include refid="Base_Column_List" />
     from program_item_visit
     inner join program on program.id = program_item_visit.program_id
-    where line = #{line,jdbcType=VARCHAR}
+    where line = #{line,jdbcType=INTEGER}
     and work_order = #{workOrder,jdbcType=VARCHAR}
     and board_type = #{boardType,jdbcType=INTEGER}
     and (change_result = 4))
@@ -551,7 +551,7 @@
     <include refid="Base_Column_List" />
     from program_item_visit
     inner join program on program.id = program_item_visit.program_id
-    where line = #{line,jdbcType=VARCHAR}
+    where line = #{line,jdbcType=INTEGER}
     and work_order = #{workOrder,jdbcType=VARCHAR}
     and board_type = #{boardType,jdbcType=INTEGER}
     and (store_issue_result != 0 OR feed_result != 0 OR (change_result % 4) !=0 OR (check_all_result % 3) != 0 OR (check_result % 3) != 0 OR first_check_all_result != 0))

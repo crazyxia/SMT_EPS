@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.jimi.smt.eps_server.entity.Line;
+import com.jimi.smt.eps_server.entity.LineExample;
 import com.jimi.smt.eps_server.mapper.LineMapper;
 import com.jimi.smt.eps_server.service.LineService;
 
@@ -24,7 +25,7 @@ public class LineServiceImpl implements LineService {
 	
 	@Override
 	public String getLineById(int id) {
-		return lineMapper.selectByPrimaryKey(id+1).getLine();		
+		return lineMapper.selectByPrimaryKey(id).getLine();		
 	}
 
 	
@@ -41,14 +42,13 @@ public class LineServiceImpl implements LineService {
 
 	
 	@Override
-	public int selectLine(String line) {
-		List<String> lines = lineMapper.selectAll();
+	public int selectLine(String line) {		
 		int result = 0;
-		for (int i = 0; i < lines.size(); i++) {
-			if (!lines.get(i).equals("") && lines.get(i).equals(line)) {
-				result = 1;
-				break;
-			}
+		LineExample lineExample = new LineExample();
+		lineExample.createCriteria().andLineEqualTo(line);
+		List<Line> lines = lineMapper.selectByExample(lineExample);
+		if(lines != null && lines.size() > 0) {
+			result = 1;
 		}
 		return result;
 	}	

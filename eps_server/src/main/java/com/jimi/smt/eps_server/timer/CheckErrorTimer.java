@@ -12,7 +12,6 @@ import com.jimi.smt.eps_server.constant.ClientDevice;
 import com.jimi.smt.eps_server.constant.ControlledDevice;
 import com.jimi.smt.eps_server.entity.Config;
 import com.jimi.smt.eps_server.entity.ConfigExample;
-import com.jimi.smt.eps_server.entity.Line;
 import com.jimi.smt.eps_server.entity.Program;
 import com.jimi.smt.eps_server.entity.ProgramItemVisit;
 import com.jimi.smt.eps_server.entity.bo.CenterControllerErrorCounter;
@@ -51,24 +50,18 @@ public class CheckErrorTimer {
 	 * 所有线别的报警模块列表
 	 */
 	private Map<Integer, ClientSocket> clientSockets;
-
-	/**
-	 * 所有线别列表
-	 */
-	private Map<Integer, Line> listMap;
-
+	
 	/**
 	 * 产线数量
 	 */
 	private long lineSize;
 	
 	
-	public CheckErrorTimer(Long lineSize, Map<Integer, Line> listMap, ConfigMapper configMapper, ProgramMapper programMapper, ProgramItemVisitMapper programItemVisitMapper, Map<Integer, ClientSocket> clientSockets){
+	public CheckErrorTimer(Long lineSize, ConfigMapper configMapper, ProgramMapper programMapper, ProgramItemVisitMapper programItemVisitMapper, Map<Integer, ClientSocket> clientSockets){
 		this.configMapper = configMapper;
 		this.programMapper = programMapper;
 		this.programItemVisitMapper = programItemVisitMapper;
 		this.lineSize = lineSize;
-		this.listMap = listMap;
 		this.clientSockets = clientSockets;
 	}
 	
@@ -109,7 +102,7 @@ public class CheckErrorTimer {
 		ConfigExample example = new ConfigExample();
 		List<Config> configs = configMapper.selectByExample(example);
 		for (Config config : configs) {
-			int lineNo = getLineNO(config.getLine());
+			int lineNo = config.getLine();
 			switch (config.getName()) {
 			case IPQC_ERROR_ALARM:
 				lineErrorsCounters.get(lineNo).setIpqcErrorAlarm(Integer.parseInt(config.getValue()));
@@ -122,22 +115,7 @@ public class CheckErrorTimer {
 			}
 		}
 	}
-
-	
-	/**
-	 * 根据线号得到id
-	 */
-	private int getLineNO(String line) {
-		int number = 0;
-		for (int i = 0; i < lineSize; i++) {
-			if (listMap.get(i).getLine().equals(line)) {
-				number = i;
-				break;
-			}
-		}
-		return number;
-	}
-
+		
 	
 	/**
 	 * 扫描错误
@@ -157,7 +135,7 @@ public class CheckErrorTimer {
 					if (program.getId().equals(programItemVisit.getProgramId())) {
 						try {
 							// 遍历字段
-							int line = getLineNO(program.getLine());
+							int line = program.getLine();
 							updateLineErrorCounter(line, 0, programItemVisit.getFeedResult());
 							updateLineErrorCounter(line, 1, programItemVisit.getChangeResult());
 							updateLineErrorCounter(line, 2, programItemVisit.getCheckResult());

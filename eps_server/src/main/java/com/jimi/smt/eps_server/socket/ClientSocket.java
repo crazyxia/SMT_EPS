@@ -28,12 +28,12 @@ import cc.darhao.jiminal.core.PackageParser;
 import cc.darhao.jiminal.core.SyncCommunicator;
 
 /**
- * 	连接产线中控的SOCKET
+ * 连接产线中控的SOCKET
  */
 public class ClientSocket {
 
 	private static Logger logger = LogManager.getRootLogger();
-	
+
 	/**
 	 * 同步通讯器
 	 */
@@ -50,15 +50,15 @@ public class ClientSocket {
 	private static final String PACKAGE_PATH = "com.jimi.smt.eps_server.pack";
 
 	/**
-	 * 某一条产线
+	 * 某一条产线的ID
 	 */
-	private String line;
-	
+	private int line;
+
 	/**
 	 * 树莓派IP
 	 */
 	private String ip;
-	
+
 	/**
 	 * 树莓派端口
 	 */
@@ -77,12 +77,12 @@ public class ClientSocket {
 	private SocketLogMapper socketLogMapper;
 	private CenterStateMapper centerStateMapper;
 
-	
 	/**
 	 * 连接中控
+	 * 
 	 * @throws Exception
 	 */
-	public ClientSocket(String line, CenterLoginMapper centerLoginMapper, SocketLogMapper socketLogMapper,
+	public ClientSocket(int line, CenterLoginMapper centerLoginMapper, SocketLogMapper socketLogMapper,
 			CenterStateMapper centerStateMapper) throws Exception {
 		this.line = line;
 		this.socketLogMapper = socketLogMapper;
@@ -98,110 +98,107 @@ public class ClientSocket {
 			communicator = new SyncCommunicator(ip, port, PACKAGE_PATH);
 			communicator.setTimeout(TIME_OUT);
 			communicator.connect();
-			logger.info("搜索产线 " + line + " : " + "已找到中控设备：" + ip);
+			logger.info("搜索产线,ID为: " + line + " : " + "已找到中控设备：" + ip);
 			reset();
 		} else {
 			throw new Exception("没有找到对应线号的中控");
 		}
 	}
 
-	
 	/**
 	 * 发送包到中控接驳台
+	 * 
 	 * @throws IOException
 	 */
 	public synchronized void sendCmdToConvery(ClientDevice clientDevice, boolean isAlarm) throws Exception {
-		if(converyPaused ^ isAlarm) {
-			//开启or关闭接驳台
+		if (converyPaused ^ isAlarm) {
+			// 开启or关闭接驳台
 			ControlPackage controlPackage = new ControlPackage();
-			controlPackage.setLine(line);
+			controlPackage.setLine(line + "");
 			controlPackage.setClientDevice(clientDevice);
 			controlPackage.setControlledDevice(ControlledDevice.CONVEYOR);
-			if(isAlarm) {
+			if (isAlarm) {
 				controlPackage.setOperation(Operation.OFF);
-			}else {
+			} else {
 				controlPackage.setOperation(Operation.ON);
 			}
-			ControlReplyPackage replyPackage = (ControlReplyPackage) communicator.send(controlPackage);			
-			//创建日志：收到的包
+			ControlReplyPackage replyPackage = (ControlReplyPackage) communicator.send(controlPackage);
+			// 创建日志：收到的包
 			SocketLog pLog = createLogByPackage(controlPackage);
 			socketLogMapper.insert(pLog);
-			//创建日志：回复的包
+			// 创建日志：回复的包
 			SocketLog rLog = createLogByPackage(replyPackage);
 			socketLogMapper.insert(rLog);
-			//判断是否操作成功
-			if(! replyPackage.getControlResult().equals(ControlResult.SUCCEED)) {
+			// 判断是否操作成功
+			if (!replyPackage.getControlResult().equals(ControlResult.SUCCEED)) {
 				throw new Exception("控制接驳台失败");
 			}
 			converyPaused = isAlarm;
-			//记录到state表
+			// 记录到state表
 			CenterState state = centerStateMapper.selectByPrimaryKey(line);
 			state.setConverypaused(converyPaused);
 			centerStateMapper.updateByPrimaryKey(state);
 		}
 	}
-	
-	
+
 	/**
 	 * 发送包到中控报警器
-	 * @throws IOException 
+	 * 
+	 * @throws IOException
 	 */
 	public synchronized void sendCmdToAlarm(ClientDevice clientDevice, boolean isAlarm) throws Exception {
-		if(alarming ^ isAlarm) {
-			//打开or关闭报警器
+		if (alarming ^ isAlarm) {
+			// 打开or关闭报警器
 			ControlPackage controlPackage = new ControlPackage();
-			controlPackage.setLine(line);
+			controlPackage.setLine(line + "");
 			controlPackage.setClientDevice(clientDevice);
 			controlPackage.setControlledDevice(ControlledDevice.ALARM);
-			if(isAlarm) {
+			if (isAlarm) {
 				controlPackage.setOperation(Operation.ON);
-			}else {
+			} else {
 				controlPackage.setOperation(Operation.OFF);
 			}
 			ControlReplyPackage replyPackage = (ControlReplyPackage) communicator.send(controlPackage);
-			//创建日志：收到的包
+			// 创建日志：收到的包
 			SocketLog pLog = createLogByPackage(controlPackage);
 			socketLogMapper.insert(pLog);
-			//创建日志：回复的包
+			// 创建日志：回复的包
 			SocketLog rLog = createLogByPackage(replyPackage);
 			socketLogMapper.insert(rLog);
-			//判断是否操作成功
-			if(! replyPackage.getControlResult().equals(ControlResult.SUCCEED)) {
+			// 判断是否操作成功
+			if (!replyPackage.getControlResult().equals(ControlResult.SUCCEED)) {
 				throw new Exception("控制报警器失败");
 			}
 			alarming = isAlarm;
-			//记录到state表
+			// 记录到state表
 			CenterState state = centerStateMapper.selectByPrimaryKey(line);
 			state.setAlarming(alarming);
 			centerStateMapper.updateByPrimaryKey(state);
 		}
 	}
 
-	
 	public void close() {
 		communicator.close();
 	}
-	
-	
+
 	public void reconnect() throws Exception {
 		close();
 		communicator.connect();
 		reset();
 	}
-	
-	
+
 	private void reset() throws Exception {
-		//强制重置
+		// 强制重置
 		alarming = true;
 		converyPaused = true;
 		sendCmdToAlarm(ClientDevice.SERVER, false);
 		sendCmdToConvery(ClientDevice.SERVER, false);
-		logger.info("产线 "+ line +"报警器、接驳台已重置");
+		logger.info("产线 " + line + "报警器、接驳台已重置");
 	}
-
 
 	/**
 	 * 根据包创建日志实体
+	 * 
 	 * @param p
 	 * @return
 	 */

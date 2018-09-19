@@ -88,10 +88,11 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public User login(String id, String password) {
 		User user = userMapper.selectByPrimaryKey(id);
-		//return filler.fill(user).getTypeName();
 		return user;
 	}
 	
+	
+	@Override
 	public User selectUserById(String id) {	
 		return userMapper.selectByPrimaryKey(id);		
 	}

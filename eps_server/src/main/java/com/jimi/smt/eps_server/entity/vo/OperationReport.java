@@ -9,7 +9,7 @@ import com.jimi.smt.eps_server.util.ExcelHelper.Excel;
 public class OperationReport{
 
 	@Excel(col=0, head="线号")
-	private String line;
+	private int line;
 	@Excel(col=1, head="工单号")
 	private String workOrderNo;
 	@Excel(col=2, head="槽位")
@@ -28,12 +28,18 @@ public class OperationReport{
 	private String time;
 	
 	
-	public String getLine() {
+	public int getLine() {
+		return line;
+	}
+	public void setLine(int line) {
+		this.line = line;
+	}
+	/*public String getLine() {
 		return line;
 	}
 	public void setLine(String line) {
 		this.line = line;
-	}
+	}*/
 	public String getWorkOrderNo() {
 		return workOrderNo;
 	}

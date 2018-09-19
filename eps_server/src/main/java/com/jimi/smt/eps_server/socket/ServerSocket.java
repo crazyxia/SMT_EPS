@@ -124,12 +124,12 @@ public class ServerSocket {
 	
 	@PostConstruct
 	public void init() {
-		clientSockets = new HashMap<Integer, ClientSocket>();
-		lineSize = lineMapper.countByExample(null);
+		clientSockets = new HashMap<Integer, ClientSocket>();	
 		List<Line> lists = lineMapper.selectByExample(null);
+		lineSize = lists.size();
 		for (int i = 0; i < lineSize; i++) {
 			Line line = lists.get(i);
-			listMap.put(line.getId() - 1, line);
+			listMap.put(line.getId(), line);
 		}		
 		communicator = new SyncCommunicator(LOCAL_PORT, PACKAGE_PATH);
 		new Thread(() -> {
@@ -162,7 +162,7 @@ public class ServerSocket {
 						List<CenterLogin> logins = centerLoginMapper.selectByExample(example);
 						if (!logins.isEmpty()) {
 							CenterLogin login = logins.get(0);
-							loginReplyPackage.setLine(login.getId().toString());
+							loginReplyPackage.setLine(login.getLine().toString());
 							//loginReplyPackage.setLine(login.getLine());
 							loginReplyPackage.setTimestamp(new Date());
 						} else {
@@ -173,8 +173,8 @@ public class ServerSocket {
 					} else if (p instanceof BoardNumPackage) {
 						BoardNumPackage boardNumPackage = (BoardNumPackage) p;
 						DisplayExample displayExample = new DisplayExample();
-						//displayExample.createCriteria().andLineEqualTo(boardNumPackage.getLine());
-						displayExample.createCriteria().andIdEqualTo(Integer.parseInt(boardNumPackage.getLine()));
+						displayExample.createCriteria().andLineEqualTo(Integer.parseInt(boardNumPackage.getLine()));
+						/*displayExample.createCriteria().andIdEqualTo(Integer.parseInt(boardNumPackage.getLine()));*/
 						List<Display> displays = displayMapper.selectByExample(displayExample);
 						if (!displays.isEmpty()) {
 							Display display = displays.get(0);
@@ -232,13 +232,13 @@ public class ServerSocket {
 			for (int i = 0; i < lineSize; i++) {
 				try {
 					clientSockets.put(i,
-							new ClientSocket(listMap.get(i).getLine(), centerLoginMapper, socketLogMapper, centerStateMapper));
+							new ClientSocket(listMap.get(i).getId(), centerLoginMapper, socketLogMapper, centerStateMapper));
 				} catch (Exception e) {
 					logger.error("搜索产线 " + listMap.get(i).getLine() + " : " + e.getMessage());
 				}
 			}
 			flag = 0;
-			checkErrorTimer = new CheckErrorTimer(lineSize, listMap, configMapper, programMapper, programItemVisitMapper, clientSockets);
+			checkErrorTimer = new CheckErrorTimer(lineSize, configMapper, programMapper, programItemVisitMapper, clientSockets);
 			state = 1;
 		}
 	}

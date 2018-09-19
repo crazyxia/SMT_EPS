@@ -43,7 +43,7 @@ public class MaterialServiceImpl implements MaterialService {
 	
 	@Override
 	public String update(Integer id, String materialNo, Integer perifdOfValidity) {
-		
+
 		MaterialInfo materialInfo = materialInfoMapper.selectByPrimaryKey(id);
 		if (materialInfo == null || materialInfo.getEnable() != 1) {
 			return "failed_not_found";
@@ -58,7 +58,7 @@ public class MaterialServiceImpl implements MaterialService {
 				return "failed_materialNo_exist";
 			}
 		}
-		
+
 		materialInfo.setMaterialNo(materialNo.equals("") ? null : materialNo);
 		materialInfo.setPerifdOfValidity(perifdOfValidity);
 		if (materialInfoMapper.updateByPrimaryKeySelective(materialInfo) == 1) {
@@ -71,7 +71,7 @@ public class MaterialServiceImpl implements MaterialService {
 	
 	@Override
 	public String delete(Integer id) {
-		
+
 		MaterialInfo materialInfo = materialInfoMapper.selectByPrimaryKey(id);
 		if (materialInfo == null || materialInfo.getEnable() != 1) {
 			return "failed_not_found";
@@ -86,7 +86,7 @@ public class MaterialServiceImpl implements MaterialService {
 	
 	@Override
 	public List<MaterialInfo> list(Integer id, String materialNo, Integer perifdOfValidity, String orderBy) {
-		
+
 		MaterialInfoExample materialInfoExample = new MaterialInfoExample();
 		Criteria criteria = materialInfoExample.createCriteria();
 		if (id != null) {

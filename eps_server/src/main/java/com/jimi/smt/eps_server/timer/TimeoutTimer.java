@@ -69,7 +69,7 @@ public class TimeoutTimer {
 		List<Line> lists = lineService.list();
 		for (int i = 0; i < lineSize; i++) {
 			Line line = lists.get(i);
-			listMap.put(line.getId() - 1, line);
+			listMap.put(line.getId(), line);
 		}
 		lineLocks = new Object[lineSize];
 		lineInfos = new HashMap<Integer, LineInfo>();	
@@ -144,11 +144,11 @@ public class TimeoutTimer {
 	/**
 	 * 超时检测
 	 */
-	private void checkTimeout(List<ProgramItemVisit> programItemVisits, int line) {
+	private void checkTimeout(List<ProgramItemVisit> programItemVisits, int id) {
 		for (ProgramItemVisit programItemVisit : programItemVisits) {
 			//全检超时检测
 			//当前全检时间加上设置的超时时间
-			long temp = programItemVisit.getCheckAllTime().getTime() + lineInfos.get(line).getCheckAllTimeout() * 60 * 1000;
+			long temp = programItemVisit.getCheckAllTime().getTime() + lineInfos.get(id).getCheckAllTimeout() * 60 * 1000;
 			//当前时间是否大于全检超时后的时间
 			boolean isCheckAllTimeout = new Date().getTime() > temp;
 			//是否已经正常首检
@@ -165,7 +165,7 @@ public class TimeoutTimer {
 			}
 			//核料超时检测
 			//当前换料时间加上设置的超时时间
-			long temp2 = programItemVisit.getChangeTime().getTime() + lineInfos.get(line).getCheckTimeout() * 60 * 1000;
+			long temp2 = programItemVisit.getChangeTime().getTime() + lineInfos.get(id).getCheckTimeout() * 60 * 1000;
 			//当前时间是否大于换料超时后的时间
 			boolean isCheckTimeout = new Date().getTime() > temp2;
 			//核料时间是否小于换料时间
@@ -190,7 +190,7 @@ public class TimeoutTimer {
 	private void setTimeoutTime() {
 		List<Config> configs = configService.list();
 		for (Config config : configs) {
-			int lineNo = getLineNO(config.getLine());
+			int lineNo = getLineNO(config.getLine().toString());
 			switch (config.getName()) {
 			case CHECK_ALL_CYCLE_TIME:
 				lineInfos.get(lineNo).setCheckAllTimeout(Integer.parseInt(config.getValue()));
@@ -211,7 +211,7 @@ public class TimeoutTimer {
 	private void setWorkOrderAndBoardType() {
 		List<Display> displays = programService.listDisplays();
 		for (Display display : displays) {
-			int lineNo = getLineNO(display.getLine());
+			int lineNo = getLineNO(display.getLine().toString());
 			lineInfos.get(lineNo).setWorkOrder(display.getWorkOrder());
 			lineInfos.get(lineNo).setBoardType(display.getBoardType());
 		}

@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.jimi.smt.eps_server.entity.Display;
 import com.jimi.smt.eps_server.entity.DisplayExample;
+import com.jimi.smt.eps_server.entity.LineExample;
 import com.jimi.smt.eps_server.entity.Program;
 import com.jimi.smt.eps_server.entity.ProgramExample;
 import com.jimi.smt.eps_server.entity.ProgramItem;
@@ -28,6 +29,7 @@ import com.jimi.smt.eps_server.entity.filler.ProgramToProgramVOFiller;
 import com.jimi.smt.eps_server.entity.vo.ProgramItemVO;
 import com.jimi.smt.eps_server.entity.vo.ProgramVO;
 import com.jimi.smt.eps_server.mapper.DisplayMapper;
+import com.jimi.smt.eps_server.mapper.LineMapper;
 import com.jimi.smt.eps_server.mapper.ProgramItemMapper;
 import com.jimi.smt.eps_server.mapper.ProgramItemVisitMapper;
 import com.jimi.smt.eps_server.mapper.ProgramMapper;
@@ -50,6 +52,8 @@ public class ProgramServiceImpl implements ProgramService {
 	private ProgramItemVisitMapper programItemVisitMapper;
 	@Autowired
 	private DisplayMapper displayMapper;
+	@Autowired
+	private LineMapper lineMapper;
 	@Autowired
 	private ProgramToProgramVOFiller programToProgramVOFiller;
 	@Autowired
@@ -85,7 +89,6 @@ public class ProgramServiceImpl implements ProgramService {
 		// 分割解析工单和线号
 		String[] workOrders = helper.getString(4, 6 + offset).split("\\+");
 		String[] lines = helper.getString(3, 6 + offset).split("\\+");
-
 		// 创建所有工单
 		List<Program> programs = new ArrayList<Program>(workOrders.length * lines.length);
 		for (String line : lines) {
@@ -96,11 +99,13 @@ public class ProgramServiceImpl implements ProgramService {
 				program.setVersion(helper.getString(2, 6 + offset));
 				program.setMachineConfig(helper.getString(3, 1 + offset));
 				program.setProgramNo(helper.getString(3, 4 + offset));
-				program.setLine(line);
+				program.setLine(getLineId(line));
 				program.setEffectiveDate(helper.getDate(4, 1 + offset).toString());
 				program.setPcbNo(helper.getString(4, 4 + offset));
 				program.setBom(helper.getString(5, 1 + offset));
 				program.setProgramName(helper.getString(6, 1 + offset));
+				program.setPlanProduct(getPlanProduct(helper.getString(6, 5 + offset)));
+				program.setStructure(Integer.parseInt(helper.getString(6, 8 + offset)));
 				program.setAuditor(helper.getString(7, 4 + offset).substring(3));
 				program.setFileName(programFile.getOriginalFilename());
 				program.setId(UuidUtil.get32UUID());
@@ -204,7 +209,7 @@ public class ProgramServiceImpl implements ProgramService {
 		}
 		// 筛选线别
 		if (line != null && !line.equals("")) {
-			programCriteria.andLineEqualTo(line);
+			programCriteria.andLineEqualTo(getLineId(line));
 		}
 		// 筛选工单号
 		if (workOrder != null && !workOrder.equals("")) {
@@ -216,6 +221,9 @@ public class ProgramServiceImpl implements ProgramService {
 		}
 
 		List<Program> programs = programMapper.selectByExample(programExample);
+		for (Program program : programs) {
+			program.setLine(getLineName(program.getLine()));
+		}
 		return programToProgramVOFiller.fill(programs);
 	}
 
@@ -453,7 +461,7 @@ public class ProgramServiceImpl implements ProgramService {
 		}
 		// 获取Display
 		DisplayExample displayExample = new DisplayExample();
-		displayExample.createCriteria().andLineEqualTo(line);
+		displayExample.createCriteria().andLineEqualTo(getLineId(line));
 		Display display = displayMapper.selectByExample(displayExample).get(0);
 		int flag = 0;
 		// 判断是否是停止监控
@@ -520,7 +528,7 @@ public class ProgramServiceImpl implements ProgramService {
 				}
 				synchronized (timeoutTimer.getLock(line)) {
 					updateVisit(programItemVisit);
-				}				
+				}
 			}
 		}
 		return "succeed";
@@ -552,7 +560,7 @@ public class ProgramServiceImpl implements ProgramService {
 	@Override
 	public List<ProgramItemVisit> getVisits(String line, String workOrder, Integer boardType) {
 		ProgramExample programExample = new ProgramExample();
-		programExample.createCriteria().andLineEqualTo(line).andWorkOrderEqualTo(workOrder)
+		programExample.createCriteria().andLineEqualTo(getLineId(line)).andWorkOrderEqualTo(workOrder)
 				.andBoardTypeEqualTo(boardType).andStateEqualTo(1);
 		List<Program> programs = programMapper.selectByExample(programExample);
 		if (!programs.isEmpty()) {
@@ -574,13 +582,21 @@ public class ProgramServiceImpl implements ProgramService {
 	
 	@Override
 	public List<Display> listDisplays() {
-		return displayMapper.selectByExample(null);
+		List<Display> displays = displayMapper.selectByExample(null);
+		for (Display display : displays) {
+			display.setLine(getLineName(display.getLine()));
+		}
+		return displays;
 	}
 
 	
 	@Override
 	public List<Program> selectWorkingProgram(String line) {
-		return programMapper.selectWorkingProgram(line);
+		List<Program> programs = programMapper.selectWorkingProgram(getLineId(line));
+		for (Program program : programs) {
+			program.setLine(getLineName(program.getLine()));
+		}
+		return programs;
 	}
 
 	
@@ -640,7 +656,7 @@ public class ProgramServiceImpl implements ProgramService {
 		programItemVisit.setCheckAllTime(new Date());
 		return programItemVisitMapper.updateByExampleSelective(programItemVisit, example);
 	}
-	
+
 	
 	@Override
 	public int checkIsReset(String programId, int type) {
@@ -713,7 +729,7 @@ public class ProgramServiceImpl implements ProgramService {
 		example.createCriteria().andProgramIdEqualTo(programId);
 		List<ProgramItemVisit> list = programItemVisitMapper.selectByExample(example);
 		switch (type) {
-		case 4:			
+		case 4:
 			for (ProgramItemVisit programItemVisit : list) {
 				if (programItemVisit.getStoreIssueResult() != 1) {
 					result = 0;
@@ -721,7 +737,7 @@ public class ProgramServiceImpl implements ProgramService {
 				}
 			}
 			break;
-		case 0:			
+		case 0:
 			for (ProgramItemVisit programItemVisit : list) {
 				if (programItemVisit.getFeedResult() != 1) {
 					result = 0;
@@ -737,7 +753,7 @@ public class ProgramServiceImpl implements ProgramService {
 				}
 			}
 			break;
-		case 5:			
+		case 5:
 			for (ProgramItemVisit programItemVisit : list) {
 				if (programItemVisit.getFirstCheckAllResult() != 1) {
 					result = 0;
@@ -772,15 +788,15 @@ public class ProgramServiceImpl implements ProgramService {
 
 	
 	@Override
-	public List<String> selectWorkingOrder(String line) {		
-		return programMapper.selectWorkingOrder(line);
+	public List<String> selectWorkingOrder(String line) {
+		return programMapper.selectWorkingOrder(getLineId(line));
 	}
 
 	
 	@Override
 	public List<String> selectWorkingBoardType(String line, String workOrder) {
 		Program program = new Program();
-		program.setLine(line);
+		program.setLine(getLineId(line));
 		program.setWorkOrder(workOrder);
 		return programMapper.selectWorkingBoardType(program);
 	}
@@ -789,17 +805,17 @@ public class ProgramServiceImpl implements ProgramService {
 	@Override
 	public List<ProgramItemVisit> selectItemVisitByProgram(String line, String workOrder, int boardType) {
 		Program program = new Program();
-		program.setLine(line);
+		program.setLine(getLineId(line));
 		program.setWorkOrder(workOrder);
 		program.setBoardType(boardType);
 		return programItemVisitMapper.selectItemVisitByProgram(program);
 	}
-	
+
 	
 	@Override
 	public String selectLastOperatorByProgram(String line, String workOrder, Integer boardType) {
 		Program program = new Program();
-		program.setLine(line);
+		program.setLine(getLineId(line));
 		program.setWorkOrder(workOrder);
 		program.setBoardType(boardType);
 		return programMapper.selectLastOperatorByProgram(program);
@@ -809,7 +825,7 @@ public class ProgramServiceImpl implements ProgramService {
 	@Override
 	public String getProgramId(String line, String workOrder, Integer boardType) {
 		Program program = new Program();
-		program.setLine(line);
+		program.setLine(getLineId(line));
 		program.setWorkOrder(workOrder);
 		program.setBoardType(boardType);
 		return programMapper.selectProgramId(program);
@@ -832,6 +848,49 @@ public class ProgramServiceImpl implements ProgramService {
 		} catch (NumberFormatException | PatternSyntaxException e) {
 			return in;
 		}
-	}	
+	}
+
+	
+	/**@author HCJ
+	 * 根据产线名称得到ID
+	 * @method getLineId
+	 * @param line 产线名称
+	 * @return int
+	 * @date 2018年9月19日 下午8:49:33
+	 */
+	private int getLineId(String line) {
+		LineExample lineExample = new LineExample();
+		lineExample.createCriteria().andLineEqualTo(line);
+		return lineMapper.selectByExample(lineExample).get(0).getId();
+	}
+
+	
+	/**@author HCJ
+	 * 根据产线ID得到名称
+	 * @method getLineName
+	 * @param id 产线ID
+	 * @return int
+	 * @date 2018年9月19日 下午8:50:00
+	 */
+	private int getLineName(int id) {
+		return Integer.parseInt(lineMapper.selectByPrimaryKey(id).getLine());
+	}
+
+	
+	/**@author HCJ
+	 * 获取从Excel表格读取的计划生产数量
+	 * @method getPlanProduct
+	 * @param planProduct 从Excel表格读取的字符串
+	 * @return int
+	 * @date 2018年9月19日 下午8:58:52
+	 */
+	private int getPlanProduct(String planProduct) {
+		if (planProduct.contains("k") || planProduct.contains("K")) {
+			String result = planProduct.toLowerCase().substring(0, planProduct.indexOf("k"));
+			return Integer.parseInt(result) * 1000;
+		} else {
+			return Integer.parseInt(planProduct);
+		}
+	}
 
 }
