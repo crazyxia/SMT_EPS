@@ -28,7 +28,7 @@ public class StatusServiceImpl implements StatusService {
 
 	
 	@Override
-	public StatusDetailsVO ListStatusDetailsByHour(String line) {
+	public StatusDetailsVO ListStatusDetailsByHour(int line) {
 
 		OperationExample operationExample = new OperationExample();
 		Criteria criteria = operationExample.createCriteria();
@@ -44,7 +44,7 @@ public class StatusServiceImpl implements StatusService {
 		criteria.andTimeGreaterThan(startTime);
 		criteria.andTimeLessThanOrEqualTo(endTime);
 		criteria.andTypeLessThanOrEqualTo(3);
-		criteria.andLineEqualTo(getLineId(line));
+		criteria.andLineEqualTo(line);
 		// 查询符合24小时内某线号的操作记录
 		List<Operation> operations = OperationMapper.selectByExample(operationExample);
 		// 初始化列表
@@ -52,7 +52,7 @@ public class StatusServiceImpl implements StatusService {
 		List<StatusDetail> statusDetails = new ArrayList<>();
 		for (int i = 0; i < 24; i++) {
 			statusDetails.add(new StatusDetail());
-			statusDetails.get(i).setLine(line);
+			statusDetails.get(i).setLine(getLineName(line));
 		}
 		int hour = calendar.get(Calendar.HOUR_OF_DAY);
 		// 根据操作记录时间进行每一小时分类
@@ -71,7 +71,7 @@ public class StatusServiceImpl implements StatusService {
 		for (StatusDetail statusDetail : statusDetails) {
 			statusDetail.fill();
 		}
-		statusDetailsVO.setLine(line);
+		statusDetailsVO.setLine(getLineName(line));
 		statusDetailsVO.setStatusDetails(statusDetails);
 		statusDetailsVO.fill();
 		return statusDetailsVO;
@@ -186,7 +186,7 @@ public class StatusServiceImpl implements StatusService {
 	 * @return int
 	 * @date 2018年9月19日 下午8:50:00
 	 */
-	private int getLineName(int id) {
-		return Integer.parseInt(lineMapper.selectByPrimaryKey(id).getLine());
+	private String getLineName(int id) {
+		return lineMapper.selectByPrimaryKey(id).getLine();
 	}
 }

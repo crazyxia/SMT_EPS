@@ -109,7 +109,7 @@ public class ServerSocket {
 	/**
 	 * 所有线别列表
 	 */
-	private Map<Integer, Line> listMap = new HashMap<>();
+	private Map<Integer, Line> lineMap = new HashMap<>();
 
 	/**
 	 * 产线数量
@@ -129,7 +129,7 @@ public class ServerSocket {
 		lineSize = lists.size();
 		for (int i = 0; i < lineSize; i++) {
 			Line line = lists.get(i);
-			listMap.put(line.getId(), line);
+			lineMap.put(line.getId(), line);
 		}		
 		communicator = new SyncCommunicator(LOCAL_PORT, PACKAGE_PATH);
 		new Thread(() -> {
@@ -162,18 +162,18 @@ public class ServerSocket {
 						List<CenterLogin> logins = centerLoginMapper.selectByExample(example);
 						if (!logins.isEmpty()) {
 							CenterLogin login = logins.get(0);
-							loginReplyPackage.setLine(login.getLine().toString());
+							loginReplyPackage.setLine(login.getLine());
 							//loginReplyPackage.setLine(login.getLine());
 							loginReplyPackage.setTimestamp(new Date());
 						} else {
-							loginReplyPackage.setLine("00");
+							loginReplyPackage.setLine(0);
 							loginReplyPackage.setTimestamp(new Date());
 						}
 						// 处理板子数量上传包逻辑
 					} else if (p instanceof BoardNumPackage) {
 						BoardNumPackage boardNumPackage = (BoardNumPackage) p;
 						DisplayExample displayExample = new DisplayExample();
-						displayExample.createCriteria().andLineEqualTo(Integer.parseInt(boardNumPackage.getLine()));
+						displayExample.createCriteria().andLineEqualTo(boardNumPackage.getLine());
 						/*displayExample.createCriteria().andIdEqualTo(Integer.parseInt(boardNumPackage.getLine()));*/
 						List<Display> displays = displayMapper.selectByExample(displayExample);
 						if (!displays.isEmpty()) {
@@ -232,9 +232,9 @@ public class ServerSocket {
 			for (int i = 0; i < lineSize; i++) {
 				try {
 					clientSockets.put(i,
-							new ClientSocket(listMap.get(i).getId(), centerLoginMapper, socketLogMapper, centerStateMapper));
+							new ClientSocket(lineMap.get(i).getId(), centerLoginMapper, socketLogMapper, centerStateMapper));
 				} catch (Exception e) {
-					logger.error("搜索产线 " + listMap.get(i).getLine() + " : " + e.getMessage());
+					logger.error("搜索产线 " + lineMap.get(i).getLine() + " : " + e.getMessage());
 				}
 			}
 			flag = 0;

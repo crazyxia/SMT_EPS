@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.alibaba.fastjson.JSONObject;
 import com.jimi.smt.eps_server.annotation.Log;
 import com.jimi.smt.eps_server.entity.Config;
+import com.jimi.smt.eps_server.entity.vo.ConfigVO;
 import com.jimi.smt.eps_server.service.ConfigService;
 import com.jimi.smt.eps_server.util.ResultUtil;
 
@@ -43,7 +44,7 @@ public class ConfigController {
 	
 	@ResponseBody
 	@RequestMapping("/list")
-	public List<Config> list() {
+	public List<ConfigVO> list() {
 		return configService.list();
 	}
 

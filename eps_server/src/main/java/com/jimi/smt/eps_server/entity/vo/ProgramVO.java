@@ -13,6 +13,16 @@ public class ProgramVO extends Program {
 	private String boardTypeName;
 	
 	private String createTimeString;
+	
+	private String lineName;
+	
+	public String getLineName() {
+		return lineName;
+	}
+
+	public void setLineName(String lineName) {
+		this.lineName = lineName;
+	}
 
 	public String getBoardTypeName() {
 		return boardTypeName;

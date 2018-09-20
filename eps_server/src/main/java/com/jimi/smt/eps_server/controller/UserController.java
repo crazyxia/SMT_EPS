@@ -18,13 +18,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.jimi.smt.eps_server.annotation.Log;
 import com.jimi.smt.eps_server.annotation.Open;
-import com.jimi.smt.eps_server.entity.ResultJson;
 import com.jimi.smt.eps_server.entity.User;
 import com.jimi.smt.eps_server.entity.filler.UserToUserVOFiller;
 import com.jimi.smt.eps_server.entity.vo.UserVO;
 import com.jimi.smt.eps_server.service.UserService;
 import com.jimi.smt.eps_server.util.QRCodeUtil;
 import com.jimi.smt.eps_server.util.ResultUtil;
+import com.jimi.smt.eps_server.util.ResultUtil2;
 import com.jimi.smt.eps_server.util.TokenBox;
 import org.apache.commons.io.*;
 import cc.darhao.dautils.api.FontImageUtil;
@@ -98,7 +98,7 @@ public class UserController {
 			ResultUtil.failed("参数不足");
 			return ResultUtil.failed();
 		}
-		User user = userService.login(id, password);
+		User user = userService.selectUserByIdAndPassword(id, password);
 		if (user == null || user.getType() < 3) {
 			return ResultUtil.failed("failed_not_admin");
 		}
@@ -158,23 +158,23 @@ public class UserController {
 	@Open
 	@ResponseBody
 	@RequestMapping("/selectById")
-	public ResultJson selectUserById(String id) {
+	public ResultUtil2 selectUserById(String id) {
 		User user = userService.selectUserById(id);
-		ResultJson resultJson = new ResultJson();
+		ResultUtil2 resultUtil2 = new ResultUtil2();
 		if (user == null) {
-			resultJson.setCode(0);
-			resultJson.setMsg("操作员不存在");
+			resultUtil2.setCode(0);
+			resultUtil2.setMsg("操作员不存在");
 		} else {
 			if (!user.getEnabled()) {
-				resultJson.setCode(-1);
-				resultJson.setMsg("操作员离职");
+				resultUtil2.setCode(-1);
+				resultUtil2.setMsg("操作员离职");
 			} else {
-				resultJson.setCode(1);
-				resultJson.setMsg("操作员存在");
-				resultJson.setData(user);
+				resultUtil2.setCode(1);
+				resultUtil2.setMsg("操作员存在");
+				resultUtil2.setData(user);
 			}
 		}
-		return resultJson;
+		return resultUtil2;
 	}
 
 	

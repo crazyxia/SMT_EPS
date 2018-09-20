@@ -32,7 +32,7 @@ public interface LineService {
 	 * 返回所有产线的集合
 	 * @return
 	 */
-	List<String> selectAll();
+	List<Line> selectAll();
 	
 	
 	/**
@@ -40,6 +40,6 @@ public interface LineService {
 	 * @param line
 	 * @return
 	 */
-	int selectLine(String line);
+	Boolean isLineExist(String line);
 	
 }

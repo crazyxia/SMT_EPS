@@ -86,7 +86,7 @@ public class UserServiceImpl implements UserService {
 
 	
 	@Override
-	public User login(String id, String password) {
+	public User selectUserByIdAndPassword(String id, String password) {
 		User user = userMapper.selectByPrimaryKey(id);
 		return user;
 	}

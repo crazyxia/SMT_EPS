@@ -23,7 +23,7 @@ public interface ProgramService {
 	 * 根据条件列出线上的排位表
 	 * @return
 	 */
-	List<ProgramVO> list(String programName, String fileName, String line, String workOrder, Integer state, String ordBy);
+	List<ProgramVO> list(String programName, String fileName, int line, String workOrder, Integer state, String ordBy);
 	
 	
 	/**

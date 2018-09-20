@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.jimi.smt.eps_server.entity.Display;
 import com.jimi.smt.eps_server.entity.DisplayExample;
+import com.jimi.smt.eps_server.entity.Line;
 import com.jimi.smt.eps_server.entity.LineExample;
 import com.jimi.smt.eps_server.entity.Program;
 import com.jimi.smt.eps_server.entity.ProgramExample;
@@ -89,6 +90,12 @@ public class ProgramServiceImpl implements ProgramService {
 		// 分割解析工单和线号
 		String[] workOrders = helper.getString(4, 6 + offset).split("\\+");
 		String[] lines = helper.getString(3, 6 + offset).split("\\+");
+		
+		// 判断线号是否正确
+		if(getLineId(lines[0]) < 0) {
+			throw new RuntimeException("线号错误:请填写正确的线号");
+		}
+		
 		// 创建所有工单
 		List<Program> programs = new ArrayList<Program>(workOrders.length * lines.length);
 		for (String line : lines) {
@@ -186,7 +193,7 @@ public class ProgramServiceImpl implements ProgramService {
 
 	
 	@Override
-	public List<ProgramVO> list(String programName, String fileName, String line, String workOrder, Integer state,
+	public List<ProgramVO> list(String programName, String fileName, int line, String workOrder, Integer state,
 			String ordBy) {
 		ProgramExample programExample = new ProgramExample();
 		ProgramExample.Criteria programCriteria = programExample.createCriteria();
@@ -208,8 +215,8 @@ public class ProgramServiceImpl implements ProgramService {
 			programCriteria.andFileNameEqualTo(fileName);
 		}
 		// 筛选线别
-		if (line != null && !line.equals("")) {
-			programCriteria.andLineEqualTo(getLineId(line));
+		if (line >= 0) {
+			programCriteria.andLineEqualTo(line);
 		}
 		// 筛选工单号
 		if (workOrder != null && !workOrder.equals("")) {
@@ -221,10 +228,11 @@ public class ProgramServiceImpl implements ProgramService {
 		}
 
 		List<Program> programs = programMapper.selectByExample(programExample);
-		for (Program program : programs) {
-			program.setLine(getLineName(program.getLine()));
+		List<ProgramVO> programVOs = programToProgramVOFiller.fill(programs);
+		for (ProgramVO programVO : programVOs) {
+			programVO.setLineName(getLineName(programVO.getLine()));
 		}
-		return programToProgramVOFiller.fill(programs);
+		return programVOs;
 	}
 
 	
@@ -428,8 +436,9 @@ public class ProgramServiceImpl implements ProgramService {
 		}
 		// 判断是否存在已开始的相同工单（相同的定义：工单号、板面类型、线号均一致）
 		ProgramExample example2 = new ProgramExample();
-		example2.createCriteria().andLineEqualTo(program.getLine()).andWorkOrderEqualTo(program.getWorkOrder())
-				.andBoardTypeEqualTo(program.getBoardType()).andStateEqualTo(1);
+		example2.createCriteria().andLineEqualTo(program.getLine())
+								 .andWorkOrderEqualTo(program.getWorkOrder())
+								 .andBoardTypeEqualTo(program.getBoardType()).andStateEqualTo(1);
 		List<Program> programs2 = programMapper.selectByExample(example2);
 		if (!programs2.isEmpty()) {
 			ResultUtil.failed("已存在相同的正在进行的工单");
@@ -582,10 +591,7 @@ public class ProgramServiceImpl implements ProgramService {
 	
 	@Override
 	public List<Display> listDisplays() {
-		List<Display> displays = displayMapper.selectByExample(null);
-		for (Display display : displays) {
-			display.setLine(getLineName(display.getLine()));
-		}
+		List<Display> displays = displayMapper.selectByExample(null);		
 		return displays;
 	}
 
@@ -594,7 +600,7 @@ public class ProgramServiceImpl implements ProgramService {
 	public List<Program> selectWorkingProgram(String line) {
 		List<Program> programs = programMapper.selectWorkingProgram(getLineId(line));
 		for (Program program : programs) {
-			program.setLine(getLineName(program.getLine()));
+			program.setLine(Integer.parseInt(getLineName(program.getLine())));
 		}
 		return programs;
 	}
@@ -861,7 +867,11 @@ public class ProgramServiceImpl implements ProgramService {
 	private int getLineId(String line) {
 		LineExample lineExample = new LineExample();
 		lineExample.createCriteria().andLineEqualTo(line);
-		return lineMapper.selectByExample(lineExample).get(0).getId();
+		List<Line> lines =lineMapper.selectByExample(lineExample);
+		if(lines.isEmpty()) {
+			return -1;
+		}
+		return lines.get(0).getId();
 	}
 
 	
@@ -872,8 +882,8 @@ public class ProgramServiceImpl implements ProgramService {
 	 * @return int
 	 * @date 2018年9月19日 下午8:50:00
 	 */
-	private int getLineName(int id) {
-		return Integer.parseInt(lineMapper.selectByPrimaryKey(id).getLine());
+	private String getLineName(int id) {
+		return lineMapper.selectByPrimaryKey(id).getLine();
 	}
 
 	

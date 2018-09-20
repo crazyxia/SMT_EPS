@@ -12,18 +12,18 @@ import cc.darhao.jiminal.core.BasePackage;
 public class ControlPackage extends BasePackage {
 	
 	@Parse({1,1})
-	private String line;
+	private int line;
 	@Parse({3,1})
 	private Operation Operation;
 	@Parse({0,1})
 	private ClientDevice ClientDevice;
 	@Parse({2,1})
 	private ControlledDevice ControlledDevice;
-	
-	public String getLine() {
+		
+	public int getLine() {
 		return line;
 	}
-	public void setLine(String line) {
+	public void setLine(int line) {
 		this.line = line;
 	}
 	public Operation getOperation() {

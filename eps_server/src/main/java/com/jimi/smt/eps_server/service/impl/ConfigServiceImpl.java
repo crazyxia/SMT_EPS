@@ -1,5 +1,6 @@
 package com.jimi.smt.eps_server.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +8,8 @@ import org.springframework.stereotype.Service;
 
 import com.jimi.smt.eps_server.entity.Config;
 import com.jimi.smt.eps_server.entity.Line;
+import com.jimi.smt.eps_server.entity.filler.ConfigToConfigVOFiller;
+import com.jimi.smt.eps_server.entity.vo.ConfigVO;
 import com.jimi.smt.eps_server.mapper.ConfigMapper;
 import com.jimi.smt.eps_server.mapper.LineMapper;
 import com.jimi.smt.eps_server.service.ConfigService;
@@ -18,34 +21,32 @@ public class ConfigServiceImpl implements ConfigService {
 	private ConfigMapper configMappler;
 	@Autowired
 	private LineMapper lineMapper;
+	@Autowired
+	private ConfigToConfigVOFiller configToConfigVOFiller;
 
 	
 	@Override
-	public List<Config> list() {
+	public List<ConfigVO> list() {
 		List<Line> lines = lineMapper.selectByExample(null);
 		List<Config> configs = configMappler.selectByExample(null);
+		List<ConfigVO> configVOs = new ArrayList<>();
 		for (Config config : configs) {
-			for (int j = 0; j < lines.size(); j++) {
-				if (lines.get(j).getId().equals(config.getLine())) {
-					config.setLine(Integer.parseInt(lines.get(j).getLine()));
+			configVOs.add(configToConfigVOFiller.fill(config));
+		}
+		for (ConfigVO configVO : configVOs) {
+			for (Line line : lines) {
+				if (line.getId() == configVO.getLine()) {
+					configVO.setLineName(line.getLine());
 				}
 			}
 		}
-		return configs;
+		return configVOs;
 	}
 
 	
 	@Override
 	public boolean set(List<Config> configs) {
-		List<Line> lines = lineMapper.selectByExample(null);
 		int i = 0;
-		for (Config config : configs) {
-			for (int j = 0; j < lines.size(); j++) {
-				if (lines.get(j).getLine().equals(config.getLine().toString())) {
-					config.setLine(lines.get(j).getId());
-				}
-			}
-		}
 		for (Config config : configs) {
 			i += configMappler.updateByPrimaryKey(config);
 		}

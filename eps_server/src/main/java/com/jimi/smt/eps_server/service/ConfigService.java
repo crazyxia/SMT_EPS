@@ -3,6 +3,7 @@ package com.jimi.smt.eps_server.service;
 import java.util.List;
 
 import com.jimi.smt.eps_server.entity.Config;
+import com.jimi.smt.eps_server.entity.vo.ConfigVO;
 
 /**
  * 配置服务接口
@@ -23,6 +24,6 @@ public interface ConfigService {
 	 * 列出所有配置
 	 * @return
 	 */
-	List<Config> list();
+	List<ConfigVO> list();
 
 }

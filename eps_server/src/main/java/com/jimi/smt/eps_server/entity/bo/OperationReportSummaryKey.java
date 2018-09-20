@@ -8,26 +8,18 @@ package com.jimi.smt.eps_server.entity.bo;
  */
 public class OperationReportSummaryKey {
 
-	protected int line;
+	protected String line;
 	
 	protected String workOrderNo;
 	
 	protected String operator;
 	
 	
-	/*public String getLine() {
+	public String getLine() {
 		return line;
 	}
 
 	public void setLine(String line) {
-		this.line = line;
-	}*/
-
-	public int getLine() {
-		return line;
-	}
-
-	public void setLine(int line) {
 		this.line = line;
 	}
 

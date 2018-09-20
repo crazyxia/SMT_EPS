@@ -67,7 +67,7 @@ public interface UserService {
 	 * @param password
 	 * @return
 	 */
-	User login(String id, String password);
+	User selectUserByIdAndPassword(String id, String password);
 	
 	
 	/**

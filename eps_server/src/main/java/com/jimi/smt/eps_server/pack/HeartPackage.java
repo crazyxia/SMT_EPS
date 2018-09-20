@@ -11,7 +11,7 @@ import cc.darhao.jiminal.core.BasePackage;
 public class HeartPackage extends BasePackage {
 
 	@Parse({0,1})
-	private String line;
+	private int line;
 	@Parse({1,4})
 	private Date timestamp;
 	@Parse({5,2})
@@ -21,10 +21,11 @@ public class HeartPackage extends BasePackage {
 	@Parse({5,0})
 	private boolean isInfraredEnabled;
 	
-	public String getLine() {
+	
+	public int getLine() {
 		return line;
 	}
-	public void setLine(String line) {
+	public void setLine(int line) {
 		this.line = line;
 	}
 	public Date getTimestamp() {

@@ -36,19 +36,21 @@ public class LineServiceImpl implements LineService {
 
 	
 	@Override
-	public List<String> selectAll() {
-		return lineMapper.selectAll();
+	public List<Line> selectAll() {
+		LineExample lineExample = new LineExample();
+		lineExample.setOrderByClause("id asc");
+		return lineMapper.selectByExample(lineExample);
 	}
 
 	
 	@Override
-	public int selectLine(String line) {		
-		int result = 0;
+	public Boolean isLineExist(String line) {		
+		Boolean result = false;
 		LineExample lineExample = new LineExample();
 		lineExample.createCriteria().andLineEqualTo(line);
 		List<Line> lines = lineMapper.selectByExample(lineExample);
 		if(lines != null && lines.size() > 0) {
-			result = 1;
+			result = true;
 		}
 		return result;
 	}	

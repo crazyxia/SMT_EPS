@@ -16,7 +16,6 @@ import com.jimi.smt.eps_server.annotation.Role;
 import com.jimi.smt.eps_server.annotation.Role.RoleType;
 import com.jimi.smt.eps_server.entity.Operation;
 import com.jimi.smt.eps_server.entity.Page;
-import com.jimi.smt.eps_server.entity.ResultJson;
 import com.jimi.smt.eps_server.entity.vo.ClientReport;
 import com.jimi.smt.eps_server.entity.vo.DisplayReport;
 import com.jimi.smt.eps_server.entity.vo.OperationReport;
@@ -25,6 +24,7 @@ import com.jimi.smt.eps_server.entity.vo.PageVO;
 import com.jimi.smt.eps_server.entity.vo.StockLogVO;
 import com.jimi.smt.eps_server.service.OperationService;
 import com.jimi.smt.eps_server.util.ResultUtil;
+import com.jimi.smt.eps_server.util.ResultUtil2;
 
 /**
  * 操作日志控制器
@@ -43,7 +43,7 @@ public class OperationController {
 	@Role(RoleType.IPQC)
 	@ResponseBody
 	@RequestMapping("/listClientReport")
-	public PageVO<ClientReport> listClientReportByPage(String client, String programNo, String line, String orderNo,
+	public PageVO<ClientReport> listClientReportByPage(String client, String programNo, int line, String orderNo,
 			String workOrderNo, String startTime, String endTime, Integer currentPage) {
 		try {
 			Page page = new Page();
@@ -62,7 +62,7 @@ public class OperationController {
 	
 	@Role(RoleType.IPQC)
 	@RequestMapping("/downloadClientReport")
-	public ResponseEntity<byte[]> downloadClientReport(String client, String programNo, String line, String orderNo,
+	public ResponseEntity<byte[]> downloadClientReport(String client, String programNo, int line, String orderNo,
 			String workOrderNo, String startTime, String endTime) {
 		try {
 			return operationService.downloadClientReport(client, programNo, line, orderNo, workOrderNo, startTime,
@@ -81,7 +81,7 @@ public class OperationController {
 	@Role(RoleType.IPQC)
 	@ResponseBody
 	@RequestMapping("/listOperationReport")
-	public List<OperationReport> listOperationReport(String operator, String client, String line, String workOrderNo,
+	public List<OperationReport> listOperationReport(String operator, String client, int line, String workOrderNo,
 			String startTime, String endTime, Integer type) {
 		if (type == null) {
 			ResultUtil.failed("参数不足");
@@ -99,7 +99,7 @@ public class OperationController {
 	@Role(RoleType.IPQC)
 	@ResponseBody
 	@RequestMapping("/listOperationReportSummary")
-	public List<OperationReportSummary> listOperationReportSummary(String line, String workOrderNo, String startTime,
+	public List<OperationReportSummary> listOperationReportSummary(int line, String workOrderNo, String startTime,
 			String endTime, Integer type) {
 		if (type == null) {
 			ResultUtil.failed("参数不足");
@@ -116,7 +116,7 @@ public class OperationController {
 	
 	@Role(RoleType.IPQC)
 	@RequestMapping("/downloadOperationReport")
-	public ResponseEntity<byte[]> downloadOperationReport(String operator, String client, String line,
+	public ResponseEntity<byte[]> downloadOperationReport(String operator, String client, int line,
 			String workOrderNo, String startTime, String endTime, Integer type) {
 		if (type == null) {
 			ResultUtil.failed("参数不足");
@@ -153,8 +153,8 @@ public class OperationController {
 	@Open
 	@ResponseBody
 	@RequestMapping("/listDisplayReport")
-	public DisplayReport listDisplayReport(String line) {
-		if (line == null || line.equals("")) {
+	public DisplayReport listDisplayReport(int line) {
+		if (line < 0) {
 			return null;
 		}
 		DisplayReport displayReport = operationService.listDisplayReport(line);
@@ -165,16 +165,16 @@ public class OperationController {
 	@Open
 	@ResponseBody
 	@RequestMapping("/add")
-	public ResultJson add(@RequestBody Operation operation) {
+	public ResultUtil2 add(@RequestBody Operation operation) {
 		int result = operationService.add(operation);
-		ResultJson resultJson = new ResultJson();
+		ResultUtil2 resultUtil2 = new ResultUtil2();
 		if (result == 1) {
-			resultJson.setCode(1);
-			resultJson.setMsg("操作成功");
+			resultUtil2.setCode(1);
+			resultUtil2.setMsg("操作成功");
 		} else {
-			resultJson.setCode(0);
-			resultJson.setMsg("操作失败");
+			resultUtil2.setCode(0);
+			resultUtil2.setMsg("操作失败");
 		}
-		return resultJson;
+		return resultUtil2;
 	}
 }

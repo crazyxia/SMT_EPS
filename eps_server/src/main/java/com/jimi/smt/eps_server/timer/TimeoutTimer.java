@@ -11,11 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import com.jimi.smt.eps_server.entity.Config;
 import com.jimi.smt.eps_server.entity.Display;
 import com.jimi.smt.eps_server.entity.Line;
 import com.jimi.smt.eps_server.entity.ProgramItemVisit;
 import com.jimi.smt.eps_server.entity.bo.LineInfo;
+import com.jimi.smt.eps_server.entity.vo.ConfigVO;
 import com.jimi.smt.eps_server.service.ConfigService;
 import com.jimi.smt.eps_server.service.LineService;
 import com.jimi.smt.eps_server.service.ProgramService;
@@ -60,7 +60,7 @@ public class TimeoutTimer {
 	/**
 	 * 所有线别列表
 	 */
-	public Map<Integer, Line> listMap = new HashMap<>();
+	public Map<Integer, Line> lineMap = new HashMap<>();
 	
 	
 	@PostConstruct
@@ -69,7 +69,7 @@ public class TimeoutTimer {
 		List<Line> lists = lineService.list();
 		for (int i = 0; i < lineSize; i++) {
 			Line line = lists.get(i);
-			listMap.put(line.getId(), line);
+			lineMap.put(line.getId(), line);
 		}
 		lineLocks = new Object[lineSize];
 		lineInfos = new HashMap<Integer, LineInfo>();	
@@ -124,7 +124,7 @@ public class TimeoutTimer {
 	private int getLineNO(String line) {
 		int number = 0;
 		for (int i = 0; i < lineSize; i++) {
-			if (listMap.get(i).getLine().equals(line)) {
+			if (lineMap.get(i).getLine().equals(line)) {
 				number = i;
 				break;
 			}
@@ -188,15 +188,15 @@ public class TimeoutTimer {
 	 * 根据Config表设置超时时间
 	 */
 	private void setTimeoutTime() {
-		List<Config> configs = configService.list();
-		for (Config config : configs) {
-			int lineNo = getLineNO(config.getLine().toString());
-			switch (config.getName()) {
+		List<ConfigVO> configVOs = configService.list();
+		for (ConfigVO configVO : configVOs) {
+			int lineNo = configVO.getLine();
+			switch (configVO.getName()) {
 			case CHECK_ALL_CYCLE_TIME:
-				lineInfos.get(lineNo).setCheckAllTimeout(Integer.parseInt(config.getValue()));
+				lineInfos.get(lineNo).setCheckAllTimeout(Integer.parseInt(configVO.getValue()));
 				break;
 			case CHECK_AFTER_CHANGE_TIME:
-				lineInfos.get(lineNo).setCheckTimeout(Integer.parseInt(config.getValue()));
+				lineInfos.get(lineNo).setCheckTimeout(Integer.parseInt(configVO.getValue()));
 				break;
 			default:
 				break;
@@ -211,7 +211,7 @@ public class TimeoutTimer {
 	private void setWorkOrderAndBoardType() {
 		List<Display> displays = programService.listDisplays();
 		for (Display display : displays) {
-			int lineNo = getLineNO(display.getLine().toString());
+			int lineNo = display.getLine();
 			lineInfos.get(lineNo).setWorkOrder(display.getWorkOrder());
 			lineInfos.get(lineNo).setBoardType(display.getBoardType());
 		}

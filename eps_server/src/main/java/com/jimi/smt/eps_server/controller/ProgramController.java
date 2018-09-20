@@ -18,13 +18,13 @@ import com.jimi.smt.eps_server.annotation.Role;
 import com.jimi.smt.eps_server.annotation.Role.*;
 import com.jimi.smt.eps_server.entity.Program;
 import com.jimi.smt.eps_server.entity.ProgramItemVisit;
-import com.jimi.smt.eps_server.entity.ResultJson;
 import com.jimi.smt.eps_server.entity.bo.EditProgramItemBO;
 import com.jimi.smt.eps_server.entity.vo.ProgramItemVO;
 import com.jimi.smt.eps_server.entity.vo.ProgramVO;
 import com.jimi.smt.eps_server.service.LineService;
 import com.jimi.smt.eps_server.service.ProgramService;
 import com.jimi.smt.eps_server.util.ResultUtil;
+import com.jimi.smt.eps_server.util.ResultUtil2;
 
 /**
  * 排位表控制器
@@ -44,7 +44,7 @@ public class ProgramController {
 	@Role({ RoleType.ENGINEER, RoleType.PRODUCER })
 	@ResponseBody
 	@RequestMapping("/list")
-	public List<ProgramVO> list(String programName, String fileName, String line, String workOrder, Integer state,
+	public List<ProgramVO> list(String programName, String fileName, int line, String workOrder, Integer state,
 			String ordBy) {
 		return programService.list(programName, fileName, line, workOrder, state, ordBy);
 	}
@@ -236,59 +236,59 @@ public class ProgramController {
 	@Open
 	@ResponseBody
 	@RequestMapping("/selectWorkingProgram")
-	public ResultJson selectWorkingProgram(String line) {
-		int result = lineService.selectLine(line);
-		ResultJson resultJson = new ResultJson();
-		if (result == 0) {
-			resultJson.setCode(0);
-			resultJson.setMsg("此线号不存在");
-			return resultJson;
+	public ResultUtil2 selectWorkingProgram(String line) {
+		Boolean result = lineService.isLineExist(line);
+		ResultUtil2 resultUtil2 = new ResultUtil2();
+		if (result == false) {
+			resultUtil2.setCode(0);
+			resultUtil2.setMsg("此线号不存在");
+			return resultUtil2;
 		}
 		List<Program> list = programService.selectWorkingProgram(line);
 		if (list.size() == 0) {
-			resultJson.setCode(0);
-			resultJson.setMsg("此线号不存在工单");
+			resultUtil2.setCode(0);
+			resultUtil2.setMsg("此线号不存在工单");
 		} else {
-			resultJson.setCode(1);
-			resultJson.setMsg("此线号存在工单");
-			resultJson.setData(list);
+			resultUtil2.setCode(1);
+			resultUtil2.setMsg("此线号存在工单");
+			resultUtil2.setData(list);
 		}
-		return resultJson;
+		return resultUtil2;
 	}
 
 	
 	@Open
 	@ResponseBody
 	@RequestMapping("/selectProgramItem")
-	public ResultJson selectProgramItem(String programId) {
+	public ResultUtil2 selectProgramItem(String programId) {
 		List<ProgramItemVO> list = programService.listItem(programId);
-		ResultJson resultJson = new ResultJson();
+		ResultUtil2 resultUtil2 = new ResultUtil2();
 		if (list.size() == 0) {
-			resultJson.setCode(0);
-			resultJson.setMsg("工单不存在");
+			resultUtil2.setCode(0);
+			resultUtil2.setMsg("工单不存在");
 		} else {
-			resultJson.setCode(1);
-			resultJson.setMsg("工单存在");
-			resultJson.setData(list);
+			resultUtil2.setCode(1);
+			resultUtil2.setMsg("工单存在");
+			resultUtil2.setData(list);
 		}
-		return resultJson;
+		return resultUtil2;
 	}
 
 	
 	@Open
 	@ResponseBody
 	@RequestMapping("/updateItemVisit")
-	public ResultJson updateItemVisit(@RequestBody ProgramItemVisit programItemVisit) {
+	public ResultUtil2 updateItemVisit(@RequestBody ProgramItemVisit programItemVisit) {
 		int result = programService.updateItemVisit(programItemVisit);
-		ResultJson resultJson = new ResultJson();
+		ResultUtil2 resultUtil2 = new ResultUtil2();
 		if (result > 0) {
-			resultJson.setCode(1);
-			resultJson.setMsg("更新成功");
+			resultUtil2.setCode(1);
+			resultUtil2.setMsg("更新成功");
 		} else {
-			resultJson.setCode(0);
-			resultJson.setMsg("更新失败");
+			resultUtil2.setCode(0);
+			resultUtil2.setMsg("更新失败");
 		}
-		return resultJson;
+		return resultUtil2;
 	}
 
 	

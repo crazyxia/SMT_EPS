@@ -13,7 +13,7 @@ public class BoardResetPackage extends BasePackage {
 	@Parse({0,1})
 	private ClientDevice ClientDevice;
 	@Parse({1,1})
-	private String line;
+	private int line;
 	@Parse({2,1})
 	private BoardResetReson BoardResetReson;
 	
@@ -22,11 +22,11 @@ public class BoardResetPackage extends BasePackage {
 	}
 	public void setClientDevice(ClientDevice clientDevice) {
 		ClientDevice = clientDevice;
-	}
-	public String getLine() {
+	}	
+	public int getLine() {
 		return line;
 	}
-	public void setLine(String line) {
+	public void setLine(int line) {
 		this.line = line;
 	}
 	public BoardResetReson getBoardResetReson() {

@@ -114,7 +114,7 @@ public class ClientSocket {
 		if (converyPaused ^ isAlarm) {
 			// 开启or关闭接驳台
 			ControlPackage controlPackage = new ControlPackage();
-			controlPackage.setLine(line + "");
+			controlPackage.setLine(line);
 			controlPackage.setClientDevice(clientDevice);
 			controlPackage.setControlledDevice(ControlledDevice.CONVEYOR);
 			if (isAlarm) {
@@ -150,7 +150,7 @@ public class ClientSocket {
 		if (alarming ^ isAlarm) {
 			// 打开or关闭报警器
 			ControlPackage controlPackage = new ControlPackage();
-			controlPackage.setLine(line + "");
+			controlPackage.setLine(line);
 			controlPackage.setClientDevice(clientDevice);
 			controlPackage.setControlledDevice(ControlledDevice.ALARM);
 			if (isAlarm) {
