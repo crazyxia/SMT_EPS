@@ -11,15 +11,18 @@ public interface LineService {
 	 * @param id
 	 * @return 
 	 */
-	String getLineById(int id);
+	String getLineNameById(int id);
 	
-	
-	/**
-	 * 列出所有线别
-	 * @return 
+	/**@author HCJ
+	 * 根据id返回线别名称
+	 * @method getLineIdByName
+	 * @param line
+	 * @return
+	 * @return int
+	 * @date 2018年9月21日 上午10:46:23
 	 */
-	List<Line> list();
-	
+	int getLineIdByName(String line);
+			
 	
 	/**
 	 * 返回线别数量
@@ -29,7 +32,7 @@ public interface LineService {
 	
 	
 	/**
-	 * 返回所有产线的集合
+	 * 列出所有产线
 	 * @return
 	 */
 	List<Line> selectAll();

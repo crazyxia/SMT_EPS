@@ -18,7 +18,7 @@ public class CenterLoginServiceImpl implements CenterLoginService {
 
 	
 	@Override
-	public CenterLogin selectById(int id) {
+	public CenterLogin selectById(Integer id) {
 		CenterLoginExample centerLoginExample = new CenterLoginExample();
 		centerLoginExample.createCriteria().andLineEqualTo(id);
 		List<CenterLogin> list = centerLoginMapper.selectByExample(centerLoginExample);

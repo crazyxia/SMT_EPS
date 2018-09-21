@@ -8,14 +8,13 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.jimi.smt.eps_server.entity.LineExample;
 import com.jimi.smt.eps_server.entity.Operation;
 import com.jimi.smt.eps_server.entity.OperationExample;
 import com.jimi.smt.eps_server.entity.StatusDetail;
 import com.jimi.smt.eps_server.entity.vo.StatusDetailsVO;
 import com.jimi.smt.eps_server.entity.OperationExample.Criteria;
-import com.jimi.smt.eps_server.mapper.LineMapper;
 import com.jimi.smt.eps_server.mapper.OperationMapper;
+import com.jimi.smt.eps_server.service.LineService;
 import com.jimi.smt.eps_server.service.StatusService;
 
 @Service
@@ -24,11 +23,11 @@ public class StatusServiceImpl implements StatusService {
 	@Autowired
 	private OperationMapper OperationMapper;
 	@Autowired
-	private LineMapper lineMapper;
+	private LineService lineService;
 
 	
 	@Override
-	public StatusDetailsVO ListStatusDetailsByHour(int line) {
+	public StatusDetailsVO ListStatusDetailsByHour(Integer line) {
 
 		OperationExample operationExample = new OperationExample();
 		Criteria criteria = operationExample.createCriteria();
@@ -52,7 +51,7 @@ public class StatusServiceImpl implements StatusService {
 		List<StatusDetail> statusDetails = new ArrayList<>();
 		for (int i = 0; i < 24; i++) {
 			statusDetails.add(new StatusDetail());
-			statusDetails.get(i).setLine(getLineName(line));
+			statusDetails.get(i).setLine(lineService.getLineNameById(line));
 		}
 		int hour = calendar.get(Calendar.HOUR_OF_DAY);
 		// 根据操作记录时间进行每一小时分类
@@ -71,7 +70,7 @@ public class StatusServiceImpl implements StatusService {
 		for (StatusDetail statusDetail : statusDetails) {
 			statusDetail.fill();
 		}
-		statusDetailsVO.setLine(getLineName(line));
+		statusDetailsVO.setLine(lineService.getLineNameById(line));
 		statusDetailsVO.setStatusDetails(statusDetails);
 		statusDetailsVO.fill();
 		return statusDetailsVO;
@@ -99,16 +98,16 @@ public class StatusServiceImpl implements StatusService {
 		// 初始化列表
 		List<StatusDetail> statusDetails = new ArrayList<>();
 		List<String> line = new ArrayList<>();
-		int linzeSize = (int) lineMapper.countByExample(null);
+		long linzeSize = lineService.countLineNum();
 		for (int i = 0; i < linzeSize; i++) {
-			line.add(getLineName(i) + "");
+			line.add(lineService.getLineNameById(i));
 			statusDetails.add(new StatusDetail());
 			statusDetails.get(i).setLine(line.get(i));
 		}
 		// 根据每条产线进行分类
 		for (Operation operation : operations) {
 			for (int i = 0; i < linzeSize; i++) {
-				if (operation.getLine() == getLineId(line.get(i))) {
+				if (operation.getLine() == lineService.getLineIdByName(line.get(i))) {
 					count(operation, statusDetails.get(i));
 					break;
 				}
@@ -163,30 +162,5 @@ public class StatusServiceImpl implements StatusService {
 			break;
 		}
 	}
-
-	
-	/**@author HCJ
-	 * 根据产线名称得到ID
-	 * @method getLineId
-	 * @param line
-	 * @return int
-	 * @date 2018年9月19日 下午8:49:33
-	 */
-	private int getLineId(String line) {
-		LineExample lineExample = new LineExample();
-		lineExample.createCriteria().andLineEqualTo(line);
-		return lineMapper.selectByExample(lineExample).get(0).getId();
-	}
-
-	
-	/**@author HCJ
-	 * 根据产线ID得到名称
-	 * @method getLineName
-	 * @param id
-	 * @return int
-	 * @date 2018年9月19日 下午8:50:00
-	 */
-	private String getLineName(int id) {
-		return lineMapper.selectByPrimaryKey(id).getLine();
-	}
+		
 }

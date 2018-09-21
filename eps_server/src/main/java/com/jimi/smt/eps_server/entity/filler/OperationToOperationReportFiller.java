@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import com.jimi.smt.eps_server.entity.Operation;
 import com.jimi.smt.eps_server.entity.ProgramItem;
 import com.jimi.smt.eps_server.entity.vo.OperationReport;
+import com.jimi.smt.eps_server.mapper.LineMapper;
 import com.jimi.smt.eps_server.mapper.ProgramItemMapper;
 import com.jimi.smt.eps_server.util.EntityFieldFiller;
 
@@ -20,6 +21,8 @@ public class OperationToOperationReportFiller extends EntityFieldFiller<Operatio
 
 	@Autowired
 	private ProgramItemMapper programItemMapper;
+	@Autowired
+	private LineMapper lineMapper;
 	
 	private List<ProgramItem> programItems;
 	private Map<String, ProgramItem> programItemMaps = new HashMap<>();
@@ -42,6 +45,7 @@ public class OperationToOperationReportFiller extends EntityFieldFiller<Operatio
 		
 		String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(operation.getTime());
 		operationReport.setTime(time);
+		operationReport.setLine(lineMapper.selectByPrimaryKey(operation.getLine()).getLine());
 		//匹配程序表子项目和操作日志
 		String key = operation.getProgramId()+operation.getLineseat()+operation.getMaterialNo();
 		ProgramItem programItem = programItemMaps.get(key);

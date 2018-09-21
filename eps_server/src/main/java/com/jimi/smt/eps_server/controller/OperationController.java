@@ -43,7 +43,7 @@ public class OperationController {
 	@Role(RoleType.IPQC)
 	@ResponseBody
 	@RequestMapping("/listClientReport")
-	public PageVO<ClientReport> listClientReportByPage(String client, String programNo, int line, String orderNo,
+	public PageVO<ClientReport> listClientReportByPage(String client, String programNo, Integer line, String orderNo,
 			String workOrderNo, String startTime, String endTime, Integer currentPage) {
 		try {
 			Page page = new Page();
@@ -62,7 +62,7 @@ public class OperationController {
 	
 	@Role(RoleType.IPQC)
 	@RequestMapping("/downloadClientReport")
-	public ResponseEntity<byte[]> downloadClientReport(String client, String programNo, int line, String orderNo,
+	public ResponseEntity<byte[]> downloadClientReport(String client, String programNo, Integer line, String orderNo,
 			String workOrderNo, String startTime, String endTime) {
 		try {
 			return operationService.downloadClientReport(client, programNo, line, orderNo, workOrderNo, startTime,
@@ -81,7 +81,7 @@ public class OperationController {
 	@Role(RoleType.IPQC)
 	@ResponseBody
 	@RequestMapping("/listOperationReport")
-	public List<OperationReport> listOperationReport(String operator, String client, int line, String workOrderNo,
+	public List<OperationReport> listOperationReport(String operator, String client, Integer line, String workOrderNo,
 			String startTime, String endTime, Integer type) {
 		if (type == null) {
 			ResultUtil.failed("参数不足");
@@ -99,7 +99,7 @@ public class OperationController {
 	@Role(RoleType.IPQC)
 	@ResponseBody
 	@RequestMapping("/listOperationReportSummary")
-	public List<OperationReportSummary> listOperationReportSummary(int line, String workOrderNo, String startTime,
+	public List<OperationReportSummary> listOperationReportSummary(Integer line, String workOrderNo, String startTime,
 			String endTime, Integer type) {
 		if (type == null) {
 			ResultUtil.failed("参数不足");
@@ -116,7 +116,7 @@ public class OperationController {
 	
 	@Role(RoleType.IPQC)
 	@RequestMapping("/downloadOperationReport")
-	public ResponseEntity<byte[]> downloadOperationReport(String operator, String client, int line,
+	public ResponseEntity<byte[]> downloadOperationReport(String operator, String client, Integer line,
 			String workOrderNo, String startTime, String endTime, Integer type) {
 		if (type == null) {
 			ResultUtil.failed("参数不足");
@@ -153,8 +153,9 @@ public class OperationController {
 	@Open
 	@ResponseBody
 	@RequestMapping("/listDisplayReport")
-	public DisplayReport listDisplayReport(int line) {
-		if (line < 0) {
+	public DisplayReport listDisplayReport(Integer line) {
+		if (line == null) {
+			ResultUtil.failed("产线不能为空");
 			return null;
 		}
 		DisplayReport displayReport = operationService.listDisplayReport(line);

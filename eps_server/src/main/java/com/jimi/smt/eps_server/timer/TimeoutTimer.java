@@ -66,7 +66,7 @@ public class TimeoutTimer {
 	@PostConstruct
 	public void init() {
 		lineSize = (int)lineService.countLineNum();
-		List<Line> lists = lineService.list();
+		List<Line> lists = lineService.selectAll();
 		for (int i = 0; i < lineSize; i++) {
 			Line line = lists.get(i);
 			lineMap.put(line.getId(), line);
@@ -137,7 +137,7 @@ public class TimeoutTimer {
 	 * 根据id得到字符串线号
 	 */
 	private String getLineString(int id) {
-		return lineService.getLineById(id);
+		return lineService.getLineNameById(id);
 	}
 
 	

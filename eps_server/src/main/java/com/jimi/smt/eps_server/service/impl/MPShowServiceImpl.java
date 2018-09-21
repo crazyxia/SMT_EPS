@@ -7,14 +7,13 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.jimi.smt.eps_server.entity.Line;
 import com.jimi.smt.eps_server.entity.Operation;
 import com.jimi.smt.eps_server.entity.OperationExample;
 import com.jimi.smt.eps_server.entity.bo.MPShowItemBO;
 import com.jimi.smt.eps_server.entity.filler.MPShowItemBOToMPShowItemVOFiller;
 import com.jimi.smt.eps_server.entity.vo.MPShowItemVO;
-import com.jimi.smt.eps_server.mapper.LineMapper;
 import com.jimi.smt.eps_server.mapper.OperationMapper;
+import com.jimi.smt.eps_server.service.LineService;
 import com.jimi.smt.eps_server.service.MPShowService;
 import cc.darhao.dautils.api.DateUtil;
 
@@ -24,7 +23,7 @@ public class MPShowServiceImpl implements MPShowService {
 	@Autowired
 	private OperationMapper OperationMapper;
 	@Autowired
-	private LineMapper lineMapper;
+	private LineService lineService;
 
 	@Autowired
 	private MPShowItemBOToMPShowItemVOFiller filler;
@@ -36,14 +35,14 @@ public class MPShowServiceImpl implements MPShowService {
 		// 筛选时间
 		OperationExample example = new OperationExample();
 		example.createCriteria().andTimeGreaterThanOrEqualTo(DateUtil.yyyyMMddHHmmss(startTime))
-				.andTimeLessThanOrEqualTo(DateUtil.yyyyMMddHHmmss(endTime));
+								.andTimeLessThanOrEqualTo(DateUtil.yyyyMMddHHmmss(endTime));
 		List<Operation> operations = OperationMapper.selectByExample(example);
 		// 遍历并分组
 		for (Operation operation : operations) {
 			boolean isMatchLine = false;
 			// 判断是否存在该线号
 			for (MPShowItemBO bo : mpShowItemBOs) {
-				if (bo.getLine().equals(getLineName(operation.getLine()) + "")) {
+				if (bo.getLine().equals(lineService.getLineNameById(operation.getLine()))) {
 					isMatchLine = true;
 					count(operation, bo);
 					break;
@@ -52,7 +51,7 @@ public class MPShowServiceImpl implements MPShowService {
 			// 如果没有找到线号则创建一个bo
 			if (!isMatchLine) {
 				MPShowItemBO bo = new MPShowItemBO();
-				bo.setLine(getLineName(operation.getLine()) + "");
+				bo.setLine(lineService.getLineNameById(operation.getLine()));
 				count(operation, bo);
 				mpShowItemBOs.add(bo);
 			}
@@ -102,17 +101,5 @@ public class MPShowServiceImpl implements MPShowService {
 			break;
 		}
 	}
-
-	
-	/**@author HCJ
-	 *  根据id得到产线名称
-	 * @method getLineName
-	 * @param id
-	 * @return int
-	 * @date 2018年9月19日 下午8:44:49
-	 */
-	private int getLineName(int id) {
-		Line line = lineMapper.selectByPrimaryKey(id);
-		return Integer.parseInt(line.getLine());
-	}
+		
 }

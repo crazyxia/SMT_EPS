@@ -57,21 +57,12 @@ public interface UserService {
 	 * @return
 	 */
 	List<UserVO> list(String id, Integer classType, String name, Integer type, String orderBy, Boolean enabled);
-	
+				
 	
 	/**
 	 * 使用管理员id以及对应的密码进行登录（如果有），
 	 * 只有登录成功后才能使用其他接口，
 	 * 否则调用其他接口时会返回failed_access_denied
-	 * @param id
-	 * @param password
-	 * @return
-	 */
-	User selectUserByIdAndPassword(String id, String password);
-	
-	
-	/**
-	 * 通过id返回用户对象
 	 * @param id
 	 * @return
 	 */

@@ -98,7 +98,7 @@ public class UserController {
 			ResultUtil.failed("参数不足");
 			return ResultUtil.failed();
 		}
-		User user = userService.selectUserByIdAndPassword(id, password);
+		User user = userService.selectUserById(id);
 		if (user == null || user.getType() < 3) {
 			return ResultUtil.failed("failed_not_admin");
 		}

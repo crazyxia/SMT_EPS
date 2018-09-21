@@ -84,14 +84,7 @@ public class UserServiceImpl implements UserService {
 		return filler.fill(userMapper.selectByExample(userExample));
 	}
 
-	
-	@Override
-	public User selectUserByIdAndPassword(String id, String password) {
-		User user = userMapper.selectByPrimaryKey(id);
-		return user;
-	}
-	
-	
+			
 	@Override
 	public User selectUserById(String id) {	
 		return userMapper.selectByPrimaryKey(id);		

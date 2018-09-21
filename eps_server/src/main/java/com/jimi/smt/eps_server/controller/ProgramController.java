@@ -16,7 +16,6 @@ import com.jimi.smt.eps_server.annotation.Log;
 import com.jimi.smt.eps_server.annotation.Open;
 import com.jimi.smt.eps_server.annotation.Role;
 import com.jimi.smt.eps_server.annotation.Role.*;
-import com.jimi.smt.eps_server.entity.Program;
 import com.jimi.smt.eps_server.entity.ProgramItemVisit;
 import com.jimi.smt.eps_server.entity.bo.EditProgramItemBO;
 import com.jimi.smt.eps_server.entity.vo.ProgramItemVO;
@@ -44,7 +43,7 @@ public class ProgramController {
 	@Role({ RoleType.ENGINEER, RoleType.PRODUCER })
 	@ResponseBody
 	@RequestMapping("/list")
-	public List<ProgramVO> list(String programName, String fileName, int line, String workOrder, Integer state,
+	public List<ProgramVO> list(String programName, String fileName, Integer line, String workOrder, Integer state,
 			String ordBy) {
 		return programService.list(programName, fileName, line, workOrder, state, ordBy);
 	}
@@ -244,7 +243,7 @@ public class ProgramController {
 			resultUtil2.setMsg("此线号不存在");
 			return resultUtil2;
 		}
-		List<Program> list = programService.selectWorkingProgram(line);
+		List<ProgramVO> list = programService.selectWorkingProgram(line);
 		if (list.size() == 0) {
 			resultUtil2.setCode(0);
 			resultUtil2.setMsg("此线号不存在工单");
@@ -343,7 +342,7 @@ public class ProgramController {
 	@Open
 	@ResponseBody
 	@RequestMapping("/selectWorkingBoardType")
-	public List<String> selectWorkingBoardType(String line, String workOrder) {
+	public List<Integer> selectWorkingBoardType(String line, String workOrder) {
 		return programService.selectWorkingBoardType(line, workOrder);
 	}
 

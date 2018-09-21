@@ -26,7 +26,7 @@ public class StatusDetailsController {
 	@Open
 	@ResponseBody
 	@RequestMapping("/getStatusDetails")
-	public StatusDetailsVO ListStatusDetailsByHour(int line) {
+	public StatusDetailsVO ListStatusDetailsByHour(Integer line) {
 		return statusService.ListStatusDetailsByHour(line);
 	}
 	

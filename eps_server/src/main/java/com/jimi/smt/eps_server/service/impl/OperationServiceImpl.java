@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.jimi.smt.eps_server.entity.LineExample;
 import com.jimi.smt.eps_server.entity.Operation;
 import com.jimi.smt.eps_server.entity.OperationExample;
 import com.jimi.smt.eps_server.entity.Page;
@@ -25,21 +24,19 @@ import com.jimi.smt.eps_server.entity.ProgramExample;
 import com.jimi.smt.eps_server.entity.StockLogExample;
 import com.jimi.smt.eps_server.entity.bo.OperationReportSummaryKey;
 import com.jimi.smt.eps_server.entity.bo.OperationReportSummaryValue;
-import com.jimi.smt.eps_server.entity.filler.OperationVOToClientReportFiller;
-import com.jimi.smt.eps_server.entity.filler.OperationVOToOperationReportFiller;
-import com.jimi.smt.eps_server.entity.filler.OperationToOperationVOFiller;
+import com.jimi.smt.eps_server.entity.filler.OperationToClientReportFiller;
+import com.jimi.smt.eps_server.entity.filler.OperationToOperationReportFiller;
 import com.jimi.smt.eps_server.entity.filler.StockLogToStockLogVOFiller;
 import com.jimi.smt.eps_server.entity.vo.ClientReport;
 import com.jimi.smt.eps_server.entity.vo.DisplayReport;
 import com.jimi.smt.eps_server.entity.vo.DisplayReportItem;
 import com.jimi.smt.eps_server.entity.vo.OperationReport;
 import com.jimi.smt.eps_server.entity.vo.OperationReportSummary;
-import com.jimi.smt.eps_server.entity.vo.OperationVO;
 import com.jimi.smt.eps_server.entity.vo.StockLogVO;
-import com.jimi.smt.eps_server.mapper.LineMapper;
 import com.jimi.smt.eps_server.mapper.OperationMapper;
 import com.jimi.smt.eps_server.mapper.ProgramMapper;
 import com.jimi.smt.eps_server.mapper.StockLogMapper;
+import com.jimi.smt.eps_server.service.LineService;
 import com.jimi.smt.eps_server.service.OperationService;
 import com.jimi.smt.eps_server.util.ExcelSpringHelper;
 
@@ -53,21 +50,19 @@ public class OperationServiceImpl implements OperationService {
 	@Autowired
 	private StockLogMapper stockLogMapper;
 	@Autowired
-	private LineMapper lineMapper;
+	private LineService lineService;
 	@Autowired
-	private OperationVOToClientReportFiller operationVOToClientReportFiller;
+	private OperationToClientReportFiller operationToClientReportFiller;
 	@Autowired
-	private OperationVOToOperationReportFiller operationVOToOperationReportFiller;
+	private OperationToOperationReportFiller operationToOperationReportFiller;
 	@Autowired
 	private StockLogToStockLogVOFiller stockLogToStockLogVOFiller;
-	@Autowired
-	private OperationToOperationVOFiller operationToOperationVOFiller;
 
 	
 	@Override
-	public List<ClientReport> listClientReport(String client, String programNo, int line, String orderNo,
+	public synchronized List<ClientReport> listClientReport(String client, String programNo, Integer line, String orderNo,
 			String workOrderNo, String startTime, String endTime) throws ParseException {
-		operationVOToClientReportFiller.init();
+		operationToClientReportFiller.init();
 
 		List<ClientReport> clientReports = new ArrayList<ClientReport>();
 
@@ -91,7 +86,7 @@ public class OperationServiceImpl implements OperationService {
 			operationCriteria.andWorkOrderEqualTo(workOrderNo);
 		}
 		// 筛选线别
-		if (line >= 0) {
+		if (line != null) {
 			operationCriteria.andLineEqualTo(line);
 		}
 
@@ -116,17 +111,13 @@ public class OperationServiceImpl implements OperationService {
 		}
 
 		List<Program> programs = programMapper.selectByExample(programExample);
-		List<OperationVO> operationVOs = new ArrayList<>();
-		for (Operation operation : operations) {
-			operationVOs.add(operationToOperationVOFiller.fill(operation));
-		}
+		
 		// 匹配
-		for (OperationVO operationVO : operationVOs) {
+		for (Operation operation : operations) {
 			for (Program program : programs) {
-				if (program.getId().equals(operationVO.getProgramId())) {
+				if (program.getId().equals(operation.getProgramId())) {
 					// 把操作日志转化为客户报告
-					operationVO.setLineName(getLineName(operationVO.getLine()));
-					clientReports.add(operationVOToClientReportFiller.fill(operationVO));
+					clientReports.add(operationToClientReportFiller.fill(operation));
 					break;
 				}
 			}
@@ -138,9 +129,9 @@ public class OperationServiceImpl implements OperationService {
 	
 	// 测试分页查询客户报表
 	@Override
-	public List<ClientReport> listClientReportByPage(String client, String programNo, int line, String orderNo,
+	public synchronized List<ClientReport> listClientReportByPage(String client, String programNo, Integer line, String orderNo,
 			String workOrderNo, String startTime, String endTime, Page page) throws ParseException {
-		operationVOToClientReportFiller.init();
+		operationToClientReportFiller.init();
 
 		List<ClientReport> clientReports = new ArrayList<ClientReport>();
 
@@ -164,7 +155,7 @@ public class OperationServiceImpl implements OperationService {
 			operationCriteria.andWorkOrderEqualTo(workOrderNo);
 		}
 		// 筛选线别
-		if (line >= 0) {
+		if (line != null) {
 			operationCriteria.andLineEqualTo(line);
 		}
 
@@ -195,17 +186,13 @@ public class OperationServiceImpl implements OperationService {
 		}
 
 		List<Program> programs = programMapper.selectByExample(programExample);
-		List<OperationVO> operationVOs = new ArrayList<>();
-		for (Operation operation : operations) {
-			operationVOs.add(operationToOperationVOFiller.fill(operation));
-		}
+		
 		// 匹配
-		for (OperationVO operationVO : operationVOs) {
+		for (Operation operation : operations) {
 			for (Program program : programs) {
-				if (program.getId().equals(operationVO.getProgramId())) {
+				if (program.getId().equals(operation.getProgramId())) {
 					// 把操作日志转化为客户报告
-					operationVO.setLineName(getLineName(operationVO.getLine()));
-					clientReports.add(operationVOToClientReportFiller.fill(operationVO));
+					clientReports.add(operationToClientReportFiller.fill(operation));
 					break;
 				}
 			}
@@ -216,7 +203,7 @@ public class OperationServiceImpl implements OperationService {
 
 	
 	@Override
-	public ResponseEntity<byte[]> downloadClientReport(String client, String programNo, int line, String orderNo,
+	public ResponseEntity<byte[]> downloadClientReport(String client, String programNo, Integer line, String orderNo,
 			String workOrderNo, String startTime, String endTime) throws ParseException, IOException, OutOfMemoryError {
 		ExcelSpringHelper helper = ExcelSpringHelper.create(true);
 		// 获取数据
@@ -229,7 +216,7 @@ public class OperationServiceImpl implements OperationService {
 	
 	@SuppressWarnings("deprecation")
 	@Override
-	public DisplayReport listDisplayReport(int line) {
+	public DisplayReport listDisplayReport(Integer line) {
 		DisplayReport displayReport = new DisplayReport();
 		// 日期筛选（过去24小时）
 		OperationExample operationExample = new OperationExample();
@@ -279,9 +266,9 @@ public class OperationServiceImpl implements OperationService {
 
 	
 	@Override
-	public List<OperationReport> listOperationReport(String operator, String client, int line, String workOrderNo,
+	public synchronized List<OperationReport> listOperationReport(String operator, String client, Integer line, String workOrderNo,
 			String startTime, String endTime, Integer type) throws ParseException {
-		operationVOToOperationReportFiller.init();
+		operationToOperationReportFiller.init();
 
 		List<OperationReport> operationReports = new ArrayList<OperationReport>();
 
@@ -302,7 +289,7 @@ public class OperationServiceImpl implements OperationService {
 			operationCriteria.andWorkOrderEqualTo(workOrderNo);
 		}
 		// 筛选线别
-		if (line >= 0) {
+		if (line != null) {
 			operationCriteria.andLineEqualTo(line);
 		}
 
@@ -327,17 +314,13 @@ public class OperationServiceImpl implements OperationService {
 		}
 
 		List<Program> programs = programMapper.selectByExample(programExample);
-		List<OperationVO> operationVOs = new ArrayList<>();
-		for (Operation operation : operations) {
-			operationVOs.add(operationToOperationVOFiller.fill(operation));
-		}
+
 		// 匹配
-		for (OperationVO operationVO : operationVOs) {
+		for (Operation operation : operations) {
 			for (Program program : programs) {
-				if (program.getId().equals(operationVO.getProgramId())) {
+				if (program.getId().equals(operation.getProgramId())) {
 					// 把操作日志转化为操作报告
-					operationVO.setLineName(getLineName(operationVO.getLine()));
-					operationReports.add(operationVOToOperationReportFiller.fill(operationVO));
+					operationReports.add(operationToOperationReportFiller.fill(operation));
 					break;
 				}
 			}
@@ -348,7 +331,7 @@ public class OperationServiceImpl implements OperationService {
 
 	
 	@Override
-	public ResponseEntity<byte[]> downloadOperationReport(String operator, String client, int line,
+	public ResponseEntity<byte[]> downloadOperationReport(String operator, String client, Integer line,
 			String workOrderNo, String startTime, String endTime, Integer type)
 			throws ParseException, IOException, OutOfMemoryError {
 		List<OperationReport> operationReports = listOperationReport(operator, client, line, workOrderNo, startTime,
@@ -381,7 +364,7 @@ public class OperationServiceImpl implements OperationService {
 
 	
 	@Override
-	public List<OperationReportSummary> listOperationReportSummary(int line, String workOrderNo, String startTime,
+	public List<OperationReportSummary> listOperationReportSummary(Integer line, String workOrderNo, String startTime,
 			String endTime, Integer type) throws ParseException {
 		// 筛选数据
 		List<OperationReport> operationReports = listOperationReport(null, null, line, workOrderNo, startTime, endTime,
@@ -468,33 +451,11 @@ public class OperationServiceImpl implements OperationService {
 	@Override
 	public int add(Operation operation) {
 		operation.setTime(new Date());
-		operation.setLine(getLineId(operation.getLine().toString()));
-		return operationMapper.insert(operation);
+		if(lineService.isLineExist(operation.getLine().toString())) {
+			operation.setLine(lineService.getLineIdByName(operation.getLine().toString()));
+			return operationMapper.insert(operation);
+		}
+		return 0;
 	}
-
-	
-	/**@author HCJ
-	 * 根据产线名称得到ID
-	 * @method getLineId
-	 * @param line
-	 * @return int
-	 * @date 2018年9月19日 下午8:49:33
-	 */
-	private int getLineId(String line) {
-		LineExample lineExample = new LineExample();
-		lineExample.createCriteria().andLineEqualTo(line);
-		return lineMapper.selectByExample(lineExample).get(0).getId();
-	}
-
-	
-	/**@author HCJ
-	 * 根据产线ID得到名称
-	 * @method getLineName
-	 * @param id
-	 * @return int
-	 * @date 2018年9月19日 下午8:50:00
-	 */
-	private String getLineName(int id) {
-		return lineMapper.selectByPrimaryKey(id).getLine();
-	}
+				
 }

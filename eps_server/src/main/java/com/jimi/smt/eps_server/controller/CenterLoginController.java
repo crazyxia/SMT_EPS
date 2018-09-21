@@ -24,7 +24,7 @@ public class CenterLoginController {
 	@Open
 	@ResponseBody
 	@RequestMapping("/selectById")
-	public CenterLogin selectById(int id) {
+	public CenterLogin selectById(Integer id) {
 		return centerLoginService.selectById(id);
 	}
 }

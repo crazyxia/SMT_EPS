@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import com.jimi.smt.eps_server.entity.Operation;
 import com.jimi.smt.eps_server.entity.ProgramItem;
 import com.jimi.smt.eps_server.entity.vo.ClientReport;
+import com.jimi.smt.eps_server.mapper.LineMapper;
 import com.jimi.smt.eps_server.mapper.ProgramItemMapper;
 import com.jimi.smt.eps_server.util.EntityFieldFiller;
 
@@ -20,14 +21,16 @@ public class OperationToClientReportFiller extends EntityFieldFiller<Operation, 
 
 	@Autowired
 	private ProgramItemMapper programItemMapper;
+	@Autowired
+	private LineMapper lineMapper;
 	
 	private List<ProgramItem> programItems;
-	
+		
 	private Map<String, ProgramItem> programItemMaps = new HashMap<>();
 	
 	synchronized public void init() {
 		programItems = programItemMapper.selectByExample(null);
-		
+
 		for (ProgramItem programItem : programItems) {
 			programItemMaps.put(programItem.getProgramId() + programItem.getLineseat() + programItem.getMaterialNo(),
 					programItem);
@@ -42,6 +45,7 @@ public class OperationToClientReportFiller extends EntityFieldFiller<Operation, 
 		BeanUtils.copyProperties(operation, clientReport);
 		//填写工单
 		clientReport.setWorkOrderNo(operation.getWorkOrder());
+		clientReport.setLine(lineMapper.selectByPrimaryKey(operation.getLine()).getLine());
 		
 		String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(operation.getTime());
 		clientReport.setTime(time);

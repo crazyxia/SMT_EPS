@@ -36,12 +36,12 @@ public class LineController {
 	@ResponseBody
 	@RequestMapping("/selectLine")
 	public List<String> selectLine() {
-		List<Line> lists = lineService.selectAll();
-		List<String> lines = new ArrayList<>();
-		for (Line line : lists) {
-			lines.add(line.getLine());
+		List<Line> lines = lineService.selectAll();
+		List<String> lineNames = new ArrayList<>();
+		for (Line line : lines) {
+			lineNames.add(line.getLine());
 		}
-		return lines;		
+		return lineNames;		
 	}
 
 }

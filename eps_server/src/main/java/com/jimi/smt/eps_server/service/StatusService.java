@@ -12,7 +12,7 @@ public interface StatusService {
 	 * @param Line
 	 * @return
 	 */
-	public StatusDetailsVO ListStatusDetailsByHour(int Line);
+	public StatusDetailsVO ListStatusDetailsByHour(Integer Line);
 	
 	
 	/**

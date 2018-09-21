@@ -14,6 +14,6 @@ public interface CenterLoginService {
 	 * @param id
 	 * @return
 	 */
-	CenterLogin selectById(int id);
+	CenterLogin selectById(Integer id);
 	
 }

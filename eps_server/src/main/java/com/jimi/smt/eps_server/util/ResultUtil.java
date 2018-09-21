@@ -53,7 +53,7 @@ public class ResultUtil {
 		return new ResultUtil(result);
 	}
 	
-	public static ResultUtil failed(String result, OutOfMemoryError e) {
+	public static ResultUtil failed(String result, Throwable e) {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		PrintStream printStream = new PrintStream(bos);
 		e.printStackTrace(printStream);
