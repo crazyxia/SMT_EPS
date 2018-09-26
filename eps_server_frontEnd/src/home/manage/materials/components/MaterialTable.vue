@@ -62,6 +62,7 @@ export default {
     isRefresh:function(val){
       if(val == true){
         store.commit("setIsRefresh",false);
+        this.resetMaterialInfos();
         this.getList();
       }
     },
@@ -123,7 +124,7 @@ export default {
           let result = response.data.result;
           if(result == "succeed"){
             alert("删除成功");
-            this.getList();
+            this.find();
           }else{
             errTip(result);
           }
@@ -136,6 +137,10 @@ export default {
       let list = store.state.materialList;
       let dataShow = list.slice(query.offset,query.offset+query.limit);
       this.data =dataShow;
+    },
+    resetMaterialInfos:function(){
+      this.materialInfos.materialNo = ""
+      this.materialInfos.perifdOfValidity = ""
     }
   }
 }

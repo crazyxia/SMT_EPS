@@ -6,7 +6,7 @@
     		<select class="form-control" id="line" v-model="line">
     			<option selected="selected" disabled="disabled"  style='display:none' value=''></option>
           <option>统一</option>
-          <option v-for="item in lines">{{item}}</option>
+          <option v-for="item in lines">{{item.line}}</option>
     		</select>
   		</div>
       <button type="button" class="btn btn_save" @click="save">保存</button>
@@ -27,9 +27,8 @@
           </tr>
           <tr v-for="item in items">
             <td>{{item.alias}}</td>
-            <td><input type="text" v-model="item.value"></td>
+            <td><input type="text" v-model.trim="item.value"></td>
             <td>{{item.description}}</td>
-          </tr>
           </tr>
         </tbody>
       </table>
@@ -64,7 +63,6 @@ export default {
   watch:{
     line:function(val){
       if(val != ""){
-        console.log("line"+val);
         this.showType = "table-row-group"
         this.analyzeData();
       }
@@ -115,7 +113,7 @@ export default {
       this.items = [];
       let arr = this.result;
       for(let i = 0;i<arr.length;i++){
-        if(arr[i].line == this.line){
+        if(arr[i].lineName == this.line){
           this.items.push(arr[i]);
         }
       }
@@ -129,7 +127,7 @@ export default {
           let obj = this.result[i];
           for(let j=0;j<this.items.length;j++){
             let item = this.items[j];
-            if(obj.line == item.line && obj.name == item.name){
+            if(obj.line == item.lineName && obj.name == item.name){
               this.result.splice(i,1,item);
             }
             if(item.line == "统一"&&obj.name == item.name){
@@ -145,5 +143,5 @@ export default {
 </script>
 
 <style scoped lang="scss">
-@import './../../../../static/css/common.scss'
+@import '@/assets/css/common.scss';
 </style>

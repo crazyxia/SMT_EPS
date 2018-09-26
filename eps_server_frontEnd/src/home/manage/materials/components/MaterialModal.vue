@@ -12,11 +12,11 @@
           <form class="form" role="form">
             <div class="form-group">
               <label for="materialNo">料号</label>
-              <input type="text" class="form-control" id="materialNo" v-model="modalInfo.materialNo">
+              <input type="text" class="form-control" id="materialNo" v-model.trim="modalInfo.materialNo">
             </div>
             <div class="form-group">
               <label for="perifdOfValidity">保质期(天)</label>
-              <input type="text" class="form-control" id="perifdOfValidity" v-model="modalInfo.perifdOfValidity">
+              <input type="text" class="form-control" id="perifdOfValidity" v-model.trim="modalInfo.perifdOfValidity">
             </div>
           </form>  
         </div>
@@ -58,13 +58,6 @@ export default {
     },
     isUpdate:function(){
       return store.state.isUpdate;
-    },
-    token:function(){
-      let token = store.state.token;
-      if(token == ""){
-        token = window.localStorage.getItem("token");
-      }
-      return token;
     }
   },
   watch:{

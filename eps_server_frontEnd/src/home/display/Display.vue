@@ -37,10 +37,9 @@
       if(this.lines.length !== 0){
         this.getData(this.mark,this.lines);
         this.mark++;
-        
       }
       window.mainInterval = setInterval(() => {
-          this.getData(this.mark,this.lines)
+          this.getData(this.mark,this.lines);
           this.mark++;
           if (this.mark === this.lineSize) {
             this.mark = 0;
@@ -126,7 +125,7 @@
         let lineOptions = {
           url: getLineData,
           data: {
-            line:lines[thisMark]
+            line:lines[thisMark].id
           }
         };
         axiosPost(lineOptions).then(response => {

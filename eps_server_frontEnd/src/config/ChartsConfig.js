@@ -1,5 +1,4 @@
-
-export const getChartsConf = function (type,linesInfo) {
+export const getChartsConf = function (type, linesInfo) {
   switch (type) {
     case 'pie':
       return PIE_SET;
@@ -53,68 +52,73 @@ const PIE_SET = {
   }
 };
 
-export const horizontalBar = function(linesInfo){
-const HORIZONTAL_BAR = {
-  type: 'horizontalBar',
-  data: {
-    labels:linesInfo,
-    datasets: [
-      {
-        label: '达成率',
-        data: [],
-        backgroundColor: "rgba(15, 210, 255, 0.8)",
-        borderColor: "rgba(15, 210, 255, 1)",
-        borderWidth: 3
-      }
-    ]
-  },
-  options: {
-    responsive: true,
-    devicePixelRatio: 2,
-    cutoutPercentage: 0,
-    showAllTooltips: true,
-    title: {
-      fontColor: '#fff',
-      fontSize: 14,
-      display: true,
-      text: ''
-    },
-    legend: {
-      display: false
-    },
-    layout: {
-      padding: {
-        left: 0
-      },
-    },
-    scales: {
-      xAxes: [{
-        ticks: {
-          display: true,
-          beginAtZero: true,
-          fontColor: '#ddd'
-        },
-        scaleLabel: {
-          display: true,
-          labelString: "百分比(%)",
-          fontColor: '#ddd'
-        },
-        gridLines: {
-          color: '#ddd'
-        }
-      }],
-      yAxes: [{
-        ticks: {
-          fontColor: '#ddd'
-        },
-        gridLines: {
-          color: 'rgba(128,128,128,0.8)'
-        }
-      }]
-    },
+export const horizontalBar = function (linesInfo) {
+  console.log(linesInfo);
+  let lines = [];
+  for (let i = 0; i < linesInfo.length; i++) {
+    lines.push(linesInfo[i].line);
   }
-};
-return  HORIZONTAL_BAR;
+  const HORIZONTAL_BAR = {
+    type: 'horizontalBar',
+    data: {
+      labels: lines,
+      datasets: [
+        {
+          label: '达成率',
+          data: [],
+          backgroundColor: "rgba(15, 210, 255, 0.8)",
+          borderColor: "rgba(15, 210, 255, 1)",
+          borderWidth: 3
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      devicePixelRatio: 2,
+      cutoutPercentage: 0,
+      showAllTooltips: true,
+      title: {
+        fontColor: '#fff',
+        fontSize: 14,
+        display: true,
+        text: ''
+      },
+      legend: {
+        display: false
+      },
+      layout: {
+        padding: {
+          left: 0
+        },
+      },
+      scales: {
+        xAxes: [{
+          ticks: {
+            display: true,
+            beginAtZero: true,
+            fontColor: '#ddd'
+          },
+          scaleLabel: {
+            display: true,
+            labelString: "百分比(%)",
+            fontColor: '#ddd'
+          },
+          gridLines: {
+            color: '#ddd'
+          }
+        }],
+        yAxes: [{
+          ticks: {
+            fontColor: '#ddd'
+          },
+          gridLines: {
+            color: 'rgba(128,128,128,0.8)'
+          }
+        }]
+      },
+    }
+  };
+  return HORIZONTAL_BAR;
 }
 
 const BAR = {

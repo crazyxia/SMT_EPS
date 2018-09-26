@@ -3,11 +3,11 @@
     <form class="form-inline" role="form">
       <div class="form-group">
         <label for="materialNo">料号</label>
-        <input type="text" class="form-control" id="materialNo" v-model="materialInfos.materialNo">
+        <input type="text" class="form-control" id="materialNo" v-model.trim="materialInfos.materialNo">
       </div>
       <div class="form-group">
         <label for="perifdOfValidity">保质期(天)</label>
-        <input type="text" class="form-control" id="perifdOfValidity" v-model="materialInfos.perifdOfValidity">
+        <input type="text" class="form-control" id="perifdOfValidity" v-model.trim="materialInfos.perifdOfValidity">
       </div>
       <div class="btn-group">
         <button type="button" class="btn btn_find" @click="find">查询</button>
@@ -55,5 +55,5 @@ export default {
 </script> 
 
 <style scoped lang="scss">
-@import './../../../../static/css/common.scss'
+@import '@/assets/css/common.scss';
 </style>

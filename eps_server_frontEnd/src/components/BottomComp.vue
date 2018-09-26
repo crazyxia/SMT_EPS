@@ -3,7 +3,7 @@
     <div class="comp-wrap" v-for="item in operationGroup">
       <div class="bottom-left-comp">
         <div class="pointer">
-          <span>{{line[mark]}}线: {{item.name}}</span>
+          <span>{{line[mark].line}}线: {{item.name}}</span>
         </div>
         <div class="bottom-comp-style" :class="'bottom-comp-' + item.value">
           <canvas :id="'bottom-comp-' + item.value" width="100" height="100"></canvas>

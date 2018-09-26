@@ -5,7 +5,6 @@
 </template>
 <script>
 import store from './../../../../store'
-import {clientTip} from "./../../../../utils/formValidate"
 import {axiosPost} from "./../../../../utils/fetchData"
 import {clientReportListUrl} from "./../../../../config/globalUrl"
 export default {
@@ -38,8 +37,11 @@ export default {
       'text-align':'center'
     },
     page:{},
-    currentPage:0
+    currentPage:1
   }),
+  mounted(){
+    this.getList();
+  },
   computed:{
     clientList:function(){
       return store.state.clientList;

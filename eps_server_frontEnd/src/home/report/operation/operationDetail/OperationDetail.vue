@@ -72,10 +72,10 @@ export default {
         input[id="line"]{
           width:100px;
         }
-        input[id="work_order"]{
-          width:400px;
+        input[id="workOrderNo"]{
+          width:300px;
         }
-      }     
+      }
     }
   }
 </style>

@@ -4,17 +4,17 @@
       <form class="form-inline" role="form">
         <div class="form-group">
           <label for="programName">站位表</label>
-          <input type="text" class="form-control" id="programName" v-model="programInfos.programName">
+          <input type="text" class="form-control" id="programName" v-model.trim="programInfos.programName">
         </div>
         <div class="form-group">
           <label for="workOrder">工单</label>
-          <input type="text" class="form-control" id="workOrder" v-model="programInfos.workOrder">
+          <input type="text" class="form-control" id="workOrder" v-model.trim="programInfos.workOrder">
         </div>
         <div class="form-group">
           <label for="state">状态</label>
-          <select class="form-control" id="state" v-model="programInfos.state">
+          <select class="form-control" id="state" v-model.trim="programInfos.state">
            <option selected="selected" disabled="disabled"  style='display: none' value=''></option>
-            <option>不限</option>
+            <option value="">不限</option>
             <option value="0">未开始</option>
             <option value="1">进行中</option>
             <option value="2">已完成</option>
@@ -23,9 +23,9 @@
         </div>
         <div class="form-group">
           <label for="line">线号</label>
-          <select class="form-control" id="line" v-model="programInfos.line">
+          <select class="form-control" id="line" v-model.trim="programInfos.line">
            <option selected="selected" disabled="disabled"  style='display: none' value=''></option>
-           <option v-for="item in lines">{{item}}</option>
+           <option v-for="item in lines" :value="item.id">{{item.line}}</option>
           </select>
         </div>
         <button type="button" class="btn btn_find" @click="find">查询</button>
@@ -92,6 +92,7 @@ export default {
       return store.state.programItemShow;
     },
     lines:function(){
+      console.log(store.state.lines);
       return store.state.lines;
     }
   },
@@ -146,5 +147,5 @@ export default {
 </script> 
 
 <style scoped lang="scss">
-@import './../../../../static/css/common.scss'
+@import '@/assets/css/common.scss';
 </style>

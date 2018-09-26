@@ -3,28 +3,28 @@
   	<form class="form-inline" role="form">
   		<div class="form-group">
     		<label for="id">工号</label>
-    		<input type="text" class="form-control" id="id" v-model="userInfos.id">
+    		<input type="text" class="form-control" id="id" v-model.trim="userInfos.id">
   		</div>
   		<div class="form-group">
     		<label for="name">姓名</label>
-    		<input type="text" class="form-control" id="name" v-model="userInfos.name">
+    		<input type="text" class="form-control" id="name" v-model.trim="userInfos.name">
   		</div>
   		<div class="form-group">
     		<label for="type">岗位</label>
-    		<select class="form-control" id="type" v-model="userInfos.type">
+    		<select class="form-control" id="type" v-model.trim="userInfos.type">
     			<option selected="selected" disabled="disabled" style='display:none' value='' ></option>
       			<option value="0">仓库操作员</option>
             <option value="1">厂线操作员</option>
       			<option value="2">IPQC</option>
       			<option value="3">超级管理员</option>
       			<option value="4">生产管理员</option>
-            <option value="5">工程管理员</option>
-            <option value="6">品质管理员</option>
+            <option value="5">品质管理员</option>
+            <option value="6">工程管理员</option>
     		</select>
   		</div>
   		<div class="form-group">
     		<label for="classType">班别</label>
-    		<select class="form-control" id="classType" v-model="userInfos.class">
+    		<select class="form-control" id="classType" v-model.trim="userInfos.classType">
     			<option selected="selected" disabled="disabled"  style='display:none' value=''></option>
       			<option value="0">白班</option>
       			<option value="1">夜班</option>
@@ -85,5 +85,5 @@ export default {
 </script> 
 
 <style scoped lang="scss">
-@import './../../../../static/css/common.scss'
+@import '@/assets/css/common.scss';
 </style>

@@ -50,6 +50,10 @@ export const configTip = function(arr){
   let index = 0;
   for(let i=0;i<arr.length;i++){
     let obj = arr[i];
+    if(obj.value === ""){
+      alert("值不能为空");
+      return false;
+    }
     if(judgeNumber(obj.value)){
       if(obj.name == "ipqc_error_alarm" || obj.name == "operator_error_alarm"){
         let number = obj.value;

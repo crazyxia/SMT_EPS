@@ -25,7 +25,7 @@ export default {
     ],
     HeaderSettings:false,
     fixHeaderAndSetBodyMaxHeight:700,
-    data: [],
+    data:[],
     total:0,
     tblClass: 'table-bordered',
     query: {"limit":20, "offset": 0},
@@ -68,6 +68,9 @@ export default {
       }
     }
   },
+  mounted(){
+    this.getList();
+  },
   methods:{
     fetchData:function(options){
       let that = this;
@@ -108,9 +111,11 @@ export default {
       }
       return arr;
     },
+  },
+  beforeDestroy(){
+    store.commit("setOperationSummaryList","");
   }
 }
-
 
 export const operationOperation = Vue.component('operationOperation',{
   template:`<span>
