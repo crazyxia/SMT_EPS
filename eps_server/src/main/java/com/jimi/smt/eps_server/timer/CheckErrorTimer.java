@@ -109,7 +109,7 @@ public class CheckErrorTimer {
 		ConfigExample example = new ConfigExample();
 		List<Config> configs = configMapper.selectByExample(example);
 		for (Config config : configs) {
-			int lineNo = getLineNoById(config.getLine());
+			int lineNo = getIndexByLineId(config.getLine());
 			switch (config.getName()) {
 			case IPQC_ERROR_ALARM:
 				lineErrorsCounters.get(lineNo).setIpqcErrorAlarm(Integer.parseInt(config.getValue()));
@@ -142,7 +142,7 @@ public class CheckErrorTimer {
 					if (program.getId().equals(programItemVisit.getProgramId())) {
 						try {
 							// 遍历字段
-							int line = getLineNoById(program.getLine());
+							int line = getIndexByLineId(program.getLine());
 							updateLineErrorCounter(line, 0, programItemVisit.getFeedResult());
 							updateLineErrorCounter(line, 1, programItemVisit.getChangeResult());
 							updateLineErrorCounter(line, 2, programItemVisit.getCheckResult());
@@ -249,10 +249,10 @@ public class CheckErrorTimer {
 	 * @return Integer
 	 * @date 2018年9月22日 上午11:13:54
 	 */
-	private Integer getLineNoById(Integer id) {
-		for (Integer lineNo : lineMap.keySet()) {
-			if(lineMap.get(lineNo).getId().equals(id)) {
-				return lineNo;
+	private Integer getIndexByLineId(Integer id) {
+		for (Integer index : lineMap.keySet()) {
+			if(lineMap.get(index).getId().equals(id)) {
+				return index;
 			}
 		}
 		return null;

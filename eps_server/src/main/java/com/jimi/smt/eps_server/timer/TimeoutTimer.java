@@ -185,7 +185,7 @@ public class TimeoutTimer {
 	private void setTimeoutTime() {
 		List<ConfigVO> configVOs = configService.list();
 		for (ConfigVO configVO : configVOs) {
-			int lineNo = getLineNoById(configVO.getLine());
+			int lineNo = getIndexByLineId(configVO.getLine());
 			switch (configVO.getName()) {
 			case CHECK_ALL_CYCLE_TIME:
 				lineInfos.get(lineNo).setCheckAllTimeout(Integer.parseInt(configVO.getValue()));
@@ -206,7 +206,7 @@ public class TimeoutTimer {
 	private void setWorkOrderAndBoardType() {
 		List<Display> displays = programService.listDisplays();
 		for (Display display : displays) {
-			int lineNo = getLineNoById(display.getLine());
+			int lineNo = getIndexByLineId(display.getLine());
 			lineInfos.get(lineNo).setWorkOrder(display.getWorkOrder());
 			lineInfos.get(lineNo).setBoardType(display.getBoardType());
 		}
@@ -221,10 +221,10 @@ public class TimeoutTimer {
 	 * @return Integer
 	 * @date 2018年9月22日 上午11:13:54
 	 */
-	private Integer getLineNoById(Integer id) {
-		for (Integer lineNo : lineMap.keySet()) {
-			if(lineMap.get(lineNo).getId().equals(id)) {
-				return lineNo;
+	private Integer getIndexByLineId(Integer id) {
+		for (Integer index : lineMap.keySet()) {
+			if(lineMap.get(index).getId().equals(id)) {
+				return index;
 			}
 		}
 		return null;

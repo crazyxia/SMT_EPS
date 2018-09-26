@@ -725,13 +725,13 @@ public class ProgramServiceImpl implements ProgramService {
 			return 0;
 		}
 		for (Integer result : results) {
-			if (result != 2 && result != 3) {
+			if (!result.equals(2) && result.equals(3)) {
 				allResult = 0;
 				break;
 			}
 		}
 		for (Integer time : times) {
-			if (time == 1) {
+			if (time.equals(1)) {
 				allTime = 1;
 				break;
 			}

@@ -46,18 +46,18 @@
 	<task:annotation-driven /> 
 	
 	<mvc:interceptors>
-	    <!-- 跨源拦截器 -->
-        <bean class="com.jimi.smt.eps_server.interceptor.CORSInterceptor"/>
+		<!-- 跨源拦截器 -->
+		<bean class="com.jimi.smt.eps_server.interceptor.CORSInterceptor" />
 		<!-- 日志拦截器 -->
-		<bean class="com.jimi.smt.eps_server.interceptor.LogInterceptor"/>
+		<bean class="com.jimi.smt.eps_server.interceptor.LogInterceptor" />
 		<!-- 权限拦截器 -->
-		<bean class="com.jimi.smt.eps_server.interceptor.JurisdictionInterceptor"/>
+		<bean class="com.jimi.smt.eps_server.interceptor.JurisdictionInterceptor" />
 		<!-- 国际化拦截器 -->
 		<bean class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor" />
 		<!-- 登录拦截器 -->
-		<bean class="com.jimi.smt.eps_server.interceptor.LoginInterceptor"/>
+		<bean class="com.jimi.smt.eps_server.interceptor.LoginInterceptor" />
 		<!-- 缓存拦截器 -->
-		<bean class="com.jimi.smt.eps_server.interceptor.NoCacheInterceptor"/>
+		<bean class="com.jimi.smt.eps_server.interceptor.NoCacheInterceptor" />
 		
 	</mvc:interceptors>
 
