@@ -3,11 +3,14 @@ package com.jimi.smt.eps_server.service.impl;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.jimi.smt.eps_server.entity.Line;
 import com.jimi.smt.eps_server.entity.Operation;
 import com.jimi.smt.eps_server.entity.OperationExample;
 import com.jimi.smt.eps_server.entity.StatusDetail;
@@ -33,12 +36,10 @@ public class StatusServiceImpl implements StatusService {
 		Criteria criteria = operationExample.createCriteria();
 		// 得到当前整点时间
 		Calendar calendar = Calendar.getInstance();
-		calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE),
-				calendar.get(Calendar.HOUR_OF_DAY), 0, 0);
+		calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE), calendar.get(Calendar.HOUR_OF_DAY), 0, 0);
 		Date endTime = calendar.getTime();
 		// 得到24小时前整点时间
-		calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE),
-				calendar.get(Calendar.HOUR_OF_DAY) - 24, 0, 0);
+		calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE), calendar.get(Calendar.HOUR_OF_DAY) - 24, 0, 0);
 		Date startTime = calendar.getTime();
 		criteria.andTimeGreaterThan(startTime);
 		criteria.andTimeLessThanOrEqualTo(endTime);
@@ -49,9 +50,10 @@ public class StatusServiceImpl implements StatusService {
 		// 初始化列表
 		StatusDetailsVO statusDetailsVO = new StatusDetailsVO();
 		List<StatusDetail> statusDetails = new ArrayList<>();
+		String lineName = lineService.getLineNameById(line);
 		for (int i = 0; i < 24; i++) {
 			statusDetails.add(new StatusDetail());
-			statusDetails.get(i).setLine(lineService.getLineNameById(line));
+			statusDetails.get(i).setLine(lineName);
 		}
 		int hour = calendar.get(Calendar.HOUR_OF_DAY);
 		// 根据操作记录时间进行每一小时分类
@@ -66,11 +68,10 @@ public class StatusServiceImpl implements StatusService {
 			}
 
 		}
-
 		for (StatusDetail statusDetail : statusDetails) {
 			statusDetail.fill();
 		}
-		statusDetailsVO.setLine(lineService.getLineNameById(line));
+		statusDetailsVO.setLine(lineName);
 		statusDetailsVO.setStatusDetails(statusDetails);
 		statusDetailsVO.fill();
 		return statusDetailsVO;
@@ -83,12 +84,10 @@ public class StatusServiceImpl implements StatusService {
 		Criteria criteria = operationExample.createCriteria();
 		// 得到当前整点时间
 		Calendar calendar = Calendar.getInstance();
-		calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE),
-				calendar.get(Calendar.HOUR_OF_DAY), 0, 0);
+		calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE), calendar.get(Calendar.HOUR_OF_DAY), 0, 0);
 		Date endTime = calendar.getTime();
 		// 得到24小时前整点时间
-		calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE),
-				calendar.get(Calendar.HOUR_OF_DAY) - 24, 0, 0);
+		calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE), calendar.get(Calendar.HOUR_OF_DAY) - 24, 0, 0);
 		Date startTime = calendar.getTime();
 		criteria.andTimeGreaterThan(startTime);
 		criteria.andTimeLessThanOrEqualTo(endTime);
@@ -97,24 +96,25 @@ public class StatusServiceImpl implements StatusService {
 		List<Operation> operations = OperationMapper.selectByExample(operationExample);
 		// 初始化列表
 		List<StatusDetail> statusDetails = new ArrayList<>();
-		List<String> line = new ArrayList<>();
-		long linzeSize = lineService.countLineNum();
-		for (int i = 0; i < linzeSize; i++) {
-			line.add(lineService.getLineNameById(i));
+		List<Line> lines = lineService.selectAll();
+		long lineSize = lines.size();
+		Map<Integer, Line> lineMap = new HashMap<>();
+		for (int i = 0; i < lineSize; i++) {
+			Line line = lines.get(i);
+			lineMap.put(i, line);
 			statusDetails.add(new StatusDetail());
-			statusDetails.get(i).setLine(line.get(i));
+			statusDetails.get(i).setLine(line.getLine());
 		}
 		// 根据每条产线进行分类
 		for (Operation operation : operations) {
-			for (int i = 0; i < linzeSize; i++) {
-				if (operation.getLine() == lineService.getLineIdByName(line.get(i))) {
+			for (int i = 0; i < lineSize; i++) {
+				if (operation.getLine().equals(lineMap.get(i).getId())) {
 					count(operation, statusDetails.get(i));
 					break;
 				}
 			}
 
 		}
-
 		for (StatusDetail statusDetail : statusDetails) {
 			statusDetail.fill();
 		}

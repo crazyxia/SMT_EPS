@@ -18,10 +18,10 @@ public class StockLogServiceImpl implements StockLogService {
 	
 	
 	@Override
-	public void insert(String list) {
+	public void insert(String stockList) {
 		//将字符串类型的JSON转换为集合对象
-		List<StockLog> lists = JSON.parseArray(list, StockLog.class);
-		stockLogMapper.insertList(lists);
+		List<StockLog> stocks = JSON.parseArray(stockList, StockLog.class);
+		stockLogMapper.insertList(stocks);
 	}
 
 }

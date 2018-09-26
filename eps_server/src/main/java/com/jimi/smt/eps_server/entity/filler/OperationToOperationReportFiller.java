@@ -36,7 +36,7 @@ public class OperationToOperationReportFiller extends EntityFieldFiller<Operatio
 	}
 		
 	@Override
-	public OperationReport fill(Operation operation) {
+	public OperationReport fill(Operation operation) {		
 		OperationReport operationReport = new OperationReport();
 		//拷贝相同属性
 		BeanUtils.copyProperties(operation, operationReport);

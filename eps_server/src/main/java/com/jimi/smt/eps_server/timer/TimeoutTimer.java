@@ -61,19 +61,17 @@ public class TimeoutTimer {
 	 * 所有线别列表
 	 */
 	public Map<Integer, Line> lineMap = new HashMap<>();
-	
+			
 	
 	@PostConstruct
-	public void init() {
-		lineSize = (int)lineService.countLineNum();
-		List<Line> lists = lineService.selectAll();
-		for (int i = 0; i < lineSize; i++) {
-			Line line = lists.get(i);
-			lineMap.put(line.getId(), line);
-		}
+	public void init() {		
+		List<Line> lines = lineService.selectAll();
+		lineSize = lines.size();
 		lineLocks = new Object[lineSize];
 		lineInfos = new HashMap<Integer, LineInfo>();	
 		for (int i = 0; i < lineSize; i++) {
+			Line line = lines.get(i);
+			lineMap.put(i, line);
 			lineLocks[i] = new Object();
 			lineInfos.put(i, new LineInfo());
 		}
@@ -98,7 +96,7 @@ public class TimeoutTimer {
 					continue;
 				}
 				//查询programID
-				String line = getLineString(i);
+				String line = lineMap.get(i).getLine();
 				LineInfo bo = lineInfos.get(i);
 				List<ProgramItemVisit> programItemVisits = programService.getVisits(line, bo.getWorkOrder(), bo.getBoardType());
 				if(! programItemVisits.isEmpty()) {
@@ -114,41 +112,38 @@ public class TimeoutTimer {
 	 * 获取线锁
 	 */
 	public Object getLock(String line) {
-		return lineLocks[getLineNO(line)];
+		return lineLocks[getLineNoByName(line)];
 	}
 	
-	
-	/**
-	 * 根据字符串线号得到id
+		
+	/**@author HCJ
+	 * 根据产线名称返回产线在lineMap的位置
+	 * @method getLineNoByName
+	 * @param line
+	 * @return
+	 * @return int
+	 * @date 2018年9月22日 上午11:15:34
 	 */
-	private int getLineNO(String line) {
+	private int getLineNoByName(String line) {
 		int number = 0;
-		for (int i = 0; i < lineSize; i++) {
-			if (lineMap.get(i).getLine().equals(line)) {
-				number = i;
+		for (Integer lineNo : lineMap.keySet()) {
+			if (lineMap.get(lineNo).getLine().equals(line)) {
+				number = lineNo;
 				break;
 			}
 		}
 		return number;
 	}
-	
-	
-	/**
-	 * 根据id得到字符串线号
-	 */
-	private String getLineString(int id) {
-		return lineService.getLineNameById(id);
-	}
-
+			
 	
 	/**
 	 * 超时检测
 	 */
-	private void checkTimeout(List<ProgramItemVisit> programItemVisits, int id) {
+	private void checkTimeout(List<ProgramItemVisit> programItemVisits, int line) {
 		for (ProgramItemVisit programItemVisit : programItemVisits) {
 			//全检超时检测
 			//当前全检时间加上设置的超时时间
-			long temp = programItemVisit.getCheckAllTime().getTime() + lineInfos.get(id).getCheckAllTimeout() * 60 * 1000;
+			long temp = programItemVisit.getCheckAllTime().getTime() + lineInfos.get(line).getCheckAllTimeout() * 60 * 1000;
 			//当前时间是否大于全检超时后的时间
 			boolean isCheckAllTimeout = new Date().getTime() > temp;
 			//是否已经正常首检
@@ -165,7 +160,7 @@ public class TimeoutTimer {
 			}
 			//核料超时检测
 			//当前换料时间加上设置的超时时间
-			long temp2 = programItemVisit.getChangeTime().getTime() + lineInfos.get(id).getCheckTimeout() * 60 * 1000;
+			long temp2 = programItemVisit.getChangeTime().getTime() + lineInfos.get(line).getCheckTimeout() * 60 * 1000;
 			//当前时间是否大于换料超时后的时间
 			boolean isCheckTimeout = new Date().getTime() > temp2;
 			//核料时间是否小于换料时间
@@ -190,7 +185,7 @@ public class TimeoutTimer {
 	private void setTimeoutTime() {
 		List<ConfigVO> configVOs = configService.list();
 		for (ConfigVO configVO : configVOs) {
-			int lineNo = configVO.getLine();
+			int lineNo = getLineNoById(configVO.getLine());
 			switch (configVO.getName()) {
 			case CHECK_ALL_CYCLE_TIME:
 				lineInfos.get(lineNo).setCheckAllTimeout(Integer.parseInt(configVO.getValue()));
@@ -211,10 +206,28 @@ public class TimeoutTimer {
 	private void setWorkOrderAndBoardType() {
 		List<Display> displays = programService.listDisplays();
 		for (Display display : displays) {
-			int lineNo = display.getLine();
+			int lineNo = getLineNoById(display.getLine());
 			lineInfos.get(lineNo).setWorkOrder(display.getWorkOrder());
 			lineInfos.get(lineNo).setBoardType(display.getBoardType());
 		}
-	}	
+	}
+	
+	
+	/**@author HCJ
+	 * 根据产线ID返回产线在lineMap的位置
+	 * @method getLineNoById
+	 * @param id
+	 * @return
+	 * @return Integer
+	 * @date 2018年9月22日 上午11:13:54
+	 */
+	private Integer getLineNoById(Integer id) {
+		for (Integer lineNo : lineMap.keySet()) {
+			if(lineMap.get(lineNo).getId().equals(id)) {
+				return lineNo;
+			}
+		}
+		return null;
+	}
 	
 }

@@ -12,6 +12,7 @@ import com.jimi.smt.eps_server.constant.ClientDevice;
 import com.jimi.smt.eps_server.constant.ControlledDevice;
 import com.jimi.smt.eps_server.entity.Config;
 import com.jimi.smt.eps_server.entity.ConfigExample;
+import com.jimi.smt.eps_server.entity.Line;
 import com.jimi.smt.eps_server.entity.Program;
 import com.jimi.smt.eps_server.entity.ProgramItemVisit;
 import com.jimi.smt.eps_server.entity.bo.CenterControllerErrorCounter;
@@ -55,14 +56,20 @@ public class CheckErrorTimer {
 	 * 产线数量
 	 */
 	private long lineSize;
+		
+	/**
+	 * lineMap : 所有产线列表
+	 */
+	private Map<Integer, Line> lineMap;
 	
 	
-	public CheckErrorTimer(Long lineSize, ConfigMapper configMapper, ProgramMapper programMapper, ProgramItemVisitMapper programItemVisitMapper, Map<Integer, ClientSocket> clientSockets){
+	public CheckErrorTimer(Long lineSize, Map<Integer, Line> lineMap, ConfigMapper configMapper, ProgramMapper programMapper, ProgramItemVisitMapper programItemVisitMapper, Map<Integer, ClientSocket> clientSockets){
 		this.configMapper = configMapper;
 		this.programMapper = programMapper;
 		this.programItemVisitMapper = programItemVisitMapper;
 		this.lineSize = lineSize;
 		this.clientSockets = clientSockets;
+		this.lineMap = lineMap;
 	}
 	
 	
@@ -102,7 +109,7 @@ public class CheckErrorTimer {
 		ConfigExample example = new ConfigExample();
 		List<Config> configs = configMapper.selectByExample(example);
 		for (Config config : configs) {
-			int lineNo = config.getLine();
+			int lineNo = getLineNoById(config.getLine());
 			switch (config.getName()) {
 			case IPQC_ERROR_ALARM:
 				lineErrorsCounters.get(lineNo).setIpqcErrorAlarm(Integer.parseInt(config.getValue()));
@@ -135,7 +142,7 @@ public class CheckErrorTimer {
 					if (program.getId().equals(programItemVisit.getProgramId())) {
 						try {
 							// 遍历字段
-							int line = program.getLine();
+							int line = getLineNoById(program.getLine());
 							updateLineErrorCounter(line, 0, programItemVisit.getFeedResult());
 							updateLineErrorCounter(line, 1, programItemVisit.getChangeResult());
 							updateLineErrorCounter(line, 2, programItemVisit.getCheckResult());
@@ -231,5 +238,23 @@ public class CheckErrorTimer {
 	private void sendCmd(ClientDevice clientDevice, ClientSocket socket, boolean isAlarm,
 			ControlledDevice controlledDevice) {
 		new SendCmdThread(clientDevice, socket, isAlarm, controlledDevice).start();
+	}
+	
+		
+	/**@author HCJ
+	 * 根据产线ID返回产线在lineMap的位置
+	 * @method getLineNoById
+	 * @param id
+	 * @return
+	 * @return Integer
+	 * @date 2018年9月22日 上午11:13:54
+	 */
+	private Integer getLineNoById(Integer id) {
+		for (Integer lineNo : lineMap.keySet()) {
+			if(lineMap.get(lineNo).getId().equals(id)) {
+				return lineNo;
+			}
+		}
+		return null;
 	}
 }

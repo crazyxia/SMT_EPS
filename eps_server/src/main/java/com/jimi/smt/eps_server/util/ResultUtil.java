@@ -43,15 +43,7 @@ public class ResultUtil {
 	public static ResultUtil failed(String result) {
 		logger.error(result);
 		return new ResultUtil(result);
-	}
-	
-	public static ResultUtil failed(String result, Exception e) {
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		PrintStream printStream = new PrintStream(bos);
-		e.printStackTrace(printStream);
-		logger.error(new String(bos.toByteArray()));
-		return new ResultUtil(result);
-	}
+	}		
 	
 	public static ResultUtil failed(String result, Throwable e) {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -64,12 +56,21 @@ public class ResultUtil {
 	public static ResultUtil succeed(Object data) {
 		return new ResultUtil(data);
 	}
+	
+	public static ResultUtil succeed(String result, Object data) {
+		return new ResultUtil(result, data);
+	}
 
 	public ResultUtil(String result) {
 		this.result = result;
 	}
 	
 	public ResultUtil(Object data) {
+		this.data = data;
+	}
+
+	public ResultUtil(String result, Object data) {
+		this.result = result;
 		this.data = data;
 	}
 

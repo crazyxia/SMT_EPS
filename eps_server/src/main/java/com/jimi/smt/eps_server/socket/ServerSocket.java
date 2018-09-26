@@ -45,36 +45,40 @@ import cc.darhao.jiminal.core.BasePackage;
 import cc.darhao.jiminal.core.PackageParser;
 import cc.darhao.jiminal.core.SyncCommunicator;
 
-/**
- * 	服务端SOCKET
+/**服务端SOCKET
+ * @package  com.jimi.smt.eps_server.socket
+ * @file     ServerSocket.java
+ * @author   HCJ
+ * @date     2018年9月26日 上午8:50:17
+ * @version  V 1.0
  */
 @Component
 public class ServerSocket {
 
 	private static Logger logger = LogManager.getRootLogger();
-
+	
 	/**
-	 * 同步通讯器
+	 * communicator : 同步通讯器
 	 */
 	private SyncCommunicator communicator;
 
 	/**
-	 * 服务端监听端口
+	 * LOCAL_PORT : 服务端监听端口
 	 */
 	private static final int LOCAL_PORT = 23333;
 
 	/**
-	 * package所在位置
+	 * PACKAGE_PATH : package所在位置
 	 */
 	private static final String PACKAGE_PATH = "com.jimi.smt.eps_server.pack";
 
 	/**
-	 * 物料是几联板
+	 * structure : 物料是几联板
 	 */
 	private int structure;
 
 	/**
-	 * 当前工单已生产数量
+	 * alreadyProductOld : 当前工单已生产数量
 	 */
 	private int alreadyProductOld;
 
@@ -102,35 +106,41 @@ public class ServerSocket {
 	private int state = 0;
 
 	/**
-	 * 所有线别的报警模块列表
+	 * clientSockets : 所有线别的报警模块列表
 	 */
 	private Map<Integer, ClientSocket> clientSockets;
 
 	/**
-	 * 所有线别列表
+	 * lineMap : 所有线别列表
 	 */
 	private Map<Integer, Line> lineMap = new HashMap<>();
 
 	/**
-	 * 产线数量
+	 * lineSize : 产线数量
 	 */
 	private long lineSize;
 	
 	/**
-	 * 错误检测定时器
+	 * checkErrorTimer : 错误检测定时器
 	 */
 	private CheckErrorTimer checkErrorTimer;
 
 	
+	/**@author HCJ
+	 * 初始化
+	 * @method init
+	 * @return void
+	 * @date 2018年9月26日 上午8:50:43
+	 */
 	@PostConstruct
 	public void init() {
-		clientSockets = new HashMap<Integer, ClientSocket>();	
-		List<Line> lists = lineMapper.selectByExample(null);
-		lineSize = lists.size();
+		clientSockets = new HashMap<Integer, ClientSocket>();
+		List<Line> lines = lineMapper.selectByExample(null);
+		lineSize = lines.size();
 		for (int i = 0; i < lineSize; i++) {
-			Line line = lists.get(i);
-			lineMap.put(line.getId(), line);
-		}		
+			Line line = lines.get(i);
+			lineMap.put(i, line);
+		}
 		communicator = new SyncCommunicator(LOCAL_PORT, PACKAGE_PATH);
 		new Thread(() -> {
 			open();
@@ -141,8 +151,11 @@ public class ServerSocket {
 	}
 
 	
-	/**
+	/**@author HCJ
 	 * 打开端口，服务器开始监听包的到来
+	 * @method open
+	 * @return void
+	 * @date 2018年9月26日 上午8:51:43
 	 */
 	public void open() {
 		logger.info("SMT 服务器 正在运行!");
@@ -163,7 +176,6 @@ public class ServerSocket {
 						if (!logins.isEmpty()) {
 							CenterLogin login = logins.get(0);
 							loginReplyPackage.setLine(login.getLine());
-							//loginReplyPackage.setLine(login.getLine());
 							loginReplyPackage.setTimestamp(new Date());
 						} else {
 							loginReplyPackage.setLine(0);
@@ -174,7 +186,6 @@ public class ServerSocket {
 						BoardNumPackage boardNumPackage = (BoardNumPackage) p;
 						DisplayExample displayExample = new DisplayExample();
 						displayExample.createCriteria().andLineEqualTo(boardNumPackage.getLine());
-						/*displayExample.createCriteria().andIdEqualTo(Integer.parseInt(boardNumPackage.getLine()));*/
 						List<Display> displays = displayMapper.selectByExample(displayExample);
 						if (!displays.isEmpty()) {
 							Display display = displays.get(0);
@@ -183,7 +194,6 @@ public class ServerSocket {
 								Criteria criteria = programExample.createCriteria();
 								criteria.andWorkOrderEqualTo(display.getWorkOrder());
 								criteria.andBoardTypeEqualTo(display.getBoardType());
-								//criteria.andLineEqualTo(boardNumPackage.getLine());
 								criteria.andLineEqualTo(display.getLine());
 								criteria.andStateEqualTo(1);
 								List<Program> programs = programMapper.selectByExample(programExample);
@@ -192,8 +202,7 @@ public class ServerSocket {
 									structure = programFirst.getStructure();
 									alreadyProductOld = programFirst.getAlreadyProduct();
 									Program program = new Program();
-									program.setAlreadyProduct(
-											(boardNumPackage.getBoardNum()) * structure + alreadyProductOld);
+									program.setAlreadyProduct((boardNumPackage.getBoardNum()) * structure + alreadyProductOld);
 									programMapper.updateByExampleSelective(program, programExample);
 								}
 							}
@@ -223,29 +232,34 @@ public class ServerSocket {
 	}
 
 	
-	/**
+	/**@author HCJ
 	 * 初始化连接中控socket
+	 * @method initClients
+	 * @return void
+	 * @date 2018年9月26日 上午8:52:21
 	 */
 	@Scheduled(cron = "0/3 * * * * ?")
 	public void initClients() {
 		if (flag >= lineSize) {
 			for (int i = 0; i < lineSize; i++) {
 				try {
-					clientSockets.put(i,
-							new ClientSocket(lineMap.get(i).getId(), centerLoginMapper, socketLogMapper, centerStateMapper));
+					clientSockets.put(i, new ClientSocket(lineMap.get(i).getId(), centerLoginMapper, socketLogMapper, centerStateMapper));
 				} catch (Exception e) {
 					logger.error("搜索产线 " + lineMap.get(i).getLine() + " : " + e.getMessage());
 				}
 			}
 			flag = 0;
-			checkErrorTimer = new CheckErrorTimer(lineSize, configMapper, programMapper, programItemVisitMapper, clientSockets);
+			checkErrorTimer = new CheckErrorTimer(lineSize, lineMap, configMapper, programMapper, programItemVisitMapper, clientSockets);
 			state = 1;
 		}
 	}
 
 	
-	/**
+	/**@author HCJ
 	 * 每隔3秒检查是否有错误项目
+	 * @method checkError
+	 * @return void
+	 * @date 2018年9月26日 上午8:52:33
 	 */
 	@Scheduled(cron = "0/3 * * * * ?")
 	public void checkError() {

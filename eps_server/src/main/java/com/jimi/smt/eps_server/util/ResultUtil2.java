@@ -34,7 +34,7 @@ public class ResultUtil2 {
 
 	@Override
 	public String toString() {
-		return "ResultJson [code=" + code + ", msg=" + msg + ", data=" + data + "]";
+		return "ResultUtil2 [code=" + code + ", msg=" + msg + ", data=" + data + "]";
 	}
-
+	
 }

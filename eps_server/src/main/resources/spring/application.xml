@@ -46,6 +46,8 @@
 	<task:annotation-driven /> 
 	
 	<mvc:interceptors>
+	    <!-- 跨源拦截器 -->
+        <bean class="com.jimi.smt.eps_server.interceptor.CORSInterceptor"/>
 		<!-- 日志拦截器 -->
 		<bean class="com.jimi.smt.eps_server.interceptor.LogInterceptor"/>
 		<!-- 权限拦截器 -->
@@ -56,8 +58,7 @@
 		<bean class="com.jimi.smt.eps_server.interceptor.LoginInterceptor"/>
 		<!-- 缓存拦截器 -->
 		<bean class="com.jimi.smt.eps_server.interceptor.NoCacheInterceptor"/>
-		<!-- 跨源拦截器 -->
-		<bean class="com.jimi.smt.eps_server.interceptor.CORSInterceptor"/>
+		
 	</mvc:interceptors>
 
 	
@@ -65,11 +66,11 @@
 	<mvc:resources mapping="/static/**" location="/static/" />
 
 	<!-- 配置SpringMVC的视图解析器 -->
-	<!-- <bean
+	<bean
 		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
 		<property name="prefix" value="/WEB-INF/jsp/" />
 		<property name="suffix" value=".jsp" />
-	</bean> -->
+	</bean>
 
 
 	<!-- 引入jdbc配置文件 -->

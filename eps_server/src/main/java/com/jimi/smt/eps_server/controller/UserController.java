@@ -119,7 +119,7 @@ public class UserController {
 		UserVO userVO = filler.fill(user);
 		userVO.setTokenId(tokenId);
 		TokenBox.put(tokenId, SESSION_KEY_LOGIN_USER, userVO);
-		return ResultUtil.succeed(userVO);
+		return ResultUtil.succeed("200", userVO);
 	}
 
 	

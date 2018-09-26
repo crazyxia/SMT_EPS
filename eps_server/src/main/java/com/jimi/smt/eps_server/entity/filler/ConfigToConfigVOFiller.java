@@ -29,7 +29,7 @@ public class ConfigToConfigVOFiller extends EntityFieldFiller<Config, ConfigVO>{
 		ConfigVO configVO = new ConfigVO();
 		BeanUtils.copyProperties(config, configVO);
 		for (Line line : lines) {
-			if (line.getId() == configVO.getLine()) {
+			if (line.getId().equals(configVO.getLine())) {
 				configVO.setLineName(line.getLine());
 			}
 		}				

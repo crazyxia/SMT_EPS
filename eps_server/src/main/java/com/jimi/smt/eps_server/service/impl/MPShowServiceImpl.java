@@ -34,8 +34,7 @@ public class MPShowServiceImpl implements MPShowService {
 		List<MPShowItemBO> mpShowItemBOs = new ArrayList<MPShowItemBO>();
 		// 筛选时间
 		OperationExample example = new OperationExample();
-		example.createCriteria().andTimeGreaterThanOrEqualTo(DateUtil.yyyyMMddHHmmss(startTime))
-								.andTimeLessThanOrEqualTo(DateUtil.yyyyMMddHHmmss(endTime));
+		example.createCriteria().andTimeGreaterThanOrEqualTo(DateUtil.yyyyMMddHHmmss(startTime)).andTimeLessThanOrEqualTo(DateUtil.yyyyMMddHHmmss(endTime));
 		List<Operation> operations = OperationMapper.selectByExample(example);
 		// 遍历并分组
 		for (Operation operation : operations) {

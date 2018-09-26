@@ -167,9 +167,8 @@ public class OperationController {
 	@ResponseBody
 	@RequestMapping("/add")
 	public ResultUtil2 add(@RequestBody Operation operation) {
-		int result = operationService.add(operation);
 		ResultUtil2 resultUtil2 = new ResultUtil2();
-		if (result == 1) {
+		if (operationService.add(operation) == 1) {
 			resultUtil2.setCode(1);
 			resultUtil2.setMsg("操作成功");
 		} else {

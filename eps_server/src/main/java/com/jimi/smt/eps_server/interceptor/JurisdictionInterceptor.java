@@ -38,9 +38,16 @@ public class JurisdictionInterceptor extends HandlerInterceptorAdapter {
 			String token = request.getParameter(TokenBox.TOKEN_ID_KEY_NAME);
 			UserVO user = TokenBox.get(token, UserController.SESSION_KEY_LOGIN_USER);
 			
+			if(user == null) {
+				response.getWriter().println("{\"result\":\"failed_access_denied\"}");
+				return false;
+			}
+			
 			if(user != null && user.getType() == 3) {
 				return true;
 			}
+			
+			
 			//如果没有注解，则拦截
 			Role role = ((HandlerMethod) handler).getMethodAnnotation(Role.class);
 			if(role == null) {

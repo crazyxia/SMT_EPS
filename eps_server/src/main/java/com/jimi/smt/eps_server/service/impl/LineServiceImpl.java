@@ -19,15 +19,23 @@ public class LineServiceImpl implements LineService {
 	
 	@Override
 	public String getLineNameById(int id) {
-		return lineMapper.selectByPrimaryKey(id).getLine();		
+		Line line = lineMapper.selectByPrimaryKey(id);
+		if(line == null) {
+			return null;
+		}
+		return line.getLine();
 	}
 	
 	
 	@Override
-	public int getLineIdByName(String line) {
+	public Integer getLineIdByName(String line) {
 		LineExample lineExample = new LineExample();
 		lineExample.createCriteria().andLineEqualTo(line);
-		return lineMapper.selectByExample(lineExample).get(0).getId();
+		List<Line> lines = lineMapper.selectByExample(lineExample);
+		if(lines.isEmpty()) {
+			return null;
+		}
+		return lines.get(0).getId();
 	}
 
 	
@@ -42,19 +50,6 @@ public class LineServiceImpl implements LineService {
 		LineExample lineExample = new LineExample();
 		lineExample.setOrderByClause("id asc");
 		return lineMapper.selectByExample(lineExample);
-	}
-
-	
-	@Override
-	public Boolean isLineExist(String line) {		
-		Boolean result = false;
-		LineExample lineExample = new LineExample();
-		lineExample.createCriteria().andLineEqualTo(line);
-		List<Line> lines = lineMapper.selectByExample(lineExample);
-		if(lines != null && lines.size() > 0) {
-			result = true;
-		}
-		return result;
-	}
+	}		
 		
 }

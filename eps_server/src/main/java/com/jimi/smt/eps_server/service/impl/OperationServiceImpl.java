@@ -62,8 +62,7 @@ public class OperationServiceImpl implements OperationService {
 	@Override
 	public synchronized List<ClientReport> listClientReport(String client, String programNo, Integer line, String orderNo,
 			String workOrderNo, String startTime, String endTime) throws ParseException {
-		operationToClientReportFiller.init();
-
+		operationToClientReportFiller.init();		
 		List<ClientReport> clientReports = new ArrayList<ClientReport>();
 
 		OperationExample operationExample = new OperationExample();
@@ -132,7 +131,6 @@ public class OperationServiceImpl implements OperationService {
 	public synchronized List<ClientReport> listClientReportByPage(String client, String programNo, Integer line, String orderNo,
 			String workOrderNo, String startTime, String endTime, Page page) throws ParseException {
 		operationToClientReportFiller.init();
-
 		List<ClientReport> clientReports = new ArrayList<ClientReport>();
 
 		OperationExample operationExample = new OperationExample();
@@ -196,8 +194,7 @@ public class OperationServiceImpl implements OperationService {
 					break;
 				}
 			}
-		}
-
+		}		
 		return clientReports;
 	}
 
@@ -224,9 +221,7 @@ public class OperationServiceImpl implements OperationService {
 		LocalDateTime yesterday = today.plusDays(-1);
 		Date t = Date.from(today.atZone(ZoneId.systemDefault()).toInstant());
 		Date y = Date.from(yesterday.atZone(ZoneId.systemDefault()).toInstant());
-		operationExample.createCriteria().andTimeGreaterThanOrEqualTo(y)
-										 .andTimeLessThanOrEqualTo(t)
-										 .andLineEqualTo(line);
+		operationExample.createCriteria().andTimeGreaterThanOrEqualTo(y).andTimeLessThanOrEqualTo(t).andLineEqualTo(line);
 		List<Operation> operations = operationMapper.selectByExample(operationExample);
 		// 遍历
 		for (Operation operation : operations) {
@@ -449,12 +444,13 @@ public class OperationServiceImpl implements OperationService {
 
 	
 	@Override
-	public int add(Operation operation) {
+	public Integer add(Operation operation) {
 		operation.setTime(new Date());
-		if(lineService.isLineExist(operation.getLine().toString())) {
-			operation.setLine(lineService.getLineIdByName(operation.getLine().toString()));
+		Integer lineId = lineService.getLineIdByName(operation.getLine().toString());
+		if(lineId != null) {
+			operation.setLine(lineId);
 			return operationMapper.insert(operation);
-		}
+		}		
 		return 0;
 	}
 				

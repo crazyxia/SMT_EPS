@@ -44,8 +44,7 @@ public class TokenBox {
 							}
 							// 去掉超时session
 							for (Entry<String, Map<String, Object>> session : sessionsCopy.entrySet()) {
-								if (now - ((long) (session.getValue().get(LAST_ACCESS_TIME_KEY_NAME))) > timeoutTime
-										* 60 * 60 * 1000) {
+								if (now - ((long) (session.getValue().get(LAST_ACCESS_TIME_KEY_NAME))) > timeoutTime * 60 * 60 * 1000) {
 									sessions.remove(session.getKey());
 								}
 							}

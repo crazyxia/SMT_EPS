@@ -236,9 +236,8 @@ public class ProgramController {
 	@ResponseBody
 	@RequestMapping("/selectWorkingProgram")
 	public ResultUtil2 selectWorkingProgram(String line) {
-		Boolean result = lineService.isLineExist(line);
 		ResultUtil2 resultUtil2 = new ResultUtil2();
-		if (result == false) {
+		if (lineService.getLineIdByName(line) == null) {
 			resultUtil2.setCode(0);
 			resultUtil2.setMsg("此线号不存在");
 			return resultUtil2;

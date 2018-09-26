@@ -90,8 +90,10 @@ public class ProgramServiceImpl implements ProgramService {
 		String[] lines = helper.getString(3, 6 + offset).split("\\+");
 		
 		// 判断线号是否正确
-		if(lineService.isLineExist(lines[0]) == false) {
-			throw new RuntimeException("线号错误:请填写正确的线号");
+		for (String line : lines) {
+			if (lineService.getLineIdByName(line) == null) {
+				throw new RuntimeException("线号错误:请填写正确的线号");
+			}
 		}
 		
 		// 创建所有工单
@@ -131,10 +133,7 @@ public class ProgramServiceImpl implements ProgramService {
 
 			// 覆盖：如果“未开始”的工单列表中存在板面类型、工单号、线号同时一致的工单项目，将被新文件内容覆盖
 			ProgramExample programExample = new ProgramExample();
-			programExample.createCriteria().andWorkOrderEqualTo(program.getWorkOrder())
-										   .andBoardTypeEqualTo(program.getBoardType())
-										   .andLineEqualTo(program.getLine())
-										   .andStateEqualTo(0);
+			programExample.createCriteria().andWorkOrderEqualTo(program.getWorkOrder()).andBoardTypeEqualTo(program.getBoardType()).andLineEqualTo(program.getLine()).andStateEqualTo(0);
 			// 如果存在符合条件的工单
 			List<Program> programs2 = programMapper.selectByExample(programExample);
 			if (!programs2.isEmpty()) {
@@ -435,9 +434,7 @@ public class ProgramServiceImpl implements ProgramService {
 		}
 		// 判断是否存在已开始的相同工单（相同的定义：工单号、板面类型、线号均一致）
 		ProgramExample example2 = new ProgramExample();
-		example2.createCriteria().andLineEqualTo(program.getLine())
-								 .andWorkOrderEqualTo(program.getWorkOrder())
-								 .andBoardTypeEqualTo(program.getBoardType()).andStateEqualTo(1);
+		example2.createCriteria().andLineEqualTo(program.getLine()).andWorkOrderEqualTo(program.getWorkOrder()).andBoardTypeEqualTo(program.getBoardType()).andStateEqualTo(1);
 		List<Program> programs2 = programMapper.selectByExample(example2);
 		if (!programs2.isEmpty()) {
 			ResultUtil.failed("已存在相同的正在进行的工单");
@@ -467,9 +464,13 @@ public class ProgramServiceImpl implements ProgramService {
 		if (line == null || line.equals("")) {
 			return "succeed";
 		}
+		Integer lineId = lineService.getLineIdByName(line);
+		if(lineId == null) {
+			return "failed_not_exist";
+		}
 		// 获取Display
-		DisplayExample displayExample = new DisplayExample();
-		displayExample.createCriteria().andLineEqualTo(lineService.getLineIdByName(line));
+		DisplayExample displayExample = new DisplayExample();		
+		displayExample.createCriteria().andLineEqualTo(lineId);
 		Display display = displayMapper.selectByExample(displayExample).get(0);
 		int flag = 0;
 		// 判断是否是停止监控
@@ -504,6 +505,9 @@ public class ProgramServiceImpl implements ProgramService {
 	@Override
 	public String operate(String line, String workOrder, Integer boardType, Integer type, String lineseat,
 			String scanLineseat, String scanMaterialNo, Integer operationResult) {
+		if(lineService.getLineIdByName(line) == null) {
+			return "failed_not_exist";
+		}
 		List<ProgramItemVisit> programItemVisits = getVisits(line, workOrder, boardType);
 		if (programItemVisits.isEmpty()) {
 			return "failed_not_exist";
@@ -545,6 +549,9 @@ public class ProgramServiceImpl implements ProgramService {
 	
 	@Override
 	public String reset(String line, String workOrder, Integer boardType) {
+		if(lineService.getLineIdByName(line) == null) {
+			return "failed_not_exist";
+		}
 		List<ProgramItemVisit> programItemVisits = getVisits(line, workOrder, boardType);
 		if (programItemVisits.isEmpty()) {
 			return "failed_not_exist";
@@ -568,10 +575,11 @@ public class ProgramServiceImpl implements ProgramService {
 	@Override
 	public List<ProgramItemVisit> getVisits(String line, String workOrder, Integer boardType) {
 		ProgramExample programExample = new ProgramExample();
-		programExample.createCriteria().andLineEqualTo(lineService.getLineIdByName(line))
-									   .andWorkOrderEqualTo(workOrder)
-									   .andBoardTypeEqualTo(boardType)
-									   .andStateEqualTo(1);
+		Integer lineId = lineService.getLineIdByName(line);
+		if(lineId == null) {
+			return null;
+		}
+		programExample.createCriteria().andLineEqualTo(lineId).andWorkOrderEqualTo(workOrder).andBoardTypeEqualTo(boardType).andStateEqualTo(1);
 		List<Program> programs = programMapper.selectByExample(programExample);
 		if (!programs.isEmpty()) {
 			String programId = programs.get(0).getId();
@@ -591,18 +599,17 @@ public class ProgramServiceImpl implements ProgramService {
 
 	
 	@Override
-	public List<Display> listDisplays() {
-		List<Display> displays = displayMapper.selectByExample(null);		
-		return displays;
+	public List<Display> listDisplays() {		
+		return displayMapper.selectByExample(null);
 	}
 
 	
 	@Override
 	public List<ProgramVO> selectWorkingProgram(String line) {
 		ProgramExample programExample = new ProgramExample();
-		if (lineService.isLineExist(line)) {
-			programExample.createCriteria().andLineEqualTo(lineService.getLineIdByName(line))
-										   .andStateEqualTo(1);
+		Integer lineId = lineService.getLineIdByName(line);
+		if (lineId != null) {
+			programExample.createCriteria().andLineEqualTo(lineId).andStateEqualTo(1);
 			List<Program> programs = programMapper.selectByExample(programExample);
 			List<ProgramVO> programVOs = new ArrayList<>();
 			for (Program program : programs) {
@@ -615,7 +622,7 @@ public class ProgramServiceImpl implements ProgramService {
 
 	
 	@Override
-	public int updateItemVisit(ProgramItemVisit programItemVisit) {
+	public Integer updateItemVisit(ProgramItemVisit programItemVisit) {
 		int result = 0;
 		int type = programItemVisit.getLastOperationType();
 		switch (type) {
@@ -662,7 +669,7 @@ public class ProgramServiceImpl implements ProgramService {
 
 	
 	@Override
-	public int resetCheckAll(String programId) {
+	public Integer resetCheckAll(String programId) {
 		ProgramItemVisitExample example = new ProgramItemVisitExample();
 		example.createCriteria().andProgramIdEqualTo(programId);
 		ProgramItemVisit programItemVisit = new ProgramItemVisit();
@@ -673,8 +680,8 @@ public class ProgramServiceImpl implements ProgramService {
 
 	
 	@Override
-	public int checkIsReset(String programId, int type) {
-		int result = 0;
+	public Integer checkIsReset(String programId, int type) {
+		int lastResult = 0;
 		List<Integer> results = new ArrayList<>();
 		List<Integer> times = new ArrayList<>();
 		int allResult = 1;
@@ -717,34 +724,34 @@ public class ProgramServiceImpl implements ProgramService {
 			System.out.println("超出程序范围");
 			return 0;
 		}
-		for (Integer integer : results) {
-			if (integer != 2 && integer != 3) {
+		for (Integer result : results) {
+			if (result != 2 && result != 3) {
 				allResult = 0;
 				break;
 			}
 		}
-		for (Integer integer : times) {
-			if (integer == 1) {
+		for (Integer time : times) {
+			if (time == 1) {
 				allTime = 1;
 				break;
 			}
 		}
 		if (allResult == 1 && allTime == 1) {
-			result = 1;
+			lastResult = 1;
 		}
-		return result;
+		return lastResult;
 	}
 
 	
 	@Override
-	public int isAllDone(String programId, int type) {
+	public Integer isAllDone(String programId, int type) {
 		int result = 1;
 		ProgramItemVisitExample example = new ProgramItemVisitExample();
 		example.createCriteria().andProgramIdEqualTo(programId);
-		List<ProgramItemVisit> list = programItemVisitMapper.selectByExample(example);
+		List<ProgramItemVisit> programItemVisits = programItemVisitMapper.selectByExample(example);
 		switch (type) {
 		case 4:
-			for (ProgramItemVisit programItemVisit : list) {
+			for (ProgramItemVisit programItemVisit : programItemVisits) {
 				if (programItemVisit.getStoreIssueResult() != 1) {
 					result = 0;
 					break;
@@ -752,7 +759,7 @@ public class ProgramServiceImpl implements ProgramService {
 			}
 			break;
 		case 0:
-			for (ProgramItemVisit programItemVisit : list) {
+			for (ProgramItemVisit programItemVisit : programItemVisits) {
 				if (programItemVisit.getFeedResult() != 1) {
 					result = 0;
 					break;
@@ -760,7 +767,7 @@ public class ProgramServiceImpl implements ProgramService {
 			}
 			break;
 		case 3:
-			for (ProgramItemVisit programItemVisit : list) {
+			for (ProgramItemVisit programItemVisit : programItemVisits) {
 				if (programItemVisit.getCheckAllResult() != 1) {
 					result = 0;
 					break;
@@ -768,7 +775,7 @@ public class ProgramServiceImpl implements ProgramService {
 			}
 			break;
 		case 5:
-			for (ProgramItemVisit programItemVisit : list) {
+			for (ProgramItemVisit programItemVisit : programItemVisits) {
 				if (programItemVisit.getFirstCheckAllResult() != 1) {
 					result = 0;
 					break;
@@ -784,13 +791,13 @@ public class ProgramServiceImpl implements ProgramService {
 
 	
 	@Override
-	public int isChangeSucceed(String programId, String lineseat) {
+	public Integer isChangeSucceed(String programId, String lineseat) {
 		int result = 1;
 		ProgramItemVisitExample example = new ProgramItemVisitExample();
 		example.createCriteria().andProgramIdEqualTo(programId).andLineseatEqualTo(lineseat);
-		List<ProgramItemVisit> list = programItemVisitMapper.selectByExample(example);
-		if (list.size() > 0) {
-			for (ProgramItemVisit programItemVisit : list) {
+		List<ProgramItemVisit> programItemVisits = programItemVisitMapper.selectByExample(example);
+		if (programItemVisits.size() > 0) {
+			for (ProgramItemVisit programItemVisit : programItemVisits) {
 				if (programItemVisit.getChangeResult() == 0) {
 					result = 0;
 					break;
@@ -803,10 +810,11 @@ public class ProgramServiceImpl implements ProgramService {
 	
 	@Override
 	public List<String> selectWorkingOrder(String line) {
-		if (lineService.isLineExist(line)) {
+		Integer lineId = lineService.getLineIdByName(line);
+		if (lineId != null) {
 			ProgramExample programExample = new ProgramExample();
 			programExample.setDistinct(true);
-			programExample.createCriteria().andLineEqualTo(lineService.getLineIdByName(line));
+			programExample.createCriteria().andLineEqualTo(lineId).andStateEqualTo(1);
 			List<Program> programs = programMapper.selectByExample(programExample);
 			List<String> workingOrderList = new ArrayList<>();
 			for (Program program : programs) {
@@ -820,10 +828,10 @@ public class ProgramServiceImpl implements ProgramService {
 	
 	@Override
 	public List<Integer> selectWorkingBoardType(String line, String workOrder) {
-		if (lineService.isLineExist(line)) {
+		Integer lineId = lineService.getLineIdByName(line);
+		if (lineId != null) {
 			ProgramExample programExample = new ProgramExample();
-			programExample.createCriteria().andLineEqualTo(lineService.getLineIdByName(line))
-					.andWorkOrderEqualTo(workOrder);
+			programExample.createCriteria().andLineEqualTo(lineId).andWorkOrderEqualTo(workOrder);
 			programExample.setOrderByClause("board_type asc");
 			List<Program> programs = programMapper.selectByExample(programExample);
 			List<Integer> workingBoardTypeList = new ArrayList<>();
@@ -838,9 +846,10 @@ public class ProgramServiceImpl implements ProgramService {
 	
 	@Override
 	public List<ProgramItemVisit> selectItemVisitByProgram(String line, String workOrder, int boardType) {
-		if (lineService.isLineExist(line)) {
+		Integer lineId = lineService.getLineIdByName(line);
+		if (lineId != null) {
 			Program program = new Program();
-			program.setLine(lineService.getLineIdByName(line));
+			program.setLine(lineId);
 			program.setWorkOrder(workOrder);
 			program.setBoardType(boardType);
 			return programItemVisitMapper.selectItemVisitByProgram(program);
@@ -851,9 +860,10 @@ public class ProgramServiceImpl implements ProgramService {
 	
 	@Override
 	public String selectLastOperatorByProgram(String line, String workOrder, Integer boardType) {
-		if (lineService.isLineExist(line)) {
+		Integer lineId = lineService.getLineIdByName(line);
+		if (lineId != null) {
 			Program program = new Program();
-			program.setLine(lineService.getLineIdByName(line));
+			program.setLine(lineId);
 			program.setWorkOrder(workOrder);
 			program.setBoardType(boardType);
 			return programMapper.selectLastOperatorByProgram(program);
@@ -864,12 +874,10 @@ public class ProgramServiceImpl implements ProgramService {
 	
 	@Override
 	public String getProgramId(String line, String workOrder, Integer boardType) {
-		if (lineService.isLineExist(line)) {
+		Integer lineId = lineService.getLineIdByName(line);
+		if (lineId != null) {
 			ProgramExample programExample = new ProgramExample();
-			programExample.createCriteria().andLineEqualTo(lineService.getLineIdByName(line))
-										   .andWorkOrderEqualTo(workOrder)
-										   .andBoardTypeEqualTo(boardType)
-										   .andStateEqualTo(1);
+			programExample.createCriteria().andLineEqualTo(lineId).andWorkOrderEqualTo(workOrder).andBoardTypeEqualTo(boardType).andStateEqualTo(1);
 			List<Program> programs = programMapper.selectByExample(programExample);
 			if (programs.isEmpty()) {
 				return null;

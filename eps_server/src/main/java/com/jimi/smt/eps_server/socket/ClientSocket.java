@@ -35,55 +35,55 @@ public class ClientSocket {
 	private static Logger logger = LogManager.getRootLogger();
 
 	/**
-	 * 同步通讯器
+	 * communicator : 同步通讯器
 	 */
 	private SyncCommunicator communicator;
 
 	/**
-	 * 连接超时时间
+	 * TIME_OUT : 连接超时时间
 	 */
 	private static final int TIME_OUT = 100000;
 
 	/**
-	 * package所在位置
+	 * PACKAGE_PATH : package所在位置
 	 */
 	private static final String PACKAGE_PATH = "com.jimi.smt.eps_server.pack";
 
 	/**
-	 * 某一条产线的ID
+	 * line : 某一条产线的ID
 	 */
 	private int line;
 
 	/**
-	 * 树莓派IP
+	 * ip : 树莓派IP
 	 */
 	private String ip;
 
 	/**
-	 * 树莓派端口
+	 * port : 树莓派端口
 	 */
 	private int port;
 
 	/**
-	 * 报警中
+	 * alarming : 报警中
 	 */
 	private boolean alarming;
 
 	/**
-	 * 接驳台已暂停
+	 * converyPaused : 接驳台已暂停
 	 */
 	private boolean converyPaused;
 
 	private SocketLogMapper socketLogMapper;
 	private CenterStateMapper centerStateMapper;
 
+	
 	/**
 	 * 连接中控
 	 * 
 	 * @throws Exception
 	 */
-	public ClientSocket(int line, CenterLoginMapper centerLoginMapper, SocketLogMapper socketLogMapper,
-			CenterStateMapper centerStateMapper) throws Exception {
+	public ClientSocket(int line, CenterLoginMapper centerLoginMapper, SocketLogMapper socketLogMapper, CenterStateMapper centerStateMapper) throws Exception {
 		this.line = line;
 		this.socketLogMapper = socketLogMapper;
 		this.centerStateMapper = centerStateMapper;
@@ -105,6 +105,7 @@ public class ClientSocket {
 		}
 	}
 
+	
 	/**
 	 * 发送包到中控接驳台
 	 * 
@@ -141,6 +142,7 @@ public class ClientSocket {
 		}
 	}
 
+	
 	/**
 	 * 发送包到中控报警器
 	 * 
@@ -177,25 +179,29 @@ public class ClientSocket {
 		}
 	}
 
+	
 	public void close() {
 		communicator.close();
 	}
 
+	
 	public void reconnect() throws Exception {
 		close();
 		communicator.connect();
 		reset();
 	}
 
+	
 	private void reset() throws Exception {
 		// 强制重置
 		alarming = true;
 		converyPaused = true;
 		sendCmdToAlarm(ClientDevice.SERVER, false);
 		sendCmdToConvery(ClientDevice.SERVER, false);
-		logger.info("产线 " + line + "报警器、接驳台已重置");
+		logger.info("ID为 " + line + "的产线报警器、接驳台已重置");
 	}
 
+	
 	/**
 	 * 根据包创建日志实体
 	 * 

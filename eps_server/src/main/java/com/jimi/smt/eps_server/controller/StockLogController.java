@@ -17,8 +17,8 @@ public class StockLogController {
 	
 	@Open
 	@RequestMapping("/insert")
-	public void insert(String list) {
-		stockLogService.insert(list);
+	public void insert(String stockList) {
+		stockLogService.insert(stockList);
 	}
 
 }

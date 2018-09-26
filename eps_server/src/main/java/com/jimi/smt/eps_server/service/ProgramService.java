@@ -134,100 +134,133 @@ public interface ProgramService {
 	List<Display> listDisplays();
 	
 	
-	/**
+	/**@author HCJ
 	 * 返回当前产线正在进行的工单列表
+	 * @method selectWorkingProgram
 	 * @param line
 	 * @return
+	 * @return List<ProgramVO>
+	 * @date 2018年9月25日 下午4:31:54
 	 */
 	List<ProgramVO> selectWorkingProgram(String line);	
 	
 	
-	/**
+	/**@author HCJ
 	 * 更新program_item_visit 表日志
+	 * @method updateItemVisit
 	 * @param programItemVisit
 	 * @return
+	 * @return Integer
+	 * @date 2018年9月25日 下午4:31:41
 	 */
-	int updateItemVisit(ProgramItemVisit programItemVisit);
+	Integer updateItemVisit(ProgramItemVisit programItemVisit);
 	
 	
-	/**
+	/**@author HCJ
 	 * 首检完成后重置全检时间和全检结果
+	 * @method resetCheckAll
 	 * @param programId
 	 * @return
+	 * @return Integer
+	 * @date 2018年9月25日 下午4:31:25
 	 */
-	int resetCheckAll(String programId);
+	Integer resetCheckAll(String programId);
 		
 	
-	/**
+	/**@author HCJ
 	 * 判断工单是否重置了
+	 * @method checkIsReset
 	 * @param programId
 	 * @param type
 	 * @return
+	 * @return Integer
+	 * @date 2018年9月25日 下午4:31:13
 	 */
-	int checkIsReset(String programId, int type);
+	Integer checkIsReset(String programId, int type);
 	
 	
-	/**
-	 * 返回某个工单是否全部完成某项操作的结果
+	/**@author HCJ
+	 * 返回工单是否全部完成某项操作的结果
+	 * @method isAllDone
 	 * @param programId
 	 * @param type
 	 * @return
+	 * @return Integer
+	 * @date 2018年9月25日 下午4:30:53
 	 */
-	int isAllDone(String programId, int type);
+	Integer isAllDone(String programId, int type);
 	
 	
-	/**
+	/**@author HCJ
 	 * 核料时判断某个站位是否换料成功
+	 * @method isChangeSucceed
 	 * @param programId
 	 * @param lineseat
 	 * @return
+	 * @return Integer
+	 * @date 2018年9月25日 下午4:30:42
 	 */
-	int isChangeSucceed(String programId, String lineseat);
+	Integer isChangeSucceed(String programId, String lineseat);
 	
 	
-	/**
-	 * 返回工单的集合
+	/**@author HCJ
+	 * 返回工单集合
+	 * @method selectWorkingOrder
 	 * @param line
 	 * @return
+	 * @return List<String>
+	 * @date 2018年9月25日 下午4:30:29
 	 */
 	List<String> selectWorkingOrder(String line);
 	
 	
-	/**
-	 * 返回版面类型的集合
+	/**@author HCJ
+	 * 返回版面类型集合
+	 * @method selectWorkingBoardType
 	 * @param line
 	 * @param workOrder
 	 * @return
+	 * @return List<Integer>
+	 * @date 2018年9月25日 下午4:30:11
 	 */
 	List<Integer> selectWorkingBoardType(String line, String workOrder);
 	
 	
-	/**
+	/**@author HCJ
 	 * 返回ProgramItemVisit集合
+	 * @method selectItemVisitByProgram
 	 * @param line
 	 * @param workOrder
 	 * @param boardType
 	 * @return
+	 * @return List<ProgramItemVisit>
+	 * @date 2018年9月25日 下午4:30:00
 	 */
 	List<ProgramItemVisit> selectItemVisitByProgram(String line, String workOrder, int boardType);
 	
 	
-	/**
+	/**@author HCJ
 	 * 返回最新操作的操作员
+	 * @method selectLastOperatorByProgram
 	 * @param line
 	 * @param workOrder
 	 * @param boardType
 	 * @return
+	 * @return String
+	 * @date 2018年9月25日 下午4:29:48
 	 */
 	String selectLastOperatorByProgram(String line, String workOrder, Integer boardType);
 	
 	
-	/**
+	/**@author HCJ
 	 * 返回工单id
+	 * @method getProgramId
 	 * @param line
 	 * @param workOrder
 	 * @param boardType
 	 * @return
+	 * @return String
+	 * @date 2018年9月25日 下午4:29:28
 	 */
 	String getProgramId(String line, String workOrder, Integer boardType);
 	

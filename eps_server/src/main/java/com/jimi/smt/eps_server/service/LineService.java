@@ -4,45 +4,54 @@ import java.util.List;
 
 import com.jimi.smt.eps_server.entity.Line;
 
+/**产线服务接口
+ * @package  com.jimi.smt.eps_server.service
+ * @file     LineService.java
+ * @author   HCJ
+ * @date     2018年9月25日 下午4:26:46
+ * @version  V 1.0
+ */
 public interface LineService {
 	
-	/**
-	 * 根据id返回线别
+	/**@author HCJ
+	 * 根据产线id返回产线名称
+	 * @method getLineNameById
 	 * @param id
-	 * @return 
+	 * @return
+	 * @return String
+	 * @date 2018年9月25日 下午4:27:02
 	 */
 	String getLineNameById(int id);
 	
+	
 	/**@author HCJ
-	 * 根据id返回线别名称
+	 * 根据产线名称返回产线id
 	 * @method getLineIdByName
 	 * @param line
 	 * @return
-	 * @return int
+	 * @return Integer
 	 * @date 2018年9月21日 上午10:46:23
 	 */
-	int getLineIdByName(String line);
+	Integer getLineIdByName(String line);
 			
 	
-	/**
+	/**@author HCJ
 	 * 返回线别数量
-	 * @return 
+	 * @method countLineNum
+	 * @return
+	 * @return long
+	 * @date 2018年9月25日 下午4:27:56
 	 */
 	long countLineNum();
 	
-	
-	/**
-	 * 列出所有产线
+		
+	/**@author HCJ
+	 * 返回所有产线
+	 * @method selectAll
 	 * @return
+	 * @return List<Line>
+	 * @date 2018年9月25日 下午4:28:31
 	 */
-	List<Line> selectAll();
-	
-	
-	/**
-	 * 返回是否有这条产线的结果
-	 * @param line
-	 * @return
-	 */
-	Boolean isLineExist(String line);
+	List<Line> selectAll();			
 	
 }
