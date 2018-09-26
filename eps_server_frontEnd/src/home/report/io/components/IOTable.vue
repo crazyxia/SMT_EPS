@@ -34,6 +34,9 @@ export default {
       'text-align':'center'
     }
   }),
+  beforeDestroy(){
+    store.commit("setIoList","");
+  },
   computed:{
     isFind:function(){
       return store.state.isFind;
@@ -80,8 +83,11 @@ export default {
     },
     filterData:function(query){
       let list = store.state.ioList;
-      let dataShow = list.slice(query.offset,query.offset+query.limit);
-      this.data =dataShow;
+      if(list){
+        let dataShow = list.slice(query.offset,query.offset+query.limit);
+        this.data =dataShow;
+      }
+      console.log(list);
     },
   }
 }

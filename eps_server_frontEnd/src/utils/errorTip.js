@@ -31,7 +31,7 @@ export const errTip = function (code) {
       alert("只能编辑未开始和正在进行的工单");
       break;
     case "failed_materialNo_exist":
-      aler("物料料号重复");
+      alert("物料料号重复");
       break;
     default:
       break;

@@ -7,11 +7,11 @@
       <form class="form" v-on:submit.prevent="login">
         <div class="form-group">
           <label for="id">工号</label>
-          <input type="text" name="id" id="id" v-model="loginInfos.id">
+          <input type="text" name="id" id="id" v-model.trim="loginInfos.id">
         </div>
         <div class="form-group">
           <label for="password">密码</label>
-          <input type="password" name="password" id="password" v-model="loginInfos.password">
+          <input type="password" name="password" id="password" v-model.trim="loginInfos.password">
         </div>
         <div class="form-group">
           <button>登录</button>
@@ -45,19 +45,18 @@ export default {
             id:this.loginInfos.id,
             password:this.loginInfos.password
           }
-        }
+        };
         axiosPost(loginOptions).then(response => {
           if (response.data) {
-            let obj = response.data.data;
-            if(obj.enabled){
-              if(obj.tokenId != ""){
-                window.localStorage.setItem("token",obj.tokenId);
-                store.commit("setToken",obj.tokenId);
-                this.$router.push('home');
-              }
+            let result = response.data.result;
+            if(result === "200"){
+              let obj = response.data.data;
+              window.localStorage.setItem("token", obj.tokenId);
+              store.commit("setToken", obj.tokenId);
+              this.$router.push('home');
+            }else{
+              errTip(result);
             }
-          }else{
-            errTip(result);
           }
         }).catch(err => {
           alert("网络问题，请检查网络连接或联系管理员");

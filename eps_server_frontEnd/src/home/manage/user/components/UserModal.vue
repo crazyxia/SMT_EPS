@@ -12,19 +12,15 @@
           <form class ="form form-inline" role="form">
             <div class="form-group">
               <label for="modalId">工号</label>
-              <input type="text" class="form-control" id="modalId" v-model="modalInfo.id">
+              <input type="text" class="form-control" id="modalId" v-model.trim="modalInfo.id">
             </div>
             <div class="form-group">
               <label for="modalName">姓名</label>
-              <input type="text" class="form-control" id="modalName" v-model="modalInfo.name">
-            </div>
-            <div class="form-group">
-              <label for="modalPassword">密码</label>
-              <input type="password" class="form-control" id="modalPassword" v-model="modalInfo.password">
+              <input type="text" class="form-control" id="modalName" v-model.trim="modalInfo.name">
             </div>
             <div class="form-group">
               <label for="modaltype">岗位</label>
-              <select class="form-control" id="modaltype" v-model="modalInfo.type">
+              <select class="form-control" id="modaltype" v-model.trim="modalInfo.type">
                 <option selected="selected" disabled="disabled"  style='display: none' value=''></option>
                 <option value="0">仓库操作员</option>
                 <option value="1">厂线操作员</option>
@@ -37,7 +33,7 @@
             </div>
             <div class="form-group">
               <label for="modalClassType">班别</label>
-              <select class="form-control" id="modalClassType" v-model="modalInfo.classType">
+              <select class="form-control" id="modalClassType" v-model.trim="modalInfo.classType">
                 <option selected="selected" disabled="disabled"  style='display: none' value=''></option>
                 <option value="0">白班</option>
                 <option value="1">夜班</option>
@@ -86,13 +82,6 @@ export default {
     },
     isUpdate:function(){
       return store.state.isUpdate;
-    },
-    token:function(){
-      let token = store.state.token;
-      if(token == ""){
-        token = window.localStorage.getItem("token");
-      }
-      return token;
     }
   },
   watch:{

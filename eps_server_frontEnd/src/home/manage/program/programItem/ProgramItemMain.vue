@@ -12,13 +12,14 @@
       </div>
       <div class="form-group">
         <label for="line">线号</label>
-        <input type="text" class="form-control" id="line" v-model="programInfos.line" disabled="disabled" >
+        <input type="text" class="form-control" id="line" v-model="programInfos.lineName" disabled="disabled" >
       </div>
       <div class="btn-group">
         <button type="button" class="btn btn_add" @click="addModal">添加</button>
         <button type="button" class="btn btn_conserve" @click="save">保存</button>
       </div>
     </form>
+    <p>温馨提示：编辑完成之后请记得点击保存</p>
     <ProgramItemTable></ProgramItemTable>
     <ProgramItemModal @getModalInfo="getModalMessage"></ProgramItemModal>
   </div>
@@ -97,6 +98,7 @@ export default {
     setOptionItem:function(){
       let opera = this.operationItem;
       let item = this.programItemInfos;
+      console.log("item",item);
       let operationType = store.state.programItemOperationType;
       if(operationType == "add"){
         opera.operation = 0;
@@ -105,7 +107,6 @@ export default {
       }else if(operationType == "delete"){
         opera.operation = 2;
       }
-      opera.serialNo = item.serialNo;
       opera.targetLineseat = item.lineseat;
       opera.targetMaterialNo = item.materialNo;
       opera.lineseat = this.modalInfo.lineseat;
@@ -177,11 +178,13 @@ export default {
             this.returnToProgram();
           }else{
             errTip(result);
+            this.operations = [];
           }
           store.commit("setIsRefresh",true);
         }
       }).catch(err => {
         alert("接口请求失败，请检查网络，再联系管理员");
+        this.operations = [];
       });
     },
   }
@@ -189,5 +192,5 @@ export default {
 </script>
 
 <style scoped lang="scss">
-@import './../../../../../static/css/common.scss'
+@import '@/assets/css/common.scss';
 </style>

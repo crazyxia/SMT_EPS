@@ -1,6 +1,6 @@
 <template>
   <div class="leftNav col-sm-2">
-    <img src="../../static/img/logo.svg"/>
+    <img src="/eps_system/static/img/logo.svg"/>
     <ul class="lists">
       <li v-for="(list,index) in lists" :key="list.id" @mouseover="overShow(index)" @mouseout="outHide(index)" :class="listStates.isActive[index]?'active':''" class="list">
         <div @click="activeChange(index)">
@@ -159,6 +159,7 @@ export default {
             flex-wrap:nowrap;
             justify-content:space-between;
             align-items:center;
+            margin:0 !important;
             span{
               padding-left:10px;
               font-size:20px;

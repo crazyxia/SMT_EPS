@@ -18,7 +18,7 @@ export default {
       { title:'版面', field:'boardTypeName',colStyle: {'width': '80px'}},
       { title:'上传时间', field:'createTimeString', colStyle: {'width': '100px'}},
       { title:'状态', field:'stateName' , colStyle: {'width': '80px'}},
-      { title:'线号', field:'line' , colStyle: {'width': '50px'}},
+      { title:'线号', field:'lineName' , colStyle: {'width': '50px'}},
       { title:'操作', field:'operation',tdComp: 'ProgramOperation', colStyle: {'width':'150px'}}
     ],
     HeaderSettings:false,
@@ -36,7 +36,7 @@ export default {
     },
   }),
   mounted(){
-    this.getList();
+    this.find();
   },
   computed:{
     programList:function(){

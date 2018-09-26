@@ -6,9 +6,8 @@
 
 <script>
 import store from './store'
-import {axiosPost} from "./utils/fetchData"
 import {lineLitsUrl} from './config/globalUrl'
-import {lineStatusData,lineAllDayData,label} from './utils/displayDataInit'
+import {lineStatusData,lineAllDayData} from './utils/displayDataInit'
 export default {
   name: 'App',
   created(){
@@ -16,8 +15,14 @@ export default {
   },
   methods:{
     getLines:function(){
+      let url;
+      if (process.env.NODE_ENV === 'production') {
+        url = "/eps_server"
+      } else {
+        url = ""
+      }
       $.ajax({
-        url:lineLitsUrl,
+        url: url + lineLitsUrl,
         type:'POST', //GET
         async:false,    //或false,是否异步
         timeout:12000,    //超时时间
@@ -45,7 +50,7 @@ export default {
     width:100%;
     height:100%;
     border:none;
-    background:url("../static/img/bg.png");
+    background:url("/eps_system/static/img/bg.png");
   }
   html,body,div,p,ul,li{
     margin:0;

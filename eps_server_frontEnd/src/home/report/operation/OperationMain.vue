@@ -4,7 +4,7 @@
   	<form class="form-inline" role="form" :action="url" method="post" @submit.prevent="download" id="operationForm">
       <div class="form-group">
         <label for="type">操作类型</label>
-        <select class="form-control" id="operationType" v-model="operationInfos.type" name="type">
+        <select class="form-control" id="operationType" v-model.trim="operationInfos.type" name="type">
           <option selected="selected" disabled="disabled"  style='display:none' value=''></option>
           <option value="0">上料</option>
           <option value="1">换料</option>
@@ -15,27 +15,27 @@
       </div>
   		<div class="form-group">
     		<label for="operation">客户名</label>
-    		<input type="text" class="form-control" id="operation" v-model="operationInfos.operation"name="operation">
+    		<input type="text" class="form-control" id="operation" v-model.trim="operationInfos.operation"name="operation">
   		</div>
       <div class="form-group">
           <label for="line">线号</label>
-          <select class="form-control" id="line" v-model="operationInfos.line" name="line">
+          <select class="form-control" id="line" v-model.trim="operationInfos.line" name="line">
             <option selected="selected" disabled="disabled"  style='display:none' value=''></option>
-            <option v-for="item in lines">{{item}}</option>
+            <option v-for="item in lines" :value="item.id">{{item.line}}</option>
           </select>
       </div>
       <div class="form-group">
         <label for="workOrderNo">工单号</label>
-        <input type="text" class="form-control" id="workOrderNo" v-model="operationInfos.workOrderNo" name="workOrderNo">
+        <input type="text" class="form-control" id="workOrderNo" v-model.trim="operationInfos.workOrderNo" name="workOrderNo">
       </div>
       <div class="form-group">
         <label for="time">起止时间</label>
-        <input type="date" class="form-control" v-model="sTime">
-        <input type="date" class="form-control" v-model="eTime">
+        <input type="date" class="form-control" v-model.trim="sTime">
+        <input type="date" class="form-control" v-model.trim="eTime">
       </div>
-      <input type="hidden" name="startTime" v-model="operationInfos.startTime">
-      <input type="hidden" name="endTime" v-model="operationInfos.endTime">
-      <input type="hidden" name="#TOKEN#" v-model="token">
+      <input type="hidden" name="startTime" v-model.trim="operationInfos.startTime">
+      <input type="hidden" name="endTime" v-model.trim="operationInfos.endTime">
+      <input type="hidden" name="#TOKEN#" v-model.trim="token">
   		<div class="btn-group">
     		<button type="button" class="btn btn_find" @click="find">查询</button>
     		<button type="submit" class="btn btn_download">报表下载</button>
@@ -70,10 +70,13 @@ export default {
       isShow:true
     }
   },
-  mounted(){
+  created(){
     let timeArr = setInitialTime(this.sTime,this.eTime);
+    console.log(timeArr);
     this.sTime = timeArr[0];
     this.eTime = timeArr[1];
+    this.operationInfos.startTime = this.sTime + " 00:00:00";
+    this.operationInfos.endTime = this.eTime + " 23:59:59";
   },
   watch:{
     sTime:function(val){
@@ -125,5 +128,5 @@ export default {
 </script> 
 
 <style scoped lang="scss">
-@import './../../../../static/css/common.scss'
+@import '@/assets/css/common.scss';
 </style>

@@ -1,5 +1,4 @@
 import axios from 'axios';
-import Qs from 'qs';
 import store from "../store";
 import router from '../router';
 import {programFileUploadUrl,loginUrl,downloadClientReportUrl} from './globalUrl';
@@ -21,7 +20,6 @@ axios.interceptors.request.use(
         } else {
           config.data += ("&#TOKEN#=" + store.state.token);
         }
-      //console.log(config)
       }
     }
     return config;
@@ -30,5 +28,23 @@ axios.interceptors.request.use(
     return Promise.reject(error)
   }
 );
-
+axios.interceptors.response.use(
+  res => {
+    if (res.data.result === "failed_access_denied"){
+      store.commit('setToken', '');
+      localStorage.removeItem('token');
+      router.replace({
+        path: '/login',
+      });
+      alert('权限不足');
+    }
+    return res
+  },
+  error => {
+    if (error.response) {
+      console.log(JSON.stringify(error))
+    }
+    return Promise.reject(JSON.stringify(error))
+  }
+);
 export default axios;
