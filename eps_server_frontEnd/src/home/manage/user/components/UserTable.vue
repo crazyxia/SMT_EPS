@@ -96,6 +96,7 @@ export default {
       this.fetchData(options);
     },
     find:function(){
+      store.commit("setLoading",true);
       let options = {
         url:userListUrl,
         data:this.userInfos

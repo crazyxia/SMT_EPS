@@ -3,8 +3,8 @@ import store from "../store";
 import router from '../router';
 import {programFileUploadUrl,loginUrl,downloadClientReportUrl} from './globalUrl';
 
-axios.defaults.timeout = 5000;
-axios.defaults.baseURL = window.g.API_URL + '/eps_server/';
+// /*axios.defaults.timeout = 5000;
+// axios.defaults.baseURL = window.g.API_URL + '/eps_server/';*/
 
 axios.interceptors.request.use(
   config => {

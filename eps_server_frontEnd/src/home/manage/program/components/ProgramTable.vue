@@ -107,6 +107,7 @@ export default {
       this.fetchData(options);
     },
     find:function(){
+      store.commit("setLoading",true);
       let options = {
         url:programListUrl,
         data:this.programInfos

@@ -15,14 +15,8 @@ export default {
   },
   methods:{
     getLines:function(){
-      let url;
-      if (process.env.NODE_ENV === 'production') {
-        url = "/eps_server"
-      } else {
-        url = ""
-      }
       $.ajax({
-        url: url + lineLitsUrl,
+        url: lineLitsUrl,
         type:'POST', //GET
         async:false,    //或false,是否异步
         timeout:12000,    //超时时间

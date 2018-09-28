@@ -11,23 +11,23 @@
   		</div>
   		<div class="form-group">
     		<label for="type">岗位</label>
-    		<select class="form-control" id="type" v-model.trim="userInfos.type">
-    			<option selected="selected" disabled="disabled" style='display:none' value='' ></option>
-      			<option value="0">仓库操作员</option>
-            <option value="1">厂线操作员</option>
-      			<option value="2">IPQC</option>
-      			<option value="3">超级管理员</option>
-      			<option value="4">生产管理员</option>
-            <option value="5">品质管理员</option>
-            <option value="6">工程管理员</option>
+        <select class="form-control" id="type" v-model.trim="userInfos.type">
+          <option selected="selected"  value=''>不限</option>
+          <option value="0">仓库操作员</option>
+          <option value="1">厂线操作员</option>
+          <option value="2">IPQC</option>
+          <option value="3">超级管理员</option>
+          <option value="4">生产管理员</option>
+          <option value="5">品质管理员</option>
+          <option value="6">工程管理员</option>
     		</select>
   		</div>
   		<div class="form-group">
     		<label for="classType">班别</label>
     		<select class="form-control" id="classType" v-model.trim="userInfos.classType">
-    			<option selected="selected" disabled="disabled"  style='display:none' value=''></option>
-      			<option value="0">白班</option>
-      			<option value="1">夜班</option>
+          <option selected="selected" value=''>不限</option>
+          <option value="0">白班</option>
+          <option value="1">夜班</option>
     		</select>
   		</div>
   		<div class="btn-group">
@@ -75,7 +75,6 @@ export default {
       };
       store.commit("setUser",modalInfos);
       store.commit("setIsAdd",true);
-      console.log(store.state.isAdd);
     },
     find:function(){
       store.commit("setIsFind",true);

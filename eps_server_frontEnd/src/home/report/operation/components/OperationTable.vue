@@ -80,9 +80,13 @@ export default {
           let result = response.data;
           console.log(result);
           that.total = result.length;
-          let list = that.handleData(result,that);
-          store.commit("setOperationSummaryList",list);
-          that.filterData(that.query);
+          if(that.total>0){
+            let list = that.handleData(result,that);
+            store.commit("setOperationSummaryList",list);
+            that.filterData(that.query);
+          }else{
+            return false;
+          }
         }
       }).catch(err => {
         store.commit("setLoading",false);

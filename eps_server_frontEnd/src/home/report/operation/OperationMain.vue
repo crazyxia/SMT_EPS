@@ -5,7 +5,7 @@
       <div class="form-group">
         <label for="type">操作类型</label>
         <select class="form-control" id="operationType" v-model.trim="operationInfos.type" name="type">
-          <option selected="selected" disabled="disabled"  style='display:none' value=''></option>
+          <option selected="selected"  value=''>不限</option>
           <option value="0">上料</option>
           <option value="1">换料</option>
           <option value="2">全检</option>
@@ -20,7 +20,7 @@
       <div class="form-group">
           <label for="line">线号</label>
           <select class="form-control" id="line" v-model.trim="operationInfos.line" name="line">
-            <option selected="selected" disabled="disabled"  style='display:none' value=''></option>
+            <option selected="selected" value=''>不限</option>
             <option v-for="item in lines" :value="item.id">{{item.line}}</option>
           </select>
       </div>
@@ -58,7 +58,7 @@ export default {
   data () {
     return {
       operationInfos:{
-        type:0,
+        type:"",
         line:"",
         workOrderNo:"",
         startTime:"",

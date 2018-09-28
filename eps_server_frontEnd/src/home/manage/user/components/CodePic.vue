@@ -52,7 +52,7 @@ export default {
     },
     result:function(val){
       if(val != ""){
-        this.imgSrc = window.g.LOCAL_URL+val+"?timestamp="+Date.parse(new Date());
+        this.imgSrc = window.g.API_URL+val+"?timestamp="+Date.parse(new Date());
         $("#CodePicModal").modal('show');
         this.result = "";
       }

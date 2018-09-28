@@ -12,7 +12,7 @@
       <div class="form-group">
           <label for="line">线号</label>
           <select class="form-control" id="line" v-model.trim="clientInfos.line" name="line">
-            <option selected="selected" disabled="disabled"  style='display:none' value=''></option>
+            <option selected="selected" value=''>不限</option>
             <option v-for="item in lines" :value="item.id">{{item.line}}</option>
           </select>
       </div>
