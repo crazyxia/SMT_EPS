@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.util.Base64;
-import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -18,8 +17,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.jimi.smt.eps_server.annotation.Log;
 import com.jimi.smt.eps_server.annotation.Open;
+import com.jimi.smt.eps_server.entity.Page;
 import com.jimi.smt.eps_server.entity.User;
 import com.jimi.smt.eps_server.entity.filler.UserToUserVOFiller;
+import com.jimi.smt.eps_server.entity.vo.PageVO;
 import com.jimi.smt.eps_server.entity.vo.UserVO;
 import com.jimi.smt.eps_server.service.UserService;
 import com.jimi.smt.eps_server.util.QRCodeUtil;
@@ -55,7 +56,12 @@ public class UserController {
 			ResultUtil.failed("参数不足");
 			return ResultUtil.failed();
 		}
-		String result = userService.add(id, classType, name, type, password);
+		String result;
+		try {
+			result = userService.add(id, classType, name, type, password);
+		} catch (Exception e) {
+			return ResultUtil.failed("更新失败，请检查数据格式是否正确或者长度是否过长");
+		}
 		if (result.equals("succeed")) {
 			return ResultUtil.succeed();
 		} else {
@@ -66,9 +72,14 @@ public class UserController {
 	
 	@ResponseBody
 	@RequestMapping("/list")
-	public List<UserVO> list(String id, Integer classType, String name, Integer type, String password, String orderBy,
-			Boolean enabled) {
-		return userService.list(id, classType, name, type, orderBy, enabled);
+	public PageVO<UserVO> list(String id, Integer classType, String name, Integer type, String password, String orderBy, Boolean enabled, Integer currentPage, Integer pageSize) {
+		Page page = new Page();
+		page.setCurrentPage(currentPage);
+		page.setPageSize(pageSize);
+		PageVO<UserVO> pageVO = new PageVO<UserVO>();
+		pageVO.setList(userService.list(id, classType, name, type, orderBy, enabled, page));
+		pageVO.setPage(page);
+		return pageVO;
 	}
 
 	
@@ -81,7 +92,12 @@ public class UserController {
 			ResultUtil.failed("参数不足");
 			return ResultUtil.failed();
 		}
-		String result = userService.update(id, classType, name, type, password, enabled);
+		String result;
+		try {
+			result = userService.update(id, classType, name, type, password, enabled);
+		} catch (Exception e) {
+			return ResultUtil.failed("更新失败，请检查数据格式是否正确或者长度是否过长");
+		}
 		if (result.equals("succeed")) {
 			return ResultUtil.succeed();
 		} else {

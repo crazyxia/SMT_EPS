@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.jimi.smt.eps_server.entity.MaterialInfo;
 import com.jimi.smt.eps_server.entity.MaterialInfoExample;
 import com.jimi.smt.eps_server.entity.MaterialInfoExample.Criteria;
+import com.jimi.smt.eps_server.entity.Page;
 import com.jimi.smt.eps_server.mapper.MaterialInfoMapper;
 import com.jimi.smt.eps_server.service.MaterialService;
 
@@ -42,24 +43,12 @@ public class MaterialServiceImpl implements MaterialService {
 
 	
 	@Override
-	public String update(Integer id, String materialNo, Integer perifdOfValidity) {
+	public String update(Integer id, Integer perifdOfValidity) {
 
 		MaterialInfo materialInfo = materialInfoMapper.selectByPrimaryKey(id);
 		if (materialInfo == null || materialInfo.getEnable() != 1) {
 			return "failed_not_found";
 		}
-		if (!materialInfo.getMaterialNo().equals(materialNo)) {
-			MaterialInfoExample materialInfoExample = new MaterialInfoExample();
-			Criteria criteria = materialInfoExample.createCriteria();
-			criteria.andMaterialNoEqualTo(materialNo);
-			criteria.andEnableEqualTo(1);
-			List<MaterialInfo> list = materialInfoMapper.selectByExample(materialInfoExample);
-			if (!list.isEmpty()) {
-				return "failed_materialNo_exist";
-			}
-		}
-
-		materialInfo.setMaterialNo(materialNo.equals("") ? null : materialNo);
 		materialInfo.setPerifdOfValidity(perifdOfValidity);
 		if (materialInfoMapper.updateByPrimaryKeySelective(materialInfo) == 1) {
 			return "succeed";
@@ -85,7 +74,7 @@ public class MaterialServiceImpl implements MaterialService {
 
 	
 	@Override
-	public List<MaterialInfo> list(Integer id, String materialNo, Integer perifdOfValidity, String orderBy) {
+	public List<MaterialInfo> list(Integer id, String materialNo, Integer perifdOfValidity, String orderBy, Page page) {
 
 		MaterialInfoExample materialInfoExample = new MaterialInfoExample();
 		Criteria criteria = materialInfoExample.createCriteria();
@@ -93,14 +82,20 @@ public class MaterialServiceImpl implements MaterialService {
 			criteria.andIdEqualTo(id);
 		}
 		if (materialNo != null && !"".equals(materialNo)) {
-			criteria.andMaterialNoEqualTo(materialNo);
+			criteria.andMaterialNoLike("%" + materialNo + "%");
 		}
 		if (perifdOfValidity != null) {
 			criteria.andPerifdOfValidityEqualTo(perifdOfValidity);
 		}
 		criteria.andEnableEqualTo(1);
-		materialInfoExample.setOrderByClause(orderBy);
-
+		if (orderBy != null && !orderBy.equals("")) {
+			materialInfoExample.setOrderByClause(orderBy);
+		}
+		if (page != null) {
+			page.setTotallyData(materialInfoMapper.countByExample(materialInfoExample));
+			materialInfoExample.setLimitStart(page.getFirstIndex());
+			materialInfoExample.setLimitSize(page.getPageSize());
+		}
 		return materialInfoMapper.selectByExample(materialInfoExample);
 	}
 

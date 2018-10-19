@@ -9,6 +9,26 @@ public class MaterialInfoExample {
     protected boolean distinct;
 
     protected List<Criteria> oredCriteria;
+    
+    protected Integer limitStart;
+    
+    protected Integer limitSize;
+    
+    public Integer getLimitStart() {
+		return limitStart;
+	}
+
+	public void setLimitStart(Integer limitStart) {
+		this.limitStart = limitStart;
+	}
+
+	public Integer getLimitSize() {
+		return limitSize;
+	}
+
+	public void setLimitSize(Integer limitSize) {
+		this.limitSize = limitSize;
+	}
 
     public MaterialInfoExample() {
         oredCriteria = new ArrayList<Criteria>();

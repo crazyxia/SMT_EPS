@@ -81,6 +81,9 @@
     <if test="orderByClause != null">
       order by ${orderByClause}
     </if>
+    <if test="limitStart != null and limitSize&gt;=0">
+      limit #{limitStart}, #{limitSize}
+    </if>
   </select>
   <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
     select 
@@ -135,7 +138,7 @@
       </if>
     </trim>
   </insert>
-  <select id="countByExample" parameterType="com.jimi.smt.eps_server.entity.MaterialInfoExample" resultType="java.lang.Long">
+  <select id="countByExample" parameterType="com.jimi.smt.eps_server.entity.MaterialInfoExample" resultType="java.lang.Integer">
     select count(*) from material_info
     <if test="_parameter != null">
       <include refid="Example_Where_Clause" />

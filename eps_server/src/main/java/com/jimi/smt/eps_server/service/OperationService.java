@@ -19,14 +19,7 @@ import com.jimi.smt.eps_server.entity.vo.StockLogVO;
  * @author 沫熊工作室 <a href="http://www.darhao.cc">www.darhao.cc</a>
  */
 public interface OperationService {
-
-	/**
-	 * 根据条件列出客户报表
-	 * @return
-	 * @throws ParseException 
-	 */
-	List<ClientReport> listClientReport(String client, String programNo, Integer line, String orderNo, String workOrderNo, String startTime, String endTime) throws ParseException;
-	
+		
 	
 	/**
 	 * 根据条件分页列出列表
@@ -40,7 +33,7 @@ public interface OperationService {
 	 * @return
 	 * @throws ParseException
 	 */
-	List<ClientReport> listClientReportByPage(String client, String programNo, Integer line, String orderNo, String workOrderNo, String startTime, String endTime, Page page) throws ParseException;
+	List<ClientReport> listClientReport(String client, String programNo, Integer line, String orderNo, String workOrderNo, String startTime, String endTime, Page page) throws ParseException;
 
 	
 	/**
@@ -65,7 +58,7 @@ public interface OperationService {
 	 * @return
 	 * @throws ParseException 
 	 */
-	List<OperationReport> listOperationReport(String operator, String client, Integer line, String workOrderNo, String startTime, String endTime , Integer type) throws ParseException;
+	List<OperationReport> listOperationReport(String operator, String client, Integer line, String workOrderNo, String startTime, String endTime , Integer type, Page page) throws ParseException;
 	
 	
 	/**
@@ -87,7 +80,7 @@ public interface OperationService {
 	 * @return
 	 * @throws ParseException 
 	 */
-	List<OperationReportSummary> listOperationReportSummary(Integer line, String workOrderNo, String startTime, String endTime, Integer type) throws ParseException;
+	List<OperationReportSummary> listOperationReportSummary(Integer line, String workOrderNo, String startTime, String endTime, Integer type, Page page) throws ParseException;
 	
 	
 	/**
@@ -101,7 +94,7 @@ public interface OperationService {
 	 * @return
 	 * @throws ParseException 
 	 */
-	List<StockLogVO> listStockLogs(String operator, String materialNo, String custom, String position, String startTime, String endTime) throws ParseException;
+	List<StockLogVO> listStockLogs(String operator, String materialNo, String custom, String position, String startTime, String endTime, Page page) throws ParseException;
 	
 	
 	/**@author HCJ

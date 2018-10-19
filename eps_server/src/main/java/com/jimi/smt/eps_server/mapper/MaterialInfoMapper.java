@@ -6,7 +6,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
 public interface MaterialInfoMapper {
-    long countByExample(MaterialInfoExample example);
+    int countByExample(MaterialInfoExample example);
 
     int deleteByExample(MaterialInfoExample example);
 

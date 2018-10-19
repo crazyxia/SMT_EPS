@@ -16,8 +16,10 @@ import com.jimi.smt.eps_server.annotation.Log;
 import com.jimi.smt.eps_server.annotation.Open;
 import com.jimi.smt.eps_server.annotation.Role;
 import com.jimi.smt.eps_server.annotation.Role.*;
+import com.jimi.smt.eps_server.entity.Page;
 import com.jimi.smt.eps_server.entity.ProgramItemVisit;
 import com.jimi.smt.eps_server.entity.bo.EditProgramItemBO;
+import com.jimi.smt.eps_server.entity.vo.PageVO;
 import com.jimi.smt.eps_server.entity.vo.ProgramItemVO;
 import com.jimi.smt.eps_server.entity.vo.ProgramVO;
 import com.jimi.smt.eps_server.service.LineService;
@@ -43,9 +45,14 @@ public class ProgramController {
 	@Role({ RoleType.ENGINEER, RoleType.PRODUCER })
 	@ResponseBody
 	@RequestMapping("/list")
-	public List<ProgramVO> list(String programName, String fileName, Integer line, String workOrder, Integer state,
-			String ordBy) {
-		return programService.list(programName, fileName, line, workOrder, state, ordBy);
+	public PageVO<ProgramVO> list(String programName, String fileName, Integer line, String workOrder, Integer state, String ordBy, Integer currentPage, Integer pageSize) {
+		Page page = new Page();
+		page.setCurrentPage(currentPage);
+		page.setPageSize(pageSize);
+		PageVO<ProgramVO> pageVO = new PageVO<ProgramVO>();
+		pageVO.setPage(page);
+		pageVO.setList(programService.list(programName, fileName, line, workOrder, state, ordBy, page));
+		return pageVO;
 	}
 
 	
@@ -105,8 +112,8 @@ public class ProgramController {
 		if (id == null) {
 			ResultUtil.failed("参数不足");
 			return null;
-		}
-		return programService.listItem(id);
+		}	
+		return programService.listItem(id);		
 	}
 
 	

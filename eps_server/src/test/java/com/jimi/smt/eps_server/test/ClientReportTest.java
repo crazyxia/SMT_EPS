@@ -19,7 +19,7 @@ public class ClientReportTest extends BaseJunit4{
 	@Test
 	public void list() throws ParseException {
 		System.out.println(System.currentTimeMillis());
-		List<ClientReport> clientReports = operationService.listClientReport("XGD", null,null,null,null,null,null);
+		List<ClientReport> clientReports = operationService.listClientReport("XGD", null,null,null,null,null,null,null);
 		System.out.println(System.currentTimeMillis());
 		for (ClientReport clientReport : clientReports) {
 			FieldUtil.print(clientReport);

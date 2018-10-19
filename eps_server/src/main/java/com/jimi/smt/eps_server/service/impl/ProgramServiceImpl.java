@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.jimi.smt.eps_server.entity.Display;
 import com.jimi.smt.eps_server.entity.DisplayExample;
+import com.jimi.smt.eps_server.entity.Page;
 import com.jimi.smt.eps_server.entity.Program;
 import com.jimi.smt.eps_server.entity.ProgramExample;
 import com.jimi.smt.eps_server.entity.ProgramItem;
@@ -192,12 +193,12 @@ public class ProgramServiceImpl implements ProgramService {
 
 	
 	@Override
-	public List<ProgramVO> list(String programName, String fileName, Integer line, String workOrder, Integer state, String ordBy) {
+	public List<ProgramVO> list(String programName, String fileName, Integer line, String workOrder, Integer state, String ordBy, Page page) {
 		ProgramExample programExample = new ProgramExample();
 		ProgramExample.Criteria programCriteria = programExample.createCriteria();
 
 		// 排序
-		if (ordBy == null) {
+		if (ordBy == null || ordBy.equals("")) {
 			// 默认按时间降序
 			programExample.setOrderByClause("create_time desc");
 		} else {
@@ -206,11 +207,11 @@ public class ProgramServiceImpl implements ProgramService {
 
 		// 筛选程序名
 		if (programName != null && !programName.equals("")) {
-			programCriteria.andProgramNameEqualTo(programName);
+			programCriteria.andProgramNameLike("%" + programName + "%");
 		}
 		// 筛选文件名
 		if (fileName != null && !fileName.equals("")) {
-			programCriteria.andFileNameEqualTo(fileName);
+			programCriteria.andFileNameLike("%" + fileName + "%");
 		}
 		// 筛选线别
 		if (line != null) {
@@ -218,13 +219,19 @@ public class ProgramServiceImpl implements ProgramService {
 		}
 		// 筛选工单号
 		if (workOrder != null && !workOrder.equals("")) {
-			programCriteria.andWorkOrderEqualTo(workOrder);
+			programCriteria.andWorkOrderLike("%" + workOrder + "%");
 		}
 		// 筛选状态
 		if (state != null) {
 			programCriteria.andStateEqualTo(state);
 		}
-
+		
+		if(page != null) {
+			page.setTotallyData(programMapper.countByExample(programExample));
+			programExample.setLimitStart(page.getFirstIndex());			
+			programExample.setLimitSize(page.getPageSize());
+			
+		}
 		List<Program> programs = programMapper.selectByExample(programExample);
 		List<ProgramVO> programVOs = new ArrayList<>();
 		for (Program program : programs) {
@@ -237,7 +244,7 @@ public class ProgramServiceImpl implements ProgramService {
 	@Override
 	public List<ProgramItemVO> listItem(String id) {
 		ProgramItemExample example = new ProgramItemExample();
-		example.createCriteria().andProgramIdEqualTo(id);
+		example.createCriteria().andProgramIdEqualTo(id);		
 		return programItemToProgramItemVOFiller.fill(programItemMapper.selectByExample(example));
 	}
 
@@ -831,8 +838,9 @@ public class ProgramServiceImpl implements ProgramService {
 		Integer lineId = lineService.getLineIdByName(line);
 		if (lineId != null) {
 			ProgramExample programExample = new ProgramExample();
-			programExample.createCriteria().andLineEqualTo(lineId).andWorkOrderEqualTo(workOrder);
+			programExample.createCriteria().andLineEqualTo(lineId).andWorkOrderEqualTo(workOrder).andStateEqualTo(1);
 			programExample.setOrderByClause("board_type asc");
+			programExample.setDistinct(true);
 			List<Program> programs = programMapper.selectByExample(programExample);
 			List<Integer> workingBoardTypeList = new ArrayList<>();
 			for (Program program : programs) {

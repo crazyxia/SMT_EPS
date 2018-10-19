@@ -9,6 +9,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.jimi.smt.eps_server.entity.Line;
 import com.jimi.smt.eps_server.entity.Operation;
 import com.jimi.smt.eps_server.entity.ProgramItem;
 import com.jimi.smt.eps_server.entity.vo.OperationReport;
@@ -45,7 +46,10 @@ public class OperationToOperationReportFiller extends EntityFieldFiller<Operatio
 		
 		String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(operation.getTime());
 		operationReport.setTime(time);
-		operationReport.setLine(lineMapper.selectByPrimaryKey(operation.getLine()).getLine());
+		Line line = lineMapper.selectByPrimaryKey(operation.getLine());
+		if(line != null) {
+			operationReport.setLine(line.getLine());
+		}		
 		//匹配程序表子项目和操作日志
 		String key = operation.getProgramId()+operation.getLineseat()+operation.getMaterialNo();
 		ProgramItem programItem = programItemMaps.get(key);

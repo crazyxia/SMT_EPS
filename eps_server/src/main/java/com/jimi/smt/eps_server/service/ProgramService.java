@@ -7,6 +7,7 @@ import java.util.Map;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.jimi.smt.eps_server.entity.Display;
+import com.jimi.smt.eps_server.entity.Page;
 import com.jimi.smt.eps_server.entity.ProgramItemVisit;
 import com.jimi.smt.eps_server.entity.bo.EditProgramItemBO;
 import com.jimi.smt.eps_server.entity.vo.ProgramItemVO;
@@ -22,7 +23,7 @@ public interface ProgramService {
 	 * 根据条件列出线上的排位表
 	 * @return
 	 */
-	List<ProgramVO> list(String programName, String fileName, Integer line, String workOrder, Integer state, String ordBy);
+	List<ProgramVO> list(String programName, String fileName, Integer line, String workOrder, Integer state, String ordBy, Page page);
 	
 	
 	/**

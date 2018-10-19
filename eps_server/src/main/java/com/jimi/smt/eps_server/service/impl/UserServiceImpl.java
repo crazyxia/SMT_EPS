@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.jimi.smt.eps_server.entity.Page;
 import com.jimi.smt.eps_server.entity.User;
 import com.jimi.smt.eps_server.entity.UserExample;
 import com.jimi.smt.eps_server.entity.UserExample.Criteria;
@@ -62,14 +63,14 @@ public class UserServiceImpl implements UserService {
 
 	
 	@Override
-	public List<UserVO> list(String id, Integer classType, String name, Integer type, String orderBy, Boolean enabled) {
+	public List<UserVO> list(String id, Integer classType, String name, Integer type, String orderBy, Boolean enabled, Page page) {
 		UserExample userExample = new UserExample();
 		Criteria criteria = userExample.createCriteria();
-		if(id != null && !id.equals("")) {
-			criteria.andIdLike(id);
+		if (id != null && !id.equals("")) {
+			criteria.andIdLike("%" + id + "%");
 		}
-		if(name != null && !name.equals("")) {
-			criteria.andNameLike(name);
+		if (name != null && !name.equals("")) {
+			criteria.andNameLike("%" + name + "%");
 		}
 		if(type != null) {
 			criteria.andTypeEqualTo(type);
@@ -81,6 +82,11 @@ public class UserServiceImpl implements UserService {
 			criteria.andClassTypeEqualTo(classType);
 		}
 		userExample.setOrderByClause(orderBy);
+		if(page != null) {
+			page.setTotallyData(userMapper.countByExample(userExample));
+			userExample.setLimitStart(page.getFirstIndex());
+			userExample.setLimitSize(page.getPageSize());
+		}
 		return filler.fill(userMapper.selectByExample(userExample));
 	}
 

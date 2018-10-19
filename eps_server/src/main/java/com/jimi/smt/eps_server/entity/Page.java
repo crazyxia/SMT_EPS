@@ -4,49 +4,60 @@ public class Page {
 
 	private Integer firstIndex;
 	private Integer currentPage;
-	private Integer pageSize = 30;
+	private Integer pageSize;
 	private Integer totallyPage;
 	private Integer totallyData;
-		
+
 	public Integer getFirstIndex() {
-		firstIndex = ((this.getCurrentPage()-1)*this.getPageSize());
+		firstIndex = ((this.getCurrentPage() - 1) * this.getPageSize());
 		return firstIndex;
 	}
+
 	public Integer getCurrentPage() {
 		return currentPage;
 	}
+
 	public void setCurrentPage(Integer currentPage) {
-		if(currentPage == null || currentPage <= 0) {
+		if (currentPage == null || currentPage <= 0) {
 			this.currentPage = 1;
-		}else {
+		} else {
 			this.currentPage = currentPage;
 		}
 	}
+
 	public Integer getPageSize() {
 		return pageSize;
 	}
+
 	public void setPageSize(Integer pageSize) {
-		this.pageSize = pageSize;
+		if (pageSize == null || pageSize <= 0) {
+			this.pageSize = 20;
+		} else {
+			this.pageSize = pageSize;
+		}
 	}
+
 	public Integer getTotallyPage() {
 		return totallyPage;
 	}
+
 	public void setTotallyPage(Integer totallyPage) {
 		this.totallyPage = totallyPage;
-		if (this.totallyPage<this.currentPage) {
+		if (this.totallyPage < this.currentPage) {
 			this.setCurrentPage(totallyPage);
 		}
 	}
+
 	public Integer getTotallyData() {
 		return totallyData;
 	}
+
 	public void setTotallyData(Integer totallyData) {
 		this.totallyData = totallyData;
-		if(this.totallyData == null && this.totallyData <= 0) {
+		if (this.totallyData == null && this.totallyData <= 0) {
 			this.totallyPage = 1;
-		}else {
-			this.setTotallyPage(this.totallyData / this.getPageSize() 
-					+ (this.totallyData % this.getPageSize() == 0 ? 0: 1));
+		} else {
+			this.setTotallyPage(this.totallyData / this.getPageSize() + (this.totallyData % this.getPageSize() == 0 ? 0 : 1));
 		}
 	}
 }

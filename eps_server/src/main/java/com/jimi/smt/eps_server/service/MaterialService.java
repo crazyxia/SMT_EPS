@@ -3,6 +3,7 @@ package com.jimi.smt.eps_server.service;
 import java.util.List;
 
 import com.jimi.smt.eps_server.entity.MaterialInfo;
+import com.jimi.smt.eps_server.entity.Page;
 
 public interface MaterialService {
 	
@@ -22,7 +23,7 @@ public interface MaterialService {
 	 * @param perifdOfValidity
 	 * @return
 	 */
-	public String update(Integer id, String materialNo, Integer perifdOfValidity);
+	public String update(Integer id, Integer perifdOfValidity);
 	
 	
 	/**
@@ -43,6 +44,6 @@ public interface MaterialService {
 	 * @param orderBy
 	 * @return
 	 */
-	public List<MaterialInfo> list(Integer id, String materialNo, Integer perifdOfValidity, String orderBy);
+	public List<MaterialInfo> list(Integer id, String materialNo, Integer perifdOfValidity, String orderBy, Page page);
 
 }

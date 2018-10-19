@@ -2,6 +2,7 @@ package com.jimi.smt.eps_server.service;
 
 import java.util.List;
 
+import com.jimi.smt.eps_server.entity.Page;
 import com.jimi.smt.eps_server.entity.User;
 import com.jimi.smt.eps_server.entity.vo.UserVO;
 
@@ -56,7 +57,7 @@ public interface UserService {
 	 * @param enabled
 	 * @return
 	 */
-	List<UserVO> list(String id, Integer classType, String name, Integer type, String orderBy, Boolean enabled);
+	List<UserVO> list(String id, Integer classType, String name, Integer type, String orderBy, Boolean enabled, Page page);
 				
 	
 	/**

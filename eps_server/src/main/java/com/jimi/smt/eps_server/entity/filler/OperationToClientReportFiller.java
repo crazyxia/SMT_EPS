@@ -9,6 +9,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.jimi.smt.eps_server.entity.Line;
 import com.jimi.smt.eps_server.entity.Operation;
 import com.jimi.smt.eps_server.entity.ProgramItem;
 import com.jimi.smt.eps_server.entity.vo.ClientReport;
@@ -45,7 +46,10 @@ public class OperationToClientReportFiller extends EntityFieldFiller<Operation, 
 		BeanUtils.copyProperties(operation, clientReport);
 		//填写工单
 		clientReport.setWorkOrderNo(operation.getWorkOrder());
-		clientReport.setLine(lineMapper.selectByPrimaryKey(operation.getLine()).getLine());
+		Line line = lineMapper.selectByPrimaryKey(operation.getLine());
+		if(line != null) {
+			clientReport.setLine(line.getLine());
+		}
 		
 		String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(operation.getTime());
 		clientReport.setTime(time);

@@ -2,7 +2,6 @@ package com.jimi.smt.eps_server.controller;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -43,30 +42,26 @@ public class OperationController {
 	@Role(RoleType.IPQC)
 	@ResponseBody
 	@RequestMapping("/listClientReport")
-	public PageVO<ClientReport> listClientReportByPage(String client, String programNo, Integer line, String orderNo,
-			String workOrderNo, String startTime, String endTime, Integer currentPage) {
-		try {
-			Page page = new Page();
-			page.setCurrentPage(currentPage);
-			PageVO<ClientReport> pageVO = new PageVO<ClientReport>();
-			pageVO.setList(operationService.listClientReportByPage(client, programNo, line, orderNo, workOrderNo,
-					startTime, endTime, page));
-			pageVO.setPage(page);
-			return pageVO;
+	public PageVO<ClientReport> listClientReport(String client, String programNo, Integer line, String orderNo, String workOrderNo, String startTime, String endTime, Integer currentPage, Integer pageSize) {
+		Page page = new Page();
+		page.setCurrentPage(currentPage);
+		page.setPageSize(pageSize);
+		PageVO<ClientReport> pageVO = new PageVO<ClientReport>();
+		pageVO.setPage(page);
+		try {		
+			pageVO.setList(operationService.listClientReport(client, programNo, line, orderNo, workOrderNo, startTime, endTime, page));		
 		} catch (ParseException e) {
 			ResultUtil.failed("日期格式不正确", e);
 		}
-		return null;
+		return pageVO;
 	}
 
 	
 	@Role(RoleType.IPQC)
 	@RequestMapping("/downloadClientReport")
-	public ResponseEntity<byte[]> downloadClientReport(String client, String programNo, Integer line, String orderNo,
-			String workOrderNo, String startTime, String endTime) {
+	public ResponseEntity<byte[]> downloadClientReport(String client, String programNo, Integer line, String orderNo, String workOrderNo, String startTime, String endTime) {
 		try {
-			return operationService.downloadClientReport(client, programNo, line, orderNo, workOrderNo, startTime,
-					endTime);
+			return operationService.downloadClientReport(client, programNo, line, orderNo, workOrderNo, startTime, endTime);
 		} catch (ParseException e) {
 			ResultUtil.failed("日期格式不正确", e);
 		} catch (IOException e) {
@@ -81,50 +76,56 @@ public class OperationController {
 	@Role(RoleType.IPQC)
 	@ResponseBody
 	@RequestMapping("/listOperationReport")
-	public List<OperationReport> listOperationReport(String operator, String client, Integer line, String workOrderNo,
-			String startTime, String endTime, Integer type) {
+	public PageVO<OperationReport> listOperationReport(String operator, String client, Integer line, String workOrderNo, String startTime, String endTime, Integer type, Integer currentPage, Integer pageSize) {
 		if (type == null) {
 			ResultUtil.failed("参数不足");
 			return null;
 		}
+		Page page = new Page();
+		page.setCurrentPage(currentPage);
+		page.setPageSize(pageSize);
+		PageVO<OperationReport> pageVO = new PageVO<OperationReport>();
+		pageVO.setPage(page);
 		try {
-			return operationService.listOperationReport(operator, client, line, workOrderNo, startTime, endTime, type);
+			pageVO.setList(operationService.listOperationReport(operator, client, line, workOrderNo, startTime, endTime, type, page));
 		} catch (ParseException e) {
 			ResultUtil.failed("日期格式不正确", e);
 		}
-		return null;
+		return pageVO;
 	}
 
 	
 	@Role(RoleType.IPQC)
 	@ResponseBody
 	@RequestMapping("/listOperationReportSummary")
-	public List<OperationReportSummary> listOperationReportSummary(Integer line, String workOrderNo, String startTime,
-			String endTime, Integer type) {
+	public PageVO<OperationReportSummary> listOperationReportSummary(Integer line, String workOrderNo, String startTime, String endTime, Integer type, Integer currentPage, Integer pageSize) {
 		if (type == null) {
 			ResultUtil.failed("参数不足");
 			return null;
 		}
+		Page page = new Page();
+		page.setCurrentPage(currentPage);
+		page.setPageSize(pageSize);
+		PageVO<OperationReportSummary> pageVO = new PageVO<OperationReportSummary>();
+		pageVO.setPage(page);
 		try {
-			return operationService.listOperationReportSummary(line, workOrderNo, startTime, endTime, type);
+			pageVO.setList(operationService.listOperationReportSummary(line, workOrderNo, startTime, endTime, type, page));
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
-		return null;
+		return pageVO;
 	}
 
 	
 	@Role(RoleType.IPQC)
 	@RequestMapping("/downloadOperationReport")
-	public ResponseEntity<byte[]> downloadOperationReport(String operator, String client, Integer line,
-			String workOrderNo, String startTime, String endTime, Integer type) {
+	public ResponseEntity<byte[]> downloadOperationReport(String operator, String client, Integer line, String workOrderNo, String startTime, String endTime, Integer type) {
 		if (type == null) {
 			ResultUtil.failed("参数不足");
 			return null;
 		}
 		try {
-			return operationService.downloadOperationReport(operator, client, line, workOrderNo, startTime, endTime,
-					type);
+			return operationService.downloadOperationReport(operator, client, line, workOrderNo, startTime, endTime, type);
 		} catch (ParseException e) {
 			ResultUtil.failed("日期格式不正确", e);
 		} catch (IOException e) {
@@ -139,14 +140,18 @@ public class OperationController {
 	@Role(RoleType.IPQC)
 	@ResponseBody
 	@RequestMapping("/listStockLogs")
-	public List<StockLogVO> listStockLogs(String operator, String materialNo, String custom, String position,
-			String startTime, String endTime) {
+	public PageVO<StockLogVO> listStockLogs(String operator, String materialNo, String custom, String position, String startTime, String endTime, Integer currentPage, Integer pageSize) {
+		Page page = new Page();
+		page.setCurrentPage(currentPage);
+		page.setPageSize(pageSize);
+		PageVO<StockLogVO> pageVO = new PageVO<StockLogVO>();
+		pageVO.setPage(page);
 		try {
-			return operationService.listStockLogs(operator, materialNo, custom, position, startTime, endTime);
+			pageVO.setList(operationService.listStockLogs(operator, materialNo, custom, position, startTime, endTime, page));
 		} catch (ParseException e) {
 			ResultUtil.failed("日期格式不正确", e);
 		}
-		return null;
+		return pageVO;
 	}
 
 	

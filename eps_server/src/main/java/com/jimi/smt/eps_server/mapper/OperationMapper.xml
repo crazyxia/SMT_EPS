@@ -428,4 +428,106 @@
       board_type = #{boardType,jdbcType=INTEGER}
     where id = #{id,jdbcType=BIGINT}
   </update>
+  <select id="selectByClientParameter" parameterType="com.jimi.smt.eps_server.entity.bo.ReportParameter" resultMap="BaseResultMap">
+    SELECT operation.* from operation INNER JOIN program on program.id = operation.program_id
+	where operation.result = 'PASS'
+		<if test="client != null and client != ''">
+      		and program.client like #{client}
+    	</if>
+    	<if test="programNo != null and programNo != ''">
+      		and program.program_no like #{programNo}
+    	</if>
+    	<if test="orderNo != null and orderNo != ''">
+      		and program.work_order like #{orderNo}
+    	</if>
+    	<if test="line != null">
+      		and operation.line = #{line}
+    	</if>
+    	<if test="workOrderNo != null and programNo != ''">
+      		and operation.work_order like #{workOrderNo}
+    	</if>   	
+    	<if test="startTime != null">
+      		<![CDATA[ and DATE_FORMAT(operation.time, '%Y-%m-%d') > DATE_FORMAT(#{startTime}, '%Y-%m-%d')]]>
+    	</if>
+    	<if test="endTime != null">
+      		<![CDATA[ and DATE_FORMAT(operation.time, '%Y-%m-%d') < DATE_FORMAT(#{endTime}, '%Y-%m-%d')]]>
+    	</if>
+		ORDER BY operation.time DESC
+		<if test="firstIndex != null and pageSize&gt;=0">
+      		limit #{firstIndex}, #{pageSize}
+    	</if>
+  </select>
+  <select id="countByClientParameter" parameterType="com.jimi.smt.eps_server.entity.bo.ReportParameter" resultType="java.lang.Integer">
+    SELECT count(*) from operation INNER JOIN program on program.id = operation.program_id 
+	where operation.result = 'PASS'
+		<if test="client != null and client != ''">
+      		and program.client like #{client}
+    	</if>
+    	<if test="programNo != null and programNo != ''">
+      		and program.program_no like #{programNo}
+    	</if>
+    	<if test="orderNo != null and orderNo != ''">
+      		and program.work_order like #{orderNo}
+    	</if>
+    	<if test="line != null">
+      		and operation.line = #{line}
+    	</if>
+    	<if test="workOrderNo != null and programNo != ''">
+      		and operation.work_order like #{workOrderNo}
+    	</if>
+    	<if test="startTime != null">
+      		<![CDATA[ and DATE_FORMAT(operation.time, '%Y-%m-%d') > DATE_FORMAT(#{startTime}, '%Y-%m-%d')]]>
+    	</if>
+    	<if test="endTime != null">
+      		<![CDATA[ and DATE_FORMAT(operation.time, '%Y-%m-%d') < DATE_FORMAT(#{endTime}, '%Y-%m-%d')]]>
+    	</if>		
+  </select>
+  <select id="selectByOperationParameter" parameterType="com.jimi.smt.eps_server.entity.bo.ReportParameter" resultMap="BaseResultMap">
+    SELECT operation.* from operation INNER JOIN program on program.id = operation.program_id
+	where operation.type = #{type}
+		<if test="client != null and client != ''">
+      		and program.client like #{client}
+    	</if>   	
+    	<if test="line != null">
+      		and operation.line = #{line}
+    	</if>
+    	<if test="workOrderNo != null and workOrderNo != ''">
+      		and operation.work_order like #{workOrderNo}
+    	</if>
+    	<if test="operator != null and operator != ''">
+      		and operation.operator like #{operator}
+    	</if>
+    	<if test="startTime != null">
+      		<![CDATA[ and DATE_FORMAT(operation.time, '%Y-%m-%d') > DATE_FORMAT(#{startTime}, '%Y-%m-%d')]]>
+    	</if>
+    	<if test="endTime != null">
+      		<![CDATA[ and DATE_FORMAT(operation.time, '%Y-%m-%d') < DATE_FORMAT(#{endTime}, '%Y-%m-%d')]]>
+    	</if>
+		ORDER BY operation.time DESC
+		<if test="firstIndex != null and pageSize&gt;=0">
+      		limit #{firstIndex}, #{pageSize}
+    	</if>
+  </select>
+  <select id="countByOperationParameter" parameterType="com.jimi.smt.eps_server.entity.bo.ReportParameter" resultType="java.lang.Integer">
+    SELECT count(*) from operation INNER JOIN program on program.id = operation.program_id
+	where operation.type = #{type}
+		<if test="client != null and client != ''">
+      		and program.client like #{client}
+    	</if>   	
+    	<if test="line != null">
+      		and operation.line = #{line}
+    	</if>
+    	<if test="workOrderNo != null and workOrderNo != ''">
+      		and operation.work_order like #{workOrderNo}
+    	</if>
+    	<if test="operator != null and operator != ''">
+      		and operation.operator like #{operator}
+    	</if>
+    	<if test="startTime != null">
+      		<![CDATA[ and DATE_FORMAT(operation.time, '%Y-%m-%d') > DATE_FORMAT(#{startTime}, '%Y-%m-%d')]]>
+    	</if>
+    	<if test="endTime != null">
+      		<![CDATA[ and DATE_FORMAT(operation.time, '%Y-%m-%d') < DATE_FORMAT(#{endTime}, '%Y-%m-%d')]]>
+    	</if>
+  </select>
 </mapper>
