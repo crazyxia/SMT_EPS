@@ -31,11 +31,10 @@ export default {
       'table-layout': 'fixed',
       'color':'#666',
       'text-align':'center'
-    }
+    },
+    currentPage:1,
+    pageSize:20
   }),
-  mounted(){
-    this.getList();
-  },
   watch: {
     query: {
       handler (query) {
@@ -50,10 +49,13 @@ export default {
       axiosPost(options).then(response => {
         store.commit("setLoading",false);
         if (response.data) {
-          let result = response.data;
-          that.total = result.length;
+          let result = response.data.list;
+          let page = response.data.page;
+          that.total = page.totallyData;
+          that.currentPage = page.currentPage;
+          that.pageSize = page.pageSize;
           store.commit("setOperationList",result);
-          that.filterData(that.query);
+          that.data = result;
         }
       }).catch(err => {
         store.commit("setLoading",false);
@@ -66,12 +68,14 @@ export default {
         url:operationReportListUrl,
         data:this.operationInfos
       }
+      options.data["currentPage"] = this.currentPage;
+      options.data["pageSize"] = this.pageSize;
       this.fetchData(options);
     },
     filterData:function(query){
-      let list = store.state.operationList;
-      let dataShow = list.slice(query.offset,query.offset+query.limit);
-      this.data =dataShow;
+      this.pageSize = query.limit;
+      this.currentPage = query.offset / query.limit + 1;
+      this.getList();
     }
   }
 }

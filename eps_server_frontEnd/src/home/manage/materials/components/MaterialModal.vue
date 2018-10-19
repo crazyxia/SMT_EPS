@@ -12,7 +12,7 @@
           <form class="form" role="form">
             <div class="form-group">
               <label for="materialNo">料号</label>
-              <input type="text" class="form-control" id="materialNo" v-model.trim="modalInfo.materialNo">
+              <input type="text" class="form-control" id="materialNo" v-model.trim="modalInfo.materialNo" :disabled="isDisabled">
             </div>
             <div class="form-group">
               <label for="perifdOfValidity">保质期(天)</label>
@@ -38,15 +38,17 @@ export default {
   name:'materialModal',
   data () {
     return {
-
+      isDisabled:false
     }
   },
   computed:{
     message:function(){
       let operationType = store.state.materialOperationType;
       if(operationType == "update"){
+        this.isDisabled = true;
         return "修改信息";
       }else if(operationType == "add"){
+        this.isDisabled = false;
         return "添加信息";
       }
     },

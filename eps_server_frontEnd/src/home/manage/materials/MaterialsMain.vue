@@ -30,7 +30,8 @@ export default {
     return {
       materialInfos:{
         materialNo:"",
-        perifdOfValidity:""
+        perifdOfValidity:"",
+        orderBy:"material_no"
       },
     }
   },

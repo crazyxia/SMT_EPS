@@ -12,7 +12,7 @@
           <form class ="form form-inline" role="form">
             <div class="form-group">
               <label for="modalId">工号</label>
-              <input type="text" class="form-control" id="modalId" v-model.trim="modalInfo.id">
+              <input type="text" class="form-control" id="modalId" v-model.trim="modalInfo.id" :disabled="isDisabled">
             </div>
             <div class="form-group">
               <label for="modalName">姓名</label>
@@ -59,15 +59,17 @@ export default {
   name:'userModal',
   data () {
     return {
-
+      isDisabled:false
     }
   },
   computed:{
     message:function(){
       let operationType = store.state.userOperationType;
       if(operationType == "update"){
+        this.isDisabled = true;
         return "修改信息";
       }else if(operationType == "add"){
+        this.isDisabled = false;
         return "添加信息";
       }
     },

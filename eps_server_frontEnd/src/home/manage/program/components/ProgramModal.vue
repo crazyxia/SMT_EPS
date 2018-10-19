@@ -12,7 +12,7 @@
           <form class="form form-inline" role="form">
             <div class="form-group">
               <label for="line">线号</label>
-              <input type="text" class="form-control" id="line" disabled="disabled" v-model="modalInfo.line">
+              <input type="text" class="form-control" id="line" disabled="disabled" v-model="modalInfo.lineName">
             </div>
             <div class="form-group">
               <label for="workOrder">工单</label>

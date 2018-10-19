@@ -98,7 +98,6 @@ export default {
     setOptionItem:function(){
       let opera = this.operationItem;
       let item = this.programItemInfos;
-      console.log("item",item);
       let operationType = store.state.programItemOperationType;
       if(operationType == "add"){
         opera.operation = 0;
@@ -129,8 +128,11 @@ export default {
       this.setOptionItem();
     },
     save:function(){
-      console.log(this.operations);
-      this.updateProgramItem();
+      if(this.operations.length <= 0){
+        alert("请编辑后再点击保存");
+      }else{
+        this.updateProgramItem();
+      }
     },
     addModal:function(){
       let programItem = {

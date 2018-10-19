@@ -5,7 +5,6 @@
       <div class="form-group">
         <label for="type">操作类型</label>
         <select class="form-control" id="operationType" v-model.trim="operationInfos.type" name="type">
-          <option selected="selected"  value=''>不限</option>
           <option value="0">上料</option>
           <option value="1">换料</option>
           <option value="2">全检</option>
@@ -58,7 +57,7 @@ export default {
   data () {
     return {
       operationInfos:{
-        type:"",
+        type:"0",
         line:"",
         workOrderNo:"",
         startTime:"",
@@ -72,7 +71,6 @@ export default {
   },
   created(){
     let timeArr = setInitialTime(this.sTime,this.eTime);
-    console.log(timeArr);
     this.sTime = timeArr[0];
     this.eTime = timeArr[1];
     this.operationInfos.startTime = this.sTime + " 00:00:00";

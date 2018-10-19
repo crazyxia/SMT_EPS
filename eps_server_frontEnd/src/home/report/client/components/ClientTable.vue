@@ -25,10 +25,9 @@ export default {
     HeaderSettings:false,
     fixHeaderAndSetBodyMaxHeight:700,
     data: [],
-    pageSizeOptions:[30],
     total:0,
     tblClass: 'table-bordered',
-    query: {"limit":30, "offset": 0},
+    query: {"limit":20, "offset": 0},
     tblStyle: {
       'padding':'10px 0',
       'word-break': 'break-all',
@@ -37,7 +36,8 @@ export default {
       'text-align':'center'
     },
     page:{},
-    currentPage:1
+    currentPage:1,
+    pageSize:20
   }),
   mounted(){
     this.getList();
@@ -53,14 +53,16 @@ export default {
   watch: {
     query: {
       handler (query) {
-        if(query.offset != 0){
           this.filterData(query);
-        }
       },
       deep: true
     },
     isFind:function(val){
       if(val == true){
+        this.currentPage = 1;
+        this.pageSize = 20;
+        this.query.limit = 20;
+        this.query.offset = 0;
         store.commit("setIsFind",false);
         this.getList();
       }
@@ -68,6 +70,7 @@ export default {
     page:function(val){
       if(val!={}){
         this.currentPage = this.page.currentPage;
+        this.pageSize = this.page.pageSize;
         this.total = this.page.totallyData;
       }
     }
@@ -95,11 +98,13 @@ export default {
         data:this.clientInfos
       }
       options.data["currentPage"]=this.currentPage;
+      options.data["pageSize"]=this.pageSize;
       this.fetchData(options);
     },
     filterData:function(query){
-      let index = query.offset / query.limit+1;
-      this.currentPage = index;
+      console.log(query);
+      this.pageSize = query.limit;
+      this.currentPage = query.offset / query.limit + 1;
       this.getList();
     }
   }

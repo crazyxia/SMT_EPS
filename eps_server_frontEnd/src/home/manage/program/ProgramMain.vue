@@ -92,7 +92,6 @@
         return store.state.programItemShow;
       },
       lines: function () {
-        console.log(store.state.lines);
         return store.state.lines;
       }
     },

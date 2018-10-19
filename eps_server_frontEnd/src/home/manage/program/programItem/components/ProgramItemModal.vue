@@ -85,6 +85,9 @@ export default {
     },
     programItemList:function(){
       return store.state.programItemList;
+    },
+    operations:function(){
+      return store.state.operations;
     }
   },
   watch:{
@@ -106,7 +109,16 @@ export default {
   methods:{
     save:function(){
       if(programItemTip(this.modalInfo)){
+        console.log(this.programItemList);
         let index = store.state.operationIndex;
+        for(let i = 0;i<this.programItemList.length;i++){
+          let item = this.programItemList[i];
+          console.log(item,this.modalInfo);
+          if(this.modalInfo.lineseat === item.lineseat && this.modalInfo.materialNo === item.materialNo){
+            alert("一个站位不允许多个相同料号");
+            return false;
+          }
+        }
         let operationType = store.state.programItemOperationType;
         if(operationType == "add"){
           this.programItemList.splice(index+1,0,this.modalInfo);
