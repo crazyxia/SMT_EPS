@@ -484,7 +484,10 @@
   </select>
   <select id="selectByOperationParameter" parameterType="com.jimi.smt.eps_server.entity.bo.ReportParameter" resultMap="BaseResultMap">
     SELECT operation.* from operation INNER JOIN program on program.id = operation.program_id
-	where operation.type = #{type}
+	where 1=1
+		<if test="type != null">
+      		and operation.type = #{type}
+    	</if>
 		<if test="client != null and client != ''">
       		and program.client like #{client}
     	</if>   	
@@ -510,7 +513,10 @@
   </select>
   <select id="countByOperationParameter" parameterType="com.jimi.smt.eps_server.entity.bo.ReportParameter" resultType="java.lang.Integer">
     SELECT count(*) from operation INNER JOIN program on program.id = operation.program_id
-	where operation.type = #{type}
+	where 1=1
+		<if test="type != null">
+      		and operation.type = #{type}
+    	</if>
 		<if test="client != null and client != ''">
       		and program.client like #{client}
     	</if>   	

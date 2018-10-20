@@ -77,10 +77,6 @@ public class OperationController {
 	@ResponseBody
 	@RequestMapping("/listOperationReport")
 	public PageVO<OperationReport> listOperationReport(String operator, String client, Integer line, String workOrderNo, String startTime, String endTime, Integer type, Integer currentPage, Integer pageSize) {
-		if (type == null) {
-			ResultUtil.failed("参数不足");
-			return null;
-		}
 		Page page = new Page();
 		page.setCurrentPage(currentPage);
 		page.setPageSize(pageSize);
@@ -99,10 +95,6 @@ public class OperationController {
 	@ResponseBody
 	@RequestMapping("/listOperationReportSummary")
 	public PageVO<OperationReportSummary> listOperationReportSummary(Integer line, String workOrderNo, String startTime, String endTime, Integer type, Integer currentPage, Integer pageSize) {
-		if (type == null) {
-			ResultUtil.failed("参数不足");
-			return null;
-		}
 		Page page = new Page();
 		page.setCurrentPage(currentPage);
 		page.setPageSize(pageSize);
@@ -120,10 +112,6 @@ public class OperationController {
 	@Role(RoleType.IPQC)
 	@RequestMapping("/downloadOperationReport")
 	public ResponseEntity<byte[]> downloadOperationReport(String operator, String client, Integer line, String workOrderNo, String startTime, String endTime, Integer type) {
-		if (type == null) {
-			ResultUtil.failed("参数不足");
-			return null;
-		}
 		try {
 			return operationService.downloadOperationReport(operator, client, line, workOrderNo, startTime, endTime, type);
 		} catch (ParseException e) {

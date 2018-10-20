@@ -213,7 +213,9 @@ public class OperationServiceImpl implements OperationService {
 			parameter.setOperator("%" + operator + "%");
 		}
 		// 过滤类型
-		parameter.setType(type);
+		if (type != null) {
+			parameter.setType(type);
+		}
 		// 筛选客户
 		if (client != null && !client.equals("")) {
 			parameter.setClient("%" + client + "%");
