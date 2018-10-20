@@ -1,4 +1,4 @@
-﻿package com.jimi.smt.eps_server.timer;
+package com.jimi.smt.eps_server.timer;
 
 import java.util.Date;
 import java.util.HashMap;

@@ -238,27 +238,31 @@ public class OperationServiceImpl implements OperationService {
 	@Override
 	public ResponseEntity<byte[]> downloadOperationReport(String operator, String client, Integer line, String workOrderNo, String startTime, String endTime, Integer type) throws ParseException, IOException, OutOfMemoryError {
 		List<OperationReport> operationReports = listOperationReport(operator, client, line, workOrderNo, startTime, endTime, type, null);
-		ExcelSpringHelper helper = ExcelSpringHelper.create();
+		ExcelSpringHelper helper = ExcelSpringHelper.create(true);
 		// 解析操作类型
 		String title = null;
-		switch (type) {
-		case 0:
-			title = "SMT上料报表";
-			break;
-		case 1:
-			title = "SMT换料报表";
-			break;
-		case 2:
-			title = "SMT抽检报表";
-			break;
-		case 3:
-			title = "SMT全检报表";
-			break;
-		case 4:
-			title = "SMT仓库发料报表";
-			break;
-		default:
-			break;
+		if(type == null) {
+			title = "SMT操作报表";
+		}else {
+			switch (type) {
+			case 0:
+				title = "SMT上料报表";
+				break;
+			case 1:
+				title = "SMT换料报表";
+				break;
+			case 2:
+				title = "SMT抽检报表";
+				break;
+			case 3:
+				title = "SMT全检报表";
+				break;
+			case 4:
+				title = "SMT仓库发料报表";
+				break;
+			default:
+				break;
+			}
 		}
 		helper.fill(operationReports, title);
 		return helper.getDownloadEntity(title + ".xls", true);
@@ -278,6 +282,7 @@ public class OperationServiceImpl implements OperationService {
 			key.setLine(operationReport.getLine());
 			key.setWorkOrderNo(operationReport.getWorkOrderNo());
 			key.setOperator(operationReport.getOperator());
+			key.setOperationType(operationReport.getOperationType());
 			// 获取该key之前的value
 			OperationReportSummaryValue value = map.get(key);
 			if (value == null) {
@@ -305,6 +310,7 @@ public class OperationServiceImpl implements OperationService {
 				summary.setOperator(operationReportSummaryKeys.get(i).getOperator());
 				summary.setPassCount(map.get(operationReportSummaryKeys.get(i)).getPassCount());
 				summary.setFailCount(map.get(operationReportSummaryKeys.get(i)).getFailCount());
+				summary.setOperationType(operationReportSummaryKeys.get(i).getOperationType());
 				operationReportSummaries.add(summary);
 				if (operationReportSummaries.size() == page.getPageSize()) {
 					break;
@@ -318,6 +324,7 @@ public class OperationServiceImpl implements OperationService {
 				summary.setOperator(operationReportSummaryKeys.get(i).getOperator());
 				summary.setPassCount(map.get(operationReportSummaryKeys.get(i)).getPassCount());
 				summary.setFailCount(map.get(operationReportSummaryKeys.get(i)).getFailCount());
+				summary.setOperationType(operationReportSummaryKeys.get(i).getOperationType());
 				operationReportSummaries.add(summary);
 				if (operationReportSummaries.size() == operationReportSummaryKeys.size() - page.getFirstIndex() + 1) {
 					break;

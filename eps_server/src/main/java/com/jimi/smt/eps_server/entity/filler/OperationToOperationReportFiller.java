@@ -73,6 +73,26 @@ public class OperationToOperationReportFiller extends EntityFieldFiller<Operatio
 				operationReport.setMaterialSpecitification(specitification);
 			}	
 		}
+		//解析操作类型
+				switch (operation.getType()) {
+				case 0:
+					operationReport.setOperationType("上料");
+					break;
+				case 1:
+					operationReport.setOperationType("换料");
+					break;
+				case 2:
+					operationReport.setOperationType("检料");
+					break;
+				case 3:
+					operationReport.setOperationType("核对全料");
+					break;
+				case 4:
+					operationReport.setOperationType("仓库发料");
+					break;
+				default:
+					break;
+				}
 		
 		return operationReport;
 	}
