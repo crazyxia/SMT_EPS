@@ -5,6 +5,7 @@
       <div class="form-group">
         <label for="type">操作类型</label>
         <select class="form-control" id="operationType" v-model.trim="operationInfos.type" name="type">
+          <option value="">不限</option>
           <option value="0">上料</option>
           <option value="1">换料</option>
           <option value="2">全检</option>
@@ -57,7 +58,7 @@ export default {
   data () {
     return {
       operationInfos:{
-        type:"0",
+        type:"",
         line:"",
         workOrderNo:"",
         startTime:"",

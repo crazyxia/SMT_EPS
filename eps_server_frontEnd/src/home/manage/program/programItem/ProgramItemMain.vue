@@ -15,7 +15,7 @@
         <input type="text" class="form-control" id="line" v-model="programInfos.lineName" disabled="disabled" >
       </div>
       <div class="btn-group">
-        <button type="button" class="btn btn_add" @click="addModal">添加</button>
+        <button type="button" class="btn btn_add" @click="addModal">追加</button>
         <button type="button" class="btn btn_conserve" @click="save">保存</button>
       </div>
     </form>

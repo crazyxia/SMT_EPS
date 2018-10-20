@@ -16,7 +16,7 @@
       </div>
       <div class="form-group">
         <label for="type">操作类型</label>
-        <input type="text" class="form-control" id="type" disabled="disabled" v-model="item.typeName">
+        <input type="text" class="form-control" id="type" disabled="disabled" v-model="item.operationType">
       </div>
     </form>
     <OperationDetailTable :operationInfos="operationInfos"></OperationDetailTable>

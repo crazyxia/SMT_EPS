@@ -106,27 +106,3 @@ const judge = function isNumber(num) {
   }
 }
 
-export const getTypeName = function (val) {
-  let typeName = '-'
-  let value = parseInt(val)
-  switch (value) {
-    case 0:
-      typeName = "上料";
-      break;
-    case 1:
-      typeName = "换料";
-      break;
-    case 2:
-      typeName = "全检";
-      break;
-    case 3:
-      typeName = "抽检";
-      break;
-    case 4:
-      typeName = "仓库发料";
-      break;
-    default:
-      break;
-  }
-  return typeName;
-}

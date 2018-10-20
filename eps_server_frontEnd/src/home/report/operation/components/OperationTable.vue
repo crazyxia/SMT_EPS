@@ -7,7 +7,6 @@
 import Vue from 'vue'
 import store from './../../../../store'
 import {axiosPost} from "./../../../../utils/fetchData"
-import {getTypeName} from "./../../../../utils/formValidate"
 import {operationReportSummaryListUrl} from "./../../../../config/globalUrl"
 export default {
   name:'operationTable',
@@ -17,7 +16,7 @@ export default {
       { title:'线号', field:'line',colStyle: {'width': '80px'}},
       { title:'工单号', field:'workOrderNo',colStyle: {'width': '200px'} },
       { title:'操作者', field:'operator', colStyle: {'width': '100px'}},
-      { title:'操作类型', field:'typeName',colStyle: {'width': '100px'}},
+      { title:'操作类型', field:'operationType',colStyle: {'width': '100px'}},
       { title:'成功数', field:'passCount',colStyle: {'width': '100px'}},
       { title:'失败数', field:'failCount',colStyle: {'width': '100px'}},
       { title:'总数', field:'total',colStyle: {'width': '100px'}},
@@ -114,10 +113,8 @@ export default {
       this.getList();
     },
     handleData:function(arr,that){
-      let typeName = getTypeName(that.operationInfos.type);
       for(let i=0;i<arr.length;i++){
         let obj = arr[i];
-        obj["typeName"] = typeName;
         obj["total"] = obj.passCount + obj.failCount;
       }
       return arr;
