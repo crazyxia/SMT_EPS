@@ -20,7 +20,9 @@ import com.jimi.smt.eps.display.constant.BoardResetReson;
 import com.jimi.smt.eps.display.constant.ClientDevice;
 import com.jimi.smt.eps.display.constant.ControlResult;
 import com.jimi.smt.eps.display.entity.SocketLog;
+import com.jimi.smt.eps.display.entity.vo.ConfigVO;
 import com.jimi.smt.eps.display.entity.CenterLogin;
+import com.jimi.smt.eps.display.entity.Line;
 import com.jimi.smt.eps.display.entity.ProgramItemVisit;
 import com.jimi.smt.eps.display.entity.ResultData;
 import com.jimi.smt.eps.display.pack.BoardResetPackage;
@@ -67,7 +69,7 @@ public class DisplayController implements Initializable {
 	// 刷新表格数据线程的启动延时时间
 	private static final Integer TIME_DELAY = 0;
 	// 刷线表格数据线程的启动间隔时间
-	private static final Integer TIME_PERIOD = 5000;
+	private static final Integer TIME_PERIOD = 1000;
 	// 默认结果
 	private static final Integer DEFAULT_RESULT = 2;
 
@@ -146,7 +148,7 @@ public class DisplayController implements Initializable {
 	// http连接
 	HttpHelper httpHelper = new HttpHelper();
 
-	// 定时器
+	// 刷新表格定时器
 	private static Timer updateTimer = new Timer(true);
 	// 表格数据
 	private ObservableList<ResultData> tableLsit = null;
@@ -159,21 +161,32 @@ public class DisplayController implements Initializable {
 	BoardResetPackage boardResetPackage = new BoardResetPackage();
 
 	private List<String> lines = null;
-	// 返回的结果
+	private List<Line> lineList = null;
+	private List<ConfigVO> configVOs = null;
+
+	// http请求返回的结果
 	private String result;
+	// 根据所有全检结果得到
+	private int firstCheckAllResults;
 
 	private List<ProgramItemVisit> programItemVisits;
 	// 操作员
 	private String operator;
 
+	// Config配置项
+	private static final String CHECK_ALL_CYCLE_TIME = "check_all_cycle_time";
+	private static final String CHECK_AFTER_CHANGE_TIME = "check_after_change_time";
+
 	// 重置请求
 	private static final String RESET_ACTION = "program/reset";
 	// 选择当前工单请求
 	private static final String SWITCH_ACTION = "program/switch";
+	// 查询所有产线名称请求
+	private static final String GET_LINE_ACTION = "line/selectLine";
 	// 查询所有产线请求
-	private static final String GET_LINE_ACTION = "line/selectAll";
-	// 查询用户请求
-	private static final String GET_USER_ACTION = "login/selectById";
+	private static final String GET_ALLLINE_ACTION = "line/selectAll";
+	// 查询中控对象请求
+	private static final String GET_CENTERLOGIN_ACTION = "login/selectById";
 	// 查询工单请求
 	private static final String GET_WORKORDER_ACTION = "program/selectWorkingOrder";
 	// 查询版面类型请求
@@ -182,10 +195,12 @@ public class DisplayController implements Initializable {
 	private static final String GET_OPERATOR_ACTION = "program/selectLastOperatorByProgram";
 	// 查询工单操作请求
 	private static final String GET_ITEMVISIT_ACTION = "program/selectItemVisitByProgram";
-	
-	private Map<String, String> map = new HashMap<>();
+	// 查询产线配置请求
+	private static final String GET_CONFIG_ACTION = "config/list";
 
+	
 	public void initialize(URL arg0, ResourceBundle arg1) {
+		initConfig();
 		initVersionLb();
 		initlineCb();
 		initDatatTV();
@@ -195,13 +210,14 @@ public class DisplayController implements Initializable {
 		boardTypeChangeListener();
 		// 定时任务：刷新表单
 		timeTask();
-
 	}
 
-	private void initVersionLb() {
-		versionLb.setText("V" + Main.getVersion() + " © 2018 几米物联技术有限公司  All rights reserved.");
+	
+	public void initConfig() {
+		configVOs = JSON.parseArray(sendRequest(GET_CONFIG_ACTION, null), ConfigVO.class);
 	}
 
+	
 	/**
 	 * 初始化线号选择框
 	 * 
@@ -209,11 +225,13 @@ public class DisplayController implements Initializable {
 	 */
 	public void initlineCb() {
 		lines = JSON.parseArray(sendRequest(GET_LINE_ACTION, null), String.class);
+		lineList = JSON.parseArray(sendRequest(GET_ALLLINE_ACTION, null), Line.class);
 		ObservableList<String> lineList = FXCollections.observableArrayList(lines);
 		lineCb.getItems().clear();
 		lineCb.setItems(lineList);
 	}
 
+	
 	/**
 	 * 初始化表格
 	 */
@@ -235,9 +253,7 @@ public class DisplayController implements Initializable {
 					public void updateItem(String item, boolean empty) {
 
 						super.updateItem(item, empty);
-						this.setStyle("-fx-font-size: " + ((((senceWidth - 18) / 7 - 111) / 12) + 22) + "px;"
-								+ "	-fx-alignment: center;" + "	-fx-font-family:'STXiHei';"
-								+ "	-fx-font-weight: bold;");
+						this.setStyle("-fx-font-size: " + ((((senceWidth - 18) / 7 - 111) / 12) + 22) + "px;" + "	-fx-alignment: center;" + "	-fx-font-family:'STXiHei';" + "	-fx-font-weight: bold;");
 						this.setText(item);
 					}
 				};
@@ -251,6 +267,7 @@ public class DisplayController implements Initializable {
 		initcell(firstCheckAllResultCl);
 	}
 
+	
 	/**
 	 * 初始化表格中某一列的每个单元格
 	 * 
@@ -267,9 +284,7 @@ public class DisplayController implements Initializable {
 					public void updateItem(Integer item, boolean empty) {
 
 						super.updateItem(item, empty);
-						this.setStyle("-fx-font-size:" + ((((senceWidth - 18) / 7 - 111) / 12) + 22) + "px;"
-								+ "	-fx-alignment: center;" + "	-fx-font-family:'STXiHei';"
-								+ "	-fx-font-weight: bold;");
+						this.setStyle("-fx-font-size:" + ((((senceWidth - 18) / 7 - 111) / 12) + 22) + "px;" + "	-fx-alignment: center;" + "	-fx-font-family:'STXiHei';" + "	-fx-font-weight: bold;");
 						this.setText(null);
 						if (!empty) {
 							if (item.toString().equals("0")) {
@@ -287,6 +302,20 @@ public class DisplayController implements Initializable {
 							} else if (item.toString().equals("4")) {
 								this.setText("◎");
 								this.setTextFill(Color.PURPLE);
+							} else if (30000 < item.intValue() && item.intValue() < 40000) {
+								this.setText(getCountDownTime(item - 30000));
+								if(item.intValue() < 30010) {
+									this.setTextFill(Color.RED);
+								}else {
+									this.setTextFill(Color.GREEN);
+								}	
+							} else if (40000 < item.intValue()) {
+								this.setText(getCountDownTime(item - 40000));
+								if(item.intValue() < 40010) {
+									this.setTextFill(Color.RED);
+								}else {
+									this.setTextFill(Color.GREEN);
+								}
 							}
 						}
 					}
@@ -295,6 +324,7 @@ public class DisplayController implements Initializable {
 		});
 	}
 
+	
 	/**
 	 * 初始化定时器任务
 	 */
@@ -302,12 +332,9 @@ public class DisplayController implements Initializable {
 		updateTimer.schedule(new TimerTask() {
 			@Override
 			public void run() {
-				String line = lineCb.getSelectionModel().getSelectedItem() == null ? ""
-						: lineCb.getSelectionModel().getSelectedItem().toString();
-				String workOrder = workOrderCb.getSelectionModel().getSelectedItem() == null ? ""
-						: workOrderCb.getSelectionModel().getSelectedItem().toString();
-				String boardType = boardTybeCb.getSelectionModel().getSelectedItem() == null ? ""
-						: boardTybeCb.getSelectionModel().getSelectedItem().toString();
+				String line = lineCb.getSelectionModel().getSelectedItem() == null ? "" : lineCb.getSelectionModel().getSelectedItem().toString();
+				String workOrder = workOrderCb.getSelectionModel().getSelectedItem() == null ? "" : workOrderCb.getSelectionModel().getSelectedItem().toString();
+				String boardType = boardTybeCb.getSelectionModel().getSelectedItem() == null ? "" : boardTybeCb.getSelectionModel().getSelectedItem().toString();
 				if (!line.equals("") && !workOrder.equals("") && !boardType.equals("")) {
 					Platform.runLater(new Runnable() {
 
@@ -323,6 +350,7 @@ public class DisplayController implements Initializable {
 		}, TIME_DELAY, TIME_PERIOD);
 	}
 
+	
 	/**
 	 * 线号选择框文本内容变更监听器
 	 */
@@ -334,9 +362,9 @@ public class DisplayController implements Initializable {
 				if (newValue != null && newValue.intValue() >= 0) {
 					String line = lineCb.getItems().get(newValue.intValue());
 					resetWorkOrderCb(line);
-					map.clear();
-					map.put("id", newValue.intValue() + 1 + "");
-					String response = sendRequest(GET_USER_ACTION, map);
+					Map<String, String> map = new HashMap<>();
+					map.put("id", lineList.get(newValue.intValue()).getId() + "");
+					String response = sendRequest(GET_CENTERLOGIN_ACTION, map);
 					CenterLogin login = null;
 					if (!response.equals("")) {
 						login = JSON.parseObject(response, CenterLogin.class);
@@ -346,20 +374,20 @@ public class DisplayController implements Initializable {
 							asyncCommunicator.close();
 						}
 						asyncCommunicator = new AsyncCommunicator(remoteIp, port, PACKAGE_PATH);
-						// boardResetPackage.setLine(Line.values()[newValue.intValue()+1]);
-						boardResetPackage.setLine(newValue.intValue() + 1 + "");
+						boardResetPackage.setLine(lineList.get(newValue.intValue()).getId());
 						boardResetPackage.setClientDevice(ClientDevice.PC);
 						boardResetPackage.setBoardResetReson(BoardResetReson.WORK_ORDER_RESTART);
 						logger.info(" IP: " + remoteIp + "  PORT: " + port + " LINE: " + line);
 						clearText();
 					} else {
-						httpFail(GET_USER_ACTION, !IS_NETWORK, null);
+						httpFail(GET_CENTERLOGIN_ACTION, !IS_NETWORK, null);
 					}
 				}
 			}
 		});
 	}
 
+	
 	/**
 	 * 工单选择框文本内容变更监听器
 	 */
@@ -370,18 +398,16 @@ public class DisplayController implements Initializable {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
 				if (newValue != null && newValue.intValue() >= 0) {
-					String line = lineCb.getSelectionModel().getSelectedItem() == null ? ""
-							: lineCb.getSelectionModel().getSelectedItem().toString();
+					String line = lineCb.getSelectionModel().getSelectedItem() == null ? "" : lineCb.getSelectionModel().getSelectedItem().toString();
 					String workOrder = workOrderCb.getItems().get(newValue.intValue());
 					if (!line.equals("") && !workOrder.equals("")) {
-						map.clear();
+						Map<String, String> map = new HashMap<>();
 						map.put("line", line);
 						map.put("workOrder", workOrder);
 						String response = sendRequest(GET_BOARDTYPE_ACTION, map);
 						if (!response.equals("[]")) {
 							List<String> boardTypes = JSON.parseArray(response, String.class);
-							ObservableList<String> boardTybeList = FXCollections
-									.observableArrayList(getBoardType(boardTypes));
+							ObservableList<String> boardTybeList = FXCollections.observableArrayList(getBoardType(boardTypes));
 							boardTybeCb.getItems().clear();
 							boardTybeCb.setItems(boardTybeList);
 							clearText();
@@ -390,12 +416,12 @@ public class DisplayController implements Initializable {
 						}
 					}
 				}
-
 			}
 		});
 
 	}
 
+	
 	/**
 	 * 板面类型选择框文本内容变更监听器
 	 */
@@ -406,13 +432,10 @@ public class DisplayController implements Initializable {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
 				if (newValue != null && newValue.intValue() >= 0) {
-					String line = lineCb.getSelectionModel().getSelectedItem() == null ? ""
-							: lineCb.getSelectionModel().getSelectedItem().toString();
-					String workOrder = workOrderCb.getSelectionModel().getSelectedItem() == null ? ""
-							: workOrderCb.getSelectionModel().getSelectedItem().toString();
+					String line = lineCb.getSelectionModel().getSelectedItem() == null ? "" : lineCb.getSelectionModel().getSelectedItem().toString();
+					String workOrder = workOrderCb.getSelectionModel().getSelectedItem() == null ? "" : workOrderCb.getSelectionModel().getSelectedItem().toString();
 					String boardType = boardTybeCb.getItems().get(newValue.intValue());
-					if (!line.equals("") && !workOrder.equals("") && boardType != null && !boardType.equals("")
-							&& asyncCommunicator != null) {
+					if (!line.equals("") && !workOrder.equals("") && boardType != null && !boardType.equals("") && asyncCommunicator != null) {
 						Integer boardTypeNo = getBoardTypeNo(boardType);
 						setDisableCb(true);
 						resetBt.setDisable(true);
@@ -433,7 +456,7 @@ public class DisplayController implements Initializable {
 											logger.info("接收重置包：" + rLog.getData());
 											if (reply.getControlResult().equals(ControlResult.SUCCEED)) {
 												// 发送选择工单请求
-												map.clear();
+												Map<String, String> map = new HashMap<>();
 												map.put("line", line);
 												map.put("workOrder", workOrder);
 												map.put("boardType", boardTypeNo.toString());
@@ -488,9 +511,9 @@ public class DisplayController implements Initializable {
 				}
 			}
 		});
-
 	}
 
+	
 	/**
 	 * 重置按钮监听器
 	 */
@@ -499,15 +522,13 @@ public class DisplayController implements Initializable {
 
 			@Override
 			public void handle(ActionEvent event) {
-				String boardType = boardTybeCb.getSelectionModel().getSelectedItem() == null ? ""
-						: boardTybeCb.getSelectionModel().getSelectedItem().toString();
+				String boardType = boardTybeCb.getSelectionModel().getSelectedItem() == null ? "" : boardTybeCb.getSelectionModel().getSelectedItem().toString();
 				if (boardType.equals("") || !isUpdate) {
 					new Alert(AlertType.INFORMATION, "你还没有选定工单信息", ButtonType.OK).show();
 				} else {
-					Optional<ButtonType> optional = new Alert(AlertType.WARNING, "你确定要重置该工单的状态吗？\n这会初始化除发料以外的所有状态",
-							ButtonType.YES, ButtonType.CANCEL).showAndWait();
+					Optional<ButtonType> optional = new Alert(AlertType.WARNING, "你确定要重置该工单的状态吗？\n这会初始化除发料以外的所有状态", ButtonType.YES, ButtonType.CANCEL).showAndWait();
 					if (optional != null && optional.get().equals(ButtonType.YES)) {
-						map.clear();
+						Map<String, String> map = new HashMap<>();
 						String line = lineCb.getSelectionModel().getSelectedItem().toString();
 						String workOrder = workOrderCb.getSelectionModel().getSelectedItem().toString();
 						Integer boardTypeNo = getBoardTypeNo(boardType);
@@ -535,6 +556,120 @@ public class DisplayController implements Initializable {
 		});
 	}
 
+	
+	/**
+	 * 关闭程序事件
+	 * 
+	 * @param primaryStage
+	 */
+	public void closeWindow(Stage primaryStage) {
+		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+
+			@Override
+			public void handle(WindowEvent event) {
+				String line = lineCb.getSelectionModel().getSelectedItem() == null ? "" : lineCb.getSelectionModel().getSelectedItem().toString();
+				if (!line.equals("") && asyncCommunicator != null) {
+					asyncCommunicator.connect(new OnConnectedListener() {
+
+						@Override
+						public void onSucceed() {
+							asyncCommunicator.send(boardResetPackage, new OnReplyPackageArrivedListener() {
+
+								@Override
+								public void onReplyPackageArrived(BasePackage r) {
+									SocketLog sLog = createLogByPackage(boardResetPackage);
+									logger.info("发送重置包：" + sLog.getData());
+									if (r != null && r instanceof BoardResetReplyPackage) {
+										BoardResetReplyPackage reply = (BoardResetReplyPackage) r;
+										SocketLog rLog = createLogByPackage(reply);
+										logger.info("接收重置包：" + rLog.getData());
+										if (!reply.getControlResult().equals(ControlResult.SUCCEED)) {
+											logger.error("关闭时重置工单的生产数目失败，取消工单失败，IP:" + asyncCommunicator.getRemoteIp() + "服务器内部错误");
+										} else {
+											logger.info("关闭时重置生产数目成功");
+										}
+									} else {
+										logger.error("关闭时重置工单的生产数目失败，取消工单失败，IP:" + asyncCommunicator.getRemoteIp() + "服务器内部错误");
+									}
+									if (asyncCommunicator != null) {
+										asyncCommunicator.close();
+									}
+									sendHttpCloseRequest(line);
+								}
+
+								@Override
+								public void onCatchIOException(IOException exception) {
+									logger.error("关闭时重置工单的生产数目失败，取消工单失败，IP:" + asyncCommunicator.getRemoteIp() + "网络连接错误");
+									if (asyncCommunicator != null) {
+										asyncCommunicator.close();
+									}
+									sendHttpCloseRequest(line);
+								}
+							});
+						}
+
+						@Override
+						public void onFailed(IOException e) {
+							logger.error("关闭时重置工单的生产数目失败，取消工单失败，IP:" + asyncCommunicator.getRemoteIp() + "网络连接错误");
+							if (asyncCommunicator != null) {
+								asyncCommunicator.close();
+							}
+							sendHttpCloseRequest(line);
+						}
+					});
+				}
+			}
+		});
+	}
+
+	
+	/**
+	 * 根据窗口大小调整界面控件大小
+	 * 
+	 * @param primarystage
+	 */
+	public void scenceChangeListener(Stage primarystage) {
+		primarystage.widthProperty().addListener(new ChangeListener<Number>() {
+
+			@Override
+			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+				senceWidth = newValue.intValue();
+				// 改变工单下拉框和板面类型下拉框的宽度和字体大小
+				changeCbSize(senceWidth);
+				// 调整文本框控件的大小和字体大小
+				changeLbSize(senceWidth);
+				// 调整重置工单按钮的位置
+				resetBt.setLayoutX(senceWidth / 2 - 140);
+				// 调整操作员文本框的大小和位置
+				changeOperatorSize(senceWidth);
+				// 调整表格的每一列的大小和字体大小
+				ObservableList<TableColumn<ResultData, ?>> Columns = DataTv.getColumns();
+				for (TableColumn<ResultData, ?> tableColumn : Columns) {
+					tableColumn.setMinWidth((senceWidth - 47) / 7);
+					tableColumn.setMaxWidth((senceWidth - 47) / 7);
+					tableColumn.setStyle("-fx-font-size:" + ((((senceWidth - 18) / 7 - 111) / 20) + 18) + "px;" + "	-fx-alignment: center;" + "	-fx-font-family:'Microsoft YaHei';" + "	-fx-font-weight: bolder;");
+				}
+				// 调整单元格的字体大小
+				if (isUpdate) {
+					Platform.runLater(new Runnable() {
+
+						@Override
+						public void run() {
+							updateText();
+
+						}
+					});
+				}
+			}
+		});
+	}
+
+	
+	private void initVersionLb() {
+		versionLb.setText("V" + Main.getVersion() + " © 2018 几米物联技术有限公司  All rights reserved.");
+	}
+
+	
 	/**
 	 * 重置工单生产数量失败
 	 * 
@@ -557,9 +692,9 @@ public class DisplayController implements Initializable {
 				resetWorkOrderCb(line);
 			}
 		});
-
 	}
 
+	
 	/**
 	 * 发送http请求失败
 	 * 
@@ -608,6 +743,23 @@ public class DisplayController implements Initializable {
 				@Override
 				public void run() {
 					if (isNetwork) {
+						logger.error("查询所有产线名称失败，select_line请求失败，网络连接出错");
+						new Alert(AlertType.ERROR, "查询所有产线名称失败，请检查你的网络连接", ButtonType.OK).show();
+					} else {
+						logger.error("查询所有产线名称失败，服务器内部原因");
+						new Alert(AlertType.ERROR, "查询所有产线名称失败，服务器内部错误", ButtonType.OK).show();
+					}
+					setDisableCb(false);
+					resetBt.setDisable(false);
+				}
+			});
+			return;
+		}
+		if (action.equals(GET_ALLLINE_ACTION)) {
+			Platform.runLater(new Runnable() {
+				@Override
+				public void run() {
+					if (isNetwork) {
 						logger.error("查询所有产线失败，select_all请求失败，网络连接出错");
 						new Alert(AlertType.ERROR, "查询所有产线失败，请检查你的网络连接", ButtonType.OK).show();
 					} else {
@@ -620,7 +772,7 @@ public class DisplayController implements Initializable {
 			});
 			return;
 		}
-		if (action.equals(GET_USER_ACTION)) {
+		if (action.equals(GET_CENTERLOGIN_ACTION)) {
 			Platform.runLater(new Runnable() {
 				@Override
 				public void run() {
@@ -706,6 +858,7 @@ public class DisplayController implements Initializable {
 		}
 	}
 
+	
 	/**
 	 * 设置下拉框的状态
 	 * 
@@ -717,6 +870,7 @@ public class DisplayController implements Initializable {
 		boardTybeCb.setDisable(status);
 	}
 
+	
 	/**
 	 * 更新站位，扫描站位，物料号，扫描物料号，操作员，操作结果以及表格数据
 	 * 
@@ -725,15 +879,12 @@ public class DisplayController implements Initializable {
 	 */
 	private synchronized void updateText() {
 
-		String line = lineCb.getSelectionModel().getSelectedItem() == null ? ""
-				: lineCb.getSelectionModel().getSelectedItem().toString();
-		String workOrder = workOrderCb.getSelectionModel().getSelectedItem() == null ? ""
-				: workOrderCb.getSelectionModel().getSelectedItem().toString();
-		String boardType = boardTybeCb.getSelectionModel().getSelectedItem() == null ? ""
-				: boardTybeCb.getSelectionModel().getSelectedItem().toString();
+		String line = lineCb.getSelectionModel().getSelectedItem() == null ? "" : lineCb.getSelectionModel().getSelectedItem().toString();
+		String workOrder = workOrderCb.getSelectionModel().getSelectedItem() == null ? "" : workOrderCb.getSelectionModel().getSelectedItem().toString();
+		String boardType = boardTybeCb.getSelectionModel().getSelectedItem() == null ? "" : boardTybeCb.getSelectionModel().getSelectedItem().toString();
 		if (!line.equals("") && !workOrder.equals("") && !boardType.equals("")) {
 			Integer boardTypeNo = getBoardTypeNo(boardType);
-			map.clear();
+			Map<String, String> map = new HashMap<>();
 			map.put("line", line);
 			map.put("workOrder", workOrder);
 			map.put("boardType", boardTypeNo.toString());
@@ -745,6 +896,27 @@ public class DisplayController implements Initializable {
 			}
 			String response = sendRequest(GET_OPERATOR_ACTION, map);
 			operator = response.equals("") ? "unknown" : response;
+			firstCheckAllResults = 1;
+			for (ProgramItemVisit programItemVisit : programItemVisits) {
+				if (!programItemVisit.getFirstCheckAllResult().equals(1)) {
+					firstCheckAllResults = 0;
+					break;
+				}
+			}
+			Date minCheckAllTime = new Date();
+			if (firstCheckAllResults == 1) {
+				for (ProgramItemVisit programItemVisit : programItemVisits) {
+					if (programItemVisit.getCheckAllTime().getTime() < minCheckAllTime.getTime()) {
+						minCheckAllTime = programItemVisit.getCheckAllTime();
+					}
+				}
+				for (ProgramItemVisit programItemVisit : programItemVisits) {
+					if (programItemVisit.getCheckAllResult().equals(2) && (programItemVisit.getCheckAllTime().getTime()) + getConfigValue(CHECK_ALL_CYCLE_TIME) * 1000 > System.currentTimeMillis()) {
+						programItemVisit.setCheckAllResult(5);
+						programItemVisit.setCheckAllTime(minCheckAllTime);
+					}
+				}
+			}
 			if (programItemVisits != null && programItemVisits.size() > 0) {
 				ProgramItemVisit programItemVisit = programItemVisits.get(0);
 				lineseatLb.setText(programItemVisit.getLineseat());
@@ -759,6 +931,7 @@ public class DisplayController implements Initializable {
 		}
 	}
 
+	
 	/**
 	 * 设置typeLb和resultLb文本值，更改操作结果
 	 * 
@@ -801,6 +974,7 @@ public class DisplayController implements Initializable {
 		}
 	}
 
+	
 	/**
 	 * 根据操作结果进行显示
 	 * 
@@ -849,6 +1023,7 @@ public class DisplayController implements Initializable {
 		}
 	}
 
+	
 	/**
 	 * 将ProgramItemVisit转化为可被表格识别的ResultData
 	 * 
@@ -863,14 +1038,31 @@ public class DisplayController implements Initializable {
 			resultData.setStoreIssueResult(programItemVisit.getStoreIssueResult());
 			resultData.setFeedResult(programItemVisit.getFeedResult());
 			resultData.setChangeResult(programItemVisit.getChangeResult());
-			resultData.setCheckResult(programItemVisit.getCheckResult());
-			resultData.setCheckAllResult(programItemVisit.getCheckAllResult());
+			if (programItemVisit.getChangeResult().equals(4) && programItemVisit.getCheckResult() != 0 && programItemVisit.getCheckResult() != 3 && programItemVisit.getChangeTime().getTime() > programItemVisit.getCheckTime().getTime()) {
+				Integer k = (int) (getConfigValue(CHECK_AFTER_CHANGE_TIME) + (programItemVisit.getChangeTime().getTime()) / 1000 - (System.currentTimeMillis()) / 1000);
+				if (0 < k && k < getConfigValue(CHECK_AFTER_CHANGE_TIME)) {
+					resultData.setCheckResult(k + 30000);
+				}else {
+					resultData.setCheckResult(programItemVisit.getCheckResult());
+				}
+			} else {
+				resultData.setCheckResult(programItemVisit.getCheckResult());
+			}
+			if (programItemVisit.getCheckAllResult().equals(5)) {
+				Integer k = (int) (getConfigValue(CHECK_ALL_CYCLE_TIME) + (programItemVisit.getCheckAllTime().getTime()) / 1000 - (System.currentTimeMillis()) / 1000);
+				if (0 < k && k < getConfigValue(CHECK_ALL_CYCLE_TIME)) {
+					resultData.setCheckAllResult(k + 40000);
+				}
+			} else {
+				resultData.setCheckAllResult(programItemVisit.getCheckAllResult());
+			}
 			resultData.setFirstCheckAllResult(programItemVisit.getFirstCheckAllResult());
 			resultDatas.add(resultData);
 		}
 		return resultDatas;
 	}
 
+	
 	/**
 	 * 清除文本框文本，表格数据
 	 */
@@ -884,6 +1076,7 @@ public class DisplayController implements Initializable {
 		DataTv.setItems(null);
 	}
 
+	
 	/**
 	 * 清空板面类型下拉框，重置工单下拉框内容
 	 * 
@@ -892,7 +1085,7 @@ public class DisplayController implements Initializable {
 	private void resetWorkOrderCb(String line) {
 		workOrderCb.getItems().clear();
 		boardTybeCb.getItems().clear();
-		map.clear();
+		Map<String, String> map = new HashMap<>();
 		map.put("line", line);
 		String response = sendRequest(GET_WORKORDER_ACTION, map);
 		if (!response.equals("[]")) {
@@ -904,6 +1097,7 @@ public class DisplayController implements Initializable {
 		}
 	}
 
+	
 	/**
 	 * 将板面类型数字转化为中文
 	 * 
@@ -926,6 +1120,7 @@ public class DisplayController implements Initializable {
 		return boardTybeList;
 	}
 
+	
 	/**
 	 * 将板面类型中文转化为数字
 	 * 
@@ -946,82 +1141,14 @@ public class DisplayController implements Initializable {
 		return boardTypeNo;
 	}
 
-	/**
-	 * 关闭程序事件
-	 * 
-	 * @param primaryStage
-	 */
-	public void closeWindow(Stage primaryStage) {
-		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-
-			@Override
-			public void handle(WindowEvent event) {
-				String line = lineCb.getSelectionModel().getSelectedItem() == null ? ""
-						: lineCb.getSelectionModel().getSelectedItem().toString();
-				if (!line.equals("") && asyncCommunicator != null) {
-					asyncCommunicator.connect(new OnConnectedListener() {
-
-						@Override
-						public void onSucceed() {
-							asyncCommunicator.send(boardResetPackage, new OnReplyPackageArrivedListener() {
-
-								@Override
-								public void onReplyPackageArrived(BasePackage r) {
-									SocketLog sLog = createLogByPackage(boardResetPackage);
-									logger.info("发送重置包：" + sLog.getData());
-									if (r != null && r instanceof BoardResetReplyPackage) {
-										BoardResetReplyPackage reply = (BoardResetReplyPackage) r;
-										SocketLog rLog = createLogByPackage(reply);
-										logger.info("接收重置包：" + rLog.getData());
-										if (!reply.getControlResult().equals(ControlResult.SUCCEED)) {
-											logger.error("关闭时重置工单的生产数目失败，取消工单失败，IP:" + asyncCommunicator.getRemoteIp()
-													+ "服务器内部错误");
-										} else {
-											logger.info("关闭时重置生产数目成功");
-										}
-									} else {
-										logger.error("关闭时重置工单的生产数目失败，取消工单失败，IP:" + asyncCommunicator.getRemoteIp()
-												+ "服务器内部错误");
-									}
-									if (asyncCommunicator != null) {
-										asyncCommunicator.close();
-									}
-									sendHttpCloseRequest(line);
-								}
-
-								@Override
-								public void onCatchIOException(IOException exception) {
-									logger.error(
-											"关闭时重置工单的生产数目失败，取消工单失败，IP:" + asyncCommunicator.getRemoteIp() + "网络连接错误");
-									if (asyncCommunicator != null) {
-										asyncCommunicator.close();
-									}
-									sendHttpCloseRequest(line);
-								}
-							});
-						}
-
-						@Override
-						public void onFailed(IOException e) {
-							logger.error("关闭时重置工单的生产数目失败，取消工单失败，IP:" + asyncCommunicator.getRemoteIp() + "网络连接错误");
-							if (asyncCommunicator != null) {
-								asyncCommunicator.close();
-							}
-							sendHttpCloseRequest(line);
-						}
-					});
-				}
-			}
-		});
-	}
-
+	
 	/**
 	 * http关闭请求取消工单
 	 * 
 	 * @param line
 	 */
 	private void sendHttpCloseRequest(String line) {
-		map.clear();
+		Map<String, String> map = new HashMap<>();
 		map.put("line", line);
 		try {
 			httpHelper.requestHttp(SWITCH_ACTION, map, new okhttp3.Callback() {
@@ -1047,49 +1174,7 @@ public class DisplayController implements Initializable {
 		}
 	}
 
-	/**
-	 * 根据窗口大小调整界面控件大小
-	 * 
-	 * @param primarystage
-	 */
-	public void scenceChangeListener(Stage primarystage) {
-		primarystage.widthProperty().addListener(new ChangeListener<Number>() {
-
-			@Override
-			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-				senceWidth = newValue.intValue();
-				// 改变工单下拉框和板面类型下拉框的宽度和字体大小
-				changeCbSize(senceWidth);
-				// 调整文本框控件的大小和字体大小
-				changeLbSize(senceWidth);
-				// 调整重置工单按钮的位置
-				resetBt.setLayoutX(senceWidth / 2 - 140);
-				// 调整操作员文本框的大小和位置
-				changeOperatorSize(senceWidth);
-				// 调整表格的每一列的大小和字体大小
-				ObservableList<TableColumn<ResultData, ?>> Columns = DataTv.getColumns();
-				for (TableColumn<ResultData, ?> tableColumn : Columns) {
-					tableColumn.setMinWidth((senceWidth - 47) / 7);
-					tableColumn.setMaxWidth((senceWidth - 47) / 7);
-					tableColumn.setStyle("-fx-font-size:" + ((((senceWidth - 18) / 7 - 111) / 20) + 18) + "px;"
-							+ "	-fx-alignment: center;" + "	-fx-font-family:'Microsoft YaHei';"
-							+ "	-fx-font-weight: bolder;");
-				}
-				// 调整单元格的字体大小
-				if (isUpdate) {
-					Platform.runLater(new Runnable() {
-
-						@Override
-						public void run() {
-							updateText();
-
-						}
-					});
-				}
-			}
-		});
-	}
-
+	
 	/**
 	 * 改变工单下拉框和板面类型下拉框的宽度和字体大小
 	 * 
@@ -1099,14 +1184,13 @@ public class DisplayController implements Initializable {
 
 		workOrderCb.setMinWidth((senceWidth / 2 - 85));
 		workOrderCb.setMaxWidth((senceWidth / 2 - 85));
-		workOrderCb.setStyle(
-				workOrderCb.getStyle() + "-fx-font-size:" + (20 + (workOrderCb.getMinWidth() - 315) / 200) + ";");
+		workOrderCb.setStyle(workOrderCb.getStyle() + "-fx-font-size:" + (20 + (workOrderCb.getMinWidth() - 315) / 200) + ";");
 		boardTybeCb.setMinWidth(125 + (senceWidth / 2 - 400) / 10);
 		boardTybeCb.setMaxWidth(125 + (senceWidth / 2 - 400) / 10);
-		boardTybeCb.setStyle(
-				boardTybeCb.getStyle() + "-fx-font-size:" + (20 + (boardTybeCb.getMinWidth() - 125) / 20) + ";");
+		boardTybeCb.setStyle(boardTybeCb.getStyle() + "-fx-font-size:" + (20 + (boardTybeCb.getMinWidth() - 125) / 20) + ";");
 	}
 
+	
 	/**
 	 * 改变操作员文本框和线号下拉框的宽度，位置和字体
 	 * 
@@ -1117,22 +1201,21 @@ public class DisplayController implements Initializable {
 		operatorLb.setMinWidth(110 + (senceWidth / 2 - 400) / 10);
 		operatorLb.setLayoutX(senceWidth / 2 - operatorLb.getMinWidth() - 10);
 		operatorNameLb.setLayoutX(senceWidth / 2 - operatorLb.getMinWidth() - 100);
-		operatorLb.setStyle(
-				operatorLb.getStyle() + "-fx-font-size:" + (22 + (operatorLb.getMinWidth() - 110) / 10) + ";");
+		operatorLb.setStyle(operatorLb.getStyle() + "-fx-font-size:" + (22 + (operatorLb.getMinWidth() - 110) / 10) + ";");
 		// 线号下拉框
 		lineCb.setMinWidth(115 + ((senceWidth / 2 - operatorLb.getMinWidth() - 300) / 50));
 		lineCb.setMaxWidth(115 + ((senceWidth / 2 - operatorLb.getMinWidth() - 300) / 50));
 		lineCb.setStyle(lineCb.getStyle() + "-fx-font-size:" + (20 + (lineCb.getMinWidth() - 115) / 4) + ";");
 	}
 
+	
 	/**
 	 * 改变文本框的宽度和字体大小
 	 * 
 	 * @param senceWidth
 	 */
 	private void changeLbSize(int senceWidth) {
-		String textStyle = "-fx-alignment:center;-fx-font-family:'Microsoft YaHei';"
-				+ "-fx-background-radius:4;-fx-border-radius:4;-fx-border-color:gray;-fx-font-weight:bold;";
+		String textStyle = "-fx-alignment:center;-fx-font-family:'Microsoft YaHei';" + "-fx-background-radius:4;-fx-border-radius:4;-fx-border-color:gray;-fx-font-weight:bold;";
 		double LbSize = ((senceWidth - 20) / 2) - 130;
 
 		lineseatLb.setMinWidth(LbSize);
@@ -1152,6 +1235,7 @@ public class DisplayController implements Initializable {
 
 	}
 
+	
 	/**
 	 * 根据包创建日志实体
 	 * 
@@ -1167,15 +1251,17 @@ public class DisplayController implements Initializable {
 		return log;
 	}
 
+	
 	/**
-	 * 发送http请求
-	 * 
+	 * @author HCJ 发送http请求
+	 * @method sendRequest
 	 * @param action
 	 * @param args
-	 * @author HCJ
 	 * @return
+	 * @return String
+	 * @date 2018年9月25日 下午5:52:32
 	 */
-	public String sendRequest(String action, Map<String, String> args) {
+	private String sendRequest(String action, Map<String, String> args) {
 		try {
 			String response = httpHelper.requestHttp(action, args);
 			result = response;
@@ -1185,4 +1271,34 @@ public class DisplayController implements Initializable {
 		}
 		return result;
 	}
+	
+	
+	/**@author HCJ
+	 * 根据产线配置类型返回配置时间的秒数
+	 * @param timeType
+	 * @date 2018年10月22日 上午9:49:27
+	 */
+	private Integer getConfigValue(String timeType) {
+		for (ConfigVO configVO : configVOs) {
+			if (configVO.getLineName().equals(lineCb.getSelectionModel().getSelectedItem()) && configVO.getName().equals(timeType)) {
+				return Integer.parseInt(configVO.getValue()) * 60;
+			}
+		}
+		return null;
+	}
+
+	
+	/**@author HCJ
+	 * 根据秒数返回时分秒的字符串
+	 * @param time
+	 * @date 2018年10月22日 上午9:50:09
+	 */
+	private String getCountDownTime(long time) {
+		StringBuffer result = new StringBuffer();
+		String hour = (time / 3600 % 24) + "";
+		String minute = (time / 60 % 60) + "";
+		String second = (time % 60) + "";
+		return result.append(hour.length() < 2 ? "0" + hour : hour).append(":").append(minute.length() < 2 ? "0" + minute : minute).append(":").append(second.length() < 2 ? "0" + second : second).toString();
+	}
+
 }

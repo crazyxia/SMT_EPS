@@ -27,7 +27,7 @@ public class Main extends Application {
 
 	private DisplayController displayController;
 
-	private static final String VERSION = "2.1.1";
+	private static final String VERSION = "2.2.0";
 
 	private static final String NAME = "EPS_Display-" + VERSION;
 
@@ -35,6 +35,7 @@ public class Main extends Application {
 	// 日志记录
 	private Logger logger = LogManager.getRootLogger();
 
+	
 	@Override
 	public void start(Stage primaryStage) {
 		try {
@@ -49,8 +50,6 @@ public class Main extends Application {
 					System.exit(0);
 				}).start();
 			} else {
-				// BorderPane root =
-				// (BorderPane)FXMLLoader.load(getClass().getResource("/fxml/Display.fxml"));
 				FXMLLoader loader = new FXMLLoader(ResourcesUtil.getResourceURL("fxml/Display.fxml"));
 				Parent root = loader.load();
 				displayController = loader.getController();
@@ -73,6 +72,7 @@ public class Main extends Application {
 		}
 	}
 
+	
 	public static void main(String[] args) throws IOException {
 		ConfigurationSource source;
 		try {
@@ -84,6 +84,7 @@ public class Main extends Application {
 		launch(args);
 	}
 
+	
 	/**
 	 * 判断是否已经有一个实例在运行
 	 * 
@@ -106,6 +107,7 @@ public class Main extends Application {
 		return false;
 	}
 
+	
 	public static String getVersion() {
 		return VERSION;
 	}
