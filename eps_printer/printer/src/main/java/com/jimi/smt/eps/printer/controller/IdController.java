@@ -106,7 +106,10 @@ public class IdController implements Initializable {
 		@Override
 		protected void succeeded() {
 			stage.close();
-			mainController.print();
+			try {
+				mainController.print(null);
+			} catch (Exception e) {
+			}
 		}
 
 		@Override

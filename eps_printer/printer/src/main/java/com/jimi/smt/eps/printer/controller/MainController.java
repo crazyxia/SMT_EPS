@@ -104,7 +104,8 @@ public class MainController implements Initializable {
 	 */
 	private static final String CONFIG_KEY_PRINT_TARGET = "printTarget";
 
-	private Logger logger = LogManager.getRootLogger();
+
+	private static Logger logger = LogManager.getRootLogger();
 
 	@FXML
 	private AnchorPane parentAp;
@@ -122,8 +123,6 @@ public class MainController implements Initializable {
 	private TextField seatNoTf;
 	@FXML
 	private TextField remarkTf;
-
-	// 生产日期
 	@FXML
 	private TextField dateTf;
 	@FXML
@@ -143,7 +142,7 @@ public class MainController implements Initializable {
 	@FXML
 	private Label seatLb;
 	@FXML
-	private Label timeLb;
+	private  Label dateLb;
 	@FXML
 	private Label remarkLb;
 	@FXML
@@ -161,36 +160,27 @@ public class MainController implements Initializable {
 	@FXML
 	private Label seatLb1;
 	@FXML
-	private Label timeLb1;
+	private  Label dateLb1;
 	@FXML
 	private Label remarkLb1;
-
 	@FXML
 	private ImageView codeIv1;
 	@FXML
 	private AnchorPane previewAp1;
-	@SuppressWarnings("rawtypes")
 	@FXML
 	private ChoiceBox tableSelectCb;
-	@SuppressWarnings("rawtypes")
 	@FXML
 	private TableView materialTb;
-	@SuppressWarnings("rawtypes")
 	@FXML
 	private TableColumn materialNoCol;
-	@SuppressWarnings("rawtypes")
 	@FXML
 	private TableColumn nameCol;
-	@SuppressWarnings("rawtypes")
 	@FXML
 	private TableColumn descriptionCol;
-	@SuppressWarnings("rawtypes")
 	@FXML
 	private TableColumn seatNoCol;
-	@SuppressWarnings("rawtypes")
 	@FXML
 	private TableColumn quantityCol;
-	@SuppressWarnings("rawtypes")
 	@FXML
 	private TableColumn remarkCol;
 	@FXML
@@ -248,7 +238,7 @@ public class MainController implements Initializable {
 	// 入库数据消息队列
 	private List<String> stockLogList = new ArrayList<String>();
 
-	HttpHelper httpHelper = new HttpHelper();
+	private HttpHelper httpHelper = new HttpHelper();
 
 	private static final String INSERT_STOCK_ACTION = "stock/insert";
 
@@ -369,29 +359,82 @@ public class MainController implements Initializable {
 		}
 	}
 
+	
+	/**
+	 * 远程调用打印
+	 */
+	public synchronized boolean remoteCallPrint(String materilaId, String user, String productDate, String remainingQuantity, String materialNo) {
+		boolean result;
+		//封锁UI
+		materialNoTf.setDisable(true);
+		nameTf.setDisable(true);
+		descriptionTf.setDisable(true);
+		seatNoTf.setDisable(true);
+		quantityTf.setDisable(true);
+		remarkTf.setDisable(true);
+		dateTf.setDisable(true);
+		//备份UI的值
+		Map<String, String> backup = new HashMap<>();
+		backup.put("materialNo", materialNoTf.getText());
+		backup.put("quantity", quantityTf.getText());
+		backup.put("seatNo", seatNoTf.getText());
+		backup.put("description", descriptionTf.getText());
+		backup.put("name", nameTf.getText());
+		backup.put("remark", remarkTf.getText());
+		backup.put("date", dateTf.getText());
+		//调用打印
+		copies = 1;
+		try {
+			print(materilaId);
+			result = true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			stockLogList.remove(stockLogList.size());
+			error("发生错误：" + e.getMessage());
+			result = false;
+		}finally {
+			//还原UI的值
+			materialNoTf.setText(backup.get("materialNo"));
+			quantityTf.setText(backup.get("quantity"));
+			seatNoTf.setText(backup.get("seatNo"));
+			descriptionTf.setText(backup.get("description"));
+			nameTf.setText(backup.get("name"));
+			remarkTf.setText(backup.get("remark"));
+			dateTf.setText(backup.get("date"));
+			//解锁UI
+			materialNoTf.setText("");
+			materialNoTf.requestFocus();
+			printBt.setText("打印");
+		}
+		return result;
+	} 
+	
+	
 	/**
 	 * 打印任务
+	 * @throws Exception 
+	 * @para materialId 料盘时间戳，可空，如果为空，表示采用当前时间。否则采用给定值
 	 */
-	public void print() {
+	public void print(String materialId) throws Exception {
 		rfidResult = codeResult = true;
 		// 准备操作
 		printBt.setDisable(true);
 		printBt.setText("打印中...");
 		info("打印中...");
-		try {
+		try{
 			for (int i = 0; i < copies; i++) {
-				subPrint();
+				subPrint(materialId);
 				if (!rfidResult) {
 					throw new Exception("未成功写入RFID数据！");
 				} else if (!codeResult) {
 					throw new Exception("未成功打印二维码标签！");
 				}
-				info("打印成功");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			stockLogList.remove(stockLogList.size());
 			error("发生错误：" + e.getMessage());
+			throw e;
 		}
 		materialNoTf.setText("");
 		materialNoTf.requestFocus();
@@ -402,14 +445,12 @@ public class MainController implements Initializable {
 
 	/**
 	 * 打印子任务，此方法会被print调用若干次，次数为份数
-	 * 
+	 * @para materialId 料盘时间戳，可空，如果为空，表示采用当前时间。否则采用给定值
 	 * @throws Exception
 	 */
-	public void subPrint() throws Exception {
-		// 生成时间
-		timeLb.setText(dateTf.getText());
+	public void subPrint(String materialId) throws Exception {
 		// 生成数据
-		createData();
+		createData(materialId);
 		// 记录入库日志
 		try {
 			stockLogList.add(data);
@@ -457,16 +498,22 @@ public class MainController implements Initializable {
 		}
 	}
 
+	
 	/**
 	 * 生成数据
+	 * @para materialId 料盘时间戳，可空，如果为空，表示采用当前时间。否则采用给定值
 	 */
-	private void createData() {
+	private void createData(String materialId) {
 		StringBuffer stringBuffer = new StringBuffer();
 		stringBuffer.append(materialNoLb.getText().trim());
 		stringBuffer.append("@");
 		stringBuffer.append(quantityLb.getText().trim().equals("") ? "0" : quantityLb.getText().trim());
 		stringBuffer.append("@");
-		stringBuffer.append(System.currentTimeMillis());
+		if(materialId == null) {
+			stringBuffer.append(System.currentTimeMillis());
+		}else{
+			stringBuffer.append(materialId);
+		}
 		stringBuffer.append("@");
 		stringBuffer.append(userId);
 		stringBuffer.append("@");
@@ -572,7 +619,7 @@ public class MainController implements Initializable {
 		seatLb1.setText(seatLb.getText());
 		quantityLb1.setText(quantityLb.getText());
 		remarkLb1.setText(userId + " / " + remarkLb.getText());
-		timeLb1.setText(timeLb.getText());
+		dateLb1.setText(dateLb.getText());
 		codeIv1.setImage(codeIv.getImage());
 		previewAp1.setVisible(true);
 		Image image = previewAp1.snapshot(null, null);
@@ -601,7 +648,6 @@ public class MainController implements Initializable {
 	/**
 	 * 加载表选择器数据
 	 */
-	@SuppressWarnings("unchecked")
 	private void loadTableSelectorData() {
 		ObservableList<String> list = FXCollections.observableArrayList();
 		for (int i = 0; i < excel.getBook().getNumberOfSheets(); i++) {
@@ -615,7 +661,6 @@ public class MainController implements Initializable {
 	/**
 	 * 加载表数据
 	 */
-	@SuppressWarnings("unchecked")
 	private void loadTableData() {
 		try {
 			materials = excel.unfill(Material.class, 1);
@@ -696,10 +741,11 @@ public class MainController implements Initializable {
 			error("供应商料号表文件\"" + materialFile.getName() + "\"不存在");
 		}
 		// 初始化时间
-		timeLb.setText(DateUtil.yyyyMMdd(new Date()));
+		dateLb.setText(DateUtil.yyyyMMdd(new Date()));
 		dateTf.setText(DateUtil.yyyyMMdd(new Date()));
 	}
 
+	
 	private void initHotKey() {
 		// 初始化打印热键
 		parentAp.setOnKeyReleased(new EventHandler<KeyEvent>() {
@@ -815,7 +861,6 @@ public class MainController implements Initializable {
 		}
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void initPrintTargetRbs() {
 		ChangeListener listener = new ChangeListener<Boolean>() {
 
@@ -862,7 +907,6 @@ public class MainController implements Initializable {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private void initTableCol() {
 		// 初始化表格列表
 		materialNoCol.setCellValueFactory(new PropertyValueFactory<>("no"));
@@ -1023,7 +1067,7 @@ public class MainController implements Initializable {
 				remarkLb.setText(remarkTf.getText());
 				break;
 			case "date":
-				timeLb.setText(dateTf.getText());
+				dateLb.setText(dateTf.getText());
 			default:
 				break;
 			}

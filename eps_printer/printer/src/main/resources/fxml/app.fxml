@@ -28,7 +28,7 @@
       </TableView>
       <Label layoutX="407.0" layoutY="28.0" text="选择表：" AnchorPane.rightAnchor="534.0" AnchorPane.topAnchor="28.0" />
       <Label layoutX="589.0" layoutY="28.0" text="查找料号：" AnchorPane.rightAnchor="340.0" AnchorPane.topAnchor="28.0" />
-      <TextField fx:id="materialNoTf" layoutX="589.0" layoutY="50.0" prefHeight="65.0" prefWidth="357.0" promptText="在这里输入料号" text="290 783 313 43  163 23" AnchorPane.rightAnchor="43.0" AnchorPane.topAnchor="50.0">
+      <TextField fx:id="materialNoTf" layoutX="589.0" layoutY="50.0" prefHeight="65.0" prefWidth="357.0" promptText="在这里输入料号" AnchorPane.rightAnchor="43.0" AnchorPane.topAnchor="50.0">
          <font>
             <Font name="System Bold" size="30.0" />
          </font>
@@ -74,7 +74,7 @@
             <Label fx:id="nameLb" layoutX="49.0" layoutY="58.0" prefHeight="15.0" prefWidth="187.0" />
             <Label fx:id="quantityLb" layoutX="49.0" layoutY="79.0" prefHeight="15.0" prefWidth="187.0" />
             <Label fx:id="seatLb" layoutX="49.0" layoutY="101.0" prefHeight="15.0" prefWidth="187.0" />
-            <Label fx:id="timeLb" layoutX="49.0" layoutY="122.0" prefHeight="15.0" prefWidth="187.0" />
+            <Label fx:id="dateLb" layoutX="49.0" layoutY="122.0" prefHeight="15.0" prefWidth="187.0" />
             <Label fx:id="remarkLb" layoutX="49.0" layoutY="144.0" prefHeight="15.0" prefWidth="187.0" />
          </children>
       </AnchorPane>
@@ -91,7 +91,7 @@
                   <Font name="Microsoft YaHei Bold" size="32.0" />
                </font>
             </Label>
-            <Label fx:id="timeLb1" layoutX="122.0" layoutY="305.0" prefHeight="34.0" prefWidth="390.0">
+            <Label fx:id="dateLb1" layoutX="122.0" layoutY="305.0" prefHeight="34.0" prefWidth="390.0">
                <font>
                   <Font name="Microsoft YaHei Bold" size="32.0" />
                </font>

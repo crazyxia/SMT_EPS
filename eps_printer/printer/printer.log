@@ -1,2 +1,16 @@
 2018-06-08 17:01:09.589 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 991 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
 2018-06-11 16:12:21.123 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 991 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-10-13 18:33:01.935 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1064 - 供应商料号表文件"标准范例表.xls"不存在
+2018-10-13 18:37:04.948 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1065 - 供应商料号表文件"标准范例表.xls"不存在
+2018-10-13 18:37:30.908 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1064 - 供应商料号表文件"标准范例表.xls"不存在
+2018-10-13 18:37:31.202 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1064 - A child container failed during start
+2018-10-13 18:39:34.457 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1069 - 供应商料号表文件"标准范例表.xls"不存在
+2018-10-13 18:39:34.684 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1069 - A child container failed during start
+2018-10-13 18:39:50.712 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1069 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-10-18 08:28:45.392 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1069 - 供应商料号表文件"标准范例表.xls"不存在
+2018-10-18 08:28:45.683 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1069 - A child container failed during start
+2018-10-18 08:29:01.678 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1069 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-10-18 08:30:25.550 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1069 - 供应商料号表文件"标准范例表.xls"不存在
+2018-10-18 08:30:25.771 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1069 - A child container failed during start
+2018-10-18 08:30:41.810 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1069 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-10-23 11:04:17.793 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1040 - 供应商料号表文件"标准范例表.xls"不存在
