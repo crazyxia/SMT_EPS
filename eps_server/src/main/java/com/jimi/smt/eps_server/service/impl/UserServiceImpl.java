@@ -52,7 +52,7 @@ public class UserServiceImpl implements UserService {
 		user.setId(id.equals("") ? null : id);
 		user.setName(name.equals("") ? null : name);
 		user.setType(type);
-		user.setPassword(password);
+		user.setPassword(password.equals("") ? null : password);
 		user.setEnabled(enabled);
 		user.setClassType(classType);
 		if(userMapper.updateByPrimaryKeySelective(user) == 1){
