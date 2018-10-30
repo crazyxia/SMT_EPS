@@ -73,7 +73,7 @@ export default {
   },
   watch:{
     isDelete:function(val){
-      if(val == true){
+      if(val === true){
         store.commit("setIsDelete",false);
         let index = store.state.operationIndex;
         this.programItemList.splice(index,1);
@@ -99,17 +99,17 @@ export default {
       let opera = this.operationItem;
       let item = this.programItemInfos;
       let operationType = store.state.programItemOperationType;
-      if(operationType == "add"){
+      if(operationType === "add"){
         opera.operation = 0;
-      }else if(operationType == "update"){
+      }else if(operationType === "update"){
         opera.operation = 1;
-      }else if(operationType == "delete"){
+      }else if(operationType === "delete"){
         opera.operation = 2;
       }
       opera.targetLineseat = item.lineseat;
       opera.targetMaterialNo = item.materialNo;
       opera.lineseat = this.modalInfo.lineseat;
-      if(this.modalInfo.materialType == "主料"){
+      if(this.modalInfo.materialType === "主料"){
         opera.alternative = false;
       }else{
         opera.alternative = true;
@@ -142,7 +142,7 @@ export default {
         specitification:"",
         position:"",
         quantity:""
-      }
+      };
       store.commit("setOperationIndex",this.programItemList.length);
       store.commit("setProgramItemOperationType","add");
       store.commit("setProgramItem",programItem);

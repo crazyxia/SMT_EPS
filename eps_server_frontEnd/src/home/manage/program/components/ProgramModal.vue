@@ -54,7 +54,7 @@ export default {
   computed:{
     message:function(){
       let operationType = store.state.programOperationType;
-      if(operationType == "update"){
+      if(operationType === "update"){
         return "修改信息";
       }
     },
@@ -67,7 +67,7 @@ export default {
   },
   watch:{
     isUpdate:function(val){
-      if(val == true){
+      if(val === true){
         store.commit("setIsUpdate",false);
         $('#myModal').modal({backdrop:'static', keyboard: false});
       }
@@ -75,6 +75,7 @@ export default {
   },
   methods:{
     fetchData:function(url){
+      console.log(store.state.program.id);
       let options = {
         url:url,
         data:{
@@ -84,7 +85,7 @@ export default {
       axiosPost(options).then(response => {
         if (response.data) {
           let result = response.data.result;
-          if(result == "succeed"){
+          if(result === "succeed"){
             store.commit("setIsRefresh",true);
           }
         }

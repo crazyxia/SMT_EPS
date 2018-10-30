@@ -31,12 +31,10 @@ axios.interceptors.request.use(
 axios.interceptors.response.use(
   res => {
     if (res.data.result === "failed_access_denied"){
-      store.commit('setToken', '');
-      localStorage.removeItem('token');
-      router.replace({
-        path: '/login',
-      });
-      alert('权限不足');
+      alert("权限不足");
+      store.commit('setDenied',true);
+    }else{
+      store.commit('setDenied',false);
     }
     return res
   },

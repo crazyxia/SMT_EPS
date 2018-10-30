@@ -39,9 +39,6 @@ export default {
     currentPage:1,
     pageSize:20
   }),
-  mounted(){
-    this.getList();
-  },
   computed:{
     clientList:function(){
       return store.state.clientList;
@@ -58,7 +55,7 @@ export default {
       deep: true
     },
     isFind:function(val){
-      if(val == true){
+      if(val === true){
         this.currentPage = 1;
         this.pageSize = 20;
         this.query.limit = 20;
@@ -68,7 +65,7 @@ export default {
       }
     },
     page:function(val){
-      if(val!={}){
+      if(val!=={} && val !== undefined){
         this.currentPage = this.page.currentPage;
         this.pageSize = this.page.pageSize;
         this.total = this.page.totallyData;
@@ -77,13 +74,14 @@ export default {
   },
   methods:{
     fetchData:function(options){
-      let that = this;
       axiosPost(options).then(response => {
         store.commit("setLoading",false);
         if (response.data) {
           let result = response.data;
-          that.page = result.page;
-          that.data = result.list;
+          if(result.page && result.list){
+            this.page = result.page;
+            this.data = result.list;
+          }
           store.commit("setLoading",false);
         }
       }).catch(err => {
@@ -96,13 +94,12 @@ export default {
       let options = {
         url:clientReportListUrl,
         data:this.clientInfos
-      }
+      };
       options.data["currentPage"]=this.currentPage;
       options.data["pageSize"]=this.pageSize;
       this.fetchData(options);
     },
     filterData:function(query){
-      console.log(query);
       this.pageSize = query.limit;
       this.currentPage = query.offset / query.limit + 1;
       this.getList();

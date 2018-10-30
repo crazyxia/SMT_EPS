@@ -64,17 +64,18 @@ export default {
   },
   methods:{
     fetchData:function(options){
-      let that = this;
       axiosPost(options).then(response => {
         store.commit("setLoading",false);
         if (response.data) {
-          let result = response.data.list;
-          let page = response.data.page;
-          that.total = page.totallyData;
-          that.currentPage = page.currentPage;
-          that.pageSize = page.pageSize;
-          store.commit("setIoList",result);
-          that.data = result;
+          if(response.data.list){
+            let result = response.data.list;
+            let page = response.data.page;
+            this.total = page.totallyData;
+            this.currentPage = page.currentPage;
+            this.pageSize = page.pageSize;
+            store.commit("setIoList",result);
+            this.data = result;
+          }
         }
       }).catch(err => {
         store.commit("setLoading",false);

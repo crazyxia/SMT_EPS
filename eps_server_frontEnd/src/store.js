@@ -9,6 +9,7 @@ export default new Vuex.Store({
     lines:[],
     lineSize:0,
     loading:false,
+    denied:false,
 
     /*操作按钮*/
     isAdd:false ,//是否点击添加
@@ -73,6 +74,9 @@ export default new Vuex.Store({
     },
     setLineSize(state,lineSize){
       state.lineSize = lineSize;
+    },
+    setDenied(state,denied){
+      state.denied = denied;
     },
 
     /*operation*/

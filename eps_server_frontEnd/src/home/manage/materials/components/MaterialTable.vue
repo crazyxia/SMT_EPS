@@ -55,20 +55,19 @@
     watch: {
       query: {
         handler(query) {
-          console.log(query);
           this.filterData(query);
         },
         deep: true
       },
       isRefresh: function (val) {
-        if (val == true) {
+        if (val === true) {
           store.commit("setIsRefresh", false);
           this.resetMaterialInfos();
           this.find();
         }
       },
       isFind: function (val) {
-        if (val == true) {
+        if (val === true) {
           this.currentPage = 1;
           this.pageSize = 20;
           this.query.limit = 20;
@@ -78,7 +77,7 @@
         }
       },
       isDelete: function (val) {
-        if (val == true) {
+        if (val === true) {
           store.commit("setIsDelete", false);
           this.deleteRow();
         }
@@ -86,17 +85,18 @@
     },
     methods: {
       fetchData: function (options) {
-        let that = this;
         axiosPost(options).then(response => {
           store.commit("setLoading", false);
           if (response.data) {
-            let [...result] = response.data.list;
-            let page = response.data.page;
-            that.total = page.totallyData;
-            that.currentPage = page.currentPage;
-            that.pageSize = page.pageSize;
-            store.commit("setMaterialList", result);
-            that.data = result;
+            if(response.data.list){
+              let result = response.data.list;
+              let page = response.data.page;
+              this.total = page.totallyData;
+              this.currentPage = page.currentPage;
+              this.pageSize = page.pageSize;
+              store.commit("setMaterialList", result);
+              this.data = result;
+            }
           }
         }).catch(err => {
           store.commit("setLoading", false);
@@ -108,7 +108,7 @@
         let options = {
           url: materialListUrl,
           data: this.materialInfos
-        }
+        };
         options.data["currentPage"] = this.currentPage;
         options.data["pageSize"] = this.pageSize;
         this.fetchData(options);
@@ -119,12 +119,11 @@
           data: {
             id: this.material.id
           }
-        }
-        let that = this;
+        };
         axiosPost(options).then(response => {
           if (response.data) {
             let result = response.data.result;
-            if (result == "succeed") {
+            if (result === "succeed") {
               alert("删除成功");
               this.find();
             } else {
@@ -141,8 +140,8 @@
         this.find();
       },
       resetMaterialInfos: function () {
-        this.materialInfos.materialNo = ""
-        this.materialInfos.perifdOfValidity = ""
+        this.materialInfos.materialNo = "";
+        this.materialInfos.perifdOfValidity = "";
       }
     }
   }

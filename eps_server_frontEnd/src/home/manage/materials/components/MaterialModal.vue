@@ -44,16 +44,21 @@ export default {
   computed:{
     message:function(){
       let operationType = store.state.materialOperationType;
-      if(operationType == "update"){
+      if(operationType === "update"){
         this.isDisabled = true;
         return "修改信息";
-      }else if(operationType == "add"){
+      }else if(operationType === "add"){
         this.isDisabled = false;
         return "添加信息";
       }
     },
     modalInfo:function(){
-      return store.state.material;
+      let material = store.state.material;;
+      let obj = {};
+      obj.id = material.id;
+      obj.materialNo = material.materialNo;
+      obj.perifdOfValidity =material.perifdOfValidity;
+      return obj;
     },
     isAdd:function(){
       return store.state.isAdd;
@@ -64,13 +69,13 @@ export default {
   },
   watch:{
     isAdd:function(val){
-      if(val == true){
+      if(val === true){
         store.commit("setIsAdd",false);
         $('#myModal').modal({backdrop:'static', keyboard: false});
       }
     },
     isUpdate:function(val){
-      if(val == true){
+      if(val === true){
         store.commit("setIsUpdate",false);
         $('#myModal').modal({backdrop:'static', keyboard: false});
       }
@@ -111,12 +116,11 @@ export default {
           materialNo:this.modalInfo.materialNo,
           perifdOfValidity:this.modalInfo.perifdOfValidity,
         }
-      }
-      let that = this;
+      };
       axiosPost(options).then(response => {
         if (response.data) {
           let result = response.data.result;
-          if(result == "succeed"){
+          if(result === "succeed"){
             alert("修改成功");
             $('#myModal').modal('hide');
             store.commit("setIsRefresh",true);
@@ -131,9 +135,9 @@ export default {
     save:function(){
       if(materialTip(this.modalInfo)){
         let operationType = store.state.materialOperationType;
-        if(operationType == "add"){
+        if(operationType === "add"){
           this.add();
-        }else if(operationType == "update"){
+        }else if(operationType === "update"){
           this.update();
         }
       }

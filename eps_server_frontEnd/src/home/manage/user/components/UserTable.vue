@@ -56,13 +56,13 @@
         deep: true
       },
       isRefresh: function (val) {
-        if (val == true) {
+        if (val === true) {
           store.commit("setIsRefresh", false);
           this.find();
         }
       },
       isFind: function (val) {
-        if (val == true) {
+        if (val === true) {
           this.currentPage = 1;
           this.pageSize = 20;
           this.query.limit = 20;
@@ -74,18 +74,19 @@
     },
     methods: {
       fetchData: function (options) {
-        let that = this;
         axiosPost(options).then(response => {
           store.commit("setLoading", false);
           if (response.data) {
-            let [...result] = response.data.list;
-            let page = response.data.page;
-            let list = result;
-            that.total = page.totallyData;
-            that.currentPage = page.currentPage;
-            that.pageSize = page.pageSize;
-            store.commit("setUserList", list);
-            that.data = list;
+            if(response.data.list){
+              let result = response.data.list;
+              let page = response.data.page;
+              let list = result;
+              this.total = page.totallyData;
+              this.currentPage = page.currentPage;
+              this.pageSize = page.pageSize;
+              store.commit("setUserList", list);
+              this.data = list;
+            }
           }
         }).catch(err => {
           store.commit("setLoading", false);
@@ -97,7 +98,7 @@
         let options = {
           url: userListUrl,
           data: this.userInfos
-        }
+        };
         options.data["orderBy"] = 'create_time desc';
         options.data["currentPage"] = this.currentPage;
         options.data["pageSize"] = this.pageSize;

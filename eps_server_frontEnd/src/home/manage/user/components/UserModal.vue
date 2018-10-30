@@ -65,16 +65,22 @@ export default {
   computed:{
     message:function(){
       let operationType = store.state.userOperationType;
-      if(operationType == "update"){
+      if(operationType === "update"){
         this.isDisabled = true;
         return "修改信息";
-      }else if(operationType == "add"){
+      }else if(operationType === "add"){
         this.isDisabled = false;
         return "添加信息";
       }
     },
     modalInfo:function(){
-      return store.state.user;
+      let user = store.state.user;
+      let obj = {};
+      obj.id = user.id;
+      obj.name = user.name;
+      obj.type = user.type;
+      obj.classType = user.classType;
+      return obj;
     },
     isAdd:function(){
       return store.state.isAdd;
@@ -88,13 +94,13 @@ export default {
   },
   watch:{
     isAdd:function(val){
-      if(val == true){
+      if(val === true){
         store.commit("setIsAdd",false);
         $('#myModal').modal({backdrop:'static', keyboard: false});
       }
     },
     isUpdate:function(val){
-      if(val == true){
+      if(val === true){
         store.commit("setIsUpdate",false);
         $('#myModal').modal({backdrop:'static', keyboard: false});
       }
@@ -115,14 +121,13 @@ export default {
           id:this.modalInfo.id,
           name:this.modalInfo.name,
           type:this.modalInfo.type,
-          password:this.modalInfo.password,
           classType:this.modalInfo.classType
         }
       }
       axiosPost(options).then(response => {
         if (response.data) {
           let result = response.data.result;
-          if(result == "succeed"){
+          if(result === "succeed"){
             alert("添加成功");
             let infos = {
               id:"",
@@ -130,7 +135,7 @@ export default {
               type:"",
               classType:"",
               password:""
-            }
+            };
             store.commit("setUser",infos);
           }else{
             errTip(result);
@@ -149,15 +154,13 @@ export default {
           name:this.modalInfo.name,
           type:this.modalInfo.type,
           classType:this.modalInfo.classType,
-          password:this.modalInfo.password,
           enabled:isEnabled
         }
-      }
-      let that = this;
+      };
       axiosPost(options).then(response => {
         if (response.data) {
           let result = response.data.result;
-          if(result == "succeed"){
+          if(result === "succeed"){
             alert(succeedTip);
             $('#myModal').modal('hide');
             store.commit("setIsRefresh",true);
@@ -170,12 +173,11 @@ export default {
       });
     },
     save:function(){
-      console.log(this.modalInfo);
       if(userTip(this.modalInfo)){
         let operationType = store.state.userOperationType;
-        if(operationType == "add"){
+        if(operationType === "add"){
           this.add();
-        }else if(operationType == "update"){
+        }else if(operationType === "update"){
           this.update(true,"修改成功");
         }
       }

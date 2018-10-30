@@ -53,7 +53,6 @@ const PIE_SET = {
 };
 
 export const horizontalBar = function (linesInfo) {
-  console.log(linesInfo);
   let lines = [];
   for (let i = 0; i < linesInfo.length; i++) {
     lines.push(linesInfo[i].line);

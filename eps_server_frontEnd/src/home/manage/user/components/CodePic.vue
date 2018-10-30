@@ -37,7 +37,7 @@ export default {
     },
     token:function(){
       let token = store.state.token;
-      if(token == ""){
+      if(token === ""){
         token = window.localStorage.getItem("token");
       }
       return token;
@@ -45,13 +45,13 @@ export default {
   },
   watch:{
     isGetCodePic:function(val){
-      if(val == true){
+      if(val === true){
         store.commit("setIsGetCodePic",false);
         this.getCodePic();
       }
     },
     result:function(val){
-      if(val != ""){
+      if(val !== ""){
         this.imgSrc = window.g.API_URL+val+"?timestamp="+Date.parse(new Date());
         $("#CodePicModal").modal('show');
         this.result = "";
@@ -66,14 +66,12 @@ export default {
           id:store.state.userId,
           '#TOKEN#':this.token
         }
-      }
-      let that = this;
+      };
       axiosPost(options).then(response => {
         if (response.data) {
           let result = response.data.result;
-          if(result != "fail_get_img"){
-            console.log("result:"+result);
-            that.result = result;
+          if(result !== "fail_get_img"){
+            this.result = result;
           }
         }
       }).catch(err => {

@@ -87,7 +87,7 @@
     },
     watch: {
       line: function (val) {
-        if (val != "") {
+        if (val !== "") {
           this.showType = "table-row-group"
           this.analyzeData();
         }
@@ -104,11 +104,10 @@
           url: configListUrl,
           data: {}
         };
-        let that = this;
         axiosPost(options).then(response => {
           if (response.data) {
             let [...result] = response.data;
-            that.result = result;
+            this.result = result;
           }
         }).catch(err => {
           alert("请求接口失败，请先检查网络，再联系管理员");
@@ -121,11 +120,10 @@
             configs: JSON.stringify(this.result),
           }
         };
-        let that = this;
         axiosPost(options).then(response => {
           if (response.data) {
             let result = response.data.result;
-            if (result == "succeed") {
+            if (result === "succeed") {
               alert("设置成功");
             }
           }
@@ -137,11 +135,11 @@
         this.items = [];
         let arr = this.result;
         for (let i = 0; i < arr.length; i++) {
-          if (arr[i].lineName == this.line) {
+          if (arr[i].lineName === this.line) {
             this.items.push(arr[i]);
           }
         }
-        if (this.line == "统一") {
+        if (this.line === "统一") {
           this.items = this.totalItem;
         }
       },
@@ -154,10 +152,10 @@
               let obj = this.result[i];
               for(let j=0;j<this.items.length;j++){
                 let item = this.items[j];
-                if(obj.line == item.lineName && obj.name == item.name){
+                if(obj.line === item.lineName && obj.name === item.name){
                   this.result.splice(i,1,item);
                 }
-                if(item.line == "统一"&&obj.name == item.name){
+                if(item.line === "统一"&&obj.name === item.name){
                   obj.value = item.value;
                 }
               }

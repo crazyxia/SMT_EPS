@@ -72,7 +72,7 @@
         programInfos: {
           programName: "",
           workOrder: "",
-          state: "",
+          state:"",
           line: ""
         },
         fileInfos: {
@@ -97,7 +97,7 @@
     },
     watch: {
       programItemShow: function (val) {
-        if (val == true) {
+        if (val === true) {
           this.isShow = false;
         } else {
           this.isShow = true;
@@ -108,7 +108,7 @@
       getfileName: function () {
         let fileName = $('#inputfile').val();
         let filetype = fileName.substr(fileName.lastIndexOf(".") + 1);
-        if (filetype != "xls" && filetype != 'xlsx') {
+        if (filetype !== "xls" && filetype !== 'xlsx') {
           alert("文件格式错误");
           $('#inputfile').val();
         } else {
@@ -120,19 +120,19 @@
         store.commit("setIsFind", true);
       },
       upload: function () {
-        if (this.fileInfos.programFile != "" && this.fileInfos.boardType != "") {
-          let param = new FormData()
-          param.append('programFile', this.fileInfos.programFile)
-          param.append('boardType', this.fileInfos.boardType)
-          param.append('#TOKEN#', store.state.token)
+        if (this.fileInfos.programFile !== "" && this.fileInfos.boardType !== "") {
+          let param = new FormData();
+          param.append('programFile', this.fileInfos.programFile);
+          param.append('boardType', this.fileInfos.boardType);
+          param.append('#TOKEN#', store.state.token);
           let config = {
             headers: {'Content-Type': 'multipart/form-data'}
-          }
+          };
           axios.post(programFileUploadUrl, param, config).then(response => {
             if (response.data) {
               let result = response.data.result;
               alert(result);
-              if (result == "上传完成，共解析到1张表") {
+              if (result === "上传完成，共解析到1张表") {
                 store.commit("setIsUploadFinish", true);
               }
             }

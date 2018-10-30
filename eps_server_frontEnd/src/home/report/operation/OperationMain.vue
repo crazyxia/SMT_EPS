@@ -85,7 +85,7 @@ export default {
       this.operationInfos.endTime = val + " 23:59:59";
     },
     operationDetailShow:function(val){
-      if(val == true){
+      if(val === true){
         this.isShow = false;
       }else{
         this.isShow = true;
