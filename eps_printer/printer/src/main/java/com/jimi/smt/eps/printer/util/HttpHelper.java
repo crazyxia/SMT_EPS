@@ -21,8 +21,8 @@ public class HttpHelper {
 	
 	
 	public HttpHelper() {
-		Map<String, String> map_url = IniReader.getItem(System.getProperty("user.dir") + CONFIG_FILE, "url");
-		URL = map_url.get("url");
+		/*Map<String, String> map_url = IniReader.getItem(System.getProperty("user.dir") + CONFIG_FILE, "url");
+		URL = map_url.get("url");*/
 	}
 
 	/**

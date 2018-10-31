@@ -27,21 +27,21 @@
         </columns>
       </TableView>
       <Label layoutX="407.0" layoutY="28.0" text="选择表：" AnchorPane.rightAnchor="522.0" AnchorPane.topAnchor="28.0" />
-      <TextField fx:id="materialNoTf" editable="false" layoutX="577.0" layoutY="91.0" prefHeight="36.0" prefWidth="365.0" promptText="显示应用规则后的结果" AnchorPane.rightAnchor="46.0" AnchorPane.topAnchor="91.0">
+      <TextField fx:id="materialNoTf" editable="false" layoutX="577.0" layoutY="91.0" prefHeight="36.0" prefWidth="357.0" promptText="显示应用规则后的结果" AnchorPane.rightAnchor="46.0" AnchorPane.topAnchor="91.0">
          <font>
             <Font name="System Bold" size="18.0" />
          </font>
       </TextField>
-      <Separator layoutX="562.0" layoutY="9.0" orientation="VERTICAL" prefHeight="660.0" prefWidth="4.0" AnchorPane.bottomAnchor="32.0" AnchorPane.rightAnchor="422.0" AnchorPane.topAnchor="9.0" />
+      <Separator layoutX="562.0" layoutY="9.0" orientation="VERTICAL" prefHeight="657.0" prefWidth="5.0" AnchorPane.bottomAnchor="35.0" AnchorPane.rightAnchor="422.0" AnchorPane.topAnchor="9.0" />
       <TextField fx:id="descriptionTf" disable="true" layoutX="577.0" layoutY="205.0" prefHeight="7.0" prefWidth="357.0" AnchorPane.rightAnchor="46.0" AnchorPane.topAnchor="205.0" />
-      <Label layoutX="577.0" layoutY="183.0" text="型号：" AnchorPane.rightAnchor="368.0" AnchorPane.topAnchor="183.0" />
-      <Label layoutX="577.0" layoutY="235.0" text="名称：" AnchorPane.rightAnchor="368.0" AnchorPane.topAnchor="235.0" />
+      <Label layoutX="587.0" layoutY="183.0" text="型号：" AnchorPane.rightAnchor="366.0" AnchorPane.topAnchor="183.0" />
+      <Label layoutX="587.0" layoutY="235.0" text="名称：" AnchorPane.rightAnchor="366.0" AnchorPane.topAnchor="235.0" />
       <TextField fx:id="nameTf" disable="true" layoutX="577.0" layoutY="260.0" prefHeight="7.0" prefWidth="357.0" AnchorPane.rightAnchor="46.0" AnchorPane.topAnchor="260.0" />
       <TextField fx:id="quantityTf" disable="true" layoutX="577.0" layoutY="153.0" prefHeight="23.0" prefWidth="163.0" AnchorPane.rightAnchor="240.0" AnchorPane.topAnchor="153.0" />
-      <Label layoutX="577.0" layoutY="129.0" text="数量：" AnchorPane.rightAnchor="368.0" AnchorPane.topAnchor="129.0" />
+      <Label layoutX="587.0" layoutY="129.0" text="数量：" AnchorPane.rightAnchor="366.0" AnchorPane.topAnchor="129.0" />
       <Label layoutX="780.0" layoutY="129.0" text="位置：" AnchorPane.rightAnchor="173.0" AnchorPane.topAnchor="129.0" />
       <TextField fx:id="seatNoTf" disable="true" layoutX="773.0" layoutY="153.0" prefHeight="23.0" prefWidth="163.0" AnchorPane.rightAnchor="46.0" AnchorPane.topAnchor="153.0" />
-      <Label layoutX="577.0" layoutY="294.0" text="备注：" AnchorPane.rightAnchor="368.0" AnchorPane.topAnchor="294.0" />
+      <Label layoutX="587.0" layoutY="294.0" text="备注：" AnchorPane.rightAnchor="366.0" AnchorPane.topAnchor="294.0" />
       <Label layoutX="773.0" layoutY="294.0" text="生产日期：" AnchorPane.rightAnchor="149.0" AnchorPane.topAnchor="294.0" />
       <TextField fx:id="remarkTf" disable="true" layoutX="577.0" layoutY="317.0" prefHeight="23.0" prefWidth="163.0" AnchorPane.rightAnchor="240.0" AnchorPane.topAnchor="317.0" />
       <TextField fx:id="dateTf" disable="true" layoutX="773.0" layoutY="317.0" prefHeight="23.0" prefWidth="163.0" AnchorPane.rightAnchor="46.0" AnchorPane.topAnchor="317.0" />
@@ -50,7 +50,7 @@
             <Font name="System Bold" size="30.0" />
          </font>
       </Button>
-      <AnchorPane fx:id="previewAp" layoutX="577.0" layoutY="494.0" prefHeight="170.0" prefWidth="357.0" style="-fx-background-color: white;" AnchorPane.rightAnchor="49.0" AnchorPane.topAnchor="494.0">
+      <AnchorPane fx:id="previewAp" layoutX="586.0" layoutY="494.0" prefHeight="170.0" prefWidth="357.0" style="-fx-background-color: white;" AnchorPane.rightAnchor="46.0" AnchorPane.topAnchor="494.0">
          <children>
             <Label layoutX="13.0" layoutY="12.0" prefHeight="15.0" prefWidth="36.0" text="编号：" />
             <Label layoutX="13.0" layoutY="35.0" prefHeight="15.0" prefWidth="36.0" text="型号：" />
@@ -78,22 +78,22 @@
          </children>
       </AnchorPane>
       <ChoiceBox fx:id="tableSelectCb" layoutX="407.0" layoutY="52.0" prefHeight="23.0" prefWidth="141.0" AnchorPane.rightAnchor="441.0" AnchorPane.topAnchor="52.0" />
-      <Label layoutX="577.0" layoutY="445.0" prefHeight="15.0" prefWidth="60.0" text="打印份数：" AnchorPane.rightAnchor="343.0" AnchorPane.topAnchor="445.0" />
-      <TextField fx:id="copyTf" layoutX="646.0" layoutY="441.0" prefHeight="23.0" prefWidth="60.0" text="1" AnchorPane.rightAnchor="283.0" AnchorPane.topAnchor="441.0" />
-      <Button fx:id="configBt" layoutX="873.0" layoutY="441.0" mnemonicParsing="false" onAction="#onConfigBtClick" text="其他设置" AnchorPane.rightAnchor="36.0" AnchorPane.topAnchor="441.0" />
-      <CheckBox fx:id="ignoreCb" layoutX="779.0" layoutY="445.0" mnemonicParsing="false" onAction="#onIgnoreClick" text="忽略校验" AnchorPane.rightAnchor="122.0" AnchorPane.topAnchor="445.0" />
-      <Label layoutX="577.0" layoutY="416.0" text="打印目标：" AnchorPane.rightAnchor="338.0" AnchorPane.topAnchor="416.0" />
-      <RadioButton fx:id="bothRb" disable="true" layoutX="852.0" layoutY="416.0" mnemonicParsing="false" text="两者均打印" AnchorPane.rightAnchor="35.0" AnchorPane.topAnchor="416.0">
+      <Label layoutX="588.0" layoutY="445.0" prefHeight="15.0" prefWidth="60.0" text="打印份数：" AnchorPane.rightAnchor="341.0" AnchorPane.topAnchor="445.0" />
+      <TextField fx:id="copyTf" layoutX="651.0" layoutY="441.0" prefHeight="23.0" prefWidth="60.0" text="1" AnchorPane.rightAnchor="278.0" AnchorPane.topAnchor="441.0" />
+      <Button fx:id="configBt" layoutX="878.0" layoutY="441.0" mnemonicParsing="false" onAction="#onConfigBtClick" text="其他设置" AnchorPane.rightAnchor="47.0" AnchorPane.topAnchor="441.0" />
+      <CheckBox fx:id="ignoreCb" layoutX="783.0" layoutY="445.0" mnemonicParsing="false" onAction="#onIgnoreClick" text="忽略校验" AnchorPane.rightAnchor="137.0" AnchorPane.topAnchor="445.0" />
+      <Label layoutX="588.0" layoutY="416.0" text="打印目标：" AnchorPane.rightAnchor="341.0" AnchorPane.topAnchor="416.0" />
+      <RadioButton fx:id="bothRb" disable="true" layoutX="861.0" layoutY="416.0" mnemonicParsing="false" text="两者均打印" AnchorPane.rightAnchor="47.0" AnchorPane.topAnchor="416.0">
          <toggleGroup>
             <ToggleGroup fx:id="printTarget" />
          </toggleGroup>
       </RadioButton>
       <RadioButton fx:id="codeRb" layoutX="651.0" layoutY="416.0" mnemonicParsing="false" selected="true" text="二维码标签" toggleGroup="$printTarget" AnchorPane.rightAnchor="236.0" AnchorPane.topAnchor="416.0" />
-      <RadioButton fx:id="rfidRb" disable="true" layoutX="755.0" layoutY="416.0" mnemonicParsing="false" text="RFID标签" toggleGroup="$printTarget" AnchorPane.rightAnchor="143.0" AnchorPane.topAnchor="416.0" />
-      <Separator layoutX="586.0" layoutY="480.0" prefHeight="3.0" prefWidth="357.0" AnchorPane.rightAnchor="46.0" AnchorPane.topAnchor="480.0" />
+      <RadioButton fx:id="rfidRb" disable="true" layoutX="771.0" layoutY="416.0" mnemonicParsing="false" text="RFID标签" toggleGroup="$printTarget" AnchorPane.rightAnchor="146.0" AnchorPane.topAnchor="416.0" />
+      <Separator layoutX="586.0" layoutY="478.0" prefHeight="3.0" prefWidth="357.0" AnchorPane.rightAnchor="46.0" AnchorPane.topAnchor="478.0" />
       <Button fx:id="manageRuleBt" layoutX="833.0" layoutY="18.0" mnemonicParsing="false" onAction="#onManageRuleBtClick" text="规则管理" AnchorPane.rightAnchor="46.0" AnchorPane.topAnchor="18.0" />
-      <Label fx:id="currentRuleLb" layoutX="577.0" layoutY="18.0" prefHeight="30.0" prefWidth="256.0" text="当前规则：" AnchorPane.rightAnchor="156.0" AnchorPane.topAnchor="18.0" />
-      <TextField fx:id="scanMaterialNoTf" layoutX="577.0" layoutY="52.0" prefHeight="36.0" prefWidth="365.0" promptText="扫描条码或者输入料号" AnchorPane.rightAnchor="46.0" AnchorPane.topAnchor="52.0">
+      <Label fx:id="currentRuleLb" layoutX="587.0" layoutY="18.0" prefHeight="30.0" prefWidth="247.0" text="当前规则：" AnchorPane.rightAnchor="155.0" AnchorPane.topAnchor="18.0" />
+      <TextField fx:id="scanMaterialNoTf" layoutX="577.0" layoutY="52.0" prefHeight="36.0" prefWidth="357.0" promptText="扫描条码或者输入料号" AnchorPane.rightAnchor="46.0" AnchorPane.topAnchor="52.0">
          <font>
             <Font name="System Bold" size="18.0" />
          </font>
