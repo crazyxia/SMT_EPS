@@ -45,6 +45,7 @@ public class IdController implements Initializable {
 
 	HttpHelper httpHelper = new HttpHelper();
 
+	
 	// 查找用户请求
 	private static final String GET_USER_ACTION = "user/select";
 

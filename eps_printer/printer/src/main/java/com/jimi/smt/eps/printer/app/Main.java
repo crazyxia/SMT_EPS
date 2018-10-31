@@ -24,7 +24,7 @@ public class Main extends Application {
 
 	private MainController mainController;
 
-	private static final String VERSION = "1.6.1";
+	private static final String VERSION = "1.7.0";
 
 	private static final String FILE_NAME = "EPS_Printer-" + VERSION + ".jar";
 
@@ -110,6 +110,11 @@ public class Main extends Application {
 	public static void clearDeadProcess() throws IOException {
 		Runtime.getRuntime().exec("taskkill /im printer.exe /f");
 		Runtime.getRuntime().exec("taskkill /im SMT_EPS_RFID_WRITER.exe /f");
+	}
+	
+	
+	public static String getVersion() {
+		return VERSION;
 	}
 
 }

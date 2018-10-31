@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="656.0" prefWidth="823.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.jimi.smt.eps.printer.controller.SeparatorRuleController">
+   <children>
+      <TabPane prefHeight="656.0" prefWidth="823.0" tabClosingPolicy="UNAVAILABLE">
+         <tabs>
+            <Tab text="添加分隔符条目">
+               <content>
+                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="583.0" prefWidth="740.0">
+                     <children>
+                        <Label layoutX="29.0" layoutY="244.0" prefHeight="47.0" prefWidth="94.0" text="分割结果：" AnchorPane.bottomAnchor="326.0" AnchorPane.leftAnchor="29.0" />
+                        <Label layoutX="29.0" layoutY="374.0" prefHeight="47.0" prefWidth="94.0" text="选择序号：" AnchorPane.bottomAnchor="196.0" AnchorPane.leftAnchor="29.0" />
+                        <Button fx:id="saveSeparatorBt" layoutX="669.0" layoutY="519.0" mnemonicParsing="false" onAction="#onSaveSeparatorBtClick" prefHeight="55.0" prefWidth="130.0" text="保存条目" AnchorPane.bottomAnchor="43.0" AnchorPane.leftAnchor="669.0" />
+                        <Label layoutX="29.0" layoutY="187.0" prefHeight="47.0" prefWidth="94.0" text="输入分隔符：" AnchorPane.bottomAnchor="383.0" AnchorPane.leftAnchor="29.0" />
+                        <TextField fx:id="orderNumTf" layoutX="129.0" layoutY="379.0" prefHeight="40.0" prefWidth="211.0" promptText="如1,2,3......." AnchorPane.bottomAnchor="198.0" AnchorPane.leftAnchor="129.0">
+                           <font>
+                              <Font name="System Bold" size="18.0" />
+                           </font></TextField>
+                        <Button fx:id="confirmDelimiterBt" layoutX="375.0" layoutY="193.0" mnemonicParsing="false" onAction="#onConfirmDelimiterBtClick" prefHeight="40.0" prefWidth="101.0" text="确定分隔符" AnchorPane.bottomAnchor="384.0" AnchorPane.leftAnchor="375.0" />
+                        <TextField fx:id="separatorTf" layoutX="129.0" layoutY="194.0" prefHeight="40.0" prefWidth="211.0" AnchorPane.bottomAnchor="383.0" AnchorPane.leftAnchor="129.0">
+                           <font>
+                              <Font name="System Bold" size="18.0" />
+                           </font>
+                        </TextField>
+                        <Label layoutX="29.0" layoutY="437.0" prefHeight="47.0" prefWidth="94.0" text="结果：" AnchorPane.bottomAnchor="133.0" AnchorPane.leftAnchor="29.0" />
+                        <Button fx:id="confirmBt" layoutX="375.0" layoutY="379.0" mnemonicParsing="false" onAction="#onConfirmBtClick" prefHeight="40.0" prefWidth="101.0" text="确定" AnchorPane.bottomAnchor="198.0" AnchorPane.leftAnchor="375.0" />
+                        <TextArea fx:id="contentsTa" editable="false" layoutX="129.0" layoutY="257.0" prefHeight="101.0" prefWidth="670.0" wrapText="true" AnchorPane.bottomAnchor="259.0" AnchorPane.leftAnchor="129.0">
+                           <font>
+                              <Font name="System Bold" size="20.0" />
+                           </font></TextArea>
+                        <Label fx:id="tipLb" layoutX="25.0" layoutY="575.0" prefHeight="36.0" prefWidth="778.0" AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="25.0" />
+                        <TextArea fx:id="separatorContentTa" editable="false" layoutX="129.0" layoutY="441.0" prefHeight="60.0" prefWidth="670.0" wrapText="true" AnchorPane.bottomAnchor="116.0" AnchorPane.leftAnchor="129.0">
+                           <font>
+                              <Font name="System Bold" size="20.0" />
+                           </font></TextArea>
+                        <TextArea fx:id="contentTa" editable="false" layoutX="25.0" layoutY="44.0" prefHeight="126.0" prefWidth="773.0" promptText="显示需要截取的内容" wrapText="true" AnchorPane.bottomAnchor="447.0" AnchorPane.leftAnchor="25.0">
+                           <font>
+                              <Font name="System Bold" size="20.0" />
+                           </font>
+                        </TextArea>
+                     </children>
+                  </AnchorPane>
+               </content>
+            </Tab>
+         </tabs>
+      </TabPane>
+   </children>
+</AnchorPane>

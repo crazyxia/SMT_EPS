@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.imageio.ImageIO;
 
@@ -34,6 +36,7 @@ import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.jimi.smt.eps.printer.entity.Material;
 import com.jimi.smt.eps.printer.entity.MaterialProperties;
+import com.jimi.smt.eps.printer.entity.Rule;
 import com.jimi.smt.eps.printer.entity.StockLog;
 import com.jimi.smt.eps.printer.util.ExcelHelper;
 import com.jimi.smt.eps.printer.util.HttpHelper;
@@ -104,7 +107,6 @@ public class MainController implements Initializable {
 	 */
 	private static final String CONFIG_KEY_PRINT_TARGET = "printTarget";
 
-
 	private static Logger logger = LogManager.getRootLogger();
 
 	@FXML
@@ -113,6 +115,8 @@ public class MainController implements Initializable {
 	private TextField fileSelectTf;
 	@FXML
 	private TextField materialNoTf;
+	@FXML
+	private TextField firstMaterialNoTf;
 	@FXML
 	private TextField descriptionTf;
 	@FXML
@@ -142,7 +146,7 @@ public class MainController implements Initializable {
 	@FXML
 	private Label seatLb;
 	@FXML
-	private  Label dateLb;
+	private Label dateLb;
 	@FXML
 	private Label remarkLb;
 	@FXML
@@ -160,27 +164,35 @@ public class MainController implements Initializable {
 	@FXML
 	private Label seatLb1;
 	@FXML
-	private  Label dateLb1;
+	private Label dateLb1;
 	@FXML
 	private Label remarkLb1;
 	@FXML
 	private ImageView codeIv1;
 	@FXML
 	private AnchorPane previewAp1;
+	@SuppressWarnings("rawtypes")
 	@FXML
 	private ChoiceBox tableSelectCb;
+	@SuppressWarnings("rawtypes")
 	@FXML
 	private TableView materialTb;
+	@SuppressWarnings("rawtypes")
 	@FXML
 	private TableColumn materialNoCol;
+	@SuppressWarnings("rawtypes")
 	@FXML
 	private TableColumn nameCol;
+	@SuppressWarnings("rawtypes")
 	@FXML
 	private TableColumn descriptionCol;
+	@SuppressWarnings("rawtypes")
 	@FXML
 	private TableColumn seatNoCol;
+	@SuppressWarnings("rawtypes")
 	@FXML
 	private TableColumn quantityCol;
+	@SuppressWarnings("rawtypes")
 	@FXML
 	private TableColumn remarkCol;
 	@FXML
@@ -195,7 +207,13 @@ public class MainController implements Initializable {
 	private RadioButton codeRb;
 	@FXML
 	private RadioButton rfidRb;
-
+	@FXML
+	private Button materialNoRuleBt;
+	@FXML
+	private Button materialNoBt;
+	@FXML
+	private Label currentRuleLb;
+	
 	private Stage primaryStage;
 
 	private ExcelHelper excel;
@@ -242,17 +260,29 @@ public class MainController implements Initializable {
 
 	private static final String INSERT_STOCK_ACTION = "stock/insert";
 
+	// 刷新表格定时器
+	private static Timer updateTimer = new Timer(true);
+	// 刷新表格数据线程的启动延时时间
+	private static final Integer TIME_DELAY = 0;
+	// 刷线表格数据线程的启动间隔时间
+	private static final Integer TIME_PERIOD = 3000;
+
+	
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		initTableCol();
 		initMaterialNoTfListener();
 		initTableSelectorCbListener();
 		initMaterialPropertiesTfsListener();
+		initFirstMaterialNoTfListener();
 		initHotKey();
 		initDataFromConfig();
 		initPrinter();
 		initRFID();
+		// 定时任务：刷新表单
+		timeTask();
 	}
 
+	
 	public void onFileSelectBtClick() {
 		// 初始化文件选择器
 		FileChooser chooser = new FileChooser();
@@ -307,6 +337,7 @@ public class MainController implements Initializable {
 		}
 	}
 
+	
 	public void onPrintBtClick() {
 		// 信息完整性校验
 		String quantity = quantityTf.getText();
@@ -338,10 +369,12 @@ public class MainController implements Initializable {
 		}
 	}
 
+	
 	public void onCallConfig() {
 		showConfigWindow();
 	}
 
+	
 	public void onIgnoreClick() {
 		if (ignoreCb.isSelected()) {
 			nameTf.setDisable(false);
@@ -363,9 +396,10 @@ public class MainController implements Initializable {
 	/**
 	 * 远程调用打印
 	 */
-	public synchronized boolean remoteCallPrint(String materilaId, String user, String productDate, String remainingQuantity, String materialNo) {
+	public synchronized boolean remoteCallPrint(String materilaId, String user, String productDate,
+			String remainingQuantity, String materialNo) {
 		boolean result;
-		//封锁UI
+		// 封锁UI
 		materialNoTf.setDisable(true);
 		nameTf.setDisable(true);
 		descriptionTf.setDisable(true);
@@ -373,7 +407,7 @@ public class MainController implements Initializable {
 		quantityTf.setDisable(true);
 		remarkTf.setDisable(true);
 		dateTf.setDisable(true);
-		//备份UI的值
+		// 备份UI的值
 		Map<String, String> backup = new HashMap<>();
 		backup.put("materialNo", materialNoTf.getText());
 		backup.put("quantity", quantityTf.getText());
@@ -382,7 +416,7 @@ public class MainController implements Initializable {
 		backup.put("name", nameTf.getText());
 		backup.put("remark", remarkTf.getText());
 		backup.put("date", dateTf.getText());
-		//调用打印
+		// 调用打印
 		copies = 1;
 		try {
 			print(materilaId);
@@ -392,8 +426,8 @@ public class MainController implements Initializable {
 			stockLogList.remove(stockLogList.size());
 			error("发生错误：" + e.getMessage());
 			result = false;
-		}finally {
-			//还原UI的值
+		} finally {
+			// 还原UI的值
 			materialNoTf.setText(backup.get("materialNo"));
 			quantityTf.setText(backup.get("quantity"));
 			seatNoTf.setText(backup.get("seatNo"));
@@ -401,18 +435,19 @@ public class MainController implements Initializable {
 			nameTf.setText(backup.get("name"));
 			remarkTf.setText(backup.get("remark"));
 			dateTf.setText(backup.get("date"));
-			//解锁UI
+			// 解锁UI
 			materialNoTf.setText("");
 			materialNoTf.requestFocus();
 			printBt.setText("打印");
 		}
 		return result;
-	} 
-	
+	}
+
 	
 	/**
 	 * 打印任务
-	 * @throws Exception 
+	 * 
+	 * @throws Exception
 	 * @para materialId 料盘时间戳，可空，如果为空，表示采用当前时间。否则采用给定值
 	 */
 	public void print(String materialId) throws Exception {
@@ -421,7 +456,7 @@ public class MainController implements Initializable {
 		printBt.setDisable(true);
 		printBt.setText("打印中...");
 		info("打印中...");
-		try{
+		try {
 			for (int i = 0; i < copies; i++) {
 				subPrint(materialId);
 				if (!rfidResult) {
@@ -443,8 +478,10 @@ public class MainController implements Initializable {
 		commitDataBase();
 	}
 
+	
 	/**
 	 * 打印子任务，此方法会被print调用若干次，次数为份数
+	 * 
 	 * @para materialId 料盘时间戳，可空，如果为空，表示采用当前时间。否则采用给定值
 	 * @throws Exception
 	 */
@@ -480,6 +517,16 @@ public class MainController implements Initializable {
 		}
 	}
 
+	
+	/**
+	 * @author HCJ 显示规则管理窗口
+	 * @date 2018年10月29日 下午3:35:01
+	 */
+	public void onCallManageRule() {
+		showManageRuleWindow();
+	}
+
+
 	/**
 	 * 调用打印机
 	 */
@@ -501,6 +548,7 @@ public class MainController implements Initializable {
 	
 	/**
 	 * 生成数据
+	 * 
 	 * @para materialId 料盘时间戳，可空，如果为空，表示采用当前时间。否则采用给定值
 	 */
 	private void createData(String materialId) {
@@ -509,9 +557,9 @@ public class MainController implements Initializable {
 		stringBuffer.append("@");
 		stringBuffer.append(quantityLb.getText().trim().equals("") ? "0" : quantityLb.getText().trim());
 		stringBuffer.append("@");
-		if(materialId == null) {
+		if (materialId == null) {
 			stringBuffer.append(System.currentTimeMillis());
-		}else{
+		} else {
 			stringBuffer.append(materialId);
 		}
 		stringBuffer.append("@");
@@ -528,6 +576,7 @@ public class MainController implements Initializable {
 		data = stringBuffer.toString();
 	}
 
+	
 	/**
 	 * 尝试提交入库记录，若失败将会记录到文件，将在下次调用时一并提交
 	 */
@@ -545,7 +594,7 @@ public class MainController implements Initializable {
 				}
 				// 插入库
 				System.out.println(stockLogList);
-				List<StockLog> list = new ArrayList<>();
+				List<StockLog> stockList = new ArrayList<>();
 				for (String data : stockLogList) {
 					String[] datas = data.split("@");
 					StockLog log = new StockLog();
@@ -557,11 +606,11 @@ public class MainController implements Initializable {
 					log.setPosition(datas[5] == null ? "" : datas[5]);
 					log.setProductionDate(new SimpleDateFormat("yyyy-MM-dd").parse(datas[7]));
 					log.setOperationTime(new Date());
-					list.add(log);
+					stockList.add(log);
 				}
 				// 提交并双清
 				Map<String, String> map = new HashMap<>();
-				map.put("list", JSON.toJSONString(list));
+				map.put("stockList", JSON.toJSONString(stockList));
 				httpHelper.requestHttp(INSERT_STOCK_ACTION, map);
 				stockLogList.clear();
 				file.delete();
@@ -590,6 +639,7 @@ public class MainController implements Initializable {
 		}).start();
 	}
 
+	
 	private void createCode() {
 		Map<EncodeHintType, Object> hints = new HashMap<EncodeHintType, Object>();
 		hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
@@ -611,6 +661,7 @@ public class MainController implements Initializable {
 
 	}
 
+	
 	private void createImage() {
 		// 拷贝到大图层
 		materialNoLb1.setText(materialNoLb.getText());
@@ -645,9 +696,11 @@ public class MainController implements Initializable {
 		}
 	}
 
+	
 	/**
 	 * 加载表选择器数据
 	 */
+	@SuppressWarnings("unchecked")
 	private void loadTableSelectorData() {
 		ObservableList<String> list = FXCollections.observableArrayList();
 		for (int i = 0; i < excel.getBook().getNumberOfSheets(); i++) {
@@ -658,9 +711,11 @@ public class MainController implements Initializable {
 		info("数据解析成功，请在上方选择表");
 	}
 
+	
 	/**
 	 * 加载表数据
 	 */
+	@SuppressWarnings("unchecked")
 	private void loadTableData() {
 		try {
 			materials = excel.unfill(Material.class, 1);
@@ -679,6 +734,7 @@ public class MainController implements Initializable {
 		materialNoTf.requestFocus();
 	}
 
+	
 	private void initDataFromConfig() {
 		// 检查e.cfg存在与否，不存在则重新创建
 		if (!new File("e.cfg").exists()) {
@@ -788,6 +844,7 @@ public class MainController implements Initializable {
 //		quantityTf.textProperty().addListener(listener);
 	}
 
+	
 	private void initPrinter() {
 		new Thread(() -> {
 			// 初始化打印机
@@ -809,6 +866,7 @@ public class MainController implements Initializable {
 		}).start();
 	}
 
+	
 	private void initRFID() {
 		new Thread(() -> {
 			// 初始化RFID
@@ -861,6 +919,8 @@ public class MainController implements Initializable {
 		}
 	}
 
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void initPrintTargetRbs() {
 		ChangeListener listener = new ChangeListener<Boolean>() {
 
@@ -907,6 +967,8 @@ public class MainController implements Initializable {
 		}
 	}
 
+	
+	@SuppressWarnings("unchecked")
 	private void initTableCol() {
 		// 初始化表格列表
 		materialNoCol.setCellValueFactory(new PropertyValueFactory<>("no"));
@@ -917,6 +979,7 @@ public class MainController implements Initializable {
 		remarkCol.setCellValueFactory(new PropertyValueFactory<>("remark"));
 	}
 
+	
 	private void initTableSelectorCbListener() {
 		// 初始化下拉框监听器
 		tableSelectCb.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
@@ -947,7 +1010,8 @@ public class MainController implements Initializable {
 			}
 		});
 	}
-
+	
+	
 	private void initMaterialNoTfListener() {
 		// 初始化物料编号文本域监听器
 		materialNoTf.textProperty().addListener(new ChangeListener<String>() {
@@ -1001,13 +1065,14 @@ public class MainController implements Initializable {
 
 					materialNoTf.setStyle("-fx-text-fill: black;");
 
-//					info("请确认输入的料号是否存在");
+//						info("请确认输入的料号是否存在");
 				}
 			}
 
 		});
 	}
 
+	
 	private void initMaterialPropertiesTfsListener() {
 		nameTf.textProperty().addListener(new MaterialPropertiesTfChangeListener("name"));
 		descriptionTf.textProperty().addListener(new MaterialPropertiesTfChangeListener("description"));
@@ -1017,6 +1082,7 @@ public class MainController implements Initializable {
 		dateTf.textProperty().addListener(new MaterialPropertiesTfChangeListener("date"));
 	}
 
+	
 	/**
 	 * 显示正常状态
 	 * 
@@ -1028,6 +1094,7 @@ public class MainController implements Initializable {
 		stateLb.setText(DateUtil.HHmmss(new Date()) + " - " + message);
 	}
 
+	
 	/**
 	 * 显示错误状态，并记录日志
 	 * 
@@ -1040,6 +1107,7 @@ public class MainController implements Initializable {
 		logger.error(message);
 	}
 
+	
 	class MaterialPropertiesTfChangeListener implements ChangeListener<String> {
 
 		private String materialPropertyName;
@@ -1075,6 +1143,7 @@ public class MainController implements Initializable {
 
 	}
 
+	
 	private void showConfigWindow() {
 		try {
 			FXMLLoader loader = new FXMLLoader(ResourcesUtil.getResourceURL("fxml/config.fxml"));
@@ -1093,6 +1162,7 @@ public class MainController implements Initializable {
 
 	}
 
+	
 	private void showIdWindow() {
 		try {
 			FXMLLoader loader = new FXMLLoader(ResourcesUtil.getResourceURL("fxml/id.fxml"));
@@ -1112,6 +1182,7 @@ public class MainController implements Initializable {
 
 	}
 
+	
 	private void showRfidAlert() {
 		try {
 			FXMLLoader loader = new FXMLLoader(ResourcesUtil.getResourceURL("fxml/rfid.fxml"));
@@ -1129,9 +1200,31 @@ public class MainController implements Initializable {
 			e.printStackTrace();
 			error("加载窗口时出错");
 		}
-
 	}
 
+	
+	/**
+	 * @author HCJ 打开规则管理窗口
+	 * @date 2018年10月29日 下午3:35:51
+	 */
+	private void showManageRuleWindow() {
+		try {
+			FXMLLoader loader = new FXMLLoader(ResourcesUtil.getResourceURL("fxml/manageRule.fxml"));
+			Parent root = loader.load();
+			ManageRuleController manageRuleController = loader.getController();
+			// 显示
+			Stage stage = new Stage();
+			stage.setTitle("规则管理");
+			manageRuleController.setStage(stage);
+			stage.setScene(new Scene(root));
+			stage.show();
+		} catch (IOException e) {
+			e.printStackTrace();
+			error("加载窗口时出错");
+		}
+	}
+
+	
 	private void resetControllers() {
 		nameTf.setDisable(true);
 		descriptionTf.setDisable(true);
@@ -1157,6 +1250,7 @@ public class MainController implements Initializable {
 		printBt.setDisable(true);
 	}
 
+	
 	/**
 	 * 日期类型校验
 	 * 
@@ -1176,26 +1270,106 @@ public class MainController implements Initializable {
 
 	}
 
+	
+	/**@author HCJ
+	 * 初始化定时器任务，显示规则
+	 * @date 2018年10月29日 下午3:40:32
+	 */
+	private void timeTask() {
+		updateTimer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				Platform.runLater(new Runnable() {
+					@Override
+					public void run() {
+						if (ManageRuleController.currentRule != null && ManageRuleController.currentRule.getName()!=null) {
+							currentRuleLb.setText("当前料号规则：" + ManageRuleController.currentRule.getName());
+						} else {
+							currentRuleLb.setText("当前料号规则：默认规则");
+						}
+					}
+				});
+	
+			}
+		}, TIME_DELAY, TIME_PERIOD);
+	}
+
+
+	private void initFirstMaterialNoTfListener() {
+		// 初始化得到的物料编号文本域监听器
+		firstMaterialNoTf.textProperty().addListener(new ChangeListener<String>() {
+			@Override
+			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+				Rule rule = ManageRuleController.currentRule;
+				if(rule.getAllRules() == null) {
+					rule.setName("默认规则");
+					rule.setAllRules("defaultRule:"+",");
+				}
+				if(newValue == null || newValue.equals("") || newValue.length() < 0) {
+					materialNoTf.setText("");
+				}
+				try {
+					if (newValue != null && !newValue.equals("") && newValue.length() > 0) {
+						String[] ruleArray = rule.getAllRules().split(",");
+						for (String ruleString : ruleArray) {
+							newValue = getMaterialNo(ruleString, newValue);
+						}
+						materialNoTf.setText(newValue);
+					}
+				} catch (Exception e) {
+					error("请应用规则并且扫描有效二维码");
+					logger.error("请应用规则并且扫描有效二维码");
+				}
+			}
+		});
+	}
+
+
+	private String getMaterialNo(String ruleString, String materialNoString) {
+		if (ruleString.contains("separator")) {
+			String[] materialNoArray;
+			try {
+				materialNoArray = removeSpace(materialNoString.split(ruleString.substring(ruleString.indexOf(":") + 1, ruleString.indexOf("="))));
+			} catch (Exception e) {
+				materialNoArray = removeSpace(materialNoString.split("\\" + ruleString.substring(ruleString.indexOf(":") + 1, ruleString.indexOf("="))));
+			}
+			return materialNoArray[Integer.parseInt(ruleString.substring(ruleString.indexOf("=") + 1, ruleString.length()))];
+		} else if (ruleString.contains("length")) {
+			int start = Integer.parseInt(ruleString.substring(ruleString.indexOf(":") + 1, ruleString.indexOf("=")));
+			int end = Integer.parseInt(ruleString.substring(ruleString.indexOf("=") + 1, ruleString.length()));
+			return materialNoString.substring(start, end);
+		}else if(ruleString.contains("defaultRule")) {
+			return materialNoString;
+		}
+		return null;
+	}
+
+
 	public Stage getPrimaryStage() {
 		return primaryStage;
 	}
 
+	
 	public void setPrimaryStage(Stage primaryStage) {
 		this.primaryStage = primaryStage;
 	}
 
+	
 	public Socket getPrinterSocket() {
 		return printerSocket;
 	}
 
+	
 	public String getUserId() {
 		return userId;
 	}
 
+	
 	public void setUserId(String userId) {
 		this.userId = userId;
 	}
 
+	
 	/**
 	 * 二维码和RFID内的数据<br>
 	 * 格式：料号@数量@时间戳@工号
@@ -1204,8 +1378,20 @@ public class MainController implements Initializable {
 		return data;
 	}
 
+	
 	public static Socket getRfidSocket() {
 		return rfidSocket;
+	}
+
+	
+	public String[] removeSpace(String[] array) {
+		List<String> tmp = new ArrayList<String>();
+		for (String str : array) {
+			if (str != null && str.length() != 0) {
+				tmp.add(str);
+			}
+		}
+		return tmp.toArray(new String[0]);
 	}
 
 }
