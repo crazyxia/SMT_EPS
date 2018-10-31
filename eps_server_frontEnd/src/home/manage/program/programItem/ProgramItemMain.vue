@@ -164,6 +164,7 @@ export default {
       }
     },
     updateProgramItem:function(){
+      store.commit("setLoading",true);
       let options = {
         url:updateProgramItemUrl,
         data:{
@@ -171,6 +172,7 @@ export default {
         }
       }
       axiosPost(options).then(response => {
+        store.commit("setLoading",false);
         if (response.data) {
           let result = response.data.result;
           if(result == "succeed"){
@@ -185,6 +187,7 @@ export default {
           store.commit("setIsRefresh",true);
         }
       }).catch(err => {
+        store.commit("setLoading",false);
         alert("接口请求失败，请检查网络，再联系管理员");
         this.operations = [];
       });

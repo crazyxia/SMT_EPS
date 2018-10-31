@@ -41,6 +41,7 @@
   import {axiosPost} from "./../../../utils/fetchData"
   import {configTip} from "./../../../utils/formValidate"
   import {configListUrl, setConfigInfosUrl} from './../../../config/globalUrl'
+  import {errTip} from "../../../utils/errorTip";
 
   export default {
     name: 'config',
@@ -82,14 +83,10 @@
         showType: "none"
       }
     },
-    mounted() {
-      this.getList();
-    },
     watch: {
       line: function (val) {
         if (val !== "") {
-          this.showType = "table-row-group"
-          this.analyzeData();
+          this.getList();
         }
       }
     },
@@ -108,6 +105,10 @@
           if (response.data) {
             let [...result] = response.data;
             this.result = result;
+            this.$nextTick(function(){
+              this.showType = "table-row-group";
+              this.analyzeData();
+            })
           }
         }).catch(err => {
           alert("请求接口失败，请先检查网络，再联系管理员");
@@ -125,6 +126,8 @@
             let result = response.data.result;
             if (result === "succeed") {
               alert("设置成功");
+            }else{
+              errTip(result);
             }
           }
         }).catch(err => {

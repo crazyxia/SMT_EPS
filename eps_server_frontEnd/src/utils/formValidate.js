@@ -68,16 +68,6 @@ export const configTip = function (arr) {
   }
   return true;
 }
-
-const judgeNumber = function (val) {
-  let regString = /[a-zA-Z]+/;
-  if (regString.test(val)) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
 export const materialTip = function (obj) {
   if (obj.materialNo === "") {
     alert("料号不能为空");
@@ -94,7 +84,7 @@ export const materialTip = function (obj) {
 };
 
 //判断是否为正整数
-const judge = function isNumber(num) {
+export const judge = function isNumber(num) {
   var val = num;
   var regu = /^[1-9]\d*$/;
   if (val != "") {

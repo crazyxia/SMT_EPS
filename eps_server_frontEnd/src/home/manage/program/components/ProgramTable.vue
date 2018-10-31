@@ -17,7 +17,7 @@
         {title: '站位表', field: 'programName', colStyle: {'width': '180px'}},
         {title: '工单', field: 'workOrder', colStyle: {'width': '150px'}},
         {title: '版面', field: 'boardTypeName', colStyle: {'width': '80px'}},
-        {title: '上传时间', field: 'createTimeString', colStyle: {'width': '100px'}},
+        {title: '上传时间', field: 'createTimeString', colStyle: {'width': '120px'}},
         {title: '状态', field: 'stateName', colStyle: {'width': '80px'}},
         {title: '线号', field: 'lineName', colStyle: {'width': '50px'}},
         {title: '操作', field: 'operation', tdComp: 'ProgramOperation', colStyle: {'width': '150px'}}

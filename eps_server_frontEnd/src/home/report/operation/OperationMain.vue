@@ -13,10 +13,6 @@
           <option value="4">仓库</option>
         </select>
       </div>
-  		<div class="form-group">
-    		<label for="operation">客户名</label>
-    		<input type="text" class="form-control" id="operation" v-model.trim="operationInfos.operation"name="operation">
-  		</div>
       <div class="form-group">
           <label for="line">线号</label>
           <select class="form-control" id="line" v-model.trim="operationInfos.line" name="line">
@@ -63,7 +59,6 @@ export default {
         workOrderNo:"",
         startTime:"",
         endTime:"",
-        client:""
       },
       sTime:"",
       eTime:"",

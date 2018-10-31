@@ -24,6 +24,7 @@
 import store from './../../../store' 
 import MaterialModal from './components/MaterialModal'
 import MaterialTable from './components/MaterialTable'
+import {judge} from "../../../utils/formValidate";
 export default {
   name:'material',
   data () {
@@ -49,7 +50,12 @@ export default {
       store.commit("setIsAdd",true);
     },
     find:function(){
-      store.commit("setIsFind",true);
+      if(judge(this.materialInfos.perifdOfValidity))
+      {
+        store.commit("setIsFind",true);
+      }else{
+        alert("物料保质期必须为正整数")
+      }
     }
   }
 }

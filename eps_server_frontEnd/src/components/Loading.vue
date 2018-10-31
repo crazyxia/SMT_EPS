@@ -30,7 +30,7 @@
     align-items: center;
     justify-content: center;
     border-radius: 10px;
-    opacity: 0.5;
+    opacity:0.8;
     width: 10rem;
     height: 10rem;
   }

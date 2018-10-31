@@ -33,7 +33,11 @@ export const errTip = function (code) {
     case "failed_materialNo_exist":
       alert("物料料号重复");
       break;
+    case "fail_get_img":
+      alert("获取图片失败");
+      break;
     default:
+      alert(code);
       break;
   }
 };

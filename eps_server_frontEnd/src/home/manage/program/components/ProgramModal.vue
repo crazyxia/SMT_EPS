@@ -75,7 +75,6 @@ export default {
   },
   methods:{
     fetchData:function(url){
-      console.log(store.state.program.id);
       let options = {
         url:url,
         data:{
@@ -87,6 +86,8 @@ export default {
           let result = response.data.result;
           if(result === "succeed"){
             store.commit("setIsRefresh",true);
+          }else{
+            errTip(result);
           }
         }
       }).catch(err => {

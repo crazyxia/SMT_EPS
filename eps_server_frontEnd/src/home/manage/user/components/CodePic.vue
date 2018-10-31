@@ -20,6 +20,7 @@
 import store from './../../../../store'
 import {axiosPost} from "./../../../../utils/fetchData"
 import {getCodePicUrl} from "./../../../../config/globalUrl"
+import {errTip} from "../../../../utils/errorTip";
 export default {
   name:'codePic',
   data () {
@@ -72,6 +73,8 @@ export default {
           let result = response.data.result;
           if(result !== "fail_get_img"){
             this.result = result;
+          }else{
+            errTip(result);
           }
         }
       }).catch(err => {

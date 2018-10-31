@@ -89,6 +89,7 @@ export default {
               store.commit("setOperationSummaryList",list);
               this.data = list;
             }else{
+              this.data = result;
               return false;
             }
           }
