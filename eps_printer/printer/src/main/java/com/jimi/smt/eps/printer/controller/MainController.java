@@ -348,7 +348,7 @@ public class MainController implements Initializable {
 	}
 
 	
-	public void onCallConfig() {
+	public void onConfigBtClick() {
 		showConfigWindow();
 	}
 
@@ -500,7 +500,7 @@ public class MainController implements Initializable {
 	 * @author HCJ 显示规则管理窗口
 	 * @date 2018年10月29日 下午3:35:01
 	 */
-	public void onCallManageRule() {
+	public void onManageRuleBtClick() {
 		showManageRuleWindow();
 	}
 

@@ -53,7 +53,7 @@ public class ManageRuleController implements Initializable {
 	@FXML
 	private TableColumn ruleDetailsCol;
 	@FXML
-	private TableView<RuleResultData> DataTV;
+	private TableView<RuleResultData> ruleDataTv;
 	@FXML
 	private Label tipLb;
 	@FXML
@@ -153,7 +153,11 @@ public class ManageRuleController implements Initializable {
 	}
 
 	
-	public void onCallAddRule() {
+	/**@author HCJ
+	 * 新增规则
+	 * @date 2018年10月31日 下午7:01:29
+	 */
+	public void onAddRuleBtClick() {
 		showAddRuleWindow();
 	}
 
@@ -189,6 +193,7 @@ public class ManageRuleController implements Initializable {
 				rules.removeIf(r -> r.getName().equals(selectedRule.getName()));
 				updateText();
 				currentRule = null;
+				mainController.setCurrentRule();
 				writeToFile();
 			} else {
 				alert.close();
@@ -205,7 +210,7 @@ public class ManageRuleController implements Initializable {
 	 * @date 2018年10月29日 下午3:23:42
 	 */
 	public void tableRowChangeListener() {
-		DataTV.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
+		ruleDataTv.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
 
 			@Override
 			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
@@ -229,7 +234,11 @@ public class ManageRuleController implements Initializable {
 	}
 
 	
-	public void saveRules() {
+	/**@author HCJ
+	 * 将规则写入文件，更新表格的显示内容
+	 * @date 2018年10月31日 下午7:02:16
+	 */
+	public void updateRules() {
 		writeToFile();
 		updateText();
 	}
@@ -240,6 +249,10 @@ public class ManageRuleController implements Initializable {
 	}
 
 	
+	/**@author HCJ
+	 * 显示新建规则窗口
+	 * @date 2018年10月31日 下午7:04:32
+	 */
 	private void showAddRuleWindow() {
 		try {
 			FXMLLoader loader = new FXMLLoader(ResourcesUtil.getResourceURL("fxml/addRule.fxml"));
@@ -370,7 +383,7 @@ public class ManageRuleController implements Initializable {
 	private synchronized void updateText() {
 		if (rules != null && rules.size() > 0) {
 			ruleTableLsit = FXCollections.observableArrayList(ruleToRuleResultData(rules));
-			DataTV.setItems(ruleTableLsit);
+			ruleDataTv.setItems(ruleTableLsit);
 		}
 	}
 

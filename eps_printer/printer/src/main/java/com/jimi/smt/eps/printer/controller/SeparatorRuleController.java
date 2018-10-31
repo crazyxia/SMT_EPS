@@ -122,7 +122,7 @@ public class SeparatorRuleController implements Initializable {
 
 	
 	/**@author HCJ
-	 * 移除数组中的空字符，如["","aaa","bbb"]会返还["aaa","bbb"]
+	 * 移除数组中的空字符，如["","aaa","bbb"]会返回["aaa","bbb"]
 	 * @date 2018年10月31日 下午2:37:29
 	 */
 	private String[] removeSpace(String[] array) {
@@ -136,9 +136,11 @@ public class SeparatorRuleController implements Initializable {
 	}
 
 	
-	/**
-	 * @author HCJ 校验文本内容
-	 * @date 2018年10月29日 下午3:29:40
+	/**@author HCJ
+	 * 校验文本内容
+	 * @return true 文本内容不为空
+	 * @return false 文本内容为空
+	 * @date 2018年10月31日 下午7:07:00
 	 */
 	private Boolean checkScanContentIsExist() {
 		if (scanTa.getText() != null && !scanTa.getText().equals("")) {

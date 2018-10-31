@@ -5,7 +5,7 @@
 
 	<groupId>com.jimi.smt</groupId>
 	<artifactId>EPS_Printer</artifactId>
-	<version>1.7.0</version>
+	<version>1.7.2</version>
 	<packaging>jar</packaging>
 
 	<name>EPS_Printer</name>
@@ -187,12 +187,12 @@
 			<artifactId>fastjson</artifactId>
 			<version>1.2.40</version>
 		</dependency>
-		
+
 		<dependency>
-            <groupId>org.ini4j</groupId>
-            <artifactId>ini4j</artifactId>
-            <version>0.5.4</version>
-        </dependency>
+			<groupId>org.ini4j</groupId>
+			<artifactId>ini4j</artifactId>
+			<version>0.5.4</version>
+		</dependency>
 
 	</dependencies>
 </project>

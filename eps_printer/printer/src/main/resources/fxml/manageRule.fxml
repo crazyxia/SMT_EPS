@@ -19,6 +19,6 @@
       <Button fx:id="applyRuleBt" layoutX="1002.0" layoutY="571.0" mnemonicParsing="false" onAction="#onApplyRuleBtClick" prefHeight="47.0" prefWidth="125.0" text="应用规则" AnchorPane.bottomAnchor="77.0" AnchorPane.leftAnchor="1002.0" />
       <Button fx:id="deleteRuleBt" layoutX="1002.0" layoutY="108.0" mnemonicParsing="false" onAction="#onDeleteRuleBtClick" prefHeight="47.0" prefWidth="125.0" text="删除规则" AnchorPane.bottomAnchor="540.0" AnchorPane.leftAnchor="1002.0" />
       <Label fx:id="tipLb" layoutX="21.0" layoutY="625.0" prefHeight="30.0" prefWidth="955.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="21.0" />
-      <Button fx:id="addRuleBt" layoutX="1002.0" layoutY="44.0" mnemonicParsing="false" onAction="#onCallAddRule" prefHeight="47.0" prefWidth="125.0" text="新建规则" AnchorPane.bottomAnchor="604.0" AnchorPane.leftAnchor="1002.0" />
+      <Button fx:id="addRuleBt" layoutX="1002.0" layoutY="44.0" mnemonicParsing="false" onAction="#onAddRuleBtClick" prefHeight="47.0" prefWidth="125.0" text="新建规则" AnchorPane.bottomAnchor="604.0" AnchorPane.leftAnchor="1002.0" />
    </children>
 </AnchorPane>

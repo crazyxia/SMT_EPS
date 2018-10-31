@@ -55,7 +55,7 @@ public class AddRuleController implements Initializable {
 	}
 
 	
-	public void onCallLength() {
+	public void onLengthBtClick() {
 		rules = manageRuleController.getRules();
 		if (setContentIfExist()) {
 			scanTa.setDisable(true);
@@ -64,7 +64,7 @@ public class AddRuleController implements Initializable {
 	}
 
 	
-	public void onCallSeparator() {
+	public void onSeparatorBtClick() {
 		rules = manageRuleController.getRules();
 		if (setContentIfExist()) {
 			scanTa.setDisable(true);
@@ -109,7 +109,7 @@ public class AddRuleController implements Initializable {
 			rule.setExample(scanTa.getText());
 			rule.setDetails(ruleItems.toString());
 			rules.add(rule);
-			manageRuleController.saveRules();
+			manageRuleController.updateRules();
 			ruleItems.delete(0, ruleItems.length());
 			info("保存规则成功");
 			stage.close();
@@ -124,7 +124,7 @@ public class AddRuleController implements Initializable {
 	 * 将各文本内容、暂存的规则清除
 	 * @date 2018年10月31日 下午2:23:50
 	 */
-	public void onCancelBtClick() {
+	public void onResetBtClick() {
 		scanTa.setText("");
 		scanTa.setDisable(false);
 		resultTa.setText("");
@@ -195,9 +195,11 @@ public class AddRuleController implements Initializable {
 	}
 
 	
-	/**
-	 * @author HCJ 校验文本内容
-	 * @date 2018年10月29日 下午3:29:40
+	/**@author HCJ
+	 * 判断文本内容是否有效，有效时保存文本
+	 * @return true 扫描文本或者结果文本不为空
+	 * @return false 扫描文本和结果文本都为空
+	 * @date 2018年10月31日 下午6:39:01
 	 */
 	private Boolean setContentIfExist() {
 		if (resultTa.getText() != null && !resultTa.getText().equals("")) {

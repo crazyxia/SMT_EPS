@@ -80,7 +80,7 @@
       <ChoiceBox fx:id="tableSelectCb" layoutX="407.0" layoutY="52.0" prefHeight="23.0" prefWidth="141.0" AnchorPane.rightAnchor="441.0" AnchorPane.topAnchor="52.0" />
       <Label layoutX="577.0" layoutY="445.0" prefHeight="15.0" prefWidth="60.0" text="打印份数：" AnchorPane.rightAnchor="343.0" AnchorPane.topAnchor="445.0" />
       <TextField fx:id="copyTf" layoutX="646.0" layoutY="441.0" prefHeight="23.0" prefWidth="60.0" text="1" AnchorPane.rightAnchor="283.0" AnchorPane.topAnchor="441.0" />
-      <Button fx:id="configBt" layoutX="873.0" layoutY="441.0" mnemonicParsing="false" onAction="#onCallConfig" text="其他设置" AnchorPane.rightAnchor="36.0" AnchorPane.topAnchor="441.0" />
+      <Button fx:id="configBt" layoutX="873.0" layoutY="441.0" mnemonicParsing="false" onAction="#onConfigBtClick" text="其他设置" AnchorPane.rightAnchor="36.0" AnchorPane.topAnchor="441.0" />
       <CheckBox fx:id="ignoreCb" layoutX="779.0" layoutY="445.0" mnemonicParsing="false" onAction="#onIgnoreClick" text="忽略校验" AnchorPane.rightAnchor="122.0" AnchorPane.topAnchor="445.0" />
       <Label layoutX="577.0" layoutY="416.0" text="打印目标：" AnchorPane.rightAnchor="338.0" AnchorPane.topAnchor="416.0" />
       <RadioButton fx:id="bothRb" disable="true" layoutX="852.0" layoutY="416.0" mnemonicParsing="false" text="两者均打印" AnchorPane.rightAnchor="35.0" AnchorPane.topAnchor="416.0">
@@ -91,7 +91,7 @@
       <RadioButton fx:id="codeRb" layoutX="651.0" layoutY="416.0" mnemonicParsing="false" selected="true" text="二维码标签" toggleGroup="$printTarget" AnchorPane.rightAnchor="236.0" AnchorPane.topAnchor="416.0" />
       <RadioButton fx:id="rfidRb" disable="true" layoutX="755.0" layoutY="416.0" mnemonicParsing="false" text="RFID标签" toggleGroup="$printTarget" AnchorPane.rightAnchor="143.0" AnchorPane.topAnchor="416.0" />
       <Separator layoutX="586.0" layoutY="480.0" prefHeight="3.0" prefWidth="357.0" AnchorPane.rightAnchor="46.0" AnchorPane.topAnchor="480.0" />
-      <Button fx:id="manageRuleBt" layoutX="833.0" layoutY="18.0" mnemonicParsing="false" onAction="#onCallManageRule" text="规则管理" AnchorPane.rightAnchor="46.0" AnchorPane.topAnchor="18.0" />
+      <Button fx:id="manageRuleBt" layoutX="833.0" layoutY="18.0" mnemonicParsing="false" onAction="#onManageRuleBtClick" text="规则管理" AnchorPane.rightAnchor="46.0" AnchorPane.topAnchor="18.0" />
       <Label fx:id="currentRuleLb" layoutX="577.0" layoutY="18.0" prefHeight="30.0" prefWidth="256.0" text="当前规则：" AnchorPane.rightAnchor="156.0" AnchorPane.topAnchor="18.0" />
       <TextField fx:id="scanMaterialNoTf" layoutX="577.0" layoutY="52.0" prefHeight="36.0" prefWidth="365.0" promptText="扫描条码或者输入料号" AnchorPane.rightAnchor="46.0" AnchorPane.topAnchor="52.0">
          <font>

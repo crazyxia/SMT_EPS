@@ -56,7 +56,7 @@ public class LengthRuleController implements Initializable {
 		try {
 			start = Integer.parseInt(startTf.getText());
 			end = Integer.parseInt(endTf.getText());
-			if (start < 1 || end <= 1 || start > end || end > scanTa.getText().length()) {
+			if (start < 1 || end < 1 || start > end || end > scanTa.getText().length()) {
 				startTf.setText("");
 				endTf.setText("");
 				lengthResultTa.setText("");
