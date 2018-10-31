@@ -11,18 +11,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.jimi.smt.eps.printer.app.Main;
-import com.jimi.smt.eps.printer.entity.ResultData;
+import com.jimi.smt.eps.printer.entity.RuleResultData;
 import com.jimi.smt.eps.printer.entity.Rule;
 
 import cc.darhao.dautils.api.ResourcesUtil;
-import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -49,17 +46,14 @@ public class ManageRuleController implements Initializable {
 
 	private Logger logger = LogManager.getRootLogger();
 
-	@SuppressWarnings("rawtypes")
 	@FXML
 	private TableColumn ruleNameCol;
-	@SuppressWarnings("rawtypes")
 	@FXML
 	private TableColumn ruleExampleCol;
-	@SuppressWarnings("rawtypes")
 	@FXML
-	private TableColumn allRulesCol;
+	private TableColumn ruleDetailsCol;
 	@FXML
-	private TableView<ResultData> DataTV;
+	private TableView<RuleResultData> DataTV;
 	@FXML
 	private Label tipLb;
 	@FXML
@@ -71,27 +65,20 @@ public class ManageRuleController implements Initializable {
 	@FXML
 	private Button deleteRuleBt;
 	
-	@SuppressWarnings("unused")
 	private Stage stage;
 
 	// 存储规则文件名
 	private static final String RULE_FILE_NAME = "rule.cfg";
 	// 表格数据
-	private ObservableList<ResultData> tableLsit = null;
+	private ObservableList<RuleResultData> ruleTableLsit = null;
 	// 存储所有规则
 	private List<Rule> rules = new ArrayList<Rule>();
-	// 刷新表格定时器
-	private static Timer updateTimer = new Timer(true);
-	// 刷新表格数据线程的启动延时时间
-	private static final Integer TIME_DELAY = 0;
-	// 刷线表格数据线程的启动间隔时间
-	private static final Integer TIME_PERIOD = 3000;
-	// 定时器是否更新数据
-	private static boolean isUpdate = true;
 	// 存储当前应用的规则
 	public static Rule currentRule = new Rule();
 	// 存储在表格中选中的规则
 	private Rule selectedRule = new Rule();
+	
+	private MainController mainController;
 
 	
 	@Override
@@ -100,8 +87,6 @@ public class ManageRuleController implements Initializable {
 		initDatatTV();
 		initFileAndRule();
 		tableRowChangeListener();
-		// 定时任务：刷新表单
-		timeTask();
 	}
 
 	
@@ -109,14 +94,13 @@ public class ManageRuleController implements Initializable {
 	 * @author HCJ 初始化表格
 	 * @date 2018年10月29日 下午3:19:30
 	 */
-	@SuppressWarnings({ "unchecked" })
 	public void initDatatTV() {
-		ruleNameCol.setCellValueFactory(new PropertyValueFactory<ResultData, String>("name"));
-		ruleExampleCol.setCellValueFactory(new PropertyValueFactory<ResultData, String>("example"));
-		allRulesCol.setCellValueFactory(new PropertyValueFactory<ResultData, String>("allRules"));
+		ruleNameCol.setCellValueFactory(new PropertyValueFactory<RuleResultData, String>("name"));
+		ruleExampleCol.setCellValueFactory(new PropertyValueFactory<RuleResultData, String>("example"));
+		ruleDetailsCol.setCellValueFactory(new PropertyValueFactory<RuleResultData, String>("details"));
 		initcell(ruleNameCol);
 		initcell(ruleExampleCol);
-		initcell(allRulesCol);
+		initcell(ruleDetailsCol);
 	}
 
 	
@@ -124,7 +108,6 @@ public class ManageRuleController implements Initializable {
 	 * @author HCJ 初始化文件和规则
 	 * @date 2018年10月29日 下午3:25:25
 	 */
-	@SuppressWarnings("unchecked")
 	public void initFileAndRule() {
 		// 检查rule.cfg存在与否，不存在则重新创建
 		if (!new File(RULE_FILE_NAME).exists()) {
@@ -148,12 +131,11 @@ public class ManageRuleController implements Initializable {
 	 * @author HCJ 初始化表格数据
 	 * @date 2018年10月29日 下午3:18:57
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void initcell(TableColumn tableColumn) {
 
 		tableColumn.setCellFactory(new Callback<TableColumn, TableCell>() {
-			public TableCell<ResultData, String> call(TableColumn pColumn) {
-				return new TableCell<ResultData, String>() {
+			public TableCell<RuleResultData, String> call(TableColumn pColumn) {
+				return new TableCell<RuleResultData, String>() {
 
 					@Override
 					public void updateItem(String item, boolean empty) {
@@ -171,27 +153,6 @@ public class ManageRuleController implements Initializable {
 	}
 
 	
-	/**
-	 * @author HCJ 初始化定时器任务
-	 * @date 2018年10月29日 下午3:19:52
-	 */
-	public void timeTask() {
-		updateTimer.schedule(new TimerTask() {
-			@Override
-			public void run() {
-				Platform.runLater(new Runnable() {
-					@Override
-					public void run() {
-						if (isUpdate) {
-							updateText();
-						}
-					}
-				});
-			}
-		}, TIME_DELAY, TIME_PERIOD);
-	}
-
-	
 	public void onCallAddRule() {
 		showAddRuleWindow();
 	}
@@ -204,13 +165,13 @@ public class ManageRuleController implements Initializable {
 	public void onApplyRuleBtClick() {
 		if (selectedRule.getName() != null && rules != null && rules.size() > 0) {
 			currentRule = selectedRule;
+			mainController.setCurrentRule();
 			info("应用规则成功");
 			stage.close();
 		} else {
 			error("请选择左边的规则");
 			logger.error("请选择左边的规则");
 		}
-		isUpdate = true;
 	}
 
 	
@@ -226,6 +187,7 @@ public class ManageRuleController implements Initializable {
 			Optional<ButtonType> result = alert.showAndWait();
 			if (result.get() == ButtonType.OK) {
 				rules.removeIf(r -> r.getName().equals(selectedRule.getName()));
+				updateText();
 				currentRule = null;
 				writeToFile();
 			} else {
@@ -235,7 +197,6 @@ public class ManageRuleController implements Initializable {
 			error("请选择左边的规则");
 			logger.error("请选择左边的规则");
 		}
-		isUpdate = true;
 	}
 
 	
@@ -249,7 +210,6 @@ public class ManageRuleController implements Initializable {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
 				if (newValue != null && newValue.intValue() >= 0) {
-					isUpdate = false;
 					if (rules != null && rules.size() > 0) {
 						selectedRule = rules.get(newValue.intValue());
 					}
@@ -259,6 +219,11 @@ public class ManageRuleController implements Initializable {
 	}
 
 	
+	public void setMainController(MainController mainController) {
+		this.mainController = mainController;
+	}
+	
+	
 	public void setStage(Stage stage) {
 		this.stage = stage;
 	}
@@ -266,6 +231,7 @@ public class ManageRuleController implements Initializable {
 	
 	public void saveRules() {
 		writeToFile();
+		updateText();
 	}
 
 	
@@ -284,6 +250,7 @@ public class ManageRuleController implements Initializable {
 			stage.setAlwaysOnTop(true);
 			addRuleController.setManageRuleController(ManageRuleController.this);
 			addRuleController.setStage(stage);
+			stage.setTitle("新建规则");
 			stage.setScene(new Scene(root));
 			stage.show();
 		} catch (IOException e) {
@@ -402,26 +369,26 @@ public class ManageRuleController implements Initializable {
 	 */
 	private synchronized void updateText() {
 		if (rules != null && rules.size() > 0) {
-			tableLsit = FXCollections.observableArrayList(ruleToResultData(rules));
-			DataTV.setItems(tableLsit);
+			ruleTableLsit = FXCollections.observableArrayList(ruleToRuleResultData(rules));
+			DataTV.setItems(ruleTableLsit);
 		}
 	}
 
 	
 	/**
-	 * @author HCJ 将List对象转换为表格可以识别的ResultData
+	 * @author HCJ 将List<RuleResultData>对象转换为表格可以识别的RuleResultData
 	 * @date 2018年10月29日 下午3:29:02
 	 */
-	private List<ResultData> ruleToResultData(List<Rule> rules) {
-		List<ResultData> resultDatas = new ArrayList<>();
+	private List<RuleResultData> ruleToRuleResultData(List<Rule> rules) {
+		List<RuleResultData> ruleResultDatas = new ArrayList<>();
 		for (Rule rule : rules) {
-			ResultData resultData = new ResultData();
-			resultData.setName(rule.getName());
-			resultData.setExample(rule.getExample());
-			resultData.setAllRules(rule.getAllRules());
-			resultDatas.add(resultData);
+			RuleResultData ruleResultData = new RuleResultData();
+			ruleResultData.setName(rule.getName());
+			ruleResultData.setExample(rule.getExample());
+			ruleResultData.setDetails(rule.getDetails());
+			ruleResultDatas.add(ruleResultData);
 		}
-		return resultDatas;
+		return ruleResultDatas;
 	}
 
 

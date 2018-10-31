@@ -13,14 +13,14 @@ public class Rule implements Serializable{
 	
 	private String example;
 	
-	private String allRules;
+	private String details;
 
-	public String getAllRules() {
-		return allRules;
+	public String getDetails() {
+		return details;
 	}
 
-	public void setAllRules(String allRules) {
-		this.allRules = allRules;
+	public void setDetails(String details) {
+		this.details = details;
 	}
 
 	public String getName() {

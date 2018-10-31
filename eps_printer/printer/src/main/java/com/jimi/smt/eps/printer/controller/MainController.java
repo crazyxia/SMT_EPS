@@ -19,8 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import javax.imageio.ImageIO;
 
@@ -116,7 +114,7 @@ public class MainController implements Initializable {
 	@FXML
 	private TextField materialNoTf;
 	@FXML
-	private TextField firstMaterialNoTf;
+	private TextField scanMaterialNoTf;
 	@FXML
 	private TextField descriptionTf;
 	@FXML
@@ -171,28 +169,20 @@ public class MainController implements Initializable {
 	private ImageView codeIv1;
 	@FXML
 	private AnchorPane previewAp1;
-	@SuppressWarnings("rawtypes")
 	@FXML
 	private ChoiceBox tableSelectCb;
-	@SuppressWarnings("rawtypes")
 	@FXML
 	private TableView materialTb;
-	@SuppressWarnings("rawtypes")
 	@FXML
 	private TableColumn materialNoCol;
-	@SuppressWarnings("rawtypes")
 	@FXML
 	private TableColumn nameCol;
-	@SuppressWarnings("rawtypes")
 	@FXML
 	private TableColumn descriptionCol;
-	@SuppressWarnings("rawtypes")
 	@FXML
 	private TableColumn seatNoCol;
-	@SuppressWarnings("rawtypes")
 	@FXML
 	private TableColumn quantityCol;
-	@SuppressWarnings("rawtypes")
 	@FXML
 	private TableColumn remarkCol;
 	@FXML
@@ -207,10 +197,6 @@ public class MainController implements Initializable {
 	private RadioButton codeRb;
 	@FXML
 	private RadioButton rfidRb;
-	@FXML
-	private Button materialNoRuleBt;
-	@FXML
-	private Button materialNoBt;
 	@FXML
 	private Label currentRuleLb;
 	
@@ -260,26 +246,18 @@ public class MainController implements Initializable {
 
 	private static final String INSERT_STOCK_ACTION = "stock/insert";
 
-	// 刷新表格定时器
-	private static Timer updateTimer = new Timer(true);
-	// 刷新表格数据线程的启动延时时间
-	private static final Integer TIME_DELAY = 0;
-	// 刷线表格数据线程的启动间隔时间
-	private static final Integer TIME_PERIOD = 3000;
-
 	
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		initTableCol();
 		initMaterialNoTfListener();
 		initTableSelectorCbListener();
 		initMaterialPropertiesTfsListener();
-		initFirstMaterialNoTfListener();
+		initScanMaterialNoTfListener();
+		setCurrentRule();
 		initHotKey();
 		initDataFromConfig();
 		initPrinter();
 		initRFID();
-		// 定时任务：刷新表单
-		timeTask();
 	}
 
 	
@@ -1216,6 +1194,7 @@ public class MainController implements Initializable {
 			Stage stage = new Stage();
 			stage.setTitle("规则管理");
 			manageRuleController.setStage(stage);
+			manageRuleController.setMainController(MainController.this);
 			stage.setScene(new Scene(root));
 			stage.show();
 		} catch (IOException e) {
@@ -1270,47 +1249,27 @@ public class MainController implements Initializable {
 
 	}
 
-	
+
 	/**@author HCJ
-	 * 初始化定时器任务，显示规则
-	 * @date 2018年10月29日 下午3:40:32
+	 * 扫描料号监听器
+	 * @date 2018年10月31日 下午5:04:46
 	 */
-	private void timeTask() {
-		updateTimer.schedule(new TimerTask() {
-			@Override
-			public void run() {
-				Platform.runLater(new Runnable() {
-					@Override
-					public void run() {
-						if (ManageRuleController.currentRule != null && ManageRuleController.currentRule.getName()!=null) {
-							currentRuleLb.setText("当前料号规则：" + ManageRuleController.currentRule.getName());
-						} else {
-							currentRuleLb.setText("当前料号规则：默认规则");
-						}
-					}
-				});
-	
-			}
-		}, TIME_DELAY, TIME_PERIOD);
-	}
-
-
-	private void initFirstMaterialNoTfListener() {
+	private void initScanMaterialNoTfListener() {
 		// 初始化得到的物料编号文本域监听器
-		firstMaterialNoTf.textProperty().addListener(new ChangeListener<String>() {
+		scanMaterialNoTf.textProperty().addListener(new ChangeListener<String>() {
 			@Override
 			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
 				Rule rule = ManageRuleController.currentRule;
-				if(rule.getAllRules() == null) {
+				if(rule.getDetails() == null) {
 					rule.setName("默认规则");
-					rule.setAllRules("defaultRule:"+",");
+					rule.setDetails("defaultRule:"+",");
 				}
 				if(newValue == null || newValue.equals("") || newValue.length() < 0) {
 					materialNoTf.setText("");
 				}
 				try {
 					if (newValue != null && !newValue.equals("") && newValue.length() > 0) {
-						String[] ruleArray = rule.getAllRules().split(",");
+						String[] ruleArray = rule.getDetails().split(",");
 						for (String ruleString : ruleArray) {
 							newValue = getMaterialNo(ruleString, newValue);
 						}
@@ -1325,6 +1284,10 @@ public class MainController implements Initializable {
 	}
 
 
+	/**@author HCJ
+	 * 根据料号规则解析得到料号
+	 * @date 2018年10月31日 下午5:05:10
+	 */
 	private String getMaterialNo(String ruleString, String materialNoString) {
 		if (ruleString.contains("separator")) {
 			String[] materialNoArray;
@@ -1344,7 +1307,20 @@ public class MainController implements Initializable {
 		return null;
 	}
 
-
+	
+	/**@author HCJ
+	 * 设置当前规则
+	 * @date 2018年10月31日 下午5:05:36
+	 */
+	public void setCurrentRule() {
+		if (ManageRuleController.currentRule != null && ManageRuleController.currentRule.getName()!=null) {
+			currentRuleLb.setText("当前料号规则：" + ManageRuleController.currentRule.getName());
+		} else {
+			currentRuleLb.setText("当前料号规则：默认规则");
+		}
+	}
+	
+	
 	public Stage getPrimaryStage() {
 		return primaryStage;
 	}

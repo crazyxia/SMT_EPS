@@ -93,7 +93,7 @@
       <Separator layoutX="586.0" layoutY="480.0" prefHeight="3.0" prefWidth="357.0" AnchorPane.rightAnchor="46.0" AnchorPane.topAnchor="480.0" />
       <Button fx:id="manageRuleBt" layoutX="833.0" layoutY="18.0" mnemonicParsing="false" onAction="#onCallManageRule" text="规则管理" AnchorPane.rightAnchor="46.0" AnchorPane.topAnchor="18.0" />
       <Label fx:id="currentRuleLb" layoutX="577.0" layoutY="18.0" prefHeight="30.0" prefWidth="256.0" text="当前规则：" AnchorPane.rightAnchor="156.0" AnchorPane.topAnchor="18.0" />
-      <TextField fx:id="firstMaterialNoTf" layoutX="577.0" layoutY="52.0" prefHeight="36.0" prefWidth="365.0" promptText="扫描条码或者输入料号" AnchorPane.rightAnchor="46.0" AnchorPane.topAnchor="52.0">
+      <TextField fx:id="scanMaterialNoTf" layoutX="577.0" layoutY="52.0" prefHeight="36.0" prefWidth="365.0" promptText="扫描条码或者输入料号" AnchorPane.rightAnchor="46.0" AnchorPane.topAnchor="52.0">
          <font>
             <Font name="System Bold" size="18.0" />
          </font>

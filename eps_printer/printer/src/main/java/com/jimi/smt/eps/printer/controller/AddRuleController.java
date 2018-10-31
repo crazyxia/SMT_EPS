@@ -27,7 +27,7 @@ public class AddRuleController implements Initializable {
 
 	private Logger logger = LogManager.getRootLogger();
 	@FXML
-	private TextArea contentTa;
+	private TextArea scanTa;
 	@FXML
 	private TextArea resultTa;
 	@FXML
@@ -40,25 +40,25 @@ public class AddRuleController implements Initializable {
 	// 存储所有规则
 	private List<Rule> rules = new ArrayList<Rule>();
 	// 存储扫描得到的文本内容
-	public static String contentTaString = null;
+	public static String scanTaString = null;
 	// 存储分割后的文本内容
 	public static String resultTaString = null;
 	// 存储所有未保存的规则
-	private StringBuilder stagingRules = new StringBuilder();
+	private StringBuilder ruleItems = new StringBuilder();
 	
 	private ManageRuleController manageRuleController;
 
 	
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
-		contentTa.requestFocus();
+		scanTa.requestFocus();
 	}
 
 	
 	public void onCallLength() {
 		rules = manageRuleController.getRules();
-		if (checkContentIsExist()) {
-			contentTa.setDisable(true);
+		if (setContentIfExist()) {
+			scanTa.setDisable(true);
 			showLengthWindow();
 		}
 	}
@@ -66,8 +66,8 @@ public class AddRuleController implements Initializable {
 	
 	public void onCallSeparator() {
 		rules = manageRuleController.getRules();
-		if (checkContentIsExist()) {
-			contentTa.setDisable(true);
+		if (setContentIfExist()) {
+			scanTa.setDisable(true);
 			showSeparatorWindow();
 		}
 	}
@@ -78,8 +78,12 @@ public class AddRuleController implements Initializable {
 	}
 
 	
-	public void setStagingRules(String stagingRule) {
-		stagingRules.append(stagingRule);
+	/**@author HCJ
+	 * 添加所有暂存的规则
+	 * @date 2018年10月31日 下午2:34:37
+	 */
+	public void appendRuleItem(String ruleItem) {
+		ruleItems.append(ruleItem);
 	}
 
 	
@@ -99,14 +103,14 @@ public class AddRuleController implements Initializable {
 	 */
 	public void onSaveRuleBtClick() {
 		boolean isResultTaContentAvailable = resultTa.getText() != null && !resultTa.getText().equals("");
-		if (isResultTaContentAvailable && isRuleNameAvailable()) {
+		if (isResultTaContentAvailable && isRuleNameExist()) {
 			Rule rule = new Rule();
 			rule.setName(ruleNameTf.getText());
-			rule.setExample(contentTa.getText());
-			rule.setAllRules(stagingRules.toString());
+			rule.setExample(scanTa.getText());
+			rule.setDetails(ruleItems.toString());
 			rules.add(rule);
 			manageRuleController.saveRules();
-			stagingRules.delete(0, stagingRules.length());
+			ruleItems.delete(0, ruleItems.length());
 			info("保存规则成功");
 			stage.close();
 		} else {
@@ -116,11 +120,15 @@ public class AddRuleController implements Initializable {
 	}
 
 	
+	/**@author HCJ
+	 * 将各文本内容、暂存的规则清除
+	 * @date 2018年10月31日 下午2:23:50
+	 */
 	public void onCancelBtClick() {
-		contentTa.setText("");
-		contentTa.setDisable(false);
+		scanTa.setText("");
+		scanTa.setDisable(false);
 		resultTa.setText("");
-		stagingRules.delete(0, stagingRules.length());
+		ruleItems.delete(0, ruleItems.length());
 	}
 	
 
@@ -128,7 +136,7 @@ public class AddRuleController implements Initializable {
 	 * @author HCJ 规则名称是否有效
 	 * @date 2018年10月29日 下午3:32:00
 	 */
-	private boolean isRuleNameAvailable() {
+	private boolean isRuleNameExist() {
 		if (ruleNameTf.getText() != null && !ruleNameTf.getText().equals("")) {
 			if (rules != null && rules.size() > 0) {
 				for (Rule rule : rules) {
@@ -156,12 +164,12 @@ public class AddRuleController implements Initializable {
 			separatorRuleController.setAddRuleController(AddRuleController.this);
 			separatorRuleController.setStage(stage);
 			stage.setScene(new Scene(root));
-			stage.setTitle("添加分隔符条目");
+			stage.setTitle("添加分割符条目");
 			stage.show();
 		} catch (IOException e) {
 			e.printStackTrace();
-			error("加载添加分隔符规则窗口出错");
-			logger.error("加载添加分隔符规则窗口出错");
+			error("加载添加分割符条目窗口出错");
+			logger.error("加载添加分割符条目窗口出错");
 		}
 	}
 
@@ -181,8 +189,8 @@ public class AddRuleController implements Initializable {
 			stage.show();
 		} catch (IOException e) {
 			e.printStackTrace();
-			error("加载添加长度规则窗口出错");
-			logger.error("加载添加长度规则窗口出错");
+			error("加载添加长度条目窗口出错");
+			logger.error("加载添加长度条目窗口出错");
 		}
 	}
 
@@ -191,18 +199,18 @@ public class AddRuleController implements Initializable {
 	 * @author HCJ 校验文本内容
 	 * @date 2018年10月29日 下午3:29:40
 	 */
-	private Boolean checkContentIsExist() {
+	private Boolean setContentIfExist() {
 		if (resultTa.getText() != null && !resultTa.getText().equals("")) {
 			resultTaString = resultTa.getText();
 			return true;
 		} else {
-			if (contentTa.getText() != null && !contentTa.getText().equals("")) {
-				contentTaString = contentTa.getText();
+			if (scanTa.getText() != null && !scanTa.getText().equals("")) {
+				scanTaString = scanTa.getText();
 				return true;
 			}
 		}
-		error("请扫描二维码");
-		logger.error("请扫描二维码");
+		error("请扫描条码");
+		logger.error("请扫描条码");
 		return false;
 	}
 

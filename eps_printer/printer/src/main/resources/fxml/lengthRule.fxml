@@ -24,15 +24,15 @@
                            <font>
                               <Font name="System Bold" size="15.0" />
                            </font></TextField>
-                        <Button fx:id="saveLengthRuleBt" layoutX="590.0" layoutY="384.0" mnemonicParsing="false" onAction="#onSaveLengthRuleBtClick" prefHeight="47.0" prefWidth="130.0" text="保存条目" AnchorPane.bottomAnchor="45.0" AnchorPane.leftAnchor="590.0" />
-                        <Button fx:id="confirmBt" layoutX="621.0" layoutY="200.0" mnemonicParsing="false" onAction="#onConfirmBtClick" prefHeight="37.0" prefWidth="98.0" text="确定" AnchorPane.bottomAnchor="239.0" AnchorPane.leftAnchor="621.0" />
+                        <Button fx:id="saveItemBt" layoutX="590.0" layoutY="384.0" mnemonicParsing="false" onAction="#onSaveItemBtClick" prefHeight="47.0" prefWidth="130.0" text="保存条目" AnchorPane.bottomAnchor="45.0" AnchorPane.leftAnchor="590.0" />
+                        <Button fx:id="confirmPositionBt" layoutX="621.0" layoutY="200.0" mnemonicParsing="false" onAction="#onConfirmPositionBtClick" prefHeight="37.0" prefWidth="98.0" text="确定" AnchorPane.bottomAnchor="239.0" AnchorPane.leftAnchor="621.0" />
                         <Label layoutX="21.0" layoutY="251.0" prefHeight="47.0" prefWidth="108.0" text="截取后的结果：" AnchorPane.leftAnchor="21.0" />
                         <Label fx:id="tipLb" layoutX="26.0" layoutY="431.0" prefHeight="30.0" prefWidth="697.0" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="26.0" />
-                        <TextArea fx:id="contentTa" editable="false" layoutX="21.0" layoutY="40.0" prefHeight="126.0" prefWidth="698.0" promptText="显示需要截取的内容" wrapText="true" AnchorPane.bottomAnchor="310.0" AnchorPane.leftAnchor="21.0">
+                        <TextArea fx:id="scanTa" editable="false" layoutX="21.0" layoutY="40.0" prefHeight="126.0" prefWidth="698.0" promptText="显示需要截取的内容" wrapText="true" AnchorPane.bottomAnchor="310.0" AnchorPane.leftAnchor="21.0">
                            <font>
                               <Font name="System Bold" size="20.0" />
                            </font></TextArea>
-                        <TextArea fx:id="lengthContentTa" editable="false" layoutX="127.0" layoutY="264.0" prefHeight="85.0" prefWidth="593.0" wrapText="true" AnchorPane.bottomAnchor="127.0" AnchorPane.leftAnchor="127.0">
+                        <TextArea fx:id="lengthResultTa" editable="false" layoutX="127.0" layoutY="264.0" prefHeight="85.0" prefWidth="593.0" wrapText="true" AnchorPane.bottomAnchor="127.0" AnchorPane.leftAnchor="127.0">
                            <font>
                               <Font name="System Bold" size="20.0" />
                            </font></TextArea>

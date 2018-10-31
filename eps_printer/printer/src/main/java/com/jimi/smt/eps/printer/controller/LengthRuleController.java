@@ -22,9 +22,9 @@ public class LengthRuleController implements Initializable {
 	@FXML
 	private TextField endTf;
 	@FXML
-	private TextArea contentTa;
+	private TextArea scanTa;
 	@FXML
-	private TextArea lengthContentTa;
+	private TextArea lengthResultTa;
 	@FXML
 	private Label tipLb;
 	
@@ -35,49 +35,51 @@ public class LengthRuleController implements Initializable {
 	private int start;
 	// 结束位置
 	private int end;
-	// 分割后的结果文本
-	public static String lengthContentTaString = null;
 
 	
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		if (AddRuleController.resultTaString != null && !AddRuleController.resultTaString.equals("")) {
-			contentTa.setText(AddRuleController.resultTaString);
+			scanTa.setText(AddRuleController.resultTaString);
 		} else {
-			contentTa.setText(AddRuleController.contentTaString);
+			scanTa.setText(AddRuleController.scanTaString);
 		}
 		startTf.requestFocus();
 	}
 
 	
 	/**
-	 * @author HCJ 确定起始位置的序号
+	 * @author HCJ 确定起止位置的序号
 	 * @date 2018年10月29日 下午3:21:17
 	 */
-	public void onConfirmBtClick() {
+	public void onConfirmPositionBtClick() {
 		try {
 			start = Integer.parseInt(startTf.getText());
 			end = Integer.parseInt(endTf.getText());
-			if (start < 1 || end <= 1 || start > end || end > contentTa.getText().length()) {
+			if (start < 1 || end <= 1 || start > end || end > scanTa.getText().length()) {
 				startTf.setText("");
 				endTf.setText("");
-				lengthContentTa.setText("");
+				lengthResultTa.setText("");
 				error("请正确填写序号");
 				logger.error("请正确填写序号");
 			} else {
-				lengthContentTa.setText(contentTa.getText().substring(start - 1, end));
+				lengthResultTa.setText(scanTa.getText().substring(start - 1, end));
 			}
 		} catch (NumberFormatException e) {
 			error("只能填整数");
 			logger.error("只能填整数");
-			lengthContentTa.setText("");
+			lengthResultTa.setText("");
 		}
 	}
 
 	
-	public void onSaveLengthRuleBtClick() {
-		addRuleController.setResultTa(lengthContentTa.getText());
-		addRuleController.setStagingRules("length:" + (start - 1) + "=" + end + ",");
+	/**@author HCJ
+	 * 保存条目
+	 * @date 2018年10月31日 下午2:37:01
+	 */
+	public void onSaveItemBtClick() {
+		addRuleController.setResultTa(lengthResultTa.getText());
+		addRuleController.appendRuleItem("length:" + (start - 1) + "=" + end + ",");
 		stage.close();
 	}
 

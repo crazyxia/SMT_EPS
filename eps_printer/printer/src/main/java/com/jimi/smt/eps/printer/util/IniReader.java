@@ -17,22 +17,20 @@ public class IniReader {
 	private static Ini ini = new Ini();
 
 	
-	public static void setIni(String filename) {
+	public static Map<String, String> getItem(String filename, String item) {
 		Config config = new Config();
 		config.setMultiSection(true);
 		File file = new File(filename);
 		ini.setConfig(config);
 		try {
 			ini.load(file);
+			Map<String, String> map = ini.get(item);
+			return map;
 		} catch (IOException e) {
 			System.out.println("文件不存在");
 			e.printStackTrace();
 		}
+		return null;
 	}
 
-	
-	public static Map<String, String> getItem(String item) {
-		Map<String, String> map = ini.get(item);
-		return map;
-	}
 }
