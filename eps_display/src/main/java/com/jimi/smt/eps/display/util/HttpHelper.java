@@ -13,7 +13,7 @@ import okhttp3.RequestBody;
 
 public class HttpHelper {
 
-	private static final String URL = "http://10.10.11.110:8080/eps_server/";
+	private static final String URL = "http://localhost:8080/eps_server/";
 
 	private final OkHttpClient client = new OkHttpClient();
 

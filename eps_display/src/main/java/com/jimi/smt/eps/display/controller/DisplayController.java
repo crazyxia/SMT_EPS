@@ -74,6 +74,70 @@ public class DisplayController implements Initializable {
 	private static final Integer DEFAULT_RESULT = 2;
 
 	private static final boolean IS_NETWORK = true;
+	
+	private static final Integer HALF = 2;
+	
+	private static final Integer WORKORDERCB_MARGIN_LEFT = 85;
+	
+	private static final Integer DEFAULT_CB_TEXTSIZE = 20;
+	
+	private static final Integer DEFAULT_LB_TEXTSIZE = 22;
+	
+	private static final Integer DEFAULT_LB_WIDTH = 260;
+	
+	private static final Integer RESULT_MARGIN_RIGHT = 20;
+	
+	private static final Integer DEFAULT_LB_MARGIN_LEFT = 20;
+	
+	private static final Integer DEFAULT_LINECB_WIDTH = 115;
+	
+	private static final Integer DEFAULT_HALF_WIDTH = 400;
+	
+	private static final Integer DEAFULT_BOARDTYPECB_WIDTH = 125;
+	
+	private static final Integer DEFAULT_WORKORDERCB_WIDTH = 315;
+	
+	private static final Integer DEFAULT_LINECB_REMAIN = 300;
+	
+	private static final Integer DEFAULT_OPERATORLB_WIDTH = 110;
+	
+	private static final Integer DEFAULT_OPERATORNAMELB_WIDTH = 100;
+	
+	private static final Integer DEFAULE_BORDER_LB_MARGIN_LEFT = 130;
+	
+	private static final Integer COLUMN = 7;
+	
+	private static final Integer DEFAULT_TABLE_CELL_WIDTH = 111;
+	
+	private static final Integer RESETBT_AND_MARGIN_RIGTH = 140;
+	
+	private static final Integer TABLE_MARGIN = 18;
+	
+	private static final Integer DEFAULT_TABLE_REMAIN = 47;
+	
+	private static final Integer DEFAULT_CLOUMN_TEXTSIZE = 18;
+	
+	private static final Integer HALF_MIDDLE_INTERVAL = 10;
+	
+	private static final Integer FACTOR_1 = 10;
+	
+	private static final Integer FACTOR_2 = 20;
+	
+	private static final Integer FACTOR_3 = 40;
+	
+	private static final Integer FACTOR_4 = 4;
+	
+	private static final Integer FACTOR_5 = 50;
+	
+	private static final Integer FACTOR_6 = 200;
+	
+	private static final Integer FACTOR_7 = 12;
+	
+	private static final Integer ONE_SECOND_TO_MILLISECOND = 1000;
+	
+	private static final Integer CONSTANT_FOR_CHECK_RESULT = 30000;
+	
+	private static final Integer CONSTANT_FOR_CHECK_ALL_RESULT = 40000;
 	// 定时器是否更新数据
 	private static boolean isUpdate = false;
 	// 不需要填充
@@ -253,7 +317,7 @@ public class DisplayController implements Initializable {
 					public void updateItem(String item, boolean empty) {
 
 						super.updateItem(item, empty);
-						this.setStyle("-fx-font-size: " + ((((senceWidth - 18) / 7 - 111) / 12) + 22) + "px;" + "	-fx-alignment: center;" + "	-fx-font-family:'STXiHei';" + "	-fx-font-weight: bold;");
+						this.setStyle("-fx-font-size: " + ((((senceWidth - TABLE_MARGIN) / COLUMN - DEFAULT_TABLE_CELL_WIDTH) / FACTOR_7) + DEFAULT_LB_TEXTSIZE) + "px;" + "	-fx-alignment: center;" + "	-fx-font-family:'STXiHei';" + "	-fx-font-weight: bold;");
 						this.setText(item);
 					}
 				};
@@ -284,7 +348,7 @@ public class DisplayController implements Initializable {
 					public void updateItem(Integer item, boolean empty) {
 
 						super.updateItem(item, empty);
-						this.setStyle("-fx-font-size:" + ((((senceWidth - 18) / 7 - 111) / 12) + 22) + "px;" + "	-fx-alignment: center;" + "	-fx-font-family:'STXiHei';" + "	-fx-font-weight: bold;");
+						this.setStyle("-fx-font-size:" + ((((senceWidth - TABLE_MARGIN) / COLUMN - DEFAULT_TABLE_CELL_WIDTH) / FACTOR_7) + DEFAULT_LB_TEXTSIZE) + "px;" + "	-fx-alignment: center;" + "	-fx-font-family:'STXiHei';" + "	-fx-font-weight: bold;");
 						this.setText(null);
 						if (!empty) {
 							if (item.toString().equals("0")) {
@@ -302,16 +366,16 @@ public class DisplayController implements Initializable {
 							} else if (item.toString().equals("4")) {
 								this.setText("◎");
 								this.setTextFill(Color.PURPLE);
-							} else if (30000 < item.intValue() && item.intValue() < 40000) {
-								this.setText(getCountDownTime(item - 30000));
-								if(item.intValue() < 30010) {
+							} else if (CONSTANT_FOR_CHECK_RESULT < item.intValue() && item.intValue() < CONSTANT_FOR_CHECK_ALL_RESULT) {
+								this.setText(getCountDownTime(item - CONSTANT_FOR_CHECK_RESULT));
+								if(item.intValue() < CONSTANT_FOR_CHECK_RESULT + FACTOR_1) {
 									this.setTextFill(Color.RED);
 								}else {
 									this.setTextFill(Color.GREEN);
 								}	
-							} else if (40000 < item.intValue()) {
-								this.setText(getCountDownTime(item - 40000));
-								if(item.intValue() < 40010) {
+							} else if (CONSTANT_FOR_CHECK_ALL_RESULT < item.intValue()) {
+								this.setText(getCountDownTime(item - CONSTANT_FOR_CHECK_ALL_RESULT));
+								if(item.intValue() < CONSTANT_FOR_CHECK_ALL_RESULT + FACTOR_1) {
 									this.setTextFill(Color.RED);
 								}else {
 									this.setTextFill(Color.GREEN);
@@ -639,15 +703,15 @@ public class DisplayController implements Initializable {
 				// 调整文本框控件的大小和字体大小
 				changeLbSize(senceWidth);
 				// 调整重置工单按钮的位置
-				resetBt.setLayoutX(senceWidth / 2 - 140);
+				resetBt.setLayoutX(senceWidth / HALF - RESETBT_AND_MARGIN_RIGTH);
 				// 调整操作员文本框的大小和位置
 				changeOperatorSize(senceWidth);
 				// 调整表格的每一列的大小和字体大小
 				ObservableList<TableColumn<ResultData, ?>> Columns = DataTv.getColumns();
 				for (TableColumn<ResultData, ?> tableColumn : Columns) {
-					tableColumn.setMinWidth((senceWidth - 47) / 7);
-					tableColumn.setMaxWidth((senceWidth - 47) / 7);
-					tableColumn.setStyle("-fx-font-size:" + ((((senceWidth - 18) / 7 - 111) / 20) + 18) + "px;" + "	-fx-alignment: center;" + "	-fx-font-family:'Microsoft YaHei';" + "	-fx-font-weight: bolder;");
+					tableColumn.setMinWidth((senceWidth - DEFAULT_TABLE_REMAIN) / COLUMN);
+					tableColumn.setMaxWidth((senceWidth - DEFAULT_TABLE_REMAIN) / COLUMN);
+					tableColumn.setStyle("-fx-font-size:" + ((((senceWidth - TABLE_MARGIN) / COLUMN - DEFAULT_TABLE_CELL_WIDTH) / FACTOR_2) + DEFAULT_CLOUMN_TEXTSIZE) + "px;" + "	-fx-alignment: center;" + "	-fx-font-family:'Microsoft YaHei';" + "	-fx-font-weight: bolder;");
 				}
 				// 调整单元格的字体大小
 				if (isUpdate) {
@@ -897,6 +961,7 @@ public class DisplayController implements Initializable {
 			String response = sendRequest(GET_OPERATOR_ACTION, map);
 			operator = response.equals("") ? "unknown" : response;
 			firstCheckAllResults = 1;
+			int checkAllResults = 1;
 			for (ProgramItemVisit programItemVisit : programItemVisits) {
 				if (!programItemVisit.getFirstCheckAllResult().equals(1)) {
 					firstCheckAllResults = 0;
@@ -911,7 +976,18 @@ public class DisplayController implements Initializable {
 					}
 				}
 				for (ProgramItemVisit programItemVisit : programItemVisits) {
-					if (programItemVisit.getCheckAllResult().equals(2) && (programItemVisit.getCheckAllTime().getTime()) + getConfigValue(CHECK_ALL_CYCLE_TIME) * 1000 > System.currentTimeMillis()) {
+					if (!programItemVisit.getCheckAllResult().equals(1)) {
+						checkAllResults = 0;
+						break;
+					}
+				}
+				for (ProgramItemVisit programItemVisit : programItemVisits) {
+					boolean isInitialState = programItemVisit.getCheckAllResult().equals(2);
+					boolean isCheckTimeout = (programItemVisit.getCheckAllTime().getTime()) + getConfigValue(CHECK_ALL_CYCLE_TIME) * ONE_SECOND_TO_MILLISECOND > System.currentTimeMillis();
+					if (isInitialState && isCheckTimeout) {
+						programItemVisit.setCheckAllResult(5);
+						programItemVisit.setCheckAllTime(minCheckAllTime);
+					}else if(checkAllResults == 1){
 						programItemVisit.setCheckAllResult(5);
 						programItemVisit.setCheckAllTime(minCheckAllTime);
 					}
@@ -982,14 +1058,7 @@ public class DisplayController implements Initializable {
 	 */
 	private void showResult(Integer result) {
 		String style = "-fx-alignment:center;-fx-text-fill:white;-fx-font-family:'Microsoft YaHei';-fx-font-weight:bold;";
-		String textsize = "";
-		if (senceWidth < 800 && senceWidth > 600) {
-			textsize = "-fx-font-size:140px;";
-		} else if (senceWidth >= 800 && senceWidth < 1366) {
-			textsize = "-fx-font-size:140px;";
-		} else if (senceWidth >= 1366) {
-			textsize = "-fx-font-size:140px;";
-		}
+		String textsize = "-fx-font-size:140px;";
 		switch (result) {
 		case 0:
 			typeLb.setStyle(style + textsize + "-fx-background-color:red;");
@@ -1038,10 +1107,14 @@ public class DisplayController implements Initializable {
 			resultData.setStoreIssueResult(programItemVisit.getStoreIssueResult());
 			resultData.setFeedResult(programItemVisit.getFeedResult());
 			resultData.setChangeResult(programItemVisit.getChangeResult());
-			if (programItemVisit.getChangeResult().equals(4) && programItemVisit.getCheckResult() != 0 && programItemVisit.getCheckResult() != 3 && programItemVisit.getChangeTime().getTime() > programItemVisit.getCheckTime().getTime()) {
-				Integer k = (int) (getConfigValue(CHECK_AFTER_CHANGE_TIME) + (programItemVisit.getChangeTime().getTime()) / 1000 - (System.currentTimeMillis()) / 1000);
+			//是否处于待核料状态
+			boolean hasChangeButNeedCheck = programItemVisit.getChangeResult() == 4;
+			boolean isResultCorrect = programItemVisit.getCheckResult() != 0 && programItemVisit.getCheckResult() != 3;
+			boolean notYetCheck = programItemVisit.getChangeTime().getTime() > programItemVisit.getCheckTime().getTime();
+			if (hasChangeButNeedCheck && isResultCorrect && notYetCheck) {
+				Integer k = (int) (getConfigValue(CHECK_AFTER_CHANGE_TIME) + (programItemVisit.getChangeTime().getTime()) / ONE_SECOND_TO_MILLISECOND - (System.currentTimeMillis()) / ONE_SECOND_TO_MILLISECOND);
 				if (0 < k && k < getConfigValue(CHECK_AFTER_CHANGE_TIME)) {
-					resultData.setCheckResult(k + 30000);
+					resultData.setCheckResult(k + CONSTANT_FOR_CHECK_RESULT);
 				}else {
 					resultData.setCheckResult(programItemVisit.getCheckResult());
 				}
@@ -1049,9 +1122,9 @@ public class DisplayController implements Initializable {
 				resultData.setCheckResult(programItemVisit.getCheckResult());
 			}
 			if (programItemVisit.getCheckAllResult().equals(5)) {
-				Integer k = (int) (getConfigValue(CHECK_ALL_CYCLE_TIME) + (programItemVisit.getCheckAllTime().getTime()) / 1000 - (System.currentTimeMillis()) / 1000);
+				Integer k = (int) (getConfigValue(CHECK_ALL_CYCLE_TIME) + (programItemVisit.getCheckAllTime().getTime()) / ONE_SECOND_TO_MILLISECOND - (System.currentTimeMillis()) / ONE_SECOND_TO_MILLISECOND);
 				if (0 < k && k < getConfigValue(CHECK_ALL_CYCLE_TIME)) {
-					resultData.setCheckAllResult(k + 40000);
+					resultData.setCheckAllResult(k + CONSTANT_FOR_CHECK_ALL_RESULT);
 				}
 			} else {
 				resultData.setCheckAllResult(programItemVisit.getCheckAllResult());
@@ -1182,12 +1255,12 @@ public class DisplayController implements Initializable {
 	 */
 	private void changeCbSize(int senceWidth) {
 
-		workOrderCb.setMinWidth((senceWidth / 2 - 85));
-		workOrderCb.setMaxWidth((senceWidth / 2 - 85));
-		workOrderCb.setStyle(workOrderCb.getStyle() + "-fx-font-size:" + (20 + (workOrderCb.getMinWidth() - 315) / 200) + ";");
-		boardTybeCb.setMinWidth(125 + (senceWidth / 2 - 400) / 10);
-		boardTybeCb.setMaxWidth(125 + (senceWidth / 2 - 400) / 10);
-		boardTybeCb.setStyle(boardTybeCb.getStyle() + "-fx-font-size:" + (20 + (boardTybeCb.getMinWidth() - 125) / 20) + ";");
+		workOrderCb.setMinWidth((senceWidth / HALF - WORKORDERCB_MARGIN_LEFT));
+		workOrderCb.setMaxWidth((senceWidth / HALF - WORKORDERCB_MARGIN_LEFT));
+		workOrderCb.setStyle(workOrderCb.getStyle() + "-fx-font-size:" + (DEFAULT_CB_TEXTSIZE + (workOrderCb.getMinWidth() - DEFAULT_WORKORDERCB_WIDTH) / FACTOR_6) + ";");
+		boardTybeCb.setMinWidth(DEAFULT_BOARDTYPECB_WIDTH + (senceWidth / HALF - DEFAULT_HALF_WIDTH) / FACTOR_1);
+		boardTybeCb.setMaxWidth(DEAFULT_BOARDTYPECB_WIDTH + (senceWidth / HALF - DEFAULT_HALF_WIDTH) / FACTOR_1);
+		boardTybeCb.setStyle(boardTybeCb.getStyle() + "-fx-font-size:" + (DEFAULT_CB_TEXTSIZE + (boardTybeCb.getMinWidth() - DEAFULT_BOARDTYPECB_WIDTH) / FACTOR_2) + ";");
 	}
 
 	
@@ -1198,14 +1271,14 @@ public class DisplayController implements Initializable {
 	 */
 	private void changeOperatorSize(int senceWidth) {
 		// 操作员工号文本框
-		operatorLb.setMinWidth(110 + (senceWidth / 2 - 400) / 10);
-		operatorLb.setLayoutX(senceWidth / 2 - operatorLb.getMinWidth() - 10);
-		operatorNameLb.setLayoutX(senceWidth / 2 - operatorLb.getMinWidth() - 100);
-		operatorLb.setStyle(operatorLb.getStyle() + "-fx-font-size:" + (22 + (operatorLb.getMinWidth() - 110) / 10) + ";");
+		operatorLb.setMinWidth(DEFAULT_OPERATORLB_WIDTH + (senceWidth / HALF - DEFAULT_HALF_WIDTH) / FACTOR_1);
+		operatorLb.setLayoutX(senceWidth / HALF - operatorLb.getMinWidth() - HALF_MIDDLE_INTERVAL);
+		operatorNameLb.setLayoutX(senceWidth / HALF - operatorLb.getMinWidth() - DEFAULT_OPERATORNAMELB_WIDTH);
+		operatorLb.setStyle(operatorLb.getStyle() + "-fx-font-size:" + (DEFAULT_LB_TEXTSIZE + (operatorLb.getMinWidth() - DEFAULT_OPERATORLB_WIDTH) / FACTOR_1) + ";");
 		// 线号下拉框
-		lineCb.setMinWidth(115 + ((senceWidth / 2 - operatorLb.getMinWidth() - 300) / 50));
-		lineCb.setMaxWidth(115 + ((senceWidth / 2 - operatorLb.getMinWidth() - 300) / 50));
-		lineCb.setStyle(lineCb.getStyle() + "-fx-font-size:" + (20 + (lineCb.getMinWidth() - 115) / 4) + ";");
+		lineCb.setMinWidth(DEFAULT_LINECB_WIDTH + ((senceWidth / HALF - operatorLb.getMinWidth() - DEFAULT_LINECB_REMAIN) / FACTOR_5));
+		lineCb.setMaxWidth(DEFAULT_LINECB_WIDTH + ((senceWidth / HALF - operatorLb.getMinWidth() - DEFAULT_LINECB_REMAIN) / FACTOR_5));
+		lineCb.setStyle(lineCb.getStyle() + "-fx-font-size:" + (DEFAULT_CB_TEXTSIZE + (lineCb.getMinWidth() - DEFAULT_LINECB_WIDTH) / FACTOR_4) + ";");
 	}
 
 	
@@ -1216,20 +1289,20 @@ public class DisplayController implements Initializable {
 	 */
 	private void changeLbSize(int senceWidth) {
 		String textStyle = "-fx-alignment:center;-fx-font-family:'Microsoft YaHei';" + "-fx-background-radius:4;-fx-border-radius:4;-fx-border-color:gray;-fx-font-weight:bold;";
-		double LbSize = ((senceWidth - 20) / 2) - 130;
+		double LbSize = ((senceWidth - DEFAULT_LB_MARGIN_LEFT) / HALF) - DEFAULE_BORDER_LB_MARGIN_LEFT;
 
 		lineseatLb.setMinWidth(LbSize);
 		scanLineseatLb.setMinWidth(LbSize);
 		materialNoLb.setMinWidth(LbSize);
 		scanMaterialNoLb.setMinWidth(LbSize);
-		double textsize = (22 + ((lineseatLb.getMinWidth() - 260) / 48));
+		double textsize = (DEFAULT_LB_TEXTSIZE + ((lineseatLb.getMinWidth() - DEFAULT_LB_WIDTH) / FACTOR_3));
 		lineseatLb.setStyle(textStyle + ";-fx-font-size:" + textsize + "px;");
 		scanLineseatLb.setStyle(textStyle + ";-fx-font-size:" + textsize + "px;");
 		materialNoLb.setStyle(textStyle + ";-fx-font-size:" + textsize + "px;");
 		scanMaterialNoLb.setStyle(textStyle + ";-fx-font-size:" + textsize + "px;");
 
-		typeLb.setMinWidth(((senceWidth - 20) / 2) - 10);
-		resultLb.setMinWidth(((senceWidth - 20) / 2) - 10);
+		typeLb.setMinWidth(((senceWidth - RESULT_MARGIN_RIGHT) / HALF) - HALF_MIDDLE_INTERVAL);
+		resultLb.setMinWidth(((senceWidth - RESULT_MARGIN_RIGHT) / HALF) - HALF_MIDDLE_INTERVAL);
 		typeLb.setStyle(typeLb.getStyle() + "-fx-font-size:140px;-fx-font-weight:bold;");
 		resultLb.setStyle(resultLb.getStyle() + "-fx-font-size:140px;-fx-font-weight:bold;");
 
