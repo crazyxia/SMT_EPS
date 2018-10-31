@@ -33,7 +33,7 @@ public class UserServiceImpl implements UserService {
 		user.setId(id);
 		user.setName(name);
 		user.setType(type);
-		user.setPassword(password);
+		user.setPassword("".equals(password) ? null : password);
 		user.setCreateTime(new Date());
 		user.setClassType(classType);
 		if(userMapper.insertSelective(user) == 1) {
@@ -52,7 +52,7 @@ public class UserServiceImpl implements UserService {
 		user.setId(id.equals("") ? null : id);
 		user.setName(name.equals("") ? null : name);
 		user.setType(type);
-		user.setPassword(password.equals("") ? null : password);
+		user.setPassword("".equals(password) ? null : password);
 		user.setEnabled(enabled);
 		user.setClassType(classType);
 		if(userMapper.updateByPrimaryKeySelective(user) == 1){
