@@ -13,10 +13,18 @@ import okhttp3.RequestBody;
 
 public class HttpHelper {
 
-	private static final String URL = "http://localhost:8080/eps_server/";
-
 	private final OkHttpClient client = new OkHttpClient();
 
+	private String URL;
+	
+	private static final String CONFIG_FILE = "/config.ini";
+	
+	
+	public HttpHelper() {
+		Map<String, String> map_url = IniReader.getItem(System.getProperty("user.dir") + CONFIG_FILE, "url");
+		URL = map_url.get("url");
+	}
+	
 	
 	/**@author HCJ
 	 * http请求，参数存在时要求MAP，键为参数名，值为参数值
