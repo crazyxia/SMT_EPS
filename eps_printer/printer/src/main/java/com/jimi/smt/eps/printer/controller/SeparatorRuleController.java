@@ -58,10 +58,15 @@ public class SeparatorRuleController implements Initializable {
 	 * @date 2018年10月29日 下午3:20:10
 	 */
 	public void onConfirmDelimiterBtClick() {
-		if (checkScanContentIsExist() && separatorTf.getText() != null && scanTa.getText().contains(separatorTf.getText())) {
+		info("");
+		if (checkScanContentIsExist() && separatorTf.getText() != null && !separatorTf.getText().equals("") && scanTa.getText().contains(separatorTf.getText())) {
 			String[] contents = null;
 			try {
-				contents = removeSpace(scanTa.getText().split(separatorTf.getText()));
+				if(separatorTf.getText().contains(".") || separatorTf.getText().contains("|") || separatorTf.getText().contains("^")) {
+					contents = removeSpace(scanTa.getText().split("\\" + separatorTf.getText()));
+				}else {
+					contents = removeSpace(scanTa.getText().split(separatorTf.getText()));
+				}
 			} catch (Exception e) {
 				contents = removeSpace(scanTa.getText().split("\\" + separatorTf.getText()));
 			}
@@ -72,11 +77,11 @@ public class SeparatorRuleController implements Initializable {
 			}
 			scanContentsTa.setText(contentLbString.toString());
 		} else {
-			error("请输入有效的分割符");
-			logger.error("请输入有效的分割符");
+			error("请输入有效的分割符，并且保证分割符的长度为1和需要进行分割的内容长度达到要求");
+			logger.error("请输入有效的分割符，并且保证分割符的长度为1和需要进行分割的内容长度达到要求");
 		}
 	}
-
+	
 	
 	/**
 	 * @author HCJ 确定序号
@@ -84,6 +89,7 @@ public class SeparatorRuleController implements Initializable {
 	 */
 	public void onConfirmIdBtClick() {
 		try {
+			info("");
 			orderNum = Integer.parseInt(orderNumTf.getText());
 			if (orderNum < 1 || orderNum > globalContents.length) {
 				orderNumTf.setText("");
@@ -105,9 +111,15 @@ public class SeparatorRuleController implements Initializable {
 	 * @date 2018年10月31日 下午2:39:44
 	 */
 	public void onSaveItemBtClick() {
-		addRuleController.appendRuleItem("separator:" + separatorTf.getText() + "=" + (orderNum - 1) + ",");
-		addRuleController.setResultTa(separatorResultTa.getText());
-		stage.close();
+		info("");
+		if(separatorResultTa.getText() != null && !separatorResultTa.getText().equals("")) {
+			addRuleController.appendRuleItem("(分隔符:" + separatorTf.getText() + "=" + (orderNum - 1) + "),");
+			addRuleController.setResultTa(separatorResultTa.getText());
+			stage.close();
+		}else {
+			error("请完成所有操作后进行保存");
+			logger.error("请完成所有操作后进行保存");
+		}
 	}
 
 	
@@ -138,15 +150,14 @@ public class SeparatorRuleController implements Initializable {
 	
 	/**@author HCJ
 	 * 校验文本内容
-	 * @return true 文本内容不为空
-	 * @return false 文本内容为空
+	 * @return true 文本内容有效
+	 * @return false 文本内容无效
 	 * @date 2018年10月31日 下午7:07:00
 	 */
 	private Boolean checkScanContentIsExist() {
-		if (scanTa.getText() != null && !scanTa.getText().equals("")) {
+		if (scanTa.getText() != null && !scanTa.getText().equals("") && scanTa.getText().length() > 1) {
 			return true;
 		}
-		error("请扫描条码");
 		return false;
 	}
 

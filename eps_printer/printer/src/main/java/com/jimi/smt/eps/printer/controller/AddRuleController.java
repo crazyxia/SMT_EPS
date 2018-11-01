@@ -21,6 +21,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.paint.Color;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 public class AddRuleController implements Initializable {
@@ -56,6 +57,7 @@ public class AddRuleController implements Initializable {
 
 	
 	public void onLengthBtClick() {
+		info("");
 		rules = manageRuleController.getRules();
 		if (setContentIfExist()) {
 			scanTa.setDisable(true);
@@ -65,6 +67,7 @@ public class AddRuleController implements Initializable {
 
 	
 	public void onSeparatorBtClick() {
+		info("");
 		rules = manageRuleController.getRules();
 		if (setContentIfExist()) {
 			scanTa.setDisable(true);
@@ -165,7 +168,8 @@ public class AddRuleController implements Initializable {
 			separatorRuleController.setStage(stage);
 			stage.setScene(new Scene(root));
 			stage.setTitle("添加分割符条目");
-			stage.show();
+			stage.initModality(Modality.APPLICATION_MODAL);
+			stage.showAndWait();
 		} catch (IOException e) {
 			e.printStackTrace();
 			error("加载添加分割符条目窗口出错");
@@ -186,7 +190,8 @@ public class AddRuleController implements Initializable {
 			lengthRuleController.setStage(stage);
 			stage.setScene(new Scene(root));
 			stage.setTitle("添加长度条目");
-			stage.show();
+			stage.initModality(Modality.APPLICATION_MODAL);
+			stage.showAndWait();
 		} catch (IOException e) {
 			e.printStackTrace();
 			error("加载添加长度条目窗口出错");

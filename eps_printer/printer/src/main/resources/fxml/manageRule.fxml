@@ -12,8 +12,8 @@
       <TableView fx:id="ruleDataTv" layoutX="21.0" layoutY="44.0" prefHeight="574.0" prefWidth="955.0" AnchorPane.bottomAnchor="77.0" AnchorPane.leftAnchor="21.0">
          <columns>
             <TableColumn fx:id="ruleNameCol" editable="false" prefWidth="102.0" sortable="false" text="名称" />
-            <TableColumn fx:id="ruleExampleCol" editable="false" minWidth="3.0" prefWidth="289.0" sortable="false" text="规则" />
-            <TableColumn fx:id="ruleDetailsCol" editable="false" minWidth="3.0" prefWidth="576.0" sortable="false" text="例子" />
+            <TableColumn fx:id="ruleExampleCol" editable="false" minWidth="3.0" prefWidth="289.0" sortable="false" text="例子" />
+            <TableColumn fx:id="ruleDetailsCol" editable="false" minWidth="3.0" prefWidth="576.0" sortable="false" text="规则" />
          </columns>
       </TableView>
       <Button fx:id="applyRuleBt" layoutX="1002.0" layoutY="571.0" mnemonicParsing="false" onAction="#onApplyRuleBtClick" prefHeight="47.0" prefWidth="125.0" text="应用规则" AnchorPane.bottomAnchor="77.0" AnchorPane.leftAnchor="1002.0" />

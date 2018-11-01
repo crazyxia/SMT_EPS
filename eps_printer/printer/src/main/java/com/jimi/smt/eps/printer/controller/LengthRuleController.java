@@ -53,6 +53,7 @@ public class LengthRuleController implements Initializable {
 	 * @date 2018年10月29日 下午3:21:17
 	 */
 	public void onConfirmPositionBtClick() {
+		info("");
 		try {
 			start = Integer.parseInt(startTf.getText());
 			end = Integer.parseInt(endTf.getText());
@@ -78,9 +79,16 @@ public class LengthRuleController implements Initializable {
 	 * @date 2018年10月31日 下午2:37:01
 	 */
 	public void onSaveItemBtClick() {
-		addRuleController.setResultTa(lengthResultTa.getText());
-		addRuleController.appendRuleItem("length:" + (start - 1) + "=" + end + ",");
-		stage.close();
+		info("");
+		if(lengthResultTa.getText() != null && !lengthResultTa.getText().equals("")) {
+			addRuleController.setResultTa(lengthResultTa.getText());
+			addRuleController.appendRuleItem("(长度:" + (start - 1) + "->" + end + "),");
+			stage.close();
+		}else {
+			error("请完成所有操作后进行保存");
+			logger.error("请完成所有操作后进行保存");
+		}
+		
 	}
 
 	

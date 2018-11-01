@@ -24,6 +24,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -39,7 +40,9 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.paint.Color;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 
 public class ManageRuleController implements Initializable {
@@ -113,6 +116,12 @@ public class ManageRuleController implements Initializable {
 		if (!new File(RULE_FILE_NAME).exists()) {
 			try {
 				new File(RULE_FILE_NAME).createNewFile();
+				Rule rule = new Rule();
+				rule.setName("默认规则");
+				rule.setExample("默认规则例子");
+				rule.setDetails("(默认规则：不对文本内容进行处理)");
+				rules.add(rule);
+				writeToFile();
 			} catch (IOException e) {
 				e.printStackTrace();
 				error("创建配置文件时出现IO错误");
@@ -122,7 +131,7 @@ public class ManageRuleController implements Initializable {
 		Object object = readFromFile();
 		if (object != null) {
 			rules = (List<Rule>) object;
-		}
+		}	
 		updateText();
 	}
 
@@ -184,19 +193,25 @@ public class ManageRuleController implements Initializable {
 	 * @date 2018年10月29日 下午3:23:26
 	 */
 	public void onDeleteRuleBtClick() {
+		info("");
 		if (selectedRule.getName() != null && rules != null && rules.size() > 0) {
-			Alert alert = new Alert(AlertType.CONFIRMATION);
-			alert.setTitle("删除规则界面");
-			alert.setContentText("确定删除这个规则?");
-			Optional<ButtonType> result = alert.showAndWait();
-			if (result.get() == ButtonType.OK) {
-				rules.removeIf(r -> r.getName().equals(selectedRule.getName()));
-				updateText();
-				currentRule = null;
-				mainController.setCurrentRule();
-				writeToFile();
+			if (selectedRule.getName().equals("默认规则")) {
+				error("不能删除默认规则");
+				logger.error("不能删除默认规则");
 			} else {
-				alert.close();
+				Alert alert = new Alert(AlertType.CONFIRMATION);
+				alert.setTitle("删除规则界面");
+				alert.setContentText("确定删除这个规则?");
+				Optional<ButtonType> result = alert.showAndWait();
+				if (result.get() == ButtonType.OK) {
+					rules.removeIf(r -> r.getName().equals(selectedRule.getName()));
+					updateText();
+					currentRule = null;
+					mainController.setCurrentRule();
+					writeToFile();
+				} else {
+					alert.close();
+				}
 			}
 		} else {
 			error("请选择左边的规则");
@@ -262,10 +277,18 @@ public class ManageRuleController implements Initializable {
 			Stage stage = new Stage();
 			stage.setAlwaysOnTop(true);
 			addRuleController.setManageRuleController(ManageRuleController.this);
+			addRuleController.onResetBtClick();
 			addRuleController.setStage(stage);
 			stage.setTitle("新建规则");
 			stage.setScene(new Scene(root));
 			stage.show();
+			stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+				
+				@Override
+				public void handle(WindowEvent event) {
+					addRuleController.onResetBtClick();	
+				}
+			});
 		} catch (IOException e) {
 			e.printStackTrace();
 			error("加载添加规则窗口出错");
@@ -384,6 +407,8 @@ public class ManageRuleController implements Initializable {
 		if (rules != null && rules.size() > 0) {
 			ruleTableLsit = FXCollections.observableArrayList(ruleToRuleResultData(rules));
 			ruleDataTv.setItems(ruleTableLsit);
+		}else {
+			ruleDataTv.setItems(null);
 		}
 	}
 

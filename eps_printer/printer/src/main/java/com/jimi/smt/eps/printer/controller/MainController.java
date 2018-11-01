@@ -75,6 +75,7 @@ import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 
@@ -1132,7 +1133,8 @@ public class MainController implements Initializable {
 			stage.setAlwaysOnTop(true);
 			configController.setStage(stage);
 			stage.setScene(new Scene(root));
-			stage.show();
+			stage.initModality(Modality.APPLICATION_MODAL);
+			stage.showAndWait();
 		} catch (IOException e) {
 			e.printStackTrace();
 			error("加载窗口时出错");
@@ -1196,7 +1198,8 @@ public class MainController implements Initializable {
 			manageRuleController.setStage(stage);
 			manageRuleController.setMainController(MainController.this);
 			stage.setScene(new Scene(root));
-			stage.show();
+			stage.initModality(Modality.APPLICATION_MODAL);
+			stage.showAndWait();
 		} catch (IOException e) {
 			e.printStackTrace();
 			error("加载窗口时出错");
@@ -1262,7 +1265,7 @@ public class MainController implements Initializable {
 				Rule rule = ManageRuleController.currentRule;
 				if(rule.getDetails() == null) {
 					rule.setName("默认规则");
-					rule.setDetails("defaultRule:"+",");
+					rule.setDetails("默认规则:"+",");
 				}
 				if(newValue == null || newValue.equals("") || newValue.length() < 0) {
 					materialNoTf.setText("");
@@ -1289,7 +1292,7 @@ public class MainController implements Initializable {
 	 * @date 2018年10月31日 下午5:05:10
 	 */
 	private String getMaterialNo(String ruleString, String materialNoString) {
-		if (ruleString.contains("separator")) {
+		if (ruleString.contains("分隔符")) {
 			String[] materialNoArray;
 			try {
 				materialNoArray = removeSpace(materialNoString.split(ruleString.substring(ruleString.indexOf(":") + 1, ruleString.indexOf("="))));
@@ -1297,11 +1300,11 @@ public class MainController implements Initializable {
 				materialNoArray = removeSpace(materialNoString.split("\\" + ruleString.substring(ruleString.indexOf(":") + 1, ruleString.indexOf("="))));
 			}
 			return materialNoArray[Integer.parseInt(ruleString.substring(ruleString.indexOf("=") + 1, ruleString.length()))];
-		} else if (ruleString.contains("length")) {
-			int start = Integer.parseInt(ruleString.substring(ruleString.indexOf(":") + 1, ruleString.indexOf("=")));
-			int end = Integer.parseInt(ruleString.substring(ruleString.indexOf("=") + 1, ruleString.length()));
+		} else if (ruleString.contains("长度")) {
+			int start = Integer.parseInt(ruleString.substring(ruleString.indexOf(":") + 1, ruleString.indexOf("->")));
+			int end = Integer.parseInt(ruleString.substring(ruleString.indexOf("->") + 1, ruleString.length()));
 			return materialNoString.substring(start, end);
-		}else if(ruleString.contains("defaultRule")) {
+		}else if(ruleString.contains("默认规则")) {
 			return materialNoString;
 		}
 		return null;
