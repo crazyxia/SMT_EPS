@@ -27,7 +27,7 @@ public class Main extends Application {
 
 	private DisplayController displayController;
 
-	private static final String VERSION = "2.2.0";
+	private static final String VERSION = "2.3.0";
 
 	private static final String NAME = "EPS_Display-" + VERSION;
 
