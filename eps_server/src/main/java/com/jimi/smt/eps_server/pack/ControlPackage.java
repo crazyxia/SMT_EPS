@@ -1,15 +1,22 @@
 package com.jimi.smt.eps_server.pack;
 
+import java.io.Serializable;
+
 import com.jimi.smt.eps_server.constant.ClientDevice;
 import com.jimi.smt.eps_server.constant.ControlledDevice;
 import com.jimi.smt.eps_server.constant.Operation;
 
 import cc.darhao.jiminal.annotation.Parse;
 import cc.darhao.jiminal.annotation.Protocol;
-import cc.darhao.jiminal.core.BasePackage;
+import com.jimi.smt.eps_server.pack.BasePackage;
 
 @Protocol(0x43)
-public class ControlPackage extends BasePackage {
+public class ControlPackage extends BasePackage implements Serializable{
+	
+	/**
+	 * serialVersionUID : TODO
+	 */
+	private static final long serialVersionUID = -3538048061152495021L;
 	
 	@Parse({1,1})
 	private int line;
