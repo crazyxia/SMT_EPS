@@ -17,6 +17,13 @@ import com.pi4j.io.gpio.event.GpioPinListenerDigital;
 
 import cc.darhao.dautils.api.TextFileUtil;
 
+/**与服务端进行通讯更新板子数量线程
+ * @package  com.jimi.smt.eps.center.thread
+ * @file     UpdateBoardNumThread.java
+ * @author   HCJ
+ * @date     2018年9月25日 下午5:12:27
+ * @version  V 1.0
+ */
 public class UpdateBoardNumThread extends Thread {
 
     private static Logger logger = LogManager.getRootLogger();
@@ -24,52 +31,53 @@ public class UpdateBoardNumThread extends Thread {
     private int num = 0;
 
     /**
-     * 板子数量文件
+     * BOARDNUM_FILE : 板子数量文件
      */
     private static final String BOARDNUM_FILE = "/board_num.txt";
 
     /**
-     * 初始化GPIO口数据
+     * gpio : 初始化GPIO口数据
      */
     final GpioController gpio = GpioFactory.getInstance();
 
+    
     @Override
     public void run() {
-        // 提示已运行
-        logger.info("SMT 中控  更新板子数量线程已开启!");
-        GpioPinDigitalInput io29 = gpio.provisionDigitalInputPin(RaspiPin.GPIO_21, PinPullResistance.PULL_UP);
-        io29.setShutdownOptions(true);
-        logger.info("开始对红外线进行监听并更新板子数量");
-        io29.addListener(new GpioPinListenerDigital() {
-            @Override
-            public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
-                if (event.getState().isLow()) {
-                    try {
-                        String num_str = TextFileUtil.readFromFile(System.getProperty("user.dir") + BOARDNUM_FILE);
-                        if (num_str != null && !num_str.isEmpty()) {
-                            num = Integer.parseInt(num_str);
-                            num = num + 1;
-                            TextFileUtil.writeToFile(System.getProperty("user.dir") + BOARDNUM_FILE, num + "");
-                            logger.info("板子数量+1,现在数量为：" + TextFileUtil.readFromFile(System.getProperty("user.dir")+BOARDNUM_FILE));
-                        }
-                    } catch (IOException e) {
-                        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                        PrintStream printStream = new PrintStream(bos);
-                        e.printStackTrace(printStream);
-                        logger.error(new String(bos.toByteArray()));
-                    }
-                }
-            }
-        });
-        while (true) {
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                PrintStream printStream = new PrintStream(bos);
-                e.printStackTrace(printStream);
-                logger.error(new String(bos.toByteArray()));
-            }
-        }
+		// 提示已运行
+		logger.info("SMT 中控  更新板子数量线程已开启!");
+		GpioPinDigitalInput io29 = gpio.provisionDigitalInputPin(RaspiPin.GPIO_21, PinPullResistance.PULL_UP);
+		io29.setShutdownOptions(true);
+		logger.info("开始对红外线进行监听并更新板子数量");
+		io29.addListener(new GpioPinListenerDigital() {
+			@Override
+			public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
+				if (event.getState().isLow()) {
+					try {
+						String num_str = TextFileUtil.readFromFile(System.getProperty("user.dir") + BOARDNUM_FILE);
+						if (num_str != null && !num_str.isEmpty()) {
+							num = Integer.parseInt(num_str);
+							num = num + 1;
+							TextFileUtil.writeToFile(System.getProperty("user.dir") + BOARDNUM_FILE, num + "");
+							logger.info("板子数量+1,现在数量为："+ TextFileUtil.readFromFile(System.getProperty("user.dir") + BOARDNUM_FILE));
+						}
+					} catch (IOException e) {
+						ByteArrayOutputStream bos = new ByteArrayOutputStream();
+						PrintStream printStream = new PrintStream(bos);
+						e.printStackTrace(printStream);
+						logger.error(new String(bos.toByteArray()));
+					}
+				}
+			}
+		});
+		while (true) {
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				ByteArrayOutputStream bos = new ByteArrayOutputStream();
+				PrintStream printStream = new PrintStream(bos);
+				e.printStackTrace(printStream);
+				logger.error(new String(bos.toByteArray()));
+			}
+		}
     }
 }
