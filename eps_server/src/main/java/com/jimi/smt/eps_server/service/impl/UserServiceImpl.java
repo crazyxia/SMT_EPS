@@ -63,7 +63,7 @@ public class UserServiceImpl implements UserService {
 
 	
 	@Override
-	public List<UserVO> list(String id, Integer classType, String name, Integer type, String orderBy, Boolean enabled, Page page) {
+	public List<UserVO> list(String id, Integer classType, String name, Integer type, String orderBy, Boolean enabled, Page page,String password) {
 		UserExample userExample = new UserExample();
 		Criteria criteria = userExample.createCriteria();
 		if (id != null && !id.equals("")) {
@@ -81,6 +81,9 @@ public class UserServiceImpl implements UserService {
 		if(classType != null) {
 			criteria.andClassTypeEqualTo(classType);
 		}
+		if(password != null) {
+			criteria.andPasswordIsNotNull();
+		}
 		userExample.setOrderByClause(orderBy);
 		if(page != null) {
 			page.setTotallyData(userMapper.countByExample(userExample));
@@ -94,5 +97,17 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public User selectUserById(String id) {	
 		return userMapper.selectByPrimaryKey(id);		
+	}
+	
+	@Override
+	public String updatePassword(String id, String password) {
+		// TODO Auto-generated method stub
+		User user = new User();
+		user.setId(id.equals("") ? null : id);
+		user.setPassword("".equals(password) ? null : password);
+		if(userMapper.updatePasswordByPrimaryKey(user) == 1){
+			return "succeed";
+		}
+		return "failed_unknown";
 	}
 }

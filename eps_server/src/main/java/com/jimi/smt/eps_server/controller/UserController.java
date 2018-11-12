@@ -77,7 +77,7 @@ public class UserController {
 		page.setCurrentPage(currentPage);
 		page.setPageSize(pageSize);
 		PageVO<UserVO> pageVO = new PageVO<UserVO>();
-		pageVO.setList(userService.list(id, classType, name, type, orderBy, enabled, page));
+		pageVO.setList(userService.list(id, classType, name, type, orderBy, enabled, page,password));
 		pageVO.setPage(page);
 		return pageVO;
 	}
@@ -110,13 +110,16 @@ public class UserController {
 	@ResponseBody
 	@RequestMapping("/login")
 	public ResultUtil login(String id, String password, HttpServletRequest request) {
-		if (id == null) {
+		if(id == null || password == null) {
 			ResultUtil.failed("参数不足");
 			return ResultUtil.failed();
 		}
+		if("".equals(password)) {
+			return ResultUtil.failed("默认密码为000000，请输入你的密码");
+		}
 		User user = userService.selectUserById(id);
-		if (user == null || user.getType() < 3) {
-			return ResultUtil.failed("failed_not_admin");
+		if (user == null) {
+			return ResultUtil.failed("failed_not_found");
 		}
 		if (user.getEnabled() == false) {
 			return ResultUtil.failed("failed_not_enabled");
@@ -224,5 +227,38 @@ public class UserController {
 			return user;
 		}
 		return null;
+	}
+	
+	@Open
+	@ResponseBody
+	@RequestMapping("/updatePassword")
+	public ResultUtil2 updatePassword(String id, String oldPassword,String newPassword) {
+		if (id == null || oldPassword == null || newPassword == null) {
+			return new ResultUtil2(400,"参数不足");
+		}
+		if("".equals(id) || "".equals(oldPassword) || "".equals(newPassword)) {
+			return new ResultUtil2(400,"参数不能为空");
+		}
+		User user = userService.selectUserById(id);
+		if (user == null) {
+			return new ResultUtil2(400,"账号不存在");
+		}
+		if (user.getEnabled() == false) {
+			return new ResultUtil2(400,"工人已离职");
+		}
+		if(!oldPassword.equals(user.getPassword())) {
+			return new ResultUtil2(400,"旧密码错误");
+		}
+		String result;
+		try {
+			result = userService.updatePassword(id, newPassword);
+		} catch (Exception e) {
+			return new ResultUtil2(400,"修改失败,请检查所传参数");
+		}
+		if("succeed".equals(result)) {
+			return new ResultUtil2(200,"操作成功");
+		}else {
+			return new ResultUtil2(400,"修改失败");
+		}
 	}
 }
