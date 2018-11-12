@@ -7,7 +7,7 @@ import javafx.beans.property.SimpleStringProperty;
  * @author 沫熊工作室 <a href="http://www.darhao.cc">www.darhao.cc</a>
  */
 public class MaterialProperties {
-
+	
 	private SimpleStringProperty no;
 	
 	private SimpleStringProperty name;

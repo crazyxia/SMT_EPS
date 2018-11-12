@@ -8,8 +8,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.Inet4Address;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.URI;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -19,25 +21,43 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 
 import javax.imageio.ImageIO;
+import javax.websocket.ContainerProvider;
+import javax.websocket.DeploymentException;
+import javax.websocket.Session;
+import javax.websocket.WebSocketContainer;
 
+import org.apache.ibatis.jdbc.Null;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
+import com.jimi.smt.eps.printer.app.Main;
+import com.jimi.smt.eps.printer.callback.PrinterCallBack;
 import com.jimi.smt.eps.printer.entity.Material;
 import com.jimi.smt.eps.printer.entity.MaterialProperties;
+import com.jimi.smt.eps.printer.entity.MaterialTb;
+import com.jimi.smt.eps.printer.entity.MaterialTbResultData;
+import com.jimi.smt.eps.printer.entity.PrinterInfo;
 import com.jimi.smt.eps.printer.entity.Rule;
 import com.jimi.smt.eps.printer.entity.StockLog;
+import com.jimi.smt.eps.printer.entity.WebSocketResult;
 import com.jimi.smt.eps.printer.util.ExcelHelper;
 import com.jimi.smt.eps.printer.util.HttpHelper;
+import com.jimi.smt.eps.printer.util.IniReader;
+import com.jimi.smt.eps.printer.util.JsonFile;
+import com.jimi.smt.eps.printer.util.PrinterSocket;
 
 import cc.darhao.dautils.api.DateUtil;
 import cc.darhao.dautils.api.ResourcesUtil;
@@ -48,6 +68,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -78,6 +99,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 /**
  * 主页控制器
@@ -92,11 +114,6 @@ public class MainController implements Initializable {
 	private static final String CONFIG_FILE_NAME = "printer.cfg";
 
 	/**
-	 * 配置：上一次料号表路径
-	 */
-	private static final String CONFIG_KEY_FILE_PATH = "filePath";
-
-	/**
 	 * 配置：所选料号表Sheet名
 	 */
 	private static final String CONFIG_KEY_SHEET_NAME = "sheetName";
@@ -108,10 +125,9 @@ public class MainController implements Initializable {
 
 	private static Logger logger = LogManager.getRootLogger();
 
+	
 	@FXML
 	private AnchorPane parentAp;
-	@FXML
-	private TextField fileSelectTf;
 	@FXML
 	private TextField materialNoTf;
 	@FXML
@@ -129,9 +145,9 @@ public class MainController implements Initializable {
 	@FXML
 	private TextField dateTf;
 	@FXML
-	private Button fileSelectBt;
-	@FXML
 	private Button printBt;
+	@FXML
+	private Label loginIdLb;
 	@FXML
 	private Label stateLb;
 	@FXML
@@ -189,6 +205,10 @@ public class MainController implements Initializable {
 	@FXML
 	private Button configBt;
 	@FXML
+	private Button changePwdBt;
+	@FXML
+	private Button materialMangerBt;
+	@FXML
 	private TextField copyTf;
 	@FXML
 	private CheckBox ignoreCb;
@@ -222,6 +242,8 @@ public class MainController implements Initializable {
 	// 打印标签纸控制socket
 	private Socket printerSocket;
 
+	private PrinterSocket remoteSocket;
+	
 	// 写入RFID标签控制socket
 	private static Socket rfidSocket;
 
@@ -243,13 +265,21 @@ public class MainController implements Initializable {
 	// 入库数据消息队列
 	private List<String> stockLogList = new ArrayList<String>();
 
-	private HttpHelper httpHelper = new HttpHelper();
+	private HttpHelper httpHelper = HttpHelper.me;
 
 	private static final String INSERT_STOCK_ACTION = "stock/insert";
-
+	private static final String CONFIG_FILE = "/config.ini";
+	private String loginUserId;
 	
+	private static Map<String, Boolean> resultMap = new ConcurrentHashMap<>();
+	
+	private static Map<String, List<Material>> materialTbMap = new ConcurrentHashMap<>();
+	ObservableList<String> selectorList = FXCollections.observableArrayList();
+	
+	private static String selectSheet;
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		initTableCol();
+		initChangePwdBt();
 		initMaterialNoTfListener();
 		initTableSelectorCbListener();
 		initMaterialPropertiesTfsListener();
@@ -257,65 +287,207 @@ public class MainController implements Initializable {
 		setCurrentRule();
 		initHotKey();
 		initDataFromConfig();
+		initMaterialMangerBt();
+		initMaterialTable();
+		loadTableSelectorData();
 		initPrinter();
 		initRFID();
+		initRemoteSocket();
+		showLogoutAlert();
+		initUserId();
 	}
-
 	
-	public void onFileSelectBtClick() {
-		// 初始化文件选择器
-		FileChooser chooser = new FileChooser();
-		chooser.setTitle("选择供应商料号表文件");
-		chooser.getExtensionFilters().add(new ExtensionFilter("供应商料号表文件", "*.xls", "*.xlsx"));
-		// 尝试读取配置文件获取上次默认路径
-		String filePath = new String();
-		File materialFile = null;
-		try {
-			filePath = properties.getProperty(CONFIG_KEY_FILE_PATH);
-			if (filePath != null && !filePath.equals("")) {
-				File file = new File(filePath);
-				if (file.getParentFile().exists()) {
-					chooser.setInitialDirectory(file.getParentFile());
+	/**
+	 * 初始化用户ID，从登录界面得到
+	 */
+	public void initUserId() {
+		Platform.runLater(new Runnable() {
+			
+			@Override
+			public void run() {
+				loginIdLb.setText(getLoginUserId());
+				userId = getLoginUserId();
+			}
+		});
+	}
+	
+	
+	/**
+	 * 提示打印结束后退出账号
+	 */
+	public void showLogoutAlert() {
+		Alert alert = new Alert(AlertType.WARNING, "请在打印结束后点击关闭按钮以退出当前账号，防止个人账号被其他人员使用", ButtonType.OK);
+		Platform.runLater(new Runnable() {
+			
+			@Override
+			public void run() {
+				alert.showAndWait();
+				scanMaterialNoTf.requestFocus();
+			}
+		});
+	}
+	
+	
+	/**
+	 * 初始化料号表管理按钮
+	 */
+	public void initMaterialMangerBt() {
+		materialMangerBt.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+				FXMLLoader loader;
+				try {
+					loader = new FXMLLoader(ResourcesUtil.getResourceURL("fxml/tableManager.fxml"));
+					Parent root = loader.load();
+					Stage stage = new Stage();
+					// 显示
+					stage.setResizable(false);
+					stage.setTitle("供应商物料表管理");
+					stage.setScene(new Scene(root));
+					stage.setResizable(false);
+					MaterialTbManagerController managerController = loader.getController();
+					managerController.setStage(stage);
+					stage.initModality(Modality.APPLICATION_MODAL);
+					stage.showAndWait();
+					//添加加载json执行代码
+					if (selectorList != null && selectorList.size() > 0) {
+						selectorList.clear();
+					}
+					if (materials != null && materials.size() > 0) {
+						materials.clear();
+					}
+					if (materialTbMap != null && materialTbMap.size() > 0) {
+						materialTbMap.clear();
+					}
+					initMaterialTable();
+					loadTableSelectorData();
+				} catch (IOException e) {
+					error("加载供应商物料表管理窗口失败");
+					e.printStackTrace();
 				}
+				
 			}
-		} catch (NullPointerException e) {
-			try {
-				new File(CONFIG_FILE_NAME).createNewFile();
-			} catch (IOException e1) {
-				e1.printStackTrace();
-				error("创建配置文件时出现IO错误");
+		});
+	}
+	
+	
+	/**
+	 * 初始化远程打印
+	 */
+	public void initRemoteSocket() {
+		remoteSocket = new PrinterSocket();
+		remoteSocket.setCallBack(new PrinterCallBack() {
+			
+			@Override
+			public void printCallBack(Session session, PrinterInfo info) {
+				CountDownLatch countDownLatch = new CountDownLatch(1);
+				WebSocketResult result = WebSocketResult.fail(info.getId(), "打印指令下达失败");
+				try {
+					List<Material> list = materialTbMap.get(info.getSupplier());
+					if ( list == null) {
+						result = WebSocketResult.fail(info.getId(), "请在打印软件上添加该物料所在的物料表");
+						return ;
+					}
+					Material temp = null;
+					for (Material material : list) {
+						if (material.getNo().equals(info.getMaterialNo())) {
+							temp = material;
+							break;
+						}
+					}
+					if (temp == null) {
+						result = WebSocketResult.fail(info.getId(), "查无此物料，请确定该供应商是否存在此物料");
+						return ;
+					}
+					final Material material = temp;
+					resultMap.put(info.getId(), false);
+					Platform.runLater(new Runnable() {
+						@Override
+						public void run() {
+							boolean result = remoteCallPrint(info, material);
+							resultMap.put(info.getId(), result);
+							countDownLatch.countDown();
+						}
+					});
+					try {
+						countDownLatch.await();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+						result = WebSocketResult.fail(info.getId(), "计数器中断失败");
+						return ;
+					}
+					if (resultMap.get(info.getId())) {
+						result = WebSocketResult.succeed(info.getId(), "成功下达打印指令");
+					}else {
+						result = WebSocketResult.fail(info.getId(), "打印失败");
+					}
+				}finally {
+					try {
+						session.getBasicRemote().sendText(JSONObject.toJSONString(result));
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+				
 			}
+		});
+		WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+		try {
+			String ip = Inet4Address.getLocalHost().getHostAddress();
+			Map<String, String> map_url = IniReader.getItem(System.getProperty("user.dir") + CONFIG_FILE, "websocketurl");
+			String webSocketURL = map_url.get("websocketurl");
+			//连接webSocket
+			container.connectToServer(remoteSocket, URI.create(webSocketURL+ip));
+			info("WebSocket连接成功，远程打印功能开启");
+		} catch (DeploymentException | IOException e) {
+			error("WebSocket连接失败，远程打印功能失效");
+			e.printStackTrace();
 		}
-		// 选择文件
-		materialFile = chooser.showOpenDialog(primaryStage);
-		if (materialFile != null) {
-			// 初始化Excel
-			fileSelectTf.setText(materialFile.getAbsolutePath());
-			try {
-				excel = ExcelHelper.from(materialFile);
-			} catch (IOException e1) {
-				e1.printStackTrace();
-				error("加载供应商料号表出现IO错误");
+	}
+	
+	
+	/**
+	 * 初始话物料表格，从json文件中读取全部文件路径并进行加载
+	 */
+	public void initMaterialTable() {
+		JsonFile jsonFile = JsonFile.getInstance();
+		List<MaterialTb> materialTbs = jsonFile.getJsonToObject();
+		if (materialTbs == null || materialTbs.size() <= 0) {
+			loadTableData(null);
+			return ;
+		}
+		for (MaterialTb materialTb : materialTbs) {
+			File file = new File(materialTb.getFilePath());
+			if (!file.exists()) {
+				continue;
 			}
-			// 加载表选择器数据
-			loadTableSelectorData();
-			// 设置当前sheet
-			excel.switchSheet(0);
-			// 设置当前下拉选项
-			tableSelectCb.getSelectionModel().select(0);
-			// 设置料号为空
-			materialNoTf.setText("");
-			// 存配置
-			properties.setProperty(CONFIG_KEY_FILE_PATH, materialFile.getAbsolutePath());
 			try {
-				properties.store(new FileOutputStream(new File(CONFIG_FILE_NAME)), null);
+				ExcelHelper excel = ExcelHelper.from(file);
+				for (int i = 0; i < excel.getBook().getNumberOfSheets(); i++) {
+					String name = excel.getBook().getSheetAt(i).getSheetName();
+					excel.switchSheet(i);
+					try {
+						List<Material> materials = excel.unfill(Material.class, 1);
+						if (materialTbMap.get(name) != null) {
+							error("存在相同表名，解析失败");
+							continue;
+						}
+						materialTbMap.put(name, materials);
+						selectorList.add(name);
+					} catch (Exception e) {
+						e.printStackTrace();
+						error("加载供应商料号表出现IO错误");
+						continue;
+					}
+				}
 			} catch (IOException e) {
+				
 				e.printStackTrace();
-				error("保存配置文件时出现IO错误");
 			}
 		}
 	}
-
+	
 	
 	public void onPrintBtClick() {
 		// 信息完整性校验
@@ -332,7 +504,6 @@ public class MainController implements Initializable {
 			error("请正确填写生产日期YY-MM-DD");
 			return;
 		}
-
 		// 数字类型校验
 		String copy = copyTf.getText();
 		try {
@@ -342,7 +513,12 @@ public class MainController implements Initializable {
 				throw new NumberFormatException();
 			}
 			copies = copyInt;
-			showIdWindow();
+			try {
+				print(null, false, null);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			//showIdWindow();
 		} catch (NumberFormatException e) {
 			error("请输入正整数");
 		}
@@ -374,9 +550,11 @@ public class MainController implements Initializable {
 	
 	/**
 	 * 远程调用打印
+	 * @param info 接收到的打印数据
+	 * @param material 与接收到打印数据中料号相对应的物料数据
+	 * @return
 	 */
-	public synchronized boolean remoteCallPrint(String materilaId, String user, String productDate,
-			String remainingQuantity, String materialNo) {
+	public synchronized boolean remoteCallPrint(PrinterInfo info, Material material) {
 		boolean result;
 		// 封锁UI
 		materialNoTf.setDisable(true);
@@ -386,19 +564,33 @@ public class MainController implements Initializable {
 		quantityTf.setDisable(true);
 		remarkTf.setDisable(true);
 		dateTf.setDisable(true);
+		
 		// 备份UI的值
 		Map<String, String> backup = new HashMap<>();
 		backup.put("materialNo", materialNoTf.getText());
+		backup.put("materialNoLb", materialNoLb.getText());
 		backup.put("quantity", quantityTf.getText());
 		backup.put("seatNo", seatNoTf.getText());
 		backup.put("description", descriptionTf.getText());
 		backup.put("name", nameTf.getText());
 		backup.put("remark", remarkTf.getText());
 		backup.put("date", dateTf.getText());
+		backup.put("userId", userId);
 		// 调用打印
 		copies = 1;
+		// 解锁UI
 		try {
-			print(materilaId);
+			materialNoLb.setText(material.getNo());
+			System.err.println(materialNoTf.getText());
+			quantityTf.setText(info.getRemainingQuantity());
+			seatNoTf.setText(material.getSeat());
+			userId = info.getUser();
+			descriptionTf.setText(material.getDescription());
+			nameTf.setText(material.getName());
+			remarkTf.setText("UW");
+			dateTf.setText(info.getProductDate());
+			print(info.getMaterialId(), true, info);
+			info("接收到远程打印请求，物料号："+material.getNo());
 			result = true;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -407,6 +599,7 @@ public class MainController implements Initializable {
 			result = false;
 		} finally {
 			// 还原UI的值
+			materialNoLb.setText(backup.get("materialNoLb"));
 			materialNoTf.setText(backup.get("materialNo"));
 			quantityTf.setText(backup.get("quantity"));
 			seatNoTf.setText(backup.get("seatNo"));
@@ -418,6 +611,7 @@ public class MainController implements Initializable {
 			materialNoTf.setText("");
 			materialNoTf.requestFocus();
 			printBt.setText("打印");
+			userId = backup.get("userId");
 		}
 		return result;
 	}
@@ -429,7 +623,7 @@ public class MainController implements Initializable {
 	 * @throws Exception
 	 * @para materialId 料盘时间戳，可空，如果为空，表示采用当前时间。否则采用给定值
 	 */
-	public void print(String materialId) throws Exception {
+	public void print(String materialId, boolean remote, PrinterInfo info) throws Exception {
 		rfidResult = codeResult = true;
 		// 准备操作
 		printBt.setDisable(true);
@@ -437,7 +631,7 @@ public class MainController implements Initializable {
 		info("打印中...");
 		try {
 			for (int i = 0; i < copies; i++) {
-				subPrint(materialId);
+				subPrint(materialId, remote, info);
 				if (!rfidResult) {
 					throw new Exception("未成功写入RFID数据！");
 				} else if (!codeResult) {
@@ -464,9 +658,9 @@ public class MainController implements Initializable {
 	 * @para materialId 料盘时间戳，可空，如果为空，表示采用当前时间。否则采用给定值
 	 * @throws Exception
 	 */
-	public void subPrint(String materialId) throws Exception {
+	public void subPrint(String materialId, boolean remote, PrinterInfo info) throws Exception {
 		// 生成数据
-		createData(materialId);
+		createData(materialId, remote, info);
 		// 记录入库日志
 		try {
 			stockLogList.add(data);
@@ -530,7 +724,7 @@ public class MainController implements Initializable {
 	 * 
 	 * @para materialId 料盘时间戳，可空，如果为空，表示采用当前时间。否则采用给定值
 	 */
-	private void createData(String materialId) {
+	private void createData(String materialId, boolean remote, PrinterInfo info) {
 		StringBuffer stringBuffer = new StringBuffer();
 		stringBuffer.append(materialNoLb.getText().trim());
 		stringBuffer.append("@");
@@ -681,12 +875,12 @@ public class MainController implements Initializable {
 	 */
 	@SuppressWarnings("unchecked")
 	private void loadTableSelectorData() {
-		ObservableList<String> list = FXCollections.observableArrayList();
-		for (int i = 0; i < excel.getBook().getNumberOfSheets(); i++) {
-			String name = excel.getBook().getSheetAt(i).getSheetName();
-			list.add(name);
+		tableSelectCb.setItems(selectorList);
+		if (selectorList.contains(selectSheet)) {
+			tableSelectCb.getSelectionModel().select(selectorList.indexOf(selectSheet));
+		}else if (selectorList != null && selectorList.size() >0) {
+			tableSelectCb.getSelectionModel().select(0);
 		}
-		tableSelectCb.setItems(list);
 		info("数据解析成功，请在上方选择表");
 	}
 
@@ -695,21 +889,18 @@ public class MainController implements Initializable {
 	 * 加载表数据
 	 */
 	@SuppressWarnings("unchecked")
-	private void loadTableData() {
-		try {
-			materials = excel.unfill(Material.class, 1);
-		} catch (Exception e) {
-			error("数据解析失败，请参考\"标准范例表\"编写供应商料号表文件");
+	private void loadTableData(List<Material> materials) {
+		if (materials != null && materials.size() > 0) {
+			ObservableList<MaterialProperties> materialPropertiesList = FXCollections.observableArrayList();
+			for (Material material : materials) {
+				MaterialProperties materialProperties = new MaterialProperties(material);
+				materialPropertiesList.add(materialProperties);
+			}
+			materialTb.setItems(materialPropertiesList);
+		}else {
 			materialTb.setItems(null);
-			return;
 		}
-		ObservableList<MaterialProperties> materialPropertiesList = FXCollections.observableArrayList();
-		for (Material material : materials) {
-			MaterialProperties materialProperties = new MaterialProperties(material);
-			materialPropertiesList.add(materialProperties);
-		}
-		materialTb.setItems(materialPropertiesList);
-		info("数据解析成功，请在右上方扫入或输入料号");
+		//料号表选择后，将焦点移动到料号输入框
 		materialNoTf.requestFocus();
 	}
 
@@ -723,7 +914,6 @@ public class MainController implements Initializable {
 				logger.error("e.cfg文件创建失败");
 			}
 		}
-		// 读取上次文件路径和表名
 		properties = new Properties();
 		try {
 			properties.load(new FileInputStream(new File(CONFIG_FILE_NAME)));
@@ -738,43 +928,7 @@ public class MainController implements Initializable {
 			e.printStackTrace();
 			error("读取配置文件时出现IO错误");
 		}
-		String filePath = properties.getProperty(CONFIG_KEY_FILE_PATH);
-		String sheetName = properties.getProperty(CONFIG_KEY_SHEET_NAME);
-		info("请选择供应商料号表文件");
-
-		// 如果没有配置则不做什么
-		if (filePath == null || filePath.equals("")) {
-			return;
-		}
-		// 读取文件
-		File materialFile = new File(filePath);
-		try {
-			excel = ExcelHelper.from(materialFile);
-
-			// 设置当前文件名
-			fileSelectTf.setText(filePath);
-			info("文件加载成功");
-
-			// 加载表选择下拉菜单数据
-			loadTableSelectorData();
-
-			// 切换到指定sheet
-			if (sheetName == null || sheetName.equals("")) {
-				return;
-			}
-			if (!excel.switchSheet(sheetName)) {
-				error("表\"" + sheetName + "\"不存在");
-				return;
-			}
-			// 设置当前下拉选项
-			tableSelectCb.getSelectionModel().select(excel.getBook().getSheetIndex(sheetName));
-
-			// 加载表数据
-			loadTableData();
-		} catch (IOException e) {
-			e.printStackTrace();
-			error("供应商料号表文件\"" + materialFile.getName() + "\"不存在");
-		}
+		selectSheet = properties.getProperty(CONFIG_KEY_SHEET_NAME);
 		// 初始化时间
 		dateLb.setText(DateUtil.yyyyMMdd(new Date()));
 		dateTf.setText(DateUtil.yyyyMMdd(new Date()));
@@ -899,6 +1053,36 @@ public class MainController implements Initializable {
 	}
 
 	
+	private void initChangePwdBt() {
+		changePwdBt.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+				
+				FXMLLoader loader;
+				try {
+					loader = new FXMLLoader(ResourcesUtil.getResourceURL("fxml/changePwd.fxml"));
+					Parent root = loader.load();
+					Stage stage = new Stage();
+					// 显示
+					ChangePwdController changePwdController = loader.getController();
+					changePwdController.setLoginUserId(getLoginUserId());
+					changePwdController.setStage(stage);
+					stage.setResizable(false);
+					stage.setTitle("修改密码");
+					stage.setScene(new Scene(root));
+					stage.setResizable(false);
+					stage.initModality(Modality.APPLICATION_MODAL);
+					stage.showAndWait();
+				} catch (IOException e) {
+					e.printStackTrace();
+					error("加载窗口出错");
+				}
+			}
+		});
+	}
+	
+	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void initPrintTargetRbs() {
 		ChangeListener listener = new ChangeListener<Boolean>() {
@@ -964,27 +1148,19 @@ public class MainController implements Initializable {
 		tableSelectCb.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-				if (newValue.intValue() == -1) {
-					// 存配置
-					properties.setProperty(CONFIG_KEY_SHEET_NAME, "");
-				} else {
+				if (newValue.intValue() > -1) {
 					// 切换到指定sheet
-					if (!excel.switchSheet(newValue.intValue())) {
-						error("表切换失败");
-						return;
+					String name = tableSelectCb.getItems().get(newValue.intValue()).toString();
+					materials = materialTbMap.get(name);
+					if (materials != null) {
+						loadTableData(materials);
+						selectSheet = name;
+					}else {
+						loadTableData(null);
 					}
-					// 更新数据
-					loadTableData();
-					// 存配置
-					properties.setProperty(CONFIG_KEY_SHEET_NAME, excel.getBook().getSheetName(newValue.intValue()));
 					// 设置料号为空
 					materialNoTf.setText("");
-				}
-				try {
-					properties.store(new FileOutputStream(new File(CONFIG_FILE_NAME)), null);
-				} catch (IOException e) {
-					e.printStackTrace();
-					error("配置文件时出现IO错误");
+					scanMaterialNoTf.requestFocus();
 				}
 			}
 		});
@@ -1143,26 +1319,6 @@ public class MainController implements Initializable {
 	}
 
 	
-	private void showIdWindow() {
-		try {
-			FXMLLoader loader = new FXMLLoader(ResourcesUtil.getResourceURL("fxml/id.fxml"));
-			Parent root = loader.load();
-			IdController idController = loader.getController();
-			// 显示
-			Stage stage = new Stage();
-			stage.setAlwaysOnTop(true);
-			idController.setMainController(MainController.this);
-			idController.setStage(stage);
-			stage.setScene(new Scene(root));
-			stage.show();
-		} catch (IOException e) {
-			e.printStackTrace();
-			error("加载窗口时出错");
-		}
-
-	}
-
-	
 	private void showRfidAlert() {
 		try {
 			FXMLLoader loader = new FXMLLoader(ResourcesUtil.getResourceURL("fxml/rfid.fxml"));
@@ -1311,6 +1467,46 @@ public class MainController implements Initializable {
 	}
 
 	
+	public void closeWindow(Stage primaryStage) {
+		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+
+			@Override
+			public void handle(WindowEvent event) {
+				FXMLLoader loader;
+				try {
+					loader = new FXMLLoader(ResourcesUtil.getResourceURL("fxml/login.fxml"));
+					Parent root = loader.load();
+					// 把Stage存入MainController
+					LoginController loginController = loader.getController();
+					Stage stage = new Stage();
+					loginController.setPrimaryStage(stage);
+					// 显示
+					stage.setResizable(false);
+					stage.setTitle("防错料系统 - 条码打印器 " + Main.getVersion());
+					stage.setScene(new Scene(root));
+					stage.show();
+					
+					properties.setProperty(CONFIG_KEY_SHEET_NAME,selectSheet);
+					try {
+						properties.store(new FileOutputStream(new File(CONFIG_FILE_NAME)), null);
+					} catch (IOException e) {
+						e.printStackTrace();
+						error("保存配置文件时出现IO错误");
+					}
+					materialTbMap.clear();
+					materials.clear();
+					primaryStage.close();
+					rfidSocket.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+					logger.error("开启登录界面失败");
+				}
+				
+			}
+			
+		});
+	}
+	
 	/**@author HCJ
 	 * 设置当前规则
 	 * @date 2018年10月31日 下午5:05:36
@@ -1363,6 +1559,14 @@ public class MainController implements Initializable {
 	}
 
 	
+	public String getLoginUserId() {
+		return loginUserId;
+	}
+
+	public void setLoginUserId(String loginUserId) {
+		this.loginUserId = loginUserId;
+	}
+
 	public String[] removeSpace(String[] array) {
 		List<String> tmp = new ArrayList<String>();
 		for (String str : array) {

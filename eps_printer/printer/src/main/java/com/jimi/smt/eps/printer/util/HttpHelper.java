@@ -12,13 +12,13 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 
 public class HttpHelper {
-
+	public static HttpHelper me = new HttpHelper();
+	
 	private final OkHttpClient client = new OkHttpClient();
 	
 	private String URL;
 	
 	private static final String CONFIG_FILE = "/config.ini";
-	
 	
 	public HttpHelper() {
 		Map<String, String> map_url = IniReader.getItem(System.getProperty("user.dir") + CONFIG_FILE, "url");
@@ -72,5 +72,4 @@ public class HttpHelper {
 		Call call = client.newCall(request);
 		call.enqueue(callback);
 	}
-
 }

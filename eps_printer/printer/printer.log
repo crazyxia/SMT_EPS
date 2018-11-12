@@ -14,3 +14,206 @@
 2018-10-18 08:30:25.771 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1069 - A child container failed during start
 2018-10-18 08:30:41.810 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1069 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
 2018-10-23 11:04:17.793 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1040 - 供应商料号表文件"标准范例表.xls"不存在
+2018-11-05 11:24:13.798 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1086 - 供应商料号表文件"标准范例表.xls"不存在
+2018-11-05 11:26:30.142 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1086 - 供应商料号表文件"标准范例表.xls"不存在
+2018-11-05 11:26:47.412 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1086 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-05 11:30:32.149 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1086 - 供应商料号表文件"标准范例表.xls"不存在
+2018-11-05 11:41:47.209 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1086 - 供应商料号表文件"标准范例表.xls"不存在
+2018-11-05 16:54:13.921 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1116 - 供应商料号表文件"标准范例表.xls"不存在
+2018-11-05 16:54:31.141 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1116 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-05 16:56:07.108 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1116 - 供应商料号表文件"标准范例表.xls"不存在
+2018-11-05 16:58:37.174 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1118 - 供应商料号表文件"标准范例表.xls"不存在
+2018-11-05 17:01:06.696 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1115 - 供应商料号表文件"标准范例表.xls"不存在
+2018-11-05 17:01:46.551 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1115 - 供应商料号表文件"标准范例表.xls"不存在
+2018-11-05 17:02:03.737 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1115 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-05 17:03:47.329 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1117 - 供应商料号表文件"标准范例表.xls"不存在
+2018-11-05 17:07:13.010 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1117 - 供应商料号表文件"标准范例表.xls"不存在
+2018-11-05 17:16:15.402 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1117 - 供应商料号表文件"标准范例表.xls"不存在
+2018-11-05 17:16:32.653 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1117 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-05 17:17:42.552 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1117 - 供应商料号表文件"标准范例表.xls"不存在
+2018-11-05 17:17:59.809 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1117 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-05 17:19:48.863 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1117 - 供应商料号表文件"标准范例表.xls"不存在
+2018-11-05 17:24:56.284 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1117 - 供应商料号表文件"标准范例表.xls"不存在
+2018-11-05 17:25:13.517 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1117 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-05 17:32:37.319 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1120 - 供应商料号表文件"标准范例表.xls"不存在
+2018-11-05 17:32:54.620 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1120 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-05 17:39:20.441 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1122 - 供应商料号表文件"标准范例表.xls"不存在
+2018-11-05 17:40:49.342 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1123 - 供应商料号表文件"标准范例表.xls"不存在
+2018-11-05 17:42:22.363 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1122 - 供应商料号表文件"标准范例表.xls"不存在
+2018-11-05 17:42:34.110 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1122 - 供应商料号表文件"标准范例表.xls"不存在
+2018-11-05 17:42:34.554 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1122 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-05 17:42:35.555 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1122 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-06 08:47:40.508 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1120 - 供应商料号表文件"标准范例表.xls"不存在
+2018-11-06 08:47:54.799 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1120 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-06 08:48:05.478 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1120 - 供应商料号表文件"标准范例表.xls"不存在
+2018-11-06 08:48:22.189 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1120 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-06 09:05:03.667 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1128 - 供应商料号表文件"标准范例表.xls"不存在
+2018-11-06 09:05:20.877 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1128 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-06 09:13:07.169 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1128 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-06 09:14:39.491 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1128 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-06 09:16:16.857 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1129 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-06 09:18:27.476 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1129 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-06 09:27:38.208 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1129 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-06 09:34:41.606 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1129 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-06 14:36:09.798 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1172 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-06 14:36:59.848 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1173 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-06 14:37:00.647 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1173 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-06 14:38:13.360 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1173 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-06 14:41:55.432 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1173 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-06 14:43:28.784 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1173 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-07 09:59:51.790 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1173 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-07 10:01:50.237 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1173 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-07 10:26:24.974 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1173 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-07 10:42:02.542 ERROR com.jimi.smt.eps.printer.util.PrinterSocket - onClose() line: 58 - Client was disconnected. | CloseReason[1000]
+2018-11-07 10:42:19.512 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1173 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-07 10:44:49.163 ERROR com.jimi.smt.eps.printer.util.PrinterSocket - onClose() line: 59 - Client was disconnected. | CloseReason[1000]
+2018-11-07 10:45:06.378 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1173 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-07 10:51:52.107 ERROR com.jimi.smt.eps.printer.util.PrinterSocket - onClose() line: 59 - Client was disconnected. | CloseReason[1000]
+2018-11-07 10:52:08.855 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1173 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-07 10:55:12.064 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1185 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-07 10:57:12.438 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1186 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-07 11:09:08.108 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1186 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-07 11:10:25.445 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1186 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-07 11:11:06.402 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1186 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-07 11:13:41.867 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1186 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-07 14:11:24.075 ERROR com.jimi.smt.eps.printer.util.PrinterSocket - onClose() line: 59 - Client was disconnected. | CloseReason[1000]
+2018-11-07 14:21:37.192 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1197 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-07 14:23:18.096 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1197 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-07 14:26:29.190 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1193 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-07 14:53:23.521 ERROR com.jimi.smt.eps.printer.util.PrinterSocket - onClose() line: 59 - Client was disconnected. | CloseReason[1000]
+2018-11-07 14:53:40.322 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1205 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-07 14:54:52.227 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1205 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-07 14:58:13.440 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1204 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-07 15:29:56.006 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1205 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-07 17:24:11.596 ERROR com.jimi.smt.eps.printer.util.PrinterSocket - onClose() line: 59 - Client was disconnected. | CloseReason[1006,Closed abnormally.]
+2018-11-08 09:23:10.686 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1205 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-08 09:29:01.155 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1207 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-08 09:30:57.916 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1207 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-08 09:31:29.635 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1207 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-08 09:32:30.319 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1215 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-08 09:32:44.349 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1215 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-08 09:56:34.586 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1216 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-08 11:16:07.907 INFO  com.jimi.smt.eps.printer.controller.ManageRuleController - info() line: 320 - 
+2018-11-08 11:16:07.909 ERROR com.jimi.smt.eps.printer.controller.ManageRuleController - error() line: 308 - 不能删除默认规则
+2018-11-08 11:16:07.911 ERROR com.jimi.smt.eps.printer.controller.ManageRuleController - onDeleteRuleBtClick() line: 200 - 不能删除默认规则
+2018-11-08 11:16:08.659 INFO  com.jimi.smt.eps.printer.controller.ManageRuleController - info() line: 320 - 
+2018-11-08 11:16:08.660 ERROR com.jimi.smt.eps.printer.controller.ManageRuleController - error() line: 308 - 不能删除默认规则
+2018-11-08 11:16:08.661 ERROR com.jimi.smt.eps.printer.controller.ManageRuleController - onDeleteRuleBtClick() line: 200 - 不能删除默认规则
+2018-11-08 11:16:12.982 INFO  com.jimi.smt.eps.printer.controller.ManageRuleController - info() line: 320 - 
+2018-11-08 11:16:12.983 ERROR com.jimi.smt.eps.printer.controller.ManageRuleController - error() line: 308 - 不能删除默认规则
+2018-11-08 11:16:12.984 ERROR com.jimi.smt.eps.printer.controller.ManageRuleController - onDeleteRuleBtClick() line: 200 - 不能删除默认规则
+2018-11-08 17:30:22.281 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1263 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-08 17:32:41.684 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1264 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-08 17:36:05.024 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1267 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-08 17:37:36.398 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1267 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-08 17:38:42.231 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1267 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 09:47:27.885 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1286 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 09:49:02.003 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1282 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 09:52:43.028 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1282 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 09:53:45.300 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1282 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 09:57:04.149 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1230 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 09:58:52.793 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1230 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 09:59:06.161 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1230 - 存在相同表名，解析失败
+2018-11-09 09:59:22.966 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1230 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 10:00:46.312 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1230 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 10:01:11.264 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1230 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 10:05:38.409 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1180 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 10:06:46.591 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1180 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 10:10:56.100 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1184 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 10:12:17.842 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1185 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 10:33:40.330 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1182 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 10:35:54.484 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1183 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 10:57:41.815 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1197 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 11:01:06.982 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1197 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 11:01:46.529 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1197 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 11:02:13.063 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1197 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 11:03:24.098 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1197 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 11:05:25.366 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1196 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 11:07:59.971 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1197 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 11:08:21.640 ERROR com.jimi.smt.eps.printer.util.PrinterSocket - onClose() line: 57 - Client was disconnected. | CloseReason[1001,The web application is stopping]
+2018-11-09 11:08:21.647 ERROR com.jimi.smt.eps.printer.util.PrinterSocket - onClose() line: 57 - Client was disconnected. | CloseReason[1001,The web application is stopping]
+2018-11-09 11:08:56.718 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1197 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 11:10:02.125 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1198 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 11:10:46.914 ERROR com.jimi.smt.eps.printer.util.PrinterSocket - onClose() line: 57 - Client was disconnected. | CloseReason[1001,The web application is stopping]
+2018-11-09 11:16:11.632 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1199 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 11:21:44.365 ERROR com.jimi.smt.eps.printer.util.PrinterSocket - onClose() line: 57 - Client was disconnected. | CloseReason[1001,The web application is stopping]
+2018-11-09 11:22:53.093 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1198 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 11:35:58.978 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1201 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 11:37:52.331 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1201 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 11:38:25.834 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1201 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 11:41:08.556 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1208 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 11:41:56.711 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1208 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 11:44:54.427 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1208 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 11:50:37.659 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1208 - 请填写数量、位置和生产日期信息
+2018-11-09 11:55:15.036 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1208 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 14:08:41.662 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1208 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 14:11:03.773 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1208 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 14:16:53.646 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1208 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 14:27:02.233 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1208 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 14:27:44.478 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1208 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 14:33:37.216 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1208 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 15:32:27.715 ERROR com.jimi.smt.eps.printer.util.PrinterSocket - onClose() line: 57 - Client was disconnected. | CloseReason[1006,Closed abnormally.]
+2018-11-09 15:58:53.360 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1212 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 16:03:12.912 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1212 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 16:03:50.035 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1212 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 16:04:17.766 ERROR com.jimi.smt.eps.printer.util.PrinterSocket - onClose() line: 55 - Client was disconnected. | CloseReason[1001,The web application is stopping]
+2018-11-09 16:05:00.086 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1212 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 16:10:44.171 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1212 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 16:10:53.387 ERROR com.jimi.smt.eps.printer.util.PrinterSocket - onClose() line: 55 - Client was disconnected. | CloseReason[1001,The web application is stopping]
+2018-11-09 16:11:43.458 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1212 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 16:14:38.943 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1212 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 16:16:45.490 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1212 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 16:30:39.962 ERROR com.jimi.smt.eps.printer.util.PrinterSocket - onClose() line: 55 - Client was disconnected. | CloseReason[1001,The web application is stopping]
+2018-11-09 16:36:11.479 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1212 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 17:37:26.166 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1212 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 17:39:35.295 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1212 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 17:44:20.809 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1213 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-09 17:51:28.671 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1215 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-12 09:36:08.827 ERROR com.jimi.smt.eps.printer.util.PrinterSocket - onClose() line: 55 - Client was disconnected. | CloseReason[1002,An unrecoverable IOException occurred so the connection was closed]
+2018-11-12 09:36:26.023 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1216 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-12 09:38:24.260 ERROR com.jimi.smt.eps.printer.util.PrinterSocket - onClose() line: 55 - Client was disconnected. | CloseReason[1002,An unrecoverable IOException occurred so the connection was closed]
+2018-11-12 09:38:41.470 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1217 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-12 09:43:09.860 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1217 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-12 09:44:42.116 ERROR com.jimi.smt.eps.printer.util.PrinterSocket - onClose() line: 55 - Client was disconnected. | CloseReason[1001,The web application is stopping]
+2018-11-12 09:45:12.112 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1217 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-12 09:45:55.081 ERROR com.jimi.smt.eps.printer.util.PrinterSocket - onClose() line: 55 - Client was disconnected. | CloseReason[1001,The web application is stopping]
+2018-11-12 09:46:20.184 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1217 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-12 09:47:07.711 ERROR com.jimi.smt.eps.printer.util.PrinterSocket - onClose() line: 55 - Client was disconnected. | CloseReason[1001,The web application is stopping]
+2018-11-12 09:47:43.285 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1217 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-12 09:50:19.326 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1217 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-12 09:53:56.750 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1217 - 存在相同表名，解析失败
+2018-11-12 09:59:01.206 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1218 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-12 10:02:50.134 INFO  com.jimi.smt.eps.printer.controller.AddRuleController - info() line: 245 - 
+2018-11-12 10:02:50.136 ERROR com.jimi.smt.eps.printer.controller.AddRuleController - error() line: 233 - 请扫描条码
+2018-11-12 10:02:50.137 ERROR com.jimi.smt.eps.printer.controller.AddRuleController - setContentIfExist() line: 220 - 请扫描条码
+2018-11-12 10:02:56.630 INFO  com.jimi.smt.eps.printer.controller.AddRuleController - info() line: 245 - 
+2018-11-12 10:02:56.631 ERROR com.jimi.smt.eps.printer.controller.AddRuleController - error() line: 233 - 请扫描条码
+2018-11-12 10:02:56.632 ERROR com.jimi.smt.eps.printer.controller.AddRuleController - setContentIfExist() line: 220 - 请扫描条码
+2018-11-12 10:14:55.638 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1240 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-12 10:17:33.342 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1240 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-12 10:21:46.690 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1243 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-12 10:24:31.931 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1249 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-12 10:29:43.800 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1249 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-12 10:33:38.529 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1253 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-12 10:37:08.652 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1253 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-12 10:39:30.274 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1253 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-12 10:41:14.112 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1253 - 存在相同表名，解析失败
+2018-11-12 10:44:46.917 ERROR com.jimi.smt.eps.printer.util.PrinterSocket - onClose() line: 54 - Client was disconnected. | CloseReason[1001,The web application is stopping]
+2018-11-12 10:44:46.917 ERROR com.jimi.smt.eps.printer.util.PrinterSocket - onClose() line: 54 - Client was disconnected. | CloseReason[1001,The web application is stopping]
+2018-11-12 10:46:38.256 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1253 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-12 10:47:31.904 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1253 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-12 10:53:09.209 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1253 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-12 14:35:33.367 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1253 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-12 14:38:42.754 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1253 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-12 14:43:43.889 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1253 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-12 14:44:56.526 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1253 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-12 15:12:33.344 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1253 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-12 15:13:13.850 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1253 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-12 15:20:50.627 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1253 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-12 15:24:23.047 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1253 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-12 15:32:58.162 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1253 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-12 15:59:13.480 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1261 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-12 16:01:29.003 ERROR com.jimi.smt.eps.printer.util.PrinterSocket - onClose() line: 54 - Client was disconnected. | CloseReason[1006,Closed abnormally.]
+2018-11-12 16:02:27.762 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1261 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-12 16:11:06.677 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1262 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-12 16:18:12.070 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1262 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
