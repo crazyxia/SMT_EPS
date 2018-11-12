@@ -15,8 +15,12 @@
               <input type="text" class="form-control" id="modalId" v-model.trim="modalInfo.id" :disabled="isDisabled">
             </div>
             <div class="form-group">
-              <label for="modalName">姓名</label>
-              <input type="text" class="form-control" id="modalName" v-model.trim="modalInfo.name">
+            <label for="modalName">姓名</label>
+            <input type="text" class="form-control" id="modalName" v-model.trim="modalInfo.name">
+          </div>
+            <div class="form-group">
+              <label for="password">密码</label>
+              <input type="text" class="form-control" id="password" v-model.trim="modalInfo.password">
             </div>
             <div class="form-group">
               <label for="modaltype">岗位</label>
@@ -80,6 +84,7 @@ export default {
       obj.name = user.name;
       obj.type = user.type;
       obj.classType = user.classType;
+      obj.password = user.password;
       return obj;
     },
     isAdd:function(){
@@ -106,7 +111,7 @@ export default {
       }
     },
     isDelete:function(val){
-      if(val == true){
+      if(val === true){
         store.commit("setIsDelete",false);
         this.update(false,"删除成功");
       }
@@ -117,11 +122,11 @@ export default {
       let options ={
         url:addUserUrl,
         data:{
-          "#TOKEN#":this.token,
           id:this.modalInfo.id,
           name:this.modalInfo.name,
           type:this.modalInfo.type,
-          classType:this.modalInfo.classType
+          classType:this.modalInfo.classType,
+          password:this.modalInfo.password
         }
       }
       axiosPost(options).then(response => {
@@ -149,12 +154,12 @@ export default {
       let options ={
         url:updateUserUrl,
         data:{
-          "#TOKEN#":this.token,
           id:this.modalInfo.id,
           name:this.modalInfo.name,
           type:this.modalInfo.type,
           classType:this.modalInfo.classType,
-          enabled:isEnabled
+          enabled:isEnabled,
+          password:this.modalInfo.password
         }
       };
       axiosPost(options).then(response => {

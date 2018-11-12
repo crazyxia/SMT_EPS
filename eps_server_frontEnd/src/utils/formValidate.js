@@ -9,6 +9,8 @@ export const userTip = function (obj) {
     alert("岗位不能为空");
   } else if (obj.classType === "") {
     alert("班别不能为空");
+  }else if(obj.password === ""){
+    alert("密码不能为空");
   } else {
     return true;
   }
