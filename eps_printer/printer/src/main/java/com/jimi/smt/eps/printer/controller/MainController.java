@@ -200,7 +200,21 @@ public class MainController implements Initializable {
 	private RadioButton rfidRb;
 	@FXML
 	private Label currentRuleLb;
-	
+	@FXML
+	private CheckBox dateCb;
+	@FXML
+	private CheckBox descriptionCb;
+	@FXML
+	private CheckBox quantityCb;
+	@FXML
+	private CheckBox seatNoCb;
+	@FXML
+	private CheckBox remarkCb;
+	@FXML
+	private CheckBox nameCb;
+	@FXML
+	private CheckBox copyCb;
+
 	private Stage primaryStage;
 
 	private ExcelHelper excel;
@@ -247,9 +261,24 @@ public class MainController implements Initializable {
 
 	private static final String INSERT_STOCK_ACTION = "stock/insert";
 
+	private boolean focusOnQuantityTf;
+
+	private boolean focusOnSeatNoTf;
+
+	private boolean focusOnDescriptionTf;
+
+	private boolean focusOnNameTf;
+
+	private boolean focusOnRemarkTf;
+
+	private boolean focusOnDateTf;
+
+	private boolean focusOncopyTf;
+
 	
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		initTableCol();
+		initFocusTarget();
 		initMaterialNoTfListener();
 		initTableSelectorCbListener();
 		initMaterialPropertiesTfsListener();
@@ -505,7 +534,70 @@ public class MainController implements Initializable {
 		showManageRuleWindow();
 	}
 
+	
+	public void onQuantityClick() {
+		if (quantityCb.isSelected()) {
+			focusOnQuantityTf = true;
+		} else {
+			focusOnQuantityTf = false;
+		}
+	}
 
+	
+	public void onSeatNoClick() {
+		if (seatNoCb.isSelected()) {
+			focusOnSeatNoTf = true;
+		} else {
+			focusOnSeatNoTf = false;
+		}
+	}
+
+	
+	public void onDescriptionClick() {
+		if (descriptionCb.isSelected()) {
+			focusOnDescriptionTf = true;
+		} else {
+			focusOnDescriptionTf = false;
+		}
+	}
+
+	
+	public void onNameClick() {
+		if (nameCb.isSelected()) {
+			focusOnNameTf = true;
+		} else {
+			focusOnNameTf = false;
+		}
+	}
+
+	
+	public void onRemarkClick() {
+		if (remarkCb.isSelected()) {
+			focusOnRemarkTf = true;
+		} else {
+			focusOnRemarkTf = false;
+		}
+	}
+
+	
+	public void onDateClick() {
+		if (dateCb.isSelected()) {
+			focusOnDateTf = true;
+		} else {
+			focusOnDateTf = false;
+		}
+	}
+
+	
+	public void onCopyClick() {
+		if (copyCb.isSelected()) {
+			focusOncopyTf = true;
+		} else {
+			focusOncopyTf = false;
+		}
+	}
+
+	
 	/**
 	 * 调用打印机
 	 */
@@ -788,13 +880,20 @@ public class MainController implements Initializable {
 			public void handle(KeyEvent event) {
 				if (event.getCode().compareTo(KeyCode.ENTER) == 0) {
 					// 控制焦点转移或打印
-					if (materialNoTf.isFocused()) {
-						quantityTf.requestFocus();
-					} else if (quantityTf.isFocused()) {
-						if (!printBt.isDisable()) {
-							onPrintBtClick();
-
-						}
+					if (quantityTf.isFocused()) {
+						setFocusTarget(quantityTf);
+					} else if (seatNoTf.isFocused()) {
+						setFocusTarget(seatNoTf);
+					} else if (descriptionTf.isFocused()) {
+						setFocusTarget(descriptionTf);
+					} else if (nameTf.isFocused()) {
+						setFocusTarget(nameTf);
+					} else if (remarkTf.isFocused()) {
+						setFocusTarget(remarkTf);
+					} else if (dateTf.isFocused()) {
+						setFocusTarget(dateTf);
+					} else if (copyTf.isFocused()) {
+						setFocusTarget(copyTf);
 					}
 				}
 			}
@@ -862,7 +961,7 @@ public class MainController implements Initializable {
 				if (result == '0') {
 					// 更改COM号再重启RFID程序
 					if (port == 31) {
-						throw new IOException("已尝试0~31的端口，依然无法找到RFID设备");
+						/* throw new IOException("已尝试0~31的端口，依然无法找到RFID设备"); */
 					}
 					port++;
 					try {
@@ -870,7 +969,7 @@ public class MainController implements Initializable {
 						initRFID();
 					} catch (IOException e) {
 						Platform.runLater(() -> {
-							error("启动RFID程序失败，缺少配置文件RFIDComm.cfg");
+							/* error("启动RFID程序失败，缺少配置文件RFIDComm.cfg"); */
 							initPrintTargetRbs();
 							codeRb.setSelected(true);
 						});
@@ -878,7 +977,7 @@ public class MainController implements Initializable {
 					}
 				} else {
 					Platform.runLater(() -> {
-						info("RFID程序加载完毕");
+						/* info("RFID程序加载完毕"); */
 						rfidRb.setDisable(false);
 						bothRb.setDisable(false);
 						initPrintTargetRbs();
@@ -886,7 +985,7 @@ public class MainController implements Initializable {
 				}
 			} catch (IOException e) {
 				Platform.runLater(() -> {
-					error("启动RFID程序失败，请检查RFID读写器是否在工作并重启程序");
+					/* error("启动RFID程序失败，请检查RFID读写器是否在工作并重启程序"); */
 					initPrintTargetRbs();
 					codeRb.setSelected(true);
 				});
@@ -894,7 +993,7 @@ public class MainController implements Initializable {
 			}
 		}).start();
 		if (Thread.currentThread().getName().equals("JavaFX Application Thread")) {
-			info("加载RFID程序中...");
+			/* info("加载RFID程序中..."); */
 		}
 	}
 
@@ -989,7 +1088,7 @@ public class MainController implements Initializable {
 			}
 		});
 	}
-	
+
 	
 	private void initMaterialNoTfListener() {
 		// 初始化物料编号文本域监听器
@@ -1034,9 +1133,26 @@ public class MainController implements Initializable {
 
 						printBt.setDisable(false);
 
-						// 焦点移至数量输入框
-						quantityTf.requestFocus();
-
+						// 焦点移至勾选的输入框
+						if (focusOnQuantityTf == true) {
+							quantityTf.requestFocus();
+						} else if (focusOnSeatNoTf == true) {
+							seatNoTf.requestFocus();
+						} else if (focusOnDescriptionTf == true) {
+							descriptionTf.requestFocus();
+						} else if (focusOnNameTf == true) {
+							nameTf.requestFocus();
+						} else if (focusOnRemarkTf == true) {
+							remarkTf.requestFocus();
+						} else if (focusOnDateTf == true) {
+							dateTf.requestFocus();
+						} else if (focusOncopyTf == true) {
+							copyTf.requestFocus();
+						} else {
+							if (!printBt.isDisable()) {
+								onPrintBtClick();
+							}
+						}
 						info("料号存在，打印已就绪（热键：回车）");
 						break;
 					}
@@ -1252,9 +1368,9 @@ public class MainController implements Initializable {
 
 	}
 
-
-	/**@author HCJ
-	 * 扫描料号监听器
+	
+	/**
+	 * @author HCJ 扫描料号监听器
 	 * @date 2018年10月31日 下午5:04:46
 	 */
 	private void initScanMaterialNoTfListener() {
@@ -1263,11 +1379,11 @@ public class MainController implements Initializable {
 			@Override
 			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
 				Rule rule = ManageRuleController.currentRule;
-				if(rule.getDetails() == null) {
+				if (rule.getDetails() == null) {
 					rule.setName("默认规则");
-					rule.setDetails("默认规则:"+",");
+					rule.setDetails("默认规则:" + ",");
 				}
-				if(newValue == null || newValue.equals("") || newValue.length() < 0) {
+				if (newValue == null || newValue.equals("") || newValue.length() < 0) {
 					materialNoTf.setText("");
 				}
 				try {
@@ -1286,9 +1402,9 @@ public class MainController implements Initializable {
 		});
 	}
 
-
-	/**@author HCJ
-	 * 根据料号规则解析得到料号
+	
+	/**
+	 * @author HCJ 根据料号规则解析得到料号
 	 * @date 2018年10月31日 下午5:05:10
 	 */
 	private String getMaterialNo(String ruleString, String materialNoString) {
@@ -1304,25 +1420,120 @@ public class MainController implements Initializable {
 			int start = Integer.parseInt(ruleString.substring(ruleString.indexOf(":") + 1, ruleString.indexOf("->")));
 			int end = Integer.parseInt(ruleString.substring(ruleString.indexOf("->") + 1, ruleString.length()));
 			return materialNoString.substring(start, end);
-		}else if(ruleString.contains("默认规则")) {
+		} else if (ruleString.contains("默认规则")) {
 			return materialNoString;
 		}
 		return null;
 	}
 
 	
-	/**@author HCJ
-	 * 设置当前规则
+	private void setFocusTarget(TextField textField) {
+		if (textField == quantityTf) {
+			if (focusOnSeatNoTf == true) {
+				seatNoTf.requestFocus();
+			} else if (focusOnDescriptionTf == true) {
+				descriptionTf.requestFocus();
+			} else if (focusOnNameTf == true) {
+				nameTf.requestFocus();
+			} else if (focusOnRemarkTf == true) {
+				remarkTf.requestFocus();
+			} else if (focusOnDateTf == true) {
+				dateTf.requestFocus();
+			} else if (focusOncopyTf == true) {
+				copyTf.requestFocus();
+			} else {
+				if (!printBt.isDisable()) {
+					onPrintBtClick();
+				}
+			}
+		} else if (textField == seatNoTf) {
+			if (focusOnDescriptionTf == true) {
+				descriptionTf.requestFocus();
+			} else if (focusOnNameTf == true) {
+				nameTf.requestFocus();
+			} else if (focusOnRemarkTf == true) {
+				remarkTf.requestFocus();
+			} else if (focusOnDateTf == true) {
+				dateTf.requestFocus();
+			} else if (focusOncopyTf == true) {
+				copyTf.requestFocus();
+			} else {
+				if (!printBt.isDisable()) {
+					onPrintBtClick();
+				}
+			}
+		} else if (textField == descriptionTf) {
+			if (focusOnNameTf == true) {
+				nameTf.requestFocus();
+			} else if (focusOnRemarkTf == true) {
+				remarkTf.requestFocus();
+			} else if (focusOnDateTf == true) {
+				dateTf.requestFocus();
+			} else if (focusOncopyTf == true) {
+				copyTf.requestFocus();
+			} else {
+				if (!printBt.isDisable()) {
+					onPrintBtClick();
+				}
+			}
+		} else if (textField == nameTf) {
+			if (focusOnRemarkTf == true) {
+				remarkTf.requestFocus();
+			} else if (focusOnDateTf == true) {
+				dateTf.requestFocus();
+			} else if (focusOncopyTf == true) {
+				copyTf.requestFocus();
+			} else {
+				if (!printBt.isDisable()) {
+					onPrintBtClick();
+				}
+			}
+		} else if (textField == remarkTf) {
+			if (focusOnDateTf == true) {
+				dateTf.requestFocus();
+			} else if (focusOncopyTf == true) {
+				copyTf.requestFocus();
+			} else {
+				if (!printBt.isDisable()) {
+					onPrintBtClick();
+				}
+			}
+		} else if (textField == dateTf) {
+			if (focusOncopyTf == true) {
+				copyTf.requestFocus();
+			} else {
+				if (!printBt.isDisable()) {
+					onPrintBtClick();
+				}
+			}
+		} else if (textField == copyTf) {
+			if (!printBt.isDisable()) {
+				onPrintBtClick();
+			}
+		}
+	}
+
+	
+	private void initFocusTarget() {
+		quantityCb.setSelected(true);
+		copyCb.setSelected(true);
+		onQuantityClick();
+		onCopyClick();
+	}
+
+	
+	/**
+	 * @author HCJ 设置当前规则
 	 * @date 2018年10月31日 下午5:05:36
 	 */
 	public void setCurrentRule() {
-		if (ManageRuleController.currentRule != null && ManageRuleController.currentRule.getName()!=null) {
+		if (ManageRuleController.currentRule != null && ManageRuleController.currentRule.getName() != null) {
 			currentRuleLb.setText("当前料号规则：" + ManageRuleController.currentRule.getName());
 		} else {
 			currentRuleLb.setText("当前料号规则：默认规则");
 		}
 	}
-	
+
 	
 	public Stage getPrimaryStage() {
 		return primaryStage;
@@ -1333,7 +1544,6 @@ public class MainController implements Initializable {
 		this.primaryStage = primaryStage;
 	}
 
-	
 	public Socket getPrinterSocket() {
 		return printerSocket;
 	}
