@@ -2,7 +2,7 @@ package com.jimi.smt.eps.printer.entity;
 
 import com.alibaba.fastjson.JSONObject;
 
-public class PrinterInfo {
+public class PrintTaskInfo {
 
 	private String id;
 	private String supplier;
@@ -54,11 +54,11 @@ public class PrinterInfo {
 	public void setSupplier(String supplier) {
 		this.supplier = supplier;
 	}
-	public static PrinterInfo jsonStringToPrnterInfo(String message) {
+	public static PrintTaskInfo jsonStringToPrnterInfo(String message) {
 		
-		PrinterInfo info = null;
+		PrintTaskInfo info = null;
 		try {
-			info = new PrinterInfo();
+			info = new PrintTaskInfo();
 			JSONObject object = (JSONObject) JSONObject.parse(message);
 			info.setId(object.getString("id"));
 			info.setMaterialNo(object.getString("materialNo"));

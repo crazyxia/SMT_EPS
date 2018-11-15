@@ -8,7 +8,7 @@
 
 <AnchorPane prefHeight="224.0" prefWidth="309.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.jimi.smt.eps.printer.controller.ChangePwdController">
    <children>
-      <Button fx:id="modifyPwdBt" layoutX="117.0" layoutY="180.0" mnemonicParsing="false" prefHeight="29.0" prefWidth="76.0" style="-fx-background-radius: 13;" text="修改">
+      <Button fx:id="changePwdBt" layoutX="117.0" layoutY="180.0" mnemonicParsing="false" onAction="#onChangePwdBtClick" prefHeight="29.0" prefWidth="76.0" style="-fx-background-radius: 13;" text="修改">
          <font>
             <Font name="Microsoft YaHei Bold" size="15.0" />
          </font>

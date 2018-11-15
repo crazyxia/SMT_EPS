@@ -5,7 +5,7 @@ import java.util.List;
 
 import javafx.beans.property.SimpleStringProperty;
 
-public class MaterialTbResultData {
+public class MaterialFileInfoResultData {
 	private SimpleStringProperty fileName;
 	
 	private SimpleStringProperty fileSize;
@@ -47,19 +47,19 @@ public class MaterialTbResultData {
 	public void setFilePath(String filePath) {
 		this.filePath = new SimpleStringProperty(filePath);
 	}
-	public MaterialTbResultData() {
+	public MaterialFileInfoResultData() {
 		
 	}
-	public MaterialTbResultData(MaterialTb materialTb) {
+	public MaterialFileInfoResultData(MaterialFileInfo materialTb) {
 		
 		fileName = new SimpleStringProperty(materialTb.getFileName());
 		fileSize = new SimpleStringProperty(materialTb.getFileSize());
 		filePath = new SimpleStringProperty(materialTb.getFilePath());
 	}
-	public static List<MaterialTbResultData> materialTbToReusltData(List<MaterialTb> materialTbs){
-		List<MaterialTbResultData> materialTbResultDatas = new ArrayList<>();
-		for (MaterialTb materialTb : materialTbs) {
-			MaterialTbResultData materialTbResultData = new MaterialTbResultData(materialTb);
+	public static List<MaterialFileInfoResultData> materialTbToReusltData(List<MaterialFileInfo> materialTbs){
+		List<MaterialFileInfoResultData> materialTbResultDatas = new ArrayList<>();
+		for (MaterialFileInfo materialTb : materialTbs) {
+			MaterialFileInfoResultData materialTbResultData = new MaterialFileInfoResultData(materialTb);
 			materialTbResultDatas.add(materialTbResultData);
 		}
 		return materialTbResultDatas;

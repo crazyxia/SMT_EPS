@@ -9,7 +9,6 @@ import org.apache.logging.log4j.core.config.ConfigurationSource;
 import org.apache.logging.log4j.core.config.Configurator;
 
 import com.jimi.smt.eps.printer.controller.LoginController;
-import com.jimi.smt.eps.printer.controller.MaterialTbManagerController;
 
 import cc.darhao.dautils.api.ResourcesUtil;
 import javafx.application.Application;
@@ -26,7 +25,7 @@ public class Main extends Application {
 	private LoginController loginController;
 	//private MaterialTbManagerController managerController;
 	
-	private static final String VERSION = "1.8.0";
+	private static final String VERSION = "1.8.1";
 
 	private static final String FILE_NAME = "EPS_Printer-" + VERSION + ".jar";
 
@@ -50,12 +49,8 @@ public class Main extends Application {
 			// 把Stage存入MainController
 			loginController = loader.getController();
 			loginController.setPrimaryStage(primaryStage);
-			// 显示
-			/*FXMLLoader loader = new FXMLLoader(ResourcesUtil.getResourceURL("fxml/tableManager.fxml"));
-			Parent root = loader.load();
-			managerController = loader.getController();
-			managerController.setParentStage(primaryStage);*/
-			loginController.colseWindows(primaryStage);
+			// 初始化登录界面关闭事件
+			loginController.initColseEvent(primaryStage);
 			primaryStage.setResizable(false);
 			primaryStage.setTitle("防错料系统 - 条码打印器 " + VERSION);
 			primaryStage.setScene(new Scene(root));

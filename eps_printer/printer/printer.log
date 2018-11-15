@@ -217,3 +217,77 @@
 2018-11-12 16:02:27.762 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1261 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
 2018-11-12 16:11:06.677 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1262 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
 2018-11-12 16:18:12.070 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1262 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-13 17:15:13.063 ERROR com.jimi.smt.eps.printer.controller.MainController - initRemoteSocket() line: 417 - WebSocket连接失败，远程打印功能失效
+2018-11-13 17:15:30.761 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1238 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-13 17:49:58.195 ERROR com.jimi.smt.eps.printer.controller.MainController - initRemoteSocket() line: 418 - WebSocket连接失败，远程打印功能失效
+2018-11-13 17:49:58.643 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1239 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-14 09:20:23.291 ERROR com.jimi.smt.eps.printer.controller.MainController - initRemoteSocket() line: 418 - WebSocket连接失败，远程打印功能失效
+2018-11-14 09:20:23.696 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1239 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-14 09:20:31.624 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1239 - 加载窗口出错
+2018-11-14 09:23:32.987 ERROR com.jimi.smt.eps.printer.controller.MainController - initRemoteSocket() line: 418 - WebSocket连接失败，远程打印功能失效
+2018-11-14 09:23:33.363 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1239 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-14 09:23:39.318 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1239 - 加载窗口出错
+2018-11-14 09:26:26.933 ERROR com.jimi.smt.eps.printer.controller.MainController - initRemoteSocket() line: 418 - WebSocket连接失败，远程打印功能失效
+2018-11-14 09:26:27.339 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1239 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-14 09:26:29.312 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1239 - 加载窗口出错
+2018-11-14 09:26:30.923 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1239 - 加载窗口出错
+2018-11-14 09:26:31.108 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1239 - 加载窗口出错
+2018-11-14 09:26:31.292 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1239 - 加载窗口出错
+2018-11-14 09:26:31.451 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1239 - 加载窗口出错
+2018-11-14 09:26:33.307 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1239 - 加载窗口出错
+2018-11-14 09:28:01.438 ERROR com.jimi.smt.eps.printer.controller.MainController - initRemoteSocket() line: 418 - WebSocket连接失败，远程打印功能失效
+2018-11-14 09:28:01.865 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1239 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-14 09:31:17.403 ERROR com.jimi.smt.eps.printer.controller.MainController - initRemoteSocket() line: 418 - WebSocket连接失败，远程打印功能失效
+2018-11-14 09:31:17.824 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1239 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-14 09:33:55.793 ERROR com.jimi.smt.eps.printer.controller.MainController - initRemoteSocket() line: 418 - WebSocket连接失败，远程打印功能失效
+2018-11-14 09:33:56.207 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1239 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-14 09:40:13.954 ERROR com.jimi.smt.eps.printer.controller.MainController - initRemoteSocket() line: 418 - WebSocket连接失败，远程打印功能失效
+2018-11-14 09:40:14.391 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1239 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-14 09:48:13.288 ERROR com.jimi.smt.eps.printer.controller.MainController - initRemoteSocket() line: 418 - WebSocket连接失败，远程打印功能失效
+2018-11-14 09:48:13.702 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1239 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-14 10:56:29.400 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1269 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-14 14:50:15.332 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1304 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-14 14:50:43.738 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1304 - 连接WebSocekt失败，启动远程打印失败
+2018-11-14 15:03:44.595 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1320 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-14 15:10:03.572 ERROR com.jimi.smt.eps.printer.websocket.RemotePrintTaskReceiver - onClose() line: 60 - Client was disconnected. | CloseReason[1000]
+2018-11-14 15:17:10.688 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1328 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-14 15:17:13.071 ERROR com.jimi.smt.eps.printer.websocket.RemotePrintTaskReceiver - onClose() line: 60 - Client was disconnected. | CloseReason[1000]
+2018-11-14 15:17:13.073 ERROR com.jimi.smt.eps.printer.controller.MainController - lambda$8() line: 1342 - 关闭WebSocekt成功，关闭远程打印成功
+2018-11-14 15:17:31.375 ERROR com.jimi.smt.eps.printer.websocket.RemotePrintTaskReceiver - onClose() line: 60 - Client was disconnected. | CloseReason[1000]
+2018-11-14 15:17:31.378 ERROR com.jimi.smt.eps.printer.controller.MainController - lambda$8() line: 1342 - 关闭WebSocekt成功，关闭远程打印成功
+2018-11-14 15:25:52.377 ERROR com.jimi.smt.eps.printer.websocket.RemotePrintTaskReceiver - onClose() line: 60 - Client was disconnected. | CloseReason[1006,Closed abnormally.]
+2018-11-14 15:28:34.738 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1328 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-14 15:30:25.640 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1328 - 启动RFID程序失败，请检查RFID读写器是否在工作并重启程序
+2018-11-14 15:30:41.365 ERROR com.jimi.smt.eps.printer.websocket.RemotePrintTaskReceiver - onClose() line: 65 - Client was disconnected. | CloseReason[1000]
+2018-11-14 15:30:41.366 ERROR com.jimi.smt.eps.printer.controller.MainController - lambda$8() line: 1342 - webSocekt出错,远程打印功能失效
+2018-11-14 15:30:41.368 ERROR com.jimi.smt.eps.printer.controller.MainController - lambda$8() line: 1342 - 关闭WebSocekt成功，关闭远程打印成功
+2018-11-14 15:38:53.545 ERROR com.jimi.smt.eps.printer.websocket.RemotePrintTaskReceiver - onClose() line: 65 - Client was disconnected. | CloseReason[1001,The web application is stopping]
+2018-11-14 15:38:53.546 ERROR com.jimi.smt.eps.printer.websocket.RemotePrintTaskReceiver - onClose() line: 65 - Client was disconnected. | CloseReason[1001,The web application is stopping]
+2018-11-14 15:38:53.546 ERROR com.jimi.smt.eps.printer.controller.MainController - lambda$8() line: 1342 - webSocekt出错,远程打印功能失效
+2018-11-14 15:38:53.546 ERROR com.jimi.smt.eps.printer.controller.MainController - lambda$8() line: 1342 - webSocekt出错,远程打印功能失效
+2018-11-14 15:39:36.430 ERROR com.jimi.smt.eps.printer.controller.MainController - lambda$8() line: 1342 - 关闭WebSocekt成功，关闭远程打印成功
+2018-11-14 15:40:41.604 ERROR com.jimi.smt.eps.printer.websocket.RemotePrintTaskReceiver - onClose() line: 65 - Client was disconnected. | CloseReason[1001,The web application is stopping]
+2018-11-14 15:40:41.606 ERROR com.jimi.smt.eps.printer.controller.MainController - lambda$8() line: 1342 - webSocekt出错,远程打印功能失效
+2018-11-14 15:43:08.663 ERROR com.jimi.smt.eps.printer.controller.MainController - lambda$8() line: 1342 - 关闭WebSocekt成功，关闭远程打印成功
+2018-11-14 15:44:48.562 ERROR com.jimi.smt.eps.printer.websocket.RemotePrintTaskReceiver - onClose() line: 65 - Client was disconnected. | CloseReason[1001,The web application is stopping]
+2018-11-14 15:44:48.562 ERROR com.jimi.smt.eps.printer.controller.MainController - lambda$8() line: 1342 - webSocekt出错,远程打印功能失效
+2018-11-14 15:48:32.855 ERROR com.jimi.smt.eps.printer.websocket.RemotePrintTaskReceiver - onClose() line: 66 - Client was disconnected. | CloseReason[1000]
+2018-11-14 15:48:32.860 ERROR com.jimi.smt.eps.printer.controller.MainController - lambda$8() line: 1338 - webSocekt出错,远程打印功能失效
+2018-11-14 15:49:09.685 ERROR com.jimi.smt.eps.printer.websocket.RemotePrintTaskReceiver - onClose() line: 66 - Client was disconnected. | CloseReason[1000]
+2018-11-14 15:49:09.685 ERROR com.jimi.smt.eps.printer.controller.MainController - lambda$8() line: 1338 - webSocekt出错,远程打印功能失效
+2018-11-14 15:58:22.499 ERROR com.jimi.smt.eps.printer.websocket.RemotePrintTaskReceiver - onClose() line: 66 - Client was disconnected. | CloseReason[1000]
+2018-11-14 15:58:35.213 ERROR com.jimi.smt.eps.printer.websocket.RemotePrintTaskReceiver - onClose() line: 66 - Client was disconnected. | CloseReason[1006,Closed abnormally.]
+2018-11-14 15:58:35.309 ERROR com.jimi.smt.eps.printer.controller.MainController - lambda$8() line: 1345 - webSocekt出错关闭,远程打印功能失效
+2018-11-14 16:06:52.780 ERROR com.jimi.smt.eps.printer.controller.MainController - lambda$8() line: 1345 - 连接WebSocekt失败,启动远程打印失败,请重新启用该功能
+2018-11-14 16:07:22.604 ERROR com.jimi.smt.eps.printer.controller.MainController - lambda$8() line: 1345 - 连接WebSocekt失败,启动远程打印失败,请重新启用该功能
+2018-11-14 16:08:20.736 ERROR com.jimi.smt.eps.printer.controller.MainController - lambda$8() line: 1345 - 连接WebSocekt失败,启动远程打印失败,请重新启用该功能
+2018-11-14 16:11:47.301 ERROR com.jimi.smt.eps.printer.controller.MainController - lambda$8() line: 1345 - 连接WebSocekt失败,启动远程打印失败,请重新启用该功能
+2018-11-14 16:30:44.764 ERROR com.jimi.smt.eps.printer.controller.MainController - lambda$11() line: 1316 - 连接WebSocekt失败,启动远程打印失败,请重新启用该功能
+2018-11-14 16:47:41.921 ERROR com.jimi.smt.eps.printer.controller.MainController - lambda$11() line: 1316 - 连接WebSocekt失败,启动远程打印失败,请重新启用该功能
+2018-11-14 17:04:00.664 ERROR com.jimi.smt.eps.printer.websocket.RemotePrintTaskReceiver - onClose() line: 66 - Client was disconnected. | CloseReason[1000]
+2018-11-14 17:58:22.561 ERROR com.jimi.smt.eps.printer.websocket.RemotePrintTaskReceiver - onClose() line: 66 - Client was disconnected. | CloseReason[1000]
+2018-11-15 08:42:41.659 ERROR com.jimi.smt.eps.printer.websocket.RemotePrintTaskReceiver - onClose() line: 71 - Client was disconnected. | CloseReason[1000]
+2018-11-15 08:51:11.093 ERROR com.jimi.smt.eps.printer.websocket.RemotePrintTaskReceiver - onClose() line: 71 - Client was disconnected. | CloseReason[1001,The web application is stopping]
+2018-11-15 08:51:11.097 ERROR com.jimi.smt.eps.printer.websocket.RemotePrintTaskReceiver - onClose() line: 71 - Client was disconnected. | CloseReason[1001,The web application is stopping]
+2018-11-15 08:51:11.101 ERROR com.jimi.smt.eps.printer.controller.MainController - lambda$11() line: 1354 - webSocekt出错关闭,远程打印功能失效
+2018-11-15 08:51:22.037 ERROR com.jimi.smt.eps.printer.controller.MainController - error() line: 1340 - 启动RFID程序失败,请检查RFID读写器是否在工作并重启程序

@@ -1,3 +1,4 @@
+
 package com.jimi.smt.eps.printer.controller;
 
 import java.io.IOException;
@@ -39,74 +40,59 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.PasswordField;
 
-public class LoginController implements Initializable{
-	
+/**
+ * 登录控制器
+ * 
+ * @author Administrator
+ */
+public class LoginController implements Initializable {
+
 	private static String LOGIN_ACTION = "/user/login";
+
 	private HttpHelper httpHelper = HttpHelper.me;
 	private MainController mainController;
-	
+	private Stage primaryStage;
+
 	@FXML
 	private TextField userIdTf;
 	@FXML
 	private PasswordField userPwdTf;
 	@FXML
 	private Button loginBt;
-	
-	private Stage primaryStage;
-	
-	
+
+
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
-		Init();
-		loginButtonClickListener();
-		loginBt.setDisable(false);
-		userIdTf.setDisable(false);
-		userPwdTf.setDisable(false);
+
 	}
 
-	private void Init() {
-		userIdTf.setText("");
-		userPwdTf.setText("");
-	}
-	
-	
-	public void loginButtonClickListener() {
-		loginBt.setOnAction(new EventHandler<ActionEvent>() {
-			
-			@Override
-			public void handle(ActionEvent event) {
-				String id = userIdTf.getText();
-				String pwd = userPwdTf.getText();
-				if (id == null || id.equals("")) {
-					new Alert(AlertType.WARNING, "工号不能为空", ButtonType.OK).showAndWait();
-					return;
-				}
-				if (pwd == null || pwd.equals("")) {
-					new Alert(AlertType.WARNING, "密码不能为空", ButtonType.OK).showAndWait();
-					return;
-				}
-				userIdTf.setDisable(true);
-				userPwdTf.setDisable(true);
-				loginBt.setDisable(true);
-				login(id, pwd);
-			}
-		});
-	}
-	
-	
+
 	/**
-	 * 登录功能
-	 * @param id
-	 * @param pwd
-	 * @return
+	 * 登录按钮点击事件监听器
 	 */
-	private void login(String id, String pwd) {
+	public void onLoginButtonClick() {
+		String id = userIdTf.getText();
+		String pwd = userPwdTf.getText();
+		// 对工号和密码进行初步判断
+		if (id == null || id.equals("")) {
+			new Alert(AlertType.WARNING, "工号不能为空", ButtonType.OK).showAndWait();
+			return;
+		}
+		if (pwd == null || pwd.equals("")) {
+			new Alert(AlertType.WARNING, "密码不能为空", ButtonType.OK).showAndWait();
+			return;
+		}
+		// 封锁UI
+		userIdTf.setDisable(true);
+		userPwdTf.setDisable(true);
+		loginBt.setDisable(true);
+		// 填充登录接口的参数
 		Map<String, String> map = new HashMap<>();
 		map.put("id", id);
 		map.put("password", pwd);
 		try {
 			httpHelper.requestHttp(LOGIN_ACTION, map, new Callback() {
-				
+
 				@Override
 				public void onResponse(Call call, Response response) throws IOException {
 					String responseString = response.body().string();
@@ -114,76 +100,75 @@ public class LoginController implements Initializable{
 					try {
 						int resultCode = object.getInteger("result");
 						if (resultCode == 200) {
-							//成功登录
-							Platform.runLater(new Runnable() {
-								
-								@Override
-								public void run() {
-									FXMLLoader loader;
-									try {
-										loader = new FXMLLoader(ResourcesUtil.getResourceURL("fxml/app.fxml"));
-										Parent root = loader.load();
-										// 把Stage存入MainController
-										mainController = loader.getController();
-										Stage stage = new Stage();
-										mainController.setPrimaryStage(stage);
-										mainController.setLoginUserId(id);
-										userIdTf.setDisable(false);
-										userPwdTf.setDisable(false);
-										loginBt.setDisable(false);
-										stage.setTitle("防错料系统 - 条码打印器 " + Main.getVersion());
-										stage.setScene(new Scene(root));
-										stage.show();
-										mainController.closeWindow(stage);
-										getPrimaryStage().close();
-									} catch (IOException e) {
-										e.printStackTrace();
-									}
-									
+							// 成功登录
+							Platform.runLater(() -> {
+								// 启动主界面，关闭登录界面
+								FXMLLoader loader;
+								try {
+									userIdTf.setDisable(false);
+									userPwdTf.setDisable(false);
+									loginBt.setDisable(false);
+									loader = new FXMLLoader(ResourcesUtil.getResourceURL("fxml/app.fxml"));
+									Parent root = loader.load();
+									// 把Stage存入MainController
+									mainController = loader.getController();
+									Stage stage = new Stage();
+									mainController.setPrimaryStage(stage);
+									mainController.setLoginIdLbText(id);
+									mainController.initCloseEvent(stage);
+									stage.setTitle("防错料系统 - 条码打印器 " + Main.getVersion());
+									stage.setScene(new Scene(root));
+									stage.show();
+									getPrimaryStage().close();
+								} catch (IOException e) {
+									e.printStackTrace();
 								}
 							});
-							
-						}else {
-							showAlert("登录失败");
+
+						} else {
+							showAlertAndOpenControls("登录失败");
 						}
 					} catch (NumberFormatException e) {
 						try {
 							String result = object.getString("result");
 							if (result.equals("failed_wrong_password")) {
-								showAlert("用户名或密码错误");
-							}else if(result.equals("failed_not_found")){
-								showAlert("用户不存在");
-							}else if(result.equals("failed_not_enabled")) {
-								showAlert("用户已被禁用");
+								showAlertAndOpenControls("用户名或密码错误");
+							} else if (result.equals("failed_not_found")) {
+								showAlertAndOpenControls("用户不存在");
+							} else if (result.equals("failed_not_enabled")) {
+								showAlertAndOpenControls("用户已被禁用");
 							}
 						} catch (Exception e2) {
-							showAlert("回复解析错误");
+							showAlertAndOpenControls("回复解析错误");
 							e.printStackTrace();
 						}
 					}
-					
+
 				}
-				
+
+
 				@Override
 				public void onFailure(Call call, IOException e) {
-					showAlert("网络错误，请检查你的网络连接");
+					showAlertAndOpenControls("网络错误，请检查你的网络连接");
 					e.printStackTrace();
 				}
 			});
 		} catch (Exception e) {
-			showAlert("网络错误，请检查你的网络连接");
+			showAlertAndOpenControls("网络错误，请检查你的网络连接");
 			e.printStackTrace();
 		}
+
 	}
 
-	
+
 	/**
-	 * 显示登录提示警告框
+	 * 显示登录提示警告框并解锁UI
+	 * 
 	 * @param message
 	 */
-	public void showAlert(final String message){
+	public void showAlertAndOpenControls(final String message) {
 		Platform.runLater(new Runnable() {
-			
+
 			@Override
 			public void run() {
 				new Alert(AlertType.ERROR, message, ButtonType.OK).showAndWait();
@@ -192,31 +177,33 @@ public class LoginController implements Initializable{
 				loginBt.setDisable(false);
 			}
 		});
-		
+
 	}
-	
-	
+
+
 	public Stage getPrimaryStage() {
 		return primaryStage;
 	}
+
 
 	public void setPrimaryStage(Stage primaryStage) {
 		// TODO Auto-generated method stub
 		this.primaryStage = primaryStage;
 	}
-	
-	
+
+
 	/**
 	 * 关闭登录界面事件，以保证快速关闭，不会因为http的异步调用而出现看似关闭实则还有线程在运行的状态
+	 * 
 	 * @param stage
 	 */
-	public void colseWindows(Stage stage) {
+	public void initColseEvent(Stage stage) {
 		stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 
 			@Override
 			public void handle(WindowEvent event) {
-					System.exit(0);
-				
+				System.exit(0);
+
 			}
 		});
 	}

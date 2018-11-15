@@ -190,6 +190,6 @@
             </Label>
          </children>
       </AnchorPane>
-      <Button fx:id="materialMangerBt" layoutX="391.0" layoutY="85.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="156.0" text="供应商料号表管理" AnchorPane.rightAnchor="442.0" AnchorPane.topAnchor="85.0" />
+      <Button fx:id="materialMangerBt" layoutX="391.0" layoutY="85.0" mnemonicParsing="false" onAction="#onMaterialMangerBtClick" prefHeight="26.0" prefWidth="156.0" text="供应商料号表管理" AnchorPane.rightAnchor="442.0" AnchorPane.topAnchor="85.0" />
    </children>
 </AnchorPane>

@@ -1,8 +1,6 @@
 package com.jimi.smt.eps.printer.entity;
 
-import java.util.List;
-
-public class MaterialTb {
+public class MaterialFileInfo {
 
 	private String fileName;
 	private String fileSize;
