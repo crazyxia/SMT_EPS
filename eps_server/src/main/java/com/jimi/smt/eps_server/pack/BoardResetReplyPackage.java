@@ -1,16 +1,23 @@
 package com.jimi.smt.eps_server.pack;
 
+import java.io.Serializable;
+
 import com.jimi.smt.eps_server.constant.ClientDevice;
 import com.jimi.smt.eps_server.constant.ControlResult;
 import com.jimi.smt.eps_server.constant.ErrorCode;
 
 import cc.darhao.jiminal.annotation.Parse;
 import cc.darhao.jiminal.annotation.Protocol;
-import cc.darhao.jiminal.core.BasePackage;
+import com.jimi.smt.eps_server.pack.BasePackage;
 
 @Protocol(0x52)
-public class BoardResetReplyPackage extends BasePackage {
+public class BoardResetReplyPackage extends BasePackage implements Serializable{
 
+	/**
+	 * serialVersionUID : TODO
+	 */
+	private static final long serialVersionUID = 6852774566769279057L;
+	
 	@Parse({ 0, 1 })
 	private ClientDevice ClientDevice;
 	@Parse({ 1, 1 })

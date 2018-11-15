@@ -26,59 +26,65 @@ public class OperationToClientReportFiller extends EntityFieldFiller<Operation, 
 	private LineMapper lineMapper;
 	
 	private List<ProgramItem> programItems;
-		
-	private Map<String, ProgramItem> programItemMaps = new HashMap<>();
 	
-	synchronized public void init() {
+	private Map<String, ProgramItem> programItemMaps;
+	
+	
+	public void init() {
+		programItemMaps = new HashMap<>();
 		programItems = programItemMapper.selectByExample(null);
-
 		for (ProgramItem programItem : programItems) {
-			programItemMaps.put(programItem.getProgramId() + programItem.getLineseat() + programItem.getMaterialNo(),
-					programItem);
+			programItemMaps.put(programItem.getProgramId() + programItem.getLineseat() + programItem.getMaterialNo(), programItem);	
 		}
 	}
 	
+	
+	public void destroy() {
+		programItems = null;
+		programItemMaps = null;
+	}
+	
+	
 	@Override
-	public ClientReport fill(Operation operation) {	
-
+	public ClientReport fill(Operation operation) {
 		ClientReport clientReport = new ClientReport();
-		//拷贝相同属性
+		// 拷贝相同属性
 		BeanUtils.copyProperties(operation, clientReport);
-		//填写工单
+		// 填写工单
 		clientReport.setWorkOrderNo(operation.getWorkOrder());
 		Line line = lineMapper.selectByPrimaryKey(operation.getLine());
-		if(line != null) {
+		if (line != null) {
 			clientReport.setLine(line.getLine());
 		}
-		
+
 		String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(operation.getTime());
 		clientReport.setTime(time);
-		
-		//匹配程序表子项目和操作日志
-		String key = operation.getProgramId()+operation.getLineseat()+operation.getMaterialNo();
+
+		// 匹配程序表子项目和操作日志
+		String key = operation.getProgramId() + operation.getLineseat() + operation.getMaterialNo();
 		ProgramItem programItem = programItemMaps.get(key);
-		
+
 		if (programItem != null) {
-			//解析料描述和料规格
+			// 解析料描述和料规格
 			String specitification = programItem.getSpecitification();
 			try {
 				String materialDescription = specitification.substring(0, specitification.indexOf(","));
 				String temp = specitification.substring(specitification.indexOf(";") + 5, specitification.lastIndexOf(";") - 4);
-				if(!temp.equals(materialDescription)) {
+				if (!temp.equals(materialDescription)) {
 					clientReport.setMaterialDescription("-");
 					clientReport.setMaterialSpecitification(specitification);
-				}else {
+				} else {
 					String materialSpecitification = specitification.substring(specitification.indexOf(",") + 1, specitification.indexOf(";"));
 					clientReport.setMaterialDescription(materialDescription);
 					clientReport.setMaterialSpecitification(materialSpecitification);
 				}
-			}catch (StringIndexOutOfBoundsException e) {
+			} catch (StringIndexOutOfBoundsException e) {
 				clientReport.setMaterialDescription("-");
 				clientReport.setMaterialSpecitification(specitification);
 			}
 		}
-		
-		//解析操作类型
+
+		// 解析操作类型
 		switch (operation.getType()) {
 		case 0:
 			clientReport.setOperationType("上料");
@@ -98,7 +104,7 @@ public class OperationToClientReportFiller extends EntityFieldFiller<Operation, 
 		default:
 			break;
 		}
-		
+
 		return clientReport;
 	}
 

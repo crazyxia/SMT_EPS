@@ -113,6 +113,7 @@ public class OperationServiceImpl implements OperationService {
 			// 把操作日志转化为客户报告
 			clientReports.add(operationToClientReportFiller.fill(operation));
 		}
+		operationToClientReportFiller.destroy();
 		return clientReports;
 	}
 
@@ -230,7 +231,8 @@ public class OperationServiceImpl implements OperationService {
 		for (Operation operation : operations) {
 			// 把操作日志转化为操作报告
 			operationReports.add(operationToOperationReportFiller.fill(operation));
-		}		
+		}
+		operationToOperationReportFiller.destroy();
 		return operationReports;
 	}
 

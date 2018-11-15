@@ -5,7 +5,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.jimi.smt.eps_server.constant.ClientDevice;
 import com.jimi.smt.eps_server.constant.ControlledDevice;
-import com.jimi.smt.eps_server.socket.ClientSocket;
+import com.jimi.smt.eps_server.rmi.ConnectToCenterRemote;
 
 /**
  * 命令发送子线程
@@ -17,7 +17,7 @@ public class SendCmdThread extends Thread{
 
 	private static Logger logger = LogManager.getRootLogger();
 	
-	private ClientSocket socket;
+	private ConnectToCenterRemote connectToCenterRemote;
 	
 	private boolean isAlarm;
 	
@@ -26,8 +26,8 @@ public class SendCmdThread extends Thread{
 	private ControlledDevice controlledDevice;
 	
 	
-	public SendCmdThread(ClientDevice clientDevice, ClientSocket socket, boolean isAlarm, ControlledDevice controlledDevice) {
-		this.socket = socket;
+	public SendCmdThread(ClientDevice clientDevice, ConnectToCenterRemote connectToCenterRemote, boolean isAlarm, ControlledDevice controlledDevice) {
+		this.connectToCenterRemote = connectToCenterRemote;
 		this.isAlarm = isAlarm;
 		this.clientDevice = clientDevice;
 		this.controlledDevice = controlledDevice;
@@ -39,15 +39,14 @@ public class SendCmdThread extends Thread{
 		try {
 			//发送命令
 			if(controlledDevice == ControlledDevice.ALARM) {
-				socket.sendCmdToAlarm(clientDevice, isAlarm);
+				connectToCenterRemote.sendCmdToAlarm(clientDevice, isAlarm);
 			}else if(controlledDevice == ControlledDevice.CONVEYOR) {
-				socket.sendCmdToConvery(clientDevice, isAlarm);
+				connectToCenterRemote.sendCmdToConvery(clientDevice, isAlarm);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			logger.error(e.getMessage());
 			try {
-				socket.reconnect();
 				run();
 			} catch (Exception e1) {
 				e1.printStackTrace();

@@ -19,15 +19,15 @@ import com.jimi.smt.eps_server.entity.bo.CenterControllerErrorCounter;
 import com.jimi.smt.eps_server.mapper.ConfigMapper;
 import com.jimi.smt.eps_server.mapper.ProgramItemVisitMapper;
 import com.jimi.smt.eps_server.mapper.ProgramMapper;
-import com.jimi.smt.eps_server.socket.ClientSocket;
+import com.jimi.smt.eps_server.rmi.ConnectToCenterRemote;
 import com.jimi.smt.eps_server.thread.SendCmdThread;
 
 public class CheckErrorTimer {
 
 	private static Logger logger = LogManager.getRootLogger();
-	
+
 	private ConfigMapper configMapper;
-	
+
 	private ProgramMapper programMapper;
 
 	private ProgramItemVisitMapper programItemVisitMapper;
@@ -50,20 +50,20 @@ public class CheckErrorTimer {
 	/**
 	 * 所有线别的报警模块列表
 	 */
-	private Map<Integer, ClientSocket> clientSockets;
-	
+	private Map<Integer, ConnectToCenterRemote> clientSockets;
+
 	/**
 	 * 产线数量
 	 */
 	private long lineSize;
-		
+
 	/**
 	 * lineMap : 所有产线列表
 	 */
 	private Map<Integer, Line> lineMap;
+
 	
-	
-	public CheckErrorTimer(Long lineSize, Map<Integer, Line> lineMap, ConfigMapper configMapper, ProgramMapper programMapper, ProgramItemVisitMapper programItemVisitMapper, Map<Integer, ClientSocket> clientSockets){
+	public CheckErrorTimer(Long lineSize, Map<Integer, Line> lineMap, ConfigMapper configMapper, ProgramMapper programMapper, ProgramItemVisitMapper programItemVisitMapper, Map<Integer, ConnectToCenterRemote> clientSockets) {
 		this.configMapper = configMapper;
 		this.programMapper = programMapper;
 		this.programItemVisitMapper = programItemVisitMapper;
@@ -71,7 +71,7 @@ public class CheckErrorTimer {
 		this.clientSockets = clientSockets;
 		this.lineMap = lineMap;
 	}
-	
+
 	
 	public void start() {
 		try {
@@ -85,7 +85,7 @@ public class CheckErrorTimer {
 			e.printStackTrace();
 		}
 	}
-	
+
 	
 	/**
 	 * 初始化“线别-报警设备错误统计”实体
@@ -122,7 +122,7 @@ public class CheckErrorTimer {
 			}
 		}
 	}
-		
+
 	
 	/**
 	 * 扫描错误
@@ -235,14 +235,13 @@ public class CheckErrorTimer {
 	 * @param isAlarm          报警/解除报警
 	 * @param controlledDevice 被控制设备：报警灯或接驳台
 	 */
-	private void sendCmd(ClientDevice clientDevice, ClientSocket socket, boolean isAlarm,
-			ControlledDevice controlledDevice) {
+	private void sendCmd(ClientDevice clientDevice, ConnectToCenterRemote socket, boolean isAlarm, ControlledDevice controlledDevice) {
 		new SendCmdThread(clientDevice, socket, isAlarm, controlledDevice).start();
 	}
+
 	
-		
-	/**@author HCJ
-	 * 根据产线ID返回产线在lineMap的位置
+	/**
+	 * @author HCJ 根据产线ID返回产线在lineMap的位置
 	 * @method getLineNoById
 	 * @param id
 	 * @return
@@ -251,7 +250,7 @@ public class CheckErrorTimer {
 	 */
 	private Integer getIndexByLineId(Integer id) {
 		for (Integer index : lineMap.keySet()) {
-			if(lineMap.get(index).getId().equals(id)) {
+			if (lineMap.get(index).getId().equals(id)) {
 				return index;
 			}
 		}
