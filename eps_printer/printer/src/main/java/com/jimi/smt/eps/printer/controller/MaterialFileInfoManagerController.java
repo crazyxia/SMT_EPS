@@ -104,6 +104,9 @@ public class MaterialFileInfoManagerController implements Initializable {
 		}
 		// 获取文件路径
 		String filePath = fileSelectTf.getText();
+		if (filePath == null || filePath.equals("")) {
+			return;
+		}
 		File file = new File(filePath);
 		if (!file.exists() || (!filePath.endsWith(".xls") && !filePath.endsWith(".xlsx"))) {
 			new Alert(AlertType.ERROR, "请先选择正确的文件", ButtonType.OK).showAndWait();

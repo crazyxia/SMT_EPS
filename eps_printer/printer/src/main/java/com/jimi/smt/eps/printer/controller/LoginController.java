@@ -126,20 +126,20 @@ public class LoginController implements Initializable {
 							});
 
 						} else {
-							showAlertAndOpenControls("登录失败");
+							showAlertAndUnlockUI("登录失败");
 						}
 					} catch (NumberFormatException e) {
 						try {
 							String result = object.getString("result");
 							if (result.equals("failed_wrong_password")) {
-								showAlertAndOpenControls("用户名或密码错误");
+								showAlertAndUnlockUI("用户名或密码错误");
 							} else if (result.equals("failed_not_found")) {
-								showAlertAndOpenControls("用户不存在");
+								showAlertAndUnlockUI("用户不存在");
 							} else if (result.equals("failed_not_enabled")) {
-								showAlertAndOpenControls("用户已被禁用");
+								showAlertAndUnlockUI("用户已被禁用");
 							}
 						} catch (Exception e2) {
-							showAlertAndOpenControls("回复解析错误");
+							showAlertAndUnlockUI("回复解析错误");
 							e.printStackTrace();
 						}
 					}
@@ -149,12 +149,12 @@ public class LoginController implements Initializable {
 
 				@Override
 				public void onFailure(Call call, IOException e) {
-					showAlertAndOpenControls("网络错误，请检查你的网络连接");
+					showAlertAndUnlockUI("网络错误，请检查你的网络连接");
 					e.printStackTrace();
 				}
 			});
 		} catch (Exception e) {
-			showAlertAndOpenControls("网络错误，请检查你的网络连接");
+			showAlertAndUnlockUI("网络错误，请检查你的网络连接");
 			e.printStackTrace();
 		}
 
@@ -166,7 +166,7 @@ public class LoginController implements Initializable {
 	 * 
 	 * @param message
 	 */
-	public void showAlertAndOpenControls(final String message) {
+	public void showAlertAndUnlockUI(final String message) {
 		Platform.runLater(new Runnable() {
 
 			@Override
@@ -197,7 +197,7 @@ public class LoginController implements Initializable {
 	 * 
 	 * @param stage
 	 */
-	public void initColseEvent(Stage stage) {
+	public void initCloseEvent(Stage stage) {
 		stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 
 			@Override

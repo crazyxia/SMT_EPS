@@ -33,6 +33,7 @@ import javax.websocket.DeploymentException;
 import javax.websocket.Session;
 import javax.websocket.WebSocketContainer;
 
+import org.apache.ibatis.jdbc.Null;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.tyrus.core.CloseReasons;
@@ -48,6 +49,7 @@ import com.google.zxing.common.BitMatrix;
 import com.jimi.smt.eps.printer.app.Main;
 import com.jimi.smt.eps.printer.callback.PrintTaskReceiveCallBack;
 import com.jimi.smt.eps.printer.callback.PrinteTaskCloseCallBack;
+import com.jimi.smt.eps.printer.callback.RemotePrintCallBack;
 import com.jimi.smt.eps.printer.entity.Material;
 import com.jimi.smt.eps.printer.entity.MaterialProperties;
 import com.jimi.smt.eps.printer.entity.MaterialFileInfo;
@@ -56,6 +58,7 @@ import com.jimi.smt.eps.printer.entity.Rule;
 import com.jimi.smt.eps.printer.entity.StockLog;
 import com.jimi.smt.eps.printer.entity.WebSocketResult;
 import com.jimi.smt.eps.printer.printtool.PrintFileJsonReader;
+import com.jimi.smt.eps.printer.runnable.RemotePrintRunnable;
 import com.jimi.smt.eps.printer.util.ExcelHelper;
 import com.jimi.smt.eps.printer.util.HttpHelper;
 import com.jimi.smt.eps.printer.util.IniReader;
@@ -127,8 +130,8 @@ public class MainController implements Initializable {
 
 	private static Logger logger = LogManager.getRootLogger();
 	// 供应商名与物料表的映射表
-	private static Map<String, List<Material>> materialTbMap = new ConcurrentHashMap<>();
-	private static String selectSheet;
+	private static Map<String, List<Material>> supplierAndMatrialsMap = new ConcurrentHashMap<>();
+	private static String selectedSheet;
 
 	@FXML
 	private AnchorPane parentAp;
@@ -266,11 +269,11 @@ public class MainController implements Initializable {
 	// 入库数据消息队列
 	private List<String> stockLogList = new ArrayList<String>();
 	private HttpHelper httpHelper = HttpHelper.me;
-	private ObservableList<String> materialTbSelectorList = FXCollections.observableArrayList();
-	private volatile boolean isRemotePrintRunning = false;
+	private ObservableList<String> suppliers = FXCollections.observableArrayList();
 	private volatile int isOpenRemotePrint = 0;
 	private Thread remotePrintThread = null;
 	private Runnable remotePrintRunnable = null;
+	private Session session = null;
 
 
 	public void initialize(URL arg0, ResourceBundle arg1) {
@@ -296,7 +299,7 @@ public class MainController implements Initializable {
 	 * 提示打印结束后退出账号
 	 */
 	public void showLogoutAlert() {
-		Alert alert = new Alert(AlertType.WARNING, "请在打印结束后点击关闭按钮以退出当前账号,防止个人账号被其他人员使用", ButtonType.OK);
+		Alert alert = new Alert(AlertType.WARNING, "请在打印结束后点击关闭按钮以退出当前账号，防止个人账号被其他人员使用", ButtonType.OK);
 		Platform.runLater(new Runnable() {
 
 			@Override
@@ -331,16 +334,16 @@ public class MainController implements Initializable {
 					stage.initModality(Modality.APPLICATION_MODAL);
 					stage.showAndWait();
 					// 清空料号表下拉框
-					if (materialTbSelectorList != null && materialTbSelectorList.size() > 0) {
-						materialTbSelectorList.clear();
+					if (suppliers != null && suppliers.size() > 0) {
+						suppliers.clear();
 					}
 					// 清空当前料号表
 					if (materials != null && materials.size() > 0) {
 						materials.clear();
 					}
 					// 清空供应商和料号表之间的映射关系
-					if (materialTbMap != null && materialTbMap.size() > 0) {
-						materialTbMap.clear();
+					if (supplierAndMatrialsMap != null && supplierAndMatrialsMap.size() > 0) {
+						supplierAndMatrialsMap.clear();
 					}
 					// 重新读取料号表路径文件,并加载其中内容
 					initMaterialTable();
@@ -359,7 +362,6 @@ public class MainController implements Initializable {
 	 * 初始化远程打印
 	 */
 	public void initRemoteSocket() {
-
 		remoteReceiver = new RemotePrintTaskReceiver();
 		WebSocketContainer container = ContainerProvider.getWebSocketContainer();
 		Map<String, String> map_url = IniReader.getItem(System.getProperty("user.dir") + CONFIG_FILE, "websocketurl");
@@ -369,19 +371,16 @@ public class MainController implements Initializable {
 
 			@Override
 			public void run() {
-				isRemotePrintRunning = true;
 				try {
-					infoRunLater("开始启用远程打印功能,连接WebSocekt...");
+					infoRunLater("开始启用远程打印功能，连接WebSocekt...");
 					String ip = Inet4Address.getLocalHost().getHostAddress();
-					Session session = container.connectToServer(remoteReceiver, URI.create(webSocketURL + ip));
-					infoRunLater("连接WebSocekt成功,启动远程打印成功");
+					session = container.connectToServer(remoteReceiver, URI.create(webSocketURL + ip));
+					infoRunLater("连接WebSocekt成功，启动远程打印成功");
 					while (!Thread.currentThread().isInterrupted()) {
 					}
 					session.close();
-					isRemotePrintRunning = false;
 				} catch (DeploymentException | IOException e) {
-					errorRunLater("启动远程打印失败,请检查网络连接");
-					isRemotePrintRunning = false;
+					errorRunLater("启动远程打印失败，请检查网络连接");
 					e.printStackTrace();
 				}
 			}
@@ -390,51 +389,45 @@ public class MainController implements Initializable {
 		// 接收到打印请求时执行
 		remoteReceiver.setReceiveCallBack((session, info) -> {
 			CountDownLatch countDownLatch = new CountDownLatch(1);
-			WebSocketResult result = WebSocketResult.fail(info.getId(), "打印指令下达失败");
+			WebSocketResult result = new WebSocketResult();
+			result.fail(info.getId(), "打印指令下达失败");
 			try {
-				List<Material> materialsList = materialTbMap.get(info.getSupplier());
+				List<Material> materialsList = supplierAndMatrialsMap.get(info.getSupplier());
 				// 判断加载的所有料号表中是否包含远程打印料号信息中的供应商
 				if (materialsList == null) {
-					result = WebSocketResult.fail(info.getId(), "请在打印软件上添加该物料所在的物料表");
+					result.fail(info.getId(), "请在打印软件上添加该物料所在的物料表");
 					return;
 				}
 				// 判断对应料号表中是否包含远程打印信息中的料号
 				for (Material material : materialsList) {
 					if (material.getNo().equals(info.getMaterialNo())) {
-						final Material temp = material;
-						// 打印结果
-						final boolean isPrintSucceed[] = { Boolean.FALSE };
 						// 启动打印
-						Platform.runLater(new Runnable() {
-
+						Platform.runLater(new RemotePrintRunnable(result, info.getId(), countDownLatch, new RemotePrintCallBack() {
+							
 							@Override
-							public void run() {
-								isPrintSucceed[0] = remoteCallPrint(info, temp);
-								countDownLatch.countDown();
+							public boolean remotePrintCallBack() {
+								return remoteCallPrint(info, material);
 							}
-						});
+						}));
 						try {
 							countDownLatch.await();
-						} catch (InterruptedException e) {
+						} catch (Exception e) {
 							e.printStackTrace();
-							return;
 						}
-						// 根据打印结果回复
-						if (isPrintSucceed[0]) {
-							result = WebSocketResult.succeed(info.getId(), "成功下达打印指令");
-						} else {
-							result = WebSocketResult.fail(info.getId(), "打印失败");
-						}
-						return;
+						return ;
 					}
 				}
-				result = WebSocketResult.fail(info.getId(), "查无此物料,请确定该供应商是否存在此物料");
+				result.fail(info.getId(), "查无此物料，请确定该供应商是否存在此物料");
 			} finally {
 				try {
 					session.getBasicRemote().sendText(JSONObject.toJSONString(result));
 				} catch (IOException e) {
-					errorRunLater("发送信息失败,远程打印失效,请检查网络连接,请重新启用该功能");
-					isRemotePrintRunning = false;
+					errorRunLater("发送信息失败，远程打印失效，请检查网络连接，请重新启用该功能");
+					try {
+						session.close();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
 				}
 			}
 
@@ -443,11 +436,10 @@ public class MainController implements Initializable {
 		// webSocket连接关闭时执行
 		remoteReceiver.setCloseCallBack((closeReason) -> {
 			if (closeReason.getCloseCode().equals(CloseCodes.NORMAL_CLOSURE)) {
-				infoRunLater("webSocekt关闭,远程打印功能失效");
+				infoRunLater("webSocekt关闭，远程打印功能失效");
 			} else {
-				errorRunLater("webSocekt出错关闭,远程打印功能失效");
+				errorRunLater("webSocekt出错关闭，远程打印功能失效");
 			}
-			isRemotePrintRunning = false;
 
 		});
 		// 读取配置,确定是否开启远程打印
@@ -489,14 +481,14 @@ public class MainController implements Initializable {
 					try {
 						// 解析物料表
 						List<Material> materialList = excel.unfill(Material.class, 1);
-						if (materialTbMap.get(name) != null) {
-							error("存在相同表名,解析失败");
+						if (supplierAndMatrialsMap.get(name) != null) {
+							error("存在相同表名，解析失败");
 							continue;
 						}
 						// 将料号表名与解析好的料号表内容添加进映射
-						materialTbMap.put(name, materialList);
+						supplierAndMatrialsMap.put(name, materialList);
 						// 将料号表名添加仅料号表选择下拉框
-						materialTbSelectorList.add(name);
+						suppliers.add(name);
 					} catch (Exception e) {
 						e.printStackTrace();
 						error("加载供应商料号表出现IO错误");
@@ -549,23 +541,27 @@ public class MainController implements Initializable {
 	public void onConfigBtClick() {
 		showConfigWindow();
 		// 之前是否开启远程打印
-		int temp = isOpenRemotePrint;
 		try {
 			isOpenRemotePrint = Integer.parseInt(TextFileUtil.readFromFile("e.cfg").split(",")[3]);
 		} catch (NumberFormatException | IOException e) {
 			e.printStackTrace();
 		}
 		// 现在是否开启远程打印
-		int temp2 = isOpenRemotePrint;
 		if (isOpenRemotePrint == 0) {
-			remotePrintThread.interrupt();
-			if (temp == 1 && temp2 == 0) {
-				// info("远程打印功能已关闭");
+			try {
+				session.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			if (!remotePrintThread.isAlive()) {
+				remotePrintThread.interrupt();
 			}
 			return;
 		} else {
-			if (!isRemotePrintRunning) {
-				remotePrintThread.interrupt();
+			if (!session.isOpen()) {
+				if (!remotePrintThread.isAlive()) {
+					remotePrintThread.interrupt();
+				}
 				remotePrintThread = new Thread(remotePrintRunnable);
 				remotePrintThread.start();
 			}
@@ -584,7 +580,7 @@ public class MainController implements Initializable {
 			remarkTf.setText("未校验");
 			remarkLb.setText("未校验");
 			printBt.setDisable(false);
-			info("已开启忽略校验模式,请确保正确输入料号,并且尽早完善料号表格式并退出该模式");
+			info("已开启忽略校验模式，请确保正确输入料号，并且尽早完善料号表格式并退出该模式");
 		} else {
 			resetControllers();
 		}
@@ -636,11 +632,11 @@ public class MainController implements Initializable {
 			remarkTf.setText("UW");
 			dateTf.setText(info.getProductDate());
 			print(info.getMaterialId(), true, info);
-			info("接收到远程打印请求,物料号：" + material.getNo());
+			info("接收到远程打印请求，物料号：" + material.getNo());
 			result = true;
 		} catch (Exception e) {
 			e.printStackTrace();
-			stockLogList.remove(stockLogList.size());
+			stockLogList.remove(stockLogList.size()-1);
 			error("发生错误：" + e.getMessage());
 			result = false;
 		} finally {
@@ -937,13 +933,13 @@ public class MainController implements Initializable {
 	 */
 	@SuppressWarnings("unchecked")
 	private void loadTableSelectorData() {
-		tableSelectCb.setItems(materialTbSelectorList);
-		if (materialTbSelectorList.contains(selectSheet)) {
-			tableSelectCb.getSelectionModel().select(materialTbSelectorList.indexOf(selectSheet));
-		} else if (materialTbSelectorList != null && materialTbSelectorList.size() > 0) {
+		tableSelectCb.setItems(suppliers);
+		if (suppliers.contains(selectedSheet)) {
+			tableSelectCb.getSelectionModel().select(suppliers.indexOf(selectedSheet));
+		} else if (suppliers != null && suppliers.size() > 0) {
 			tableSelectCb.getSelectionModel().select(0);
 		}
-		info("数据解析成功,请在上方选择表");
+		info("数据解析成功，请在上方选择表");
 	}
 
 
@@ -991,7 +987,7 @@ public class MainController implements Initializable {
 			e.printStackTrace();
 			error("读取配置文件时出现IO错误");
 		}
-		selectSheet = properties.getProperty(CONFIG_KEY_SHEET_NAME);
+		selectedSheet = properties.getProperty(CONFIG_KEY_SHEET_NAME);
 		// 初始化时间
 		dateLb.setText(DateUtil.yyyyMMdd(new Date()));
 		dateTf.setText(DateUtil.yyyyMMdd(new Date()));
@@ -1057,7 +1053,7 @@ public class MainController implements Initializable {
 				printerSocket.connect(new InetSocketAddress(ip, 10101), 3000);
 			} catch (IOException e) {
 				Platform.runLater(() -> {
-					error("启动打印机程序失败,请检查打印机是否在工作并重启程序");
+					error("启动打印机程序失败，请检查打印机是否在工作并重启程序");
 				});
 				e.printStackTrace();
 			}
@@ -1081,7 +1077,7 @@ public class MainController implements Initializable {
 				if (result == '0') {
 					// 更改COM号再重启RFID程序
 					if (port == 31) {
-						throw new IOException("已尝试0~31的端口,依然无法找到RFID设备");
+						throw new IOException("已尝试0~31的端口，依然无法找到RFID设备");
 					}
 					port++;
 					try {
@@ -1089,7 +1085,7 @@ public class MainController implements Initializable {
 						initRFID();
 					} catch (IOException e) {
 						Platform.runLater(() -> {
-							error("启动RFID程序失败,缺少配置文件RFIDComm.cfg");
+							error("启动RFID程序失败，缺少配置文件RFIDComm.cfg");
 							initPrintTargetRbs();
 							codeRb.setSelected(true);
 						});
@@ -1105,7 +1101,7 @@ public class MainController implements Initializable {
 				}
 			} catch (IOException e) {
 				Platform.runLater(() -> {
-					error("启动RFID程序失败,请检查RFID读写器是否在工作并重启程序");
+					error("启动RFID程序失败，请检查RFID读写器是否在工作并重启程序");
 					initPrintTargetRbs();
 					codeRb.setSelected(true);
 				});
@@ -1214,10 +1210,10 @@ public class MainController implements Initializable {
 				if (newValue.intValue() > -1) {
 					// 切换到指定sheet
 					String name = tableSelectCb.getItems().get(newValue.intValue()).toString();
-					materials = materialTbMap.get(name);
+					materials = supplierAndMatrialsMap.get(name);
 					if (materials != null) {
 						loadTableData(materials);
-						selectSheet = name;
+						selectedSheet = name;
 					} else {
 						loadTableData(null);
 					}
@@ -1277,7 +1273,7 @@ public class MainController implements Initializable {
 						// 焦点移至数量输入框
 						quantityTf.requestFocus();
 
-						info("料号存在,打印已就绪（热键：回车）");
+						info("料号存在，打印已就绪（热键：回车）");
 						break;
 					}
 					resetControllers();
@@ -1581,7 +1577,7 @@ public class MainController implements Initializable {
 				stage.setScene(new Scene(root));
 				stage.show();
 
-				properties.setProperty(CONFIG_KEY_SHEET_NAME, selectSheet);
+				properties.setProperty(CONFIG_KEY_SHEET_NAME, selectedSheet);
 				try {
 					properties.store(new FileOutputStream(new File(CONFIG_FILE_NAME)), null);
 				} catch (IOException e) {
@@ -1589,16 +1585,16 @@ public class MainController implements Initializable {
 					error("保存配置文件时出现IO错误");
 				}
 				// 清空料号表下拉框
-				if (materialTbSelectorList != null && materialTbSelectorList.size() > 0) {
-					materialTbSelectorList.clear();
+				if (suppliers != null && suppliers.size() > 0) {
+					suppliers.clear();
 				}
 				// 清空当前料号表
 				if (materials != null && materials.size() > 0) {
 					materials.clear();
 				}
 				// 清空供应商和料号表之间的映射关系
-				if (materialTbMap != null && materialTbMap.size() > 0) {
-					materialTbMap.clear();
+				if (supplierAndMatrialsMap != null && supplierAndMatrialsMap.size() > 0) {
+					supplierAndMatrialsMap.clear();
 				}
 				rfidSocket.close();
 			} catch (IOException e) {

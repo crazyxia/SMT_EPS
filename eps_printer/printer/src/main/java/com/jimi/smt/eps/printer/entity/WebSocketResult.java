@@ -25,19 +25,15 @@ public class WebSocketResult {
 		this.id = id;
 	}
 	
-	public static WebSocketResult succeed(String id, String data) {
-		WebSocketResult webSocketResult  = new WebSocketResult();
-		webSocketResult.setId(id);
-		webSocketResult.setResult(200);
-		webSocketResult.setData(data);
-		return webSocketResult;
+	public void succeed(String id, String data) {
+		this.setId(id);
+		this.setResult(200);
+		this.setData(data);
 	}
 	
-	public static WebSocketResult fail(String id, String data) {
-		WebSocketResult webSocketResult  = new WebSocketResult();
-		webSocketResult.setId(id);
-		webSocketResult.setResult(400);
-		webSocketResult.setData(data);
-		return webSocketResult;
+	public void fail(String id, String data) {
+		this.setId(id);
+		this.setResult(400);
+		this.setData(data);
 	}
 }

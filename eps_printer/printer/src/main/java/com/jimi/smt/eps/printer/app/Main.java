@@ -50,7 +50,7 @@ public class Main extends Application {
 			loginController = loader.getController();
 			loginController.setPrimaryStage(primaryStage);
 			// 初始化登录界面关闭事件
-			loginController.initColseEvent(primaryStage);
+			loginController.initCloseEvent(primaryStage);
 			primaryStage.setResizable(false);
 			primaryStage.setTitle("防错料系统 - 条码打印器 " + VERSION);
 			primaryStage.setScene(new Scene(root));

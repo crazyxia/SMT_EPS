@@ -97,7 +97,7 @@ public class ChangePwdController implements Initializable {
 						System.err.println(responseString);
 						object = (JSONObject) JSONArray.parse(responseString);
 					} catch (Exception e) {
-						showAlertAndOpenControlls("修改密码失败，回复解析错误");
+						showAlertAndUnlockUI("修改密码失败，回复解析错误");
 						e.printStackTrace();
 					}
 
@@ -119,10 +119,10 @@ public class ChangePwdController implements Initializable {
 							});
 						} else {
 							String result = object.getString("msg");
-							showAlertAndOpenControlls(result);
+							showAlertAndUnlockUI(result);
 						}
 					} catch (Exception e) {
-						showAlertAndOpenControlls("修改密码失败，回复解析错误");
+						showAlertAndUnlockUI("修改密码失败，回复解析错误");
 						e.printStackTrace();
 					}
 				}
@@ -130,13 +130,13 @@ public class ChangePwdController implements Initializable {
 
 				@Override
 				public void onFailure(Call call, IOException e) {
-					showAlertAndOpenControlls("网络错误，请检查你的网络连接");
+					showAlertAndUnlockUI("网络错误，请检查你的网络连接");
 					e.printStackTrace();
 				}
 			});
 
 		} catch (IOException e) {
-			showAlertAndOpenControlls("网络错误，请检查你的网络连接");
+			showAlertAndUnlockUI("网络错误，请检查你的网络连接");
 			e.printStackTrace();
 			// return false;
 		}
@@ -159,7 +159,7 @@ public class ChangePwdController implements Initializable {
 	 * 
 	 * @param message
 	 */
-	public void showAlertAndOpenControlls(final String message) {
+	public void showAlertAndUnlockUI(final String message) {
 		Platform.runLater(new Runnable() {
 
 			@Override
