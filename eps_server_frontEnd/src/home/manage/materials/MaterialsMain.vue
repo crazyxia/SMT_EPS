@@ -7,13 +7,13 @@
       </div>
       <div class="form-group">
         <label for="perifdOfValidity">保质期(天)</label>
-        <input type="text" class="form-control" id="perifdOfValidity" v-model.trim="materialInfos.perifdOfValidity">
+        <input type="text" class="form-control" id="perifdOfValidity" v-model.number="materialInfos.perifdOfValidity">
       </div>
       <div class="btn-group">
         <button type="button" class="btn btn_find" @click="find">查询</button>
         <button type="button" class="btn btn_add" @click="addModal">添加</button>
       </div>
-    </form>  
+    </form>
 
     <MaterialTable :materialInfos="materialInfos"></MaterialTable>
     <MaterialModal></MaterialModal>
@@ -21,46 +21,46 @@
 </template>
 
 <script>
-import store from './../../../store' 
-import MaterialModal from './components/MaterialModal'
-import MaterialTable from './components/MaterialTable'
-import {judge} from "../../../utils/formValidate";
-export default {
-  name:'material',
-  data () {
-    return {
-      materialInfos:{
-        materialNo:"",
-        perifdOfValidity:"",
-        orderBy:"material_no"
-      },
-    }
-  },
-  components:{
-    MaterialTable,MaterialModal
-  },
-  methods:{
-    addModal:function(){
-      store.commit("setMaterialOperationType","add");
-      let modalInfos = {
-        materialNo:"",
-        perifdOfValidity:""
-      };
-      store.commit("setMaterial",modalInfos);
-      store.commit("setIsAdd",true);
+  import store from './../../../store'
+  import MaterialModal from './components/MaterialModal'
+  import MaterialTable from './components/MaterialTable'
+  import {judge} from "../../../utils/formValidate";
+
+  export default {
+    name: 'material',
+    data() {
+      return {
+        materialInfos: {
+          materialNo: "",
+          perifdOfValidity:"",
+          orderBy: "material_no"
+        },
+      }
     },
-    find:function(){
-      if(judge(this.materialInfos.perifdOfValidity))
-      {
-        store.commit("setIsFind",true);
-      }else{
-        alert("物料保质期必须为正整数")
+    components: {
+      MaterialTable, MaterialModal
+    },
+    methods: {
+      addModal: function () {
+        store.commit("setMaterialOperationType", "add");
+        let modalInfos = {
+          materialNo: "",
+          perifdOfValidity:""
+        };
+        store.commit("setMaterial", modalInfos);
+        store.commit("setIsAdd", true);
+      },
+      find: function () {
+        if (this.materialInfos.perifdOfValidity !== "" && !judge(this.materialInfos.perifdOfValidity)) {
+          alert("物料保质期必须为正整数");
+          return;
+        }
+        store.commit("setIsFind", true);
       }
     }
   }
-}
-</script> 
+</script>
 
 <style scoped lang="scss">
-@import '@/assets/css/common.scss';
+  @import '@/assets/css/common.scss';
 </style>

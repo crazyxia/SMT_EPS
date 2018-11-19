@@ -9,6 +9,7 @@
   import {axiosPost} from "./../../../../utils/fetchData"
   import {errTip} from "./../../../../utils/errorTip"
   import {materialListUrl, deleteMaterialUrl} from "./../../../../config/globalUrl"
+  import {judge} from "../../../../utils/formValidate";
 
   export default {
     name: 'materialTable',

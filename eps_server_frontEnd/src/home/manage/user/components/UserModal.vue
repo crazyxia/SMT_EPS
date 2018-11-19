@@ -117,7 +117,6 @@ export default {
       let options ={
         url:addUserUrl,
         data:{
-          "#TOKEN#":this.token,
           id:this.modalInfo.id,
           name:this.modalInfo.name,
           type:this.modalInfo.type,
@@ -149,7 +148,6 @@ export default {
       let options ={
         url:updateUserUrl,
         data:{
-          "#TOKEN#":this.token,
           id:this.modalInfo.id,
           name:this.modalInfo.name,
           type:this.modalInfo.type,
