@@ -1,6 +1,6 @@
 package com.jimi.smt.eps.printer.entity;
 
-public class WebSocketResult {
+public class RemotePrintTaskResult {
 
 	private String id;
 	private Integer result;

@@ -33,10 +33,8 @@ import javax.websocket.DeploymentException;
 import javax.websocket.Session;
 import javax.websocket.WebSocketContainer;
 
-import org.apache.ibatis.jdbc.Null;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.glassfish.tyrus.core.CloseReasons;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -47,18 +45,14 @@ import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.jimi.smt.eps.printer.app.Main;
-import com.jimi.smt.eps.printer.callback.PrintTaskReceiveCallBack;
-import com.jimi.smt.eps.printer.callback.PrinteTaskCloseCallBack;
-import com.jimi.smt.eps.printer.callback.RemotePrintCallBack;
 import com.jimi.smt.eps.printer.entity.Material;
 import com.jimi.smt.eps.printer.entity.MaterialProperties;
 import com.jimi.smt.eps.printer.entity.MaterialFileInfo;
 import com.jimi.smt.eps.printer.entity.PrintTaskInfo;
 import com.jimi.smt.eps.printer.entity.Rule;
 import com.jimi.smt.eps.printer.entity.StockLog;
-import com.jimi.smt.eps.printer.entity.WebSocketResult;
+import com.jimi.smt.eps.printer.entity.RemotePrintTaskResult;
 import com.jimi.smt.eps.printer.printtool.PrintFileJsonReader;
-import com.jimi.smt.eps.printer.runnable.RemotePrintRunnable;
 import com.jimi.smt.eps.printer.util.ExcelHelper;
 import com.jimi.smt.eps.printer.util.HttpHelper;
 import com.jimi.smt.eps.printer.util.IniReader;
@@ -102,7 +96,6 @@ import javafx.scene.layout.BackgroundFill;
 import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 
 /**
  * 主页控制器
@@ -130,7 +123,7 @@ public class MainController implements Initializable {
 
 	private static Logger logger = LogManager.getRootLogger();
 	// 供应商名与物料表的映射表
-	private static Map<String, List<Material>> supplierAndMatrialsMap = new ConcurrentHashMap<>();
+	private static Map<String, List<Material>> supplierAndMaterialsMap = new ConcurrentHashMap<>();
 	private static String selectedSheet;
 
 	@FXML
@@ -342,8 +335,8 @@ public class MainController implements Initializable {
 						materials.clear();
 					}
 					// 清空供应商和料号表之间的映射关系
-					if (supplierAndMatrialsMap != null && supplierAndMatrialsMap.size() > 0) {
-						supplierAndMatrialsMap.clear();
+					if (supplierAndMaterialsMap != null && supplierAndMaterialsMap.size() > 0) {
+						supplierAndMaterialsMap.clear();
 					}
 					// 重新读取料号表路径文件,并加载其中内容
 					initMaterialTable();
@@ -388,49 +381,37 @@ public class MainController implements Initializable {
 		remotePrintThread = new Thread(remotePrintRunnable);
 		// 接收到打印请求时执行
 		remoteReceiver.setReceiveCallBack((session, info) -> {
-			CountDownLatch countDownLatch = new CountDownLatch(1);
-			WebSocketResult result = new WebSocketResult();
-			result.fail(info.getId(), "打印指令下达失败");
-			try {
-				List<Material> materialsList = supplierAndMatrialsMap.get(info.getSupplier());
-				// 判断加载的所有料号表中是否包含远程打印料号信息中的供应商
-				if (materialsList == null) {
-					result.fail(info.getId(), "请在打印软件上添加该物料所在的物料表");
+			RemotePrintTaskResult result = new RemotePrintTaskResult();
+			List<Material> materialsList = supplierAndMaterialsMap.get(info.getSupplier());
+			// 判断加载的所有料号表中是否包含远程打印料号信息中的供应商
+			if (materialsList == null) {
+				result.fail(info.getId(), "请在打印软件上添加该物料所在的物料表");
+				sendRemotePrintTaskResult(result);
+				return;
+			}
+			// 判断对应料号表中是否包含远程打印信息中的料号
+			for (Material material : materialsList) {
+				if (material.getNo().equals(info.getMaterialNo())) {
+					Platform.runLater(new Runnable() {
+						
+						@Override
+						public void run() {
+							// 启动打印
+							boolean flag = remoteCallPrint(info, material);
+							//判断是否下达打印指令成功
+							if (flag) {
+								result.succeed(info.getId(), "成功下达打印指令");
+							} else {
+								result.fail(info.getId(), "打印失败");
+							}
+							sendRemotePrintTaskResult(result);
+						}
+					});
 					return;
 				}
-				// 判断对应料号表中是否包含远程打印信息中的料号
-				for (Material material : materialsList) {
-					if (material.getNo().equals(info.getMaterialNo())) {
-						// 启动打印
-						Platform.runLater(new RemotePrintRunnable(result, info.getId(), countDownLatch, new RemotePrintCallBack() {
-							
-							@Override
-							public boolean remotePrintCallBack() {
-								return remoteCallPrint(info, material);
-							}
-						}));
-						try {
-							countDownLatch.await();
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-						return ;
-					}
-				}
-				result.fail(info.getId(), "查无此物料，请确定该供应商是否存在此物料");
-			} finally {
-				try {
-					session.getBasicRemote().sendText(JSONObject.toJSONString(result));
-				} catch (IOException e) {
-					errorRunLater("发送信息失败，远程打印失效，请检查网络连接，请重新启用该功能");
-					try {
-						session.close();
-					} catch (IOException e1) {
-						e1.printStackTrace();
-					}
-				}
 			}
-
+			result.fail(info.getId(), "查无此物料，请确定该供应商是否存在此物料");
+			sendRemotePrintTaskResult(result);
 		});
 
 		// webSocket连接关闭时执行
@@ -450,6 +431,25 @@ public class MainController implements Initializable {
 		}
 		if (isOpenRemotePrint == 1) {
 			remotePrintThread.start();
+		}
+	}
+
+
+	/**
+	 * 发送远程打印的结果
+	 * @param result
+	 */
+	public void sendRemotePrintTaskResult(RemotePrintTaskResult result) {
+		try {
+			//发送
+			session.getBasicRemote().sendText(JSONObject.toJSONString(result));
+		} catch (IOException e) {
+			errorRunLater("发送信息失败，远程打印失效，请检查网络连接，重新启用该功能");
+			try {
+				session.close();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
 		}
 	}
 
@@ -481,12 +481,12 @@ public class MainController implements Initializable {
 					try {
 						// 解析物料表
 						List<Material> materialList = excel.unfill(Material.class, 1);
-						if (supplierAndMatrialsMap.get(name) != null) {
+						if (supplierAndMaterialsMap.get(name) != null) {
 							error("存在相同表名，解析失败");
 							continue;
 						}
 						// 将料号表名与解析好的料号表内容添加进映射
-						supplierAndMatrialsMap.put(name, materialList);
+						supplierAndMaterialsMap.put(name, materialList);
 						// 将料号表名添加仅料号表选择下拉框
 						suppliers.add(name);
 					} catch (Exception e) {
@@ -636,7 +636,7 @@ public class MainController implements Initializable {
 			result = true;
 		} catch (Exception e) {
 			e.printStackTrace();
-			stockLogList.remove(stockLogList.size()-1);
+			stockLogList.remove(stockLogList.size() - 1);
 			error("发生错误：" + e.getMessage());
 			result = false;
 		} finally {
@@ -1210,7 +1210,7 @@ public class MainController implements Initializable {
 				if (newValue.intValue() > -1) {
 					// 切换到指定sheet
 					String name = tableSelectCb.getItems().get(newValue.intValue()).toString();
-					materials = supplierAndMatrialsMap.get(name);
+					materials = supplierAndMaterialsMap.get(name);
 					if (materials != null) {
 						loadTableData(materials);
 						selectedSheet = name;
@@ -1593,8 +1593,8 @@ public class MainController implements Initializable {
 					materials.clear();
 				}
 				// 清空供应商和料号表之间的映射关系
-				if (supplierAndMatrialsMap != null && supplierAndMatrialsMap.size() > 0) {
-					supplierAndMatrialsMap.clear();
+				if (supplierAndMaterialsMap != null && supplierAndMaterialsMap.size() > 0) {
+					supplierAndMaterialsMap.clear();
 				}
 				rfidSocket.close();
 			} catch (IOException e) {

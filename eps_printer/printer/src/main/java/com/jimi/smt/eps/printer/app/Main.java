@@ -25,7 +25,7 @@ public class Main extends Application {
 	private LoginController loginController;
 	//private MaterialTbManagerController managerController;
 	
-	private static final String VERSION = "1.8.1";
+	private static final String VERSION = "1.8.3";
 
 	private static final String FILE_NAME = "EPS_Printer-" + VERSION + ".jar";
 
