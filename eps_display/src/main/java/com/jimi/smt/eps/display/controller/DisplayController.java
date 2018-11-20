@@ -74,69 +74,69 @@ public class DisplayController implements Initializable {
 	private static final Integer DEFAULT_RESULT = 2;
 
 	private static final boolean IS_NETWORK = true;
-	
+
 	private static final Integer HALF = 2;
-	
+
 	private static final Integer WORKORDERCB_MARGIN_LEFT = 85;
-	
+
 	private static final Integer DEFAULT_CB_TEXTSIZE = 20;
-	
+
 	private static final Integer DEFAULT_LB_TEXTSIZE = 22;
-	
+
 	private static final Integer DEFAULT_LB_WIDTH = 260;
-	
+
 	private static final Integer RESULT_MARGIN_RIGHT = 20;
-	
+
 	private static final Integer DEFAULT_LB_MARGIN_LEFT = 20;
-	
+
 	private static final Integer DEFAULT_LINECB_WIDTH = 115;
-	
+
 	private static final Integer DEFAULT_HALF_WIDTH = 400;
-	
+
 	private static final Integer DEAFULT_BOARDTYPECB_WIDTH = 125;
-	
+
 	private static final Integer DEFAULT_WORKORDERCB_WIDTH = 315;
-	
+
 	private static final Integer DEFAULT_LINECB_REMAIN = 300;
-	
+
 	private static final Integer DEFAULT_OPERATORLB_WIDTH = 110;
-	
+
 	private static final Integer DEFAULT_OPERATORNAMELB_WIDTH = 100;
-	
+
 	private static final Integer DEFAULE_BORDER_LB_MARGIN_LEFT = 130;
-	
+
 	private static final Integer COLUMN = 7;
-	
+
 	private static final Integer DEFAULT_TABLE_CELL_WIDTH = 111;
-	
+
 	private static final Integer RESETBT_AND_MARGIN_RIGTH = 140;
-	
+
 	private static final Integer TABLE_MARGIN = 18;
-	
+
 	private static final Integer DEFAULT_TABLE_REMAIN = 47;
-	
+
 	private static final Integer DEFAULT_CLOUMN_TEXTSIZE = 18;
-	
+
 	private static final Integer HALF_MIDDLE_INTERVAL = 10;
-	
+
 	private static final Integer FACTOR_1 = 10;
-	
+
 	private static final Integer FACTOR_2 = 20;
-	
+
 	private static final Integer FACTOR_3 = 40;
-	
+
 	private static final Integer FACTOR_4 = 4;
-	
+
 	private static final Integer FACTOR_5 = 50;
-	
+
 	private static final Integer FACTOR_6 = 200;
-	
+
 	private static final Integer FACTOR_7 = 12;
-	
+
 	private static final Integer ONE_SECOND_TO_MILLISECOND = 1000;
-	
+
 	private static final Integer CONSTANT_FOR_CHECK_RESULT = 30000;
-	
+
 	private static final Integer CONSTANT_FOR_CHECK_ALL_RESULT = 40000;
 	// 定时器是否更新数据
 	private static boolean isUpdate = false;
@@ -368,16 +368,16 @@ public class DisplayController implements Initializable {
 								this.setTextFill(Color.PURPLE);
 							} else if (CONSTANT_FOR_CHECK_RESULT < item.intValue() && item.intValue() < CONSTANT_FOR_CHECK_ALL_RESULT) {
 								this.setText(getCountDownTime(item - CONSTANT_FOR_CHECK_RESULT));
-								if(item.intValue() < CONSTANT_FOR_CHECK_RESULT + FACTOR_1) {
+								if (item.intValue() < CONSTANT_FOR_CHECK_RESULT + FACTOR_1) {
 									this.setTextFill(Color.RED);
-								}else {
+								} else {
 									this.setTextFill(Color.GREEN);
-								}	
+								}
 							} else if (CONSTANT_FOR_CHECK_ALL_RESULT < item.intValue()) {
 								this.setText(getCountDownTime(item - CONSTANT_FOR_CHECK_ALL_RESULT));
-								if(item.intValue() < CONSTANT_FOR_CHECK_ALL_RESULT + FACTOR_1) {
+								if (item.intValue() < CONSTANT_FOR_CHECK_ALL_RESULT + FACTOR_1) {
 									this.setTextFill(Color.RED);
-								}else {
+								} else {
 									this.setTextFill(Color.GREEN);
 								}
 							}
@@ -590,7 +590,8 @@ public class DisplayController implements Initializable {
 				if (boardType.equals("") || !isUpdate) {
 					new Alert(AlertType.INFORMATION, "你还没有选定工单信息", ButtonType.OK).show();
 				} else {
-					Optional<ButtonType> optional = new Alert(AlertType.WARNING, "你确定要重置该工单的状态吗？\n这会初始化除发料以外的所有状态", ButtonType.YES, ButtonType.CANCEL).showAndWait();
+					Optional<ButtonType> optional = new Alert(AlertType.WARNING, "你确定要重置该工单的状态吗？\n这会初始化除发料以外的所有状态",
+							ButtonType.YES, ButtonType.CANCEL).showAndWait();
 					if (optional != null && optional.get().equals(ButtonType.YES)) {
 						Map<String, String> map = new HashMap<>();
 						String line = lineCb.getSelectionModel().getSelectedItem().toString();
@@ -987,7 +988,7 @@ public class DisplayController implements Initializable {
 					if (isInitialState && isCheckTimeout) {
 						programItemVisit.setCheckAllResult(5);
 						programItemVisit.setCheckAllTime(minCheckAllTime);
-					}else if(checkAllResults == 1){
+					} else if (checkAllResults == 1) {
 						programItemVisit.setCheckAllResult(5);
 						programItemVisit.setCheckAllTime(minCheckAllTime);
 					}
@@ -1031,7 +1032,11 @@ public class DisplayController implements Initializable {
 				break;
 			case 3:
 				typeLb.setText("全  检");
-				showResult(programItemVisit.getCheckAllResult());
+				if (programItemVisit.getCheckAllResult().equals(5)) {
+					showResult(1);
+				} else {
+					showResult(programItemVisit.getCheckAllResult());
+				}
 				break;
 			case 4:
 				typeLb.setText("发  料");
@@ -1107,7 +1112,7 @@ public class DisplayController implements Initializable {
 			resultData.setStoreIssueResult(programItemVisit.getStoreIssueResult());
 			resultData.setFeedResult(programItemVisit.getFeedResult());
 			resultData.setChangeResult(programItemVisit.getChangeResult());
-			//是否处于待核料状态
+			// 是否处于待核料状态
 			boolean hasChangeButNeedCheck = programItemVisit.getChangeResult() == 4;
 			boolean isResultCorrect = programItemVisit.getCheckResult() != 0 && programItemVisit.getCheckResult() != 3;
 			boolean notYetCheck = programItemVisit.getChangeTime().getTime() > programItemVisit.getCheckTime().getTime();
@@ -1115,7 +1120,7 @@ public class DisplayController implements Initializable {
 				Integer k = (int) (getConfigValue(CHECK_AFTER_CHANGE_TIME) + (programItemVisit.getChangeTime().getTime()) / ONE_SECOND_TO_MILLISECOND - (System.currentTimeMillis()) / ONE_SECOND_TO_MILLISECOND);
 				if (0 < k && k < getConfigValue(CHECK_AFTER_CHANGE_TIME)) {
 					resultData.setCheckResult(k + CONSTANT_FOR_CHECK_RESULT);
-				}else {
+				} else {
 					resultData.setCheckResult(programItemVisit.getCheckResult());
 				}
 			} else {
@@ -1125,6 +1130,8 @@ public class DisplayController implements Initializable {
 				Integer k = (int) (getConfigValue(CHECK_ALL_CYCLE_TIME) + (programItemVisit.getCheckAllTime().getTime()) / ONE_SECOND_TO_MILLISECOND - (System.currentTimeMillis()) / ONE_SECOND_TO_MILLISECOND);
 				if (0 < k && k < getConfigValue(CHECK_ALL_CYCLE_TIME)) {
 					resultData.setCheckAllResult(k + CONSTANT_FOR_CHECK_ALL_RESULT);
+				} else {
+					resultData.setCheckAllResult(1);
 				}
 			} else {
 				resultData.setCheckAllResult(programItemVisit.getCheckAllResult());
@@ -1344,10 +1351,10 @@ public class DisplayController implements Initializable {
 		}
 		return result;
 	}
+
 	
-	
-	/**@author HCJ
-	 * 根据产线配置类型返回配置时间的秒数
+	/**
+	 * @author HCJ 根据产线配置类型返回配置时间的秒数
 	 * @param timeType
 	 * @date 2018年10月22日 上午9:49:27
 	 */
@@ -1361,8 +1368,8 @@ public class DisplayController implements Initializable {
 	}
 
 	
-	/**@author HCJ
-	 * 根据秒数返回时分秒的字符串
+	/**
+	 * @author HCJ 根据秒数返回时分秒的字符串
 	 * @param time
 	 * @date 2018年10月22日 上午9:50:09
 	 */
