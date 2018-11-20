@@ -49,8 +49,8 @@ public class UserServiceImpl implements UserService {
 			return "failed_not_found";
 		}
 		User user = new User();
-		user.setId(id.equals("") ? null : id);
-		user.setName(name.equals("") ? null : name);
+		user.setId("".equals(id) ? null : id);
+		user.setName("".equals(name) ? null : name);
 		user.setType(type);
 		user.setPassword("".equals(password) ? null : password);
 		user.setEnabled(enabled);
@@ -97,17 +97,5 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public User selectUserById(String id) {	
 		return userMapper.selectByPrimaryKey(id);		
-	}
-	
-	@Override
-	public String updatePassword(String id, String password) {
-		// TODO Auto-generated method stub
-		User user = new User();
-		user.setId(id.equals("") ? null : id);
-		user.setPassword("".equals(password) ? null : password);
-		if(userMapper.updatePasswordByPrimaryKey(user) == 1){
-			return "succeed";
-		}
-		return "failed_unknown";
 	}
 }

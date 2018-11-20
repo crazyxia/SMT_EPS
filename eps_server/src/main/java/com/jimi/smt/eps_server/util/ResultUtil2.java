@@ -41,17 +41,17 @@ public class ResultUtil2 {
 		
 	}
 	
-	public ResultUtil2(int code,String msg) {
+	public ResultUtil2(int code, String msg) {
 		this.code = code;
 		this.msg = msg;
 	}
 	
-	public ResultUtil2 succeed(int code,String msg) {
-		return new ResultUtil2(code,msg);
+	public ResultUtil2 succeed(int code, String msg) {
+		return new ResultUtil2(code, msg);
 	}
 	
-	public ResultUtil2 faild(int code,String msg) {
-		return new ResultUtil2(code,msg);
+	public ResultUtil2 faild(int code, String msg) {
+		return new ResultUtil2(code, msg);
 	}
 	
 }

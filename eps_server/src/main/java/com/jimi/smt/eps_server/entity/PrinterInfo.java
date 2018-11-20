@@ -57,13 +57,13 @@ public class PrinterInfo {
 		this.remainingQuantity = remainingQuantity;
 	}
 
-	public PrinterInfo(String id,String materialId,String user,String productDate,String remainingQuantity,String materialNo,String supplier) {
+	public PrinterInfo(String id, String materialId, String user, String productDate, String remainingQuantity, String materialNo, String supplier) {
 		this.id = id;
 		this.supplier = supplier;
 		this.user = user;
 		this.materialId = materialId;
 		this.materialNo = materialNo;
-		this.productDate = materialNo;
+		this.productDate = productDate;
 		this.remainingQuantity = remainingQuantity;
 	}
 }

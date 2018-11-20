@@ -31,7 +31,6 @@ import com.jimi.smt.eps_server.mapper.ProgramMapper;
 import com.jimi.smt.eps_server.mapper.SocketLogMapper;
 import com.jimi.smt.eps_server.pack.BoardNumPackage;
 import com.jimi.smt.eps_server.pack.BoardNumReplyPackage;
-import com.jimi.smt.eps_server.pack.HeartPackage;
 import com.jimi.smt.eps_server.pack.LoginPackage;
 import com.jimi.smt.eps_server.pack.LoginReplyPackage;
 import com.jimi.smt.eps_server.timer.CheckErrorTimer;
@@ -63,19 +62,11 @@ public class ServerRemoteImpl implements ServerRemote {
 	@Autowired
 	private LineMapper lineMapper;
 
-	/**
-	 * structure : 物料是几联板
-	 */
-	private int structure;
 
-	/**
-	 * alreadyProductOld : 当前工单已生产数量
-	 */
-	private int alreadyProductOld;
 	/**
 	 * clientSockets : 所有线别的报警模块列表
 	 */
-	private Map<Integer, ConnectToCenterRemote> connectToCenterRemotes = new HashMap<Integer, ConnectToCenterRemote>();
+	private Map<Integer, CenterRemoteWrapper> connectToCenterRemotes = new HashMap<Integer, CenterRemoteWrapper>();
 
 	/**
 	 * lineMap : 所有线别列表
@@ -91,7 +82,8 @@ public class ServerRemoteImpl implements ServerRemote {
 	 * checkErrorTimer : 错误检测定时器
 	 */
 	private CheckErrorTimer checkErrorTimer;
-
+	
+	// spring注入bean需要使用的构造器
 	public ServerRemoteImpl() throws RemoteException{}
 
 	
@@ -118,7 +110,7 @@ public class ServerRemoteImpl implements ServerRemote {
 			insertLogByPackage(loginReplyPackage);
 			initLineConfig();
 			try {
-				connectToCenterRemotes.put(getIndexByLineId(login.getLine()), new ConnectToCenterRemote(login.getLine(), centerLoginMapper, socketLogMapper, centerStateMapper));
+				connectToCenterRemotes.put(getIndexByLineId(login.getLine()), new CenterRemoteWrapper(login.getLine(), centerLoginMapper, socketLogMapper, centerStateMapper));
 			} catch (Exception e) {
 				logger.error("搜索产线 " + lineMap.get(login.getLine()).getLine() + " : " + e.getMessage());
 			}
@@ -135,7 +127,12 @@ public class ServerRemoteImpl implements ServerRemote {
 	 * <p>Description: 接收板子数量包，更新板子数量</p>
 	 */
 	@Override
-	public void updateBoardNum(BoardNumPackage boardNumPackage)throws RemoteException{
+	public BoardNumReplyPackage updateBoardNum(BoardNumPackage boardNumPackage)throws RemoteException{
+		// 物料是几联板
+		int structure;
+		// 当前工单已生产数量
+		int alreadyProduct;
+		
 		BoardNumReplyPackage boardNumReplyPackage = new BoardNumReplyPackage();
 		DisplayExample displayExample = new DisplayExample();
 		displayExample.createCriteria().andLineEqualTo(boardNumPackage.getLine());
@@ -151,11 +148,11 @@ public class ServerRemoteImpl implements ServerRemote {
 				criteria.andStateEqualTo(1);
 				List<Program> programs = programMapper.selectByExample(programExample);
 				if (!programs.isEmpty()) {
-					Program programFirst = programs.get(0);
-					structure = programFirst.getStructure();
-					alreadyProductOld = programFirst.getAlreadyProduct();
+					Program firstProgram = programs.get(0);
+					structure = firstProgram.getStructure();
+					alreadyProduct = firstProgram.getAlreadyProduct();
 					Program program = new Program();
-					program.setAlreadyProduct((boardNumPackage.getBoardNum()) * structure + alreadyProductOld);
+					program.setAlreadyProduct((boardNumPackage.getBoardNum()) * structure + alreadyProduct);
 					programMapper.updateByExampleSelective(program, programExample);
 				}
 			}
@@ -167,16 +164,7 @@ public class ServerRemoteImpl implements ServerRemote {
 		insertLogByPackage(boardNumPackage); 
 		insertLogByPackage(boardNumReplyPackage);
 		logger.info(boardNumPackage.protocol + "package arrived");
-	}
-
-	
-	/** <p>Title: saveHeartPackageLog</p>
-	 * <p>Description: 接收心跳包，保存心跳包日志</p> 
-	 */
-	@Override
-	public void saveHeartPackageLog(HeartPackage heartPackage)throws RemoteException{
-		logger.info(heartPackage.protocol + "package arrived");
-		insertLogByPackage(heartPackage); 
+		return boardNumReplyPackage;
 	}
 
 	

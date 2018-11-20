@@ -5,7 +5,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.jimi.smt.eps_server.constant.ClientDevice;
 import com.jimi.smt.eps_server.constant.ControlledDevice;
-import com.jimi.smt.eps_server.rmi.ConnectToCenterRemote;
+import com.jimi.smt.eps_server.rmi.CenterRemoteWrapper;
 
 /**
  * 命令发送子线程
@@ -17,7 +17,7 @@ public class SendCmdThread extends Thread{
 
 	private static Logger logger = LogManager.getRootLogger();
 	
-	private ConnectToCenterRemote connectToCenterRemote;
+	private CenterRemoteWrapper connectToCenterRemote;
 	
 	private boolean isAlarm;
 	
@@ -26,7 +26,7 @@ public class SendCmdThread extends Thread{
 	private ControlledDevice controlledDevice;
 	
 	
-	public SendCmdThread(ClientDevice clientDevice, ConnectToCenterRemote connectToCenterRemote, boolean isAlarm, ControlledDevice controlledDevice) {
+	public SendCmdThread(ClientDevice clientDevice, CenterRemoteWrapper connectToCenterRemote, boolean isAlarm, ControlledDevice controlledDevice) {
 		this.connectToCenterRemote = connectToCenterRemote;
 		this.isAlarm = isAlarm;
 		this.clientDevice = clientDevice;

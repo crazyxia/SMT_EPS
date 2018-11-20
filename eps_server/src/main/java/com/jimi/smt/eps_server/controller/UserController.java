@@ -77,7 +77,7 @@ public class UserController {
 		page.setCurrentPage(currentPage);
 		page.setPageSize(pageSize);
 		PageVO<UserVO> pageVO = new PageVO<UserVO>();
-		pageVO.setList(userService.list(id, classType, name, type, orderBy, enabled, page,password));
+		pageVO.setList(userService.list(id, classType, name, type, orderBy, enabled, page, password));
 		pageVO.setPage(page);
 		return pageVO;
 	}
@@ -232,7 +232,7 @@ public class UserController {
 	@Open
 	@ResponseBody
 	@RequestMapping("/updatePassword")
-	public ResultUtil2 updatePassword(String id, String oldPassword,String newPassword) {
+	public ResultUtil2 updatePassword(String id, String oldPassword, String newPassword) {
 		if (id == null || oldPassword == null || newPassword == null) {
 			return new ResultUtil2(400,"参数不足");
 		}
@@ -241,24 +241,24 @@ public class UserController {
 		}
 		User user = userService.selectUserById(id);
 		if (user == null) {
-			return new ResultUtil2(400,"账号不存在");
+			return new ResultUtil2(412,"账号不存在");
 		}
 		if (user.getEnabled() == false) {
-			return new ResultUtil2(400,"工人已离职");
+			return new ResultUtil2(412,"工人已离职");
 		}
 		if(!oldPassword.equals(user.getPassword())) {
-			return new ResultUtil2(400,"旧密码错误");
+			return new ResultUtil2(412,"旧密码错误");
 		}
 		String result;
 		try {
-			result = userService.updatePassword(id, newPassword);
+			result = userService.update(id, null, null, null, newPassword, null);
 		} catch (Exception e) {
-			return new ResultUtil2(400,"修改失败,请检查所传参数");
+			return new ResultUtil2(500,"修改失败,请检查所传参数");
 		}
 		if("succeed".equals(result)) {
 			return new ResultUtil2(200,"操作成功");
 		}else {
-			return new ResultUtil2(400,"修改失败");
+			return new ResultUtil2(500,"修改失败");
 		}
 	}
 }

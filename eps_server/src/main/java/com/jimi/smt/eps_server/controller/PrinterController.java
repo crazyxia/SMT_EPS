@@ -24,13 +24,13 @@ public class PrinterController {
 	@Open
 	@ResponseBody
 	@RequestMapping("/printBarcode")
-	public ResultUtil2 printBarcode(String printerIP,String materialId,String materialNo,Integer remainingQuantity,String productDate,String user,String supplier){
+	public ResultUtil2 printBarcode(String printerIP, String materialId, String materialNo, Integer remainingQuantity, String productDate, String user, String supplier) throws InterruptedException{
 		if (printerIP == null || materialId == null || materialNo == null || remainingQuantity == null || productDate == null || user == null || supplier == null) {
 			return new ResultUtil2(400,"参数不足");
 		}else if("".equals(printerIP)) {
 			return new ResultUtil2(400,"打印机IP不能为空");
 		}else{
-			ResultUtil2 resultUtil2 = printerService.printBarcode(printerIP,materialId,materialNo,remainingQuantity,productDate,user,supplier);
+			ResultUtil2 resultUtil2 = printerService.printBarcode(printerIP, materialId, materialNo, remainingQuantity, productDate, user, supplier);
 			return resultUtil2;
 		}
 	}

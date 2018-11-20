@@ -732,7 +732,7 @@ public class ProgramServiceImpl implements ProgramService {
 			return 0;
 		}
 		for (Integer result : results) {
-			if (!result.equals(2) && result.equals(3)) {
+			if (!result.equals(2) && !result.equals(3)) {
 				allResult = 0;
 				break;
 			}

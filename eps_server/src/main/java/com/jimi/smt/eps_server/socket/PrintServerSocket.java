@@ -10,7 +10,6 @@ import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.jimi.smt.eps_server.entity.PrinterInfo;
@@ -30,7 +29,7 @@ public class PrintServerSocket {
 	
 	
     @OnOpen
-    public void onOpen(@PathParam("printerIP") String printerIP,Session session){
+    public void onOpen(@PathParam("printerIP") String printerIP, Session session){
     	clients.put(printerIP,session);
     }
     
@@ -44,35 +43,27 @@ public class PrintServerSocket {
     public void onMessage(String result) {
     	// 存取返回的数据
     	try {
-            JSONObject jsonObject = JSON.parseObject(result);
-            if(results.containsKey(jsonObject.getString("id"))) {
-            	results.put(jsonObject.getString("id"), result);
-            }
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+    		JSONObject jsonObject = JSON.parseObject(result);
+    		if(results.containsKey(jsonObject.getString("id"))) {
+    			results.put(jsonObject.getString("id"), result);
+    		}
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    	}
     }
     
     @OnError
-    public void onError(@PathParam("printerIP") String printerIP,Session session, Throwable error){
+    public void onError(@PathParam("printerIP") String printerIP, Session session, Throwable error){
     	clients.remove(printerIP);
     	error.printStackTrace();
     }
     
-    public static void send(String printerIP,String id,String materialId,String materialNo,String remainingQuantity,String productDate,String user,String supplier){
-    	synchronized (PrintServerSocket.class) {
-    		results.put(id,null);
-    	  	PrinterInfo printerInfo = new PrinterInfo(id, materialId, user, productDate, remainingQuantity, materialNo, supplier);
-    	  	JSONObject jsonObject = (JSONObject) JSONObject.toJSON(printerInfo);
-    		Session session = clients.get(printerIP);
-    		try {
-				session.getBasicRemote().sendText(jsonObject.toJSONString());
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-		}
+    public synchronized static void send(String printerIP, String id, String materialId, String materialNo, String remainingQuantity, String productDate, String user, String supplier) throws IOException{
+    	results.put(id,null);
+    	PrinterInfo printerInfo = new PrinterInfo(id, materialId, user, productDate, remainingQuantity, materialNo, supplier);
+    	JSONObject jsonObject = (JSONObject) JSONObject.toJSON(printerInfo);
+    	Session session = clients.get(printerIP);
+    	session.getBasicRemote().sendText(jsonObject.toJSONString());
     }
     
     public synchronized static Map<String, Session> getClients() {

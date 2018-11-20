@@ -57,7 +57,7 @@ public interface UserService {
 	 * @param enabled
 	 * @return
 	 */
-	List<UserVO> list(String id, Integer classType, String name, Integer type, String orderBy, Boolean enabled, Page page,String password);
+	List<UserVO> list(String id, Integer classType, String name, Integer type, String orderBy, Boolean enabled, Page page, String password);
 				
 	
 	/**
@@ -68,13 +68,5 @@ public interface UserService {
 	 * @return
 	 */
 	User selectUserById(String id);
-	
-	/**
-	 * 根据用户id修改密码
-	 * @param id
-	 * @param password
-	 * @return
-	 */
-	String updatePassword(String id,String password);
 	
 }

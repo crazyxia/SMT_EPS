@@ -243,9 +243,4 @@
       class_type = #{classType,jdbcType=INTEGER}
     where id = #{id,jdbcType=VARCHAR}
   </update>
-  <update id="updatePasswordByPrimaryKey" parameterType="com.jimi.smt.eps_server.entity.User">
-  	update user
-  	set password = #{password,jdbcType=VARCHAR}
-  	where id = #{id,jdbcType=VARCHAR}
-  </update>
 </mapper>

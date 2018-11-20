@@ -19,7 +19,7 @@ import com.jimi.smt.eps_server.entity.bo.CenterControllerErrorCounter;
 import com.jimi.smt.eps_server.mapper.ConfigMapper;
 import com.jimi.smt.eps_server.mapper.ProgramItemVisitMapper;
 import com.jimi.smt.eps_server.mapper.ProgramMapper;
-import com.jimi.smt.eps_server.rmi.ConnectToCenterRemote;
+import com.jimi.smt.eps_server.rmi.CenterRemoteWrapper;
 import com.jimi.smt.eps_server.thread.SendCmdThread;
 
 public class CheckErrorTimer {
@@ -50,7 +50,7 @@ public class CheckErrorTimer {
 	/**
 	 * 所有线别的报警模块列表
 	 */
-	private Map<Integer, ConnectToCenterRemote> clientSockets;
+	private Map<Integer, CenterRemoteWrapper> clientSockets;
 
 	/**
 	 * 产线数量
@@ -63,7 +63,7 @@ public class CheckErrorTimer {
 	private Map<Integer, Line> lineMap;
 
 	
-	public CheckErrorTimer(Long lineSize, Map<Integer, Line> lineMap, ConfigMapper configMapper, ProgramMapper programMapper, ProgramItemVisitMapper programItemVisitMapper, Map<Integer, ConnectToCenterRemote> clientSockets) {
+	public CheckErrorTimer(Long lineSize, Map<Integer, Line> lineMap, ConfigMapper configMapper, ProgramMapper programMapper, ProgramItemVisitMapper programItemVisitMapper, Map<Integer, CenterRemoteWrapper> clientSockets) {
 		this.configMapper = configMapper;
 		this.programMapper = programMapper;
 		this.programItemVisitMapper = programItemVisitMapper;
@@ -235,7 +235,7 @@ public class CheckErrorTimer {
 	 * @param isAlarm          报警/解除报警
 	 * @param controlledDevice 被控制设备：报警灯或接驳台
 	 */
-	private void sendCmd(ClientDevice clientDevice, ConnectToCenterRemote socket, boolean isAlarm, ControlledDevice controlledDevice) {
+	private void sendCmd(ClientDevice clientDevice, CenterRemoteWrapper socket, boolean isAlarm, ControlledDevice controlledDevice) {
 		new SendCmdThread(clientDevice, socket, isAlarm, controlledDevice).start();
 	}
 

@@ -15,6 +15,6 @@ public interface PrinterService {
 	 * @return
 	 * @throws InterruptedException 
 	 */
-	ResultUtil2 printBarcode(String printerIP,String materialId,String materialNo,Integer remainingQuantity,String productDate,String user,String supplier);
+	ResultUtil2 printBarcode(String printerIP, String materialId, String materialNo, Integer remainingQuantity, String productDate, String user, String supplier) throws InterruptedException;
 
 }
