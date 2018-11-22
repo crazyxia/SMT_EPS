@@ -1,4 +1,4 @@
-package com.jimi.smt.eps.display.app;
+﻿package com.jimi.smt.eps.display.app;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -27,7 +27,7 @@ public class Main extends Application {
 
 	private DisplayController displayController;
 
-	private static final String VERSION = "2.2.1";
+	private static final String VERSION = "2.2.2";
 
 	private static final String NAME = "EPS_Display-" + VERSION;
 
