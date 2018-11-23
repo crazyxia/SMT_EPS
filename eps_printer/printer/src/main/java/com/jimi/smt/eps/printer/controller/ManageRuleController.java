@@ -77,7 +77,7 @@ public class ManageRuleController implements Initializable {
 	// 存储所有规则
 	private List<Rule> rules = new ArrayList<Rule>();
 	// 存储当前应用的规则
-	public static Rule currentRule = new Rule();
+	public static Rule currentRule;
 	// 存储在表格中选中的规则
 	private Rule selectedRule = new Rule();
 	
@@ -133,6 +133,12 @@ public class ManageRuleController implements Initializable {
 			rules = (List<Rule>) object;
 		}	
 		updateText();
+		if(currentRule == null) {
+			currentRule = new Rule();
+			currentRule.setName("默认规则");
+			currentRule.setExample("默认规则例子");
+			currentRule.setDetails("(默认规则：不对文本内容进行处理)");
+		}
 	}
 
 	
@@ -206,7 +212,9 @@ public class ManageRuleController implements Initializable {
 				if (result.get() == ButtonType.OK) {
 					rules.removeIf(r -> r.getName().equals(selectedRule.getName()));
 					updateText();
-					currentRule = null;
+					if (selectedRule.getName().equals(currentRule.getName())) {
+						currentRule = null;
+					}
 					mainController.setCurrentRule();
 					writeToFile();
 				} else {

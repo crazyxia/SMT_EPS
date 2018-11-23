@@ -14,7 +14,7 @@
       <Label layoutX="39.0" layoutY="28.0" text="供应商料号表文件：" AnchorPane.leftAnchor="39.0" AnchorPane.topAnchor="28.0" />
       <TextField fx:id="fileSelectTf" layoutX="39.0" layoutY="52.0" prefHeight="23.0" prefWidth="247.0" AnchorPane.leftAnchor="39.0" AnchorPane.rightAnchor="703.0" AnchorPane.topAnchor="52.0" />
       <Button fx:id="fileSelectBt" layoutX="292.0" layoutY="52.0" mnemonicParsing="false" onAction="#onFileSelectBtClick" prefHeight="23.0" prefWidth="95.0" text="浏览" AnchorPane.rightAnchor="602.0" AnchorPane.topAnchor="52.0" />
-      <Label alignment="CENTER" contentDisplay="CENTER" layoutX="351.0" layoutY="680.0" prefHeight="15.0" prefWidth="288.0" text="© 2017 几米物联技术有限公司  All rights reserved." AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="351.0" AnchorPane.rightAnchor="350.0" />
+      <Label alignment="CENTER" contentDisplay="CENTER" layoutX="351.0" layoutY="680.0" prefHeight="15.0" prefWidth="288.0" text="© 2018 几米物联技术有限公司  All rights reserved." AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="351.0" AnchorPane.rightAnchor="350.0" />
       <Label fx:id="stateLb" layoutX="41.0" layoutY="640.0" prefHeight="15.0" prefWidth="506.0" text="无状态" AnchorPane.bottomAnchor="41.0" AnchorPane.leftAnchor="41.0" AnchorPane.rightAnchor="442.0" />
       <TableView fx:id="materialTb" layoutX="41.0" layoutY="96.0" prefHeight="541.0" prefWidth="506.0" AnchorPane.bottomAnchor="64.0" AnchorPane.leftAnchor="41.0" AnchorPane.rightAnchor="442.0" AnchorPane.topAnchor="96.0">
         <columns>
@@ -75,6 +75,90 @@
             <Label fx:id="seatLb" layoutX="49.0" layoutY="101.0" prefHeight="15.0" prefWidth="187.0" />
             <Label fx:id="dateLb" layoutX="49.0" layoutY="122.0" prefHeight="15.0" prefWidth="187.0" />
             <Label fx:id="remarkLb" layoutX="49.0" layoutY="144.0" prefHeight="15.0" prefWidth="187.0" />
+         </children>
+      </AnchorPane>
+      <AnchorPane fx:id="previewAp1" layoutX="126.0" layoutY="61.0" prefHeight="413.0" prefWidth="768.0" style="-fx-background-color: white;" visible="false">
+         <children>
+            <Label layoutX="32.0" layoutY="34.0" prefHeight="44.0" prefWidth="101.0" text="编号：">
+               <font>
+                  <Font name="Microsoft YaHei Bold" size="32.0" />
+               </font>
+            </Label>
+            <Label fx:id="remarkLb1" layoutX="122.0" layoutY="355.0" prefHeight="34.0" prefWidth="390.0">
+               <font>
+                  <Font name="Microsoft YaHei Bold" size="32.0" />
+               </font>
+            </Label>
+            <Label fx:id="dateLb1" layoutX="122.0" layoutY="305.0" prefHeight="34.0" prefWidth="390.0">
+               <font>
+                  <Font name="Microsoft YaHei Bold" size="32.0" />
+               </font>
+            </Label>
+            <Label fx:id="seatLb1" layoutX="122.0" layoutY="252.0" prefHeight="34.0" prefWidth="390.0">
+               <font>
+                  <Font name="Microsoft YaHei Bold" size="32.0" />
+               </font>
+            </Label>
+            <Label fx:id="quantityLb1" layoutX="122.0" layoutY="194.0" prefHeight="33.0" prefWidth="390.0">
+               <font>
+                  <Font name="Microsoft YaHei Bold" size="32.0" />
+               </font>
+            </Label>
+            <Label fx:id="nameLb1" layoutX="122.0" layoutY="138.0" prefHeight="33.0" prefWidth="390.0">
+               <font>
+                  <Font name="Microsoft YaHei Bold" size="32.0" />
+               </font>
+            </Label>
+            <Label fx:id="descriptionLb1" layoutX="122.0" layoutY="87.0" prefHeight="33.0" prefWidth="431.0">
+               <font>
+                  <Font name="Microsoft YaHei Bold" size="32.0" />
+               </font>
+            </Label>
+            <Label fx:id="materialNoLb1" layoutX="122.0" layoutY="34.0" prefHeight="33.0" prefWidth="431.0">
+               <font>
+                  <Font name="Microsoft YaHei Bold" size="32.0" />
+               </font>
+            </Label>
+            <ImageView fitHeight="73.0" fitWidth="163.0" layoutX="553.0" layoutY="32.0" pickOnBounds="true">
+               <image>
+                  <Image url="@../img/jimi.png" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="codeIv1" fitHeight="228.0" fitWidth="228.0" layoutX="520.0" layoutY="152.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../img/code.png" />
+               </image>
+            </ImageView>
+            <Label layoutX="32.0" layoutY="355.0" prefHeight="44.0" prefWidth="101.0" text="备注：">
+               <font>
+                  <Font name="Microsoft YaHei Bold" size="32.0" />
+               </font>
+            </Label>
+            <Label layoutX="32.0" layoutY="305.0" prefHeight="44.0" prefWidth="101.0" text="生产：">
+               <font>
+                  <Font name="Microsoft YaHei Bold" size="32.0" />
+               </font>
+            </Label>
+            <Label layoutX="32.0" layoutY="252.0" prefHeight="44.0" prefWidth="101.0" text="位置：">
+               <font>
+                  <Font name="Microsoft YaHei Bold" size="32.0" />
+               </font>
+            </Label>
+            <Label layoutX="32.0" layoutY="194.0" prefHeight="44.0" prefWidth="101.0" text="数量：">
+               <font>
+                  <Font name="Microsoft YaHei Bold" size="32.0" />
+               </font>
+            </Label>
+            <Label layoutX="32.0" layoutY="138.0" prefHeight="44.0" prefWidth="101.0" text="名称：">
+               <font>
+                  <Font name="Microsoft YaHei Bold" size="32.0" />
+               </font>
+            </Label>
+            <Label layoutX="32.0" layoutY="87.0" prefHeight="44.0" prefWidth="101.0" text="型号：">
+               <font>
+                  <Font name="Microsoft YaHei Bold" size="32.0" />
+               </font>
+            </Label>
          </children>
       </AnchorPane>
       <ChoiceBox fx:id="tableSelectCb" layoutX="407.0" layoutY="52.0" prefHeight="23.0" prefWidth="141.0" AnchorPane.rightAnchor="441.0" AnchorPane.topAnchor="52.0" />

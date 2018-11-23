@@ -117,8 +117,8 @@ public class AddRuleController implements Initializable {
 			info("保存规则成功");
 			stage.close();
 		} else {
-			error("保存失败，规则名称必须有效、不重复且结果必须存在");
-			logger.error("保存失败，规则名称必须有效、不重复且结果必须存在");
+			error("保存失败，规则名称必须有效、不重复、不能存在默认规则字段且结果必须存在");
+			logger.error("保存失败，规则名称必须有效、不重复、不能存在默认规则字段且结果必须存在");
 		}
 	}
 
@@ -132,6 +132,8 @@ public class AddRuleController implements Initializable {
 		scanTa.setDisable(false);
 		resultTa.setText("");
 		ruleItems.delete(0, ruleItems.length());
+		scanTaString = null;
+		resultTaString =null;
 	}
 	
 
@@ -143,7 +145,7 @@ public class AddRuleController implements Initializable {
 		if (ruleNameTf.getText() != null && !ruleNameTf.getText().equals("")) {
 			if (rules != null && rules.size() > 0) {
 				for (Rule rule : rules) {
-					if (rule.getName().equals(ruleNameTf.getText())) {
+					if (rule.getName().equals(ruleNameTf.getText()) || ruleNameTf.getText().contains("默认规则")) {
 						return false;
 					}
 				}

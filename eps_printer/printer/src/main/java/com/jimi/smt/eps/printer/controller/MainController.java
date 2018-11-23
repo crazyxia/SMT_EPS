@@ -200,7 +200,7 @@ public class MainController implements Initializable {
 	private RadioButton rfidRb;
 	@FXML
 	private Label currentRuleLb;
-	
+
 	private Stage primaryStage;
 
 	private ExcelHelper excel;
@@ -450,8 +450,8 @@ public class MainController implements Initializable {
 			error("发生错误：" + e.getMessage());
 			throw e;
 		}
-		materialNoTf.setText("");
-		materialNoTf.requestFocus();
+		scanMaterialNoTf.setText("");
+		scanMaterialNoTf.requestFocus();
 		printBt.setText("打印");
 		// 提交数据库
 		commitDataBase();
@@ -505,7 +505,7 @@ public class MainController implements Initializable {
 		showManageRuleWindow();
 	}
 
-
+	
 	/**
 	 * 调用打印机
 	 */
@@ -709,7 +709,11 @@ public class MainController implements Initializable {
 			materialPropertiesList.add(materialProperties);
 		}
 		materialTb.setItems(materialPropertiesList);
-		info("数据解析成功，请在右上方扫入或输入料号");
+		if(materials != null && materials.size() > 0) {
+			info("数据解析成功，请在右上方扫入或输入料号");
+		}else {
+			error("数据解析失败，请参考\\\"标准范例表\\\"编写供应商料号表文件");
+		}
 		materialNoTf.requestFocus();
 	}
 
@@ -862,7 +866,7 @@ public class MainController implements Initializable {
 				if (result == '0') {
 					// 更改COM号再重启RFID程序
 					if (port == 31) {
-						throw new IOException("已尝试0~31的端口，依然无法找到RFID设备");
+						/* throw new IOException("已尝试0~31的端口，依然无法找到RFID设备"); */
 					}
 					port++;
 					try {
@@ -870,7 +874,7 @@ public class MainController implements Initializable {
 						initRFID();
 					} catch (IOException e) {
 						Platform.runLater(() -> {
-							error("启动RFID程序失败，缺少配置文件RFIDComm.cfg");
+							/* error("启动RFID程序失败，缺少配置文件RFIDComm.cfg"); */
 							initPrintTargetRbs();
 							codeRb.setSelected(true);
 						});
@@ -878,7 +882,7 @@ public class MainController implements Initializable {
 					}
 				} else {
 					Platform.runLater(() -> {
-						info("RFID程序加载完毕");
+						/* info("RFID程序加载完毕"); */
 						rfidRb.setDisable(false);
 						bothRb.setDisable(false);
 						initPrintTargetRbs();
@@ -886,7 +890,7 @@ public class MainController implements Initializable {
 				}
 			} catch (IOException e) {
 				Platform.runLater(() -> {
-					error("启动RFID程序失败，请检查RFID读写器是否在工作并重启程序");
+					/* error("启动RFID程序失败，请检查RFID读写器是否在工作并重启程序"); */
 					initPrintTargetRbs();
 					codeRb.setSelected(true);
 				});
@@ -894,7 +898,7 @@ public class MainController implements Initializable {
 			}
 		}).start();
 		if (Thread.currentThread().getName().equals("JavaFX Application Thread")) {
-			info("加载RFID程序中...");
+			/* info("加载RFID程序中..."); */
 		}
 	}
 
@@ -989,7 +993,7 @@ public class MainController implements Initializable {
 			}
 		});
 	}
-	
+
 	
 	private void initMaterialNoTfListener() {
 		// 初始化物料编号文本域监听器
@@ -1007,8 +1011,7 @@ public class MainController implements Initializable {
 				}
 				for (Material material : materials) {
 					// 如果存在该料号则显示属性，并且允许更改和打印，并且把料号显示为绿色，否则不显示属性，禁止更改和打印，且料号为黑色
-					if (newValue != null && !newValue.equals("")
-							&& material.getNo().toUpperCase().equals(newValue.toUpperCase())) {
+					if (newValue != null && !newValue.equals("") && material.getNo().toUpperCase().equals(newValue.toUpperCase())) {
 						nameTf.setDisable(false);
 						descriptionTf.setDisable(false);
 						seatNoTf.setDisable(false);
@@ -1034,9 +1037,8 @@ public class MainController implements Initializable {
 
 						printBt.setDisable(false);
 
-						// 焦点移至数量输入框
+						// 焦点移至勾选的输入框
 						quantityTf.requestFocus();
-
 						info("料号存在，打印已就绪（热键：回车）");
 						break;
 					}
@@ -1252,9 +1254,9 @@ public class MainController implements Initializable {
 
 	}
 
-
-	/**@author HCJ
-	 * 扫描料号监听器
+	
+	/**
+	 * @author HCJ 扫描料号监听器
 	 * @date 2018年10月31日 下午5:04:46
 	 */
 	private void initScanMaterialNoTfListener() {
@@ -1262,12 +1264,14 @@ public class MainController implements Initializable {
 		scanMaterialNoTf.textProperty().addListener(new ChangeListener<String>() {
 			@Override
 			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-				Rule rule = ManageRuleController.currentRule;
-				if(rule.getDetails() == null) {
+				Rule rule = new Rule();
+				if (ManageRuleController.currentRule == null) {
 					rule.setName("默认规则");
-					rule.setDetails("默认规则:"+",");
+					rule.setDetails("默认规则:" + ",");
+				}else {
+					rule = ManageRuleController.currentRule;
 				}
-				if(newValue == null || newValue.equals("") || newValue.length() < 0) {
+				if (newValue == null || newValue.equals("") || newValue.length() < 0) {
 					materialNoTf.setText("");
 				}
 				try {
@@ -1285,10 +1289,10 @@ public class MainController implements Initializable {
 			}
 		});
 	}
-
-
-	/**@author HCJ
-	 * 根据料号规则解析得到料号
+	
+	
+	/**
+	 * @author HCJ 根据料号规则解析得到料号
 	 * @date 2018年10月31日 下午5:05:10
 	 */
 	private String getMaterialNo(String ruleString, String materialNoString) {
@@ -1299,30 +1303,30 @@ public class MainController implements Initializable {
 			} catch (Exception e) {
 				materialNoArray = removeSpace(materialNoString.split("\\" + ruleString.substring(ruleString.indexOf(":") + 1, ruleString.indexOf("="))));
 			}
-			return materialNoArray[Integer.parseInt(ruleString.substring(ruleString.indexOf("=") + 1, ruleString.length()))];
+			return materialNoArray[Integer.parseInt(ruleString.substring(ruleString.indexOf("=") + 1, ruleString.indexOf(")")))];
 		} else if (ruleString.contains("长度")) {
-			int start = Integer.parseInt(ruleString.substring(ruleString.indexOf(":") + 1, ruleString.indexOf("->")));
-			int end = Integer.parseInt(ruleString.substring(ruleString.indexOf("->") + 1, ruleString.length()));
+			int start = Integer.parseInt(ruleString.substring(ruleString.indexOf(":") + 1, ruleString.indexOf("-")));
+			int end = Integer.parseInt(ruleString.substring(ruleString.indexOf(">") + 1, ruleString.indexOf(")")));
 			return materialNoString.substring(start, end);
-		}else if(ruleString.contains("默认规则")) {
+		} else if (ruleString.contains("默认规则")) {
 			return materialNoString;
 		}
 		return null;
 	}
 
-	
-	/**@author HCJ
-	 * 设置当前规则
+
+	/**
+	 * @author HCJ 设置当前规则
 	 * @date 2018年10月31日 下午5:05:36
 	 */
 	public void setCurrentRule() {
-		if (ManageRuleController.currentRule != null && ManageRuleController.currentRule.getName()!=null) {
+		if (ManageRuleController.currentRule != null && ManageRuleController.currentRule.getName() != null) {
 			currentRuleLb.setText("当前料号规则：" + ManageRuleController.currentRule.getName());
 		} else {
 			currentRuleLb.setText("当前料号规则：默认规则");
 		}
 	}
-	
+
 	
 	public Stage getPrimaryStage() {
 		return primaryStage;
