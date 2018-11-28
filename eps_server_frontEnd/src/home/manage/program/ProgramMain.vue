@@ -1,6 +1,7 @@
 <template>
   <div class="program">
     <div class="programInfo" v-if="isShow">
+      <p class="tip">提醒：上传站位表时，若“未开始”的项目列表中存在“版面类型”、“工单号”、“线别”三者一致时，将覆盖上一份“未开始”中的项目</p>
       <form class="form-inline" role="form">
         <div class="form-group">
           <label for="programName">站位表</label>
@@ -110,7 +111,7 @@
         let filetype = fileName.substr(fileName.lastIndexOf(".") + 1);
         if (filetype !== "xls" && filetype !== 'xlsx') {
           alert("文件格式错误");
-          $('#inputfile').val();
+          $('#inputfile')[0].value = "";
         } else {
           let programFile = $('#inputfile')[0].files[0];
           this.fileInfos.programFile = programFile;
@@ -132,8 +133,11 @@
             if (response.data) {
               let result = response.data.result;
               alert(result);
-              if (result === "上传完成，共解析到1张表") {
+              if (result === "上传完成，共解析到1张表" || result === "覆盖完成，共解析到1张表") {
                 store.commit("setIsUploadFinish", true);
+                $('#inputfile')[0].value = "";
+                this.fileInfos.programFile = "";
+                this.fileInfos.boardType = "";
               }
             }
           });
@@ -146,5 +150,12 @@
 </script>
 
 <style scoped lang="scss">
+  .tip{
+    font-size:20px;
+    color:red;
+    border-bottom:1px solid #ddd;
+    margin-bottom:10px;
+    padding-bottom:10px;
+  }
   @import '@/assets/css/common.scss';
 </style>

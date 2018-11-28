@@ -36,6 +36,9 @@ export const errTip = function (code) {
     case "fail_get_img":
       alert("获取图片失败");
       break;
+    case "failed_already_started":
+      alert("已存在相同的正在进行的工单");
+      break;
     default:
       alert(code);
       break;

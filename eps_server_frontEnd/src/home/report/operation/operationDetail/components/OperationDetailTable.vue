@@ -9,7 +9,7 @@ import {axiosPost} from "./../../../../../utils/fetchData"
 import {operationReportListUrl} from "./../../../../../config/globalUrl"
 export default {
   name:'operationDetailTable',
-  props:['operationInfos'],
+  props:['item'],
   data: () => ({
     columns: [
       { title:'站位', field:'lineseat',colStyle: {'width': '80px'}},
@@ -35,6 +35,29 @@ export default {
     currentPage:1,
     pageSize:20
   }),
+  computed:{
+    operationInfos:function(){
+      let obj = {
+        type:this.item.type,
+        operator:this.item.operator,
+        workOrderNo:this.item.workOrderNo,
+        startTime:this.item.startTime,
+        endTime:this.item.endTime,
+        currentPage:this.currentPage,
+        pageSize:this.pageSize
+      };
+      for(let i = 0;i<this.lines.length;i++){
+        if(this.item.line === this.lines[i].line){
+          obj["line"] = this.lines[i].id;
+          break;
+        }
+      }
+      return obj;
+    },
+    lines: function () {
+      return store.state.lines;
+    },
+  },
   watch: {
     query: {
       handler (query) {

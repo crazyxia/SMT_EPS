@@ -23,7 +23,7 @@
         {title: '操作', field: 'operation', tdComp: 'ProgramOperation', colStyle: {'width': '150px'}}
       ],
       HeaderSettings: false,
-      fixHeaderAndSetBodyMaxHeight: 700,
+      fixHeaderAndSetBodyMaxHeight: 650,
       data: [],
       total: 0,
       tblClass: 'table-bordered',
@@ -87,7 +87,7 @@
         axiosPost(options).then(response => {
           store.commit("setLoading", false);
           if (response.data) {
-            if(response.data.list){
+            if (response.data.list) {
               let result = response.data.list;
               let page = response.data.page;
               this.total = page.totallyData;
@@ -122,36 +122,67 @@
   }
 
   export const ProgramOperation = Vue.component('ProgramOperation', {
-    template: `<div>
-      <button type="button" class="btn" style="font-size:14px;background:#00acec;color:#fff;margin-right:5px;"
-        @click.stop.prevent="updateStatus(row)" :disabled="isDisabled">修改状态</button>
-      <button type="button" class="btn " style="font-size:14px;background:#49bf67;color:#fff"
-        @click.stop.prevent="updateTable(row)" :disabled="isDisabled">修改表格</button>
+      template: `<div>
+      <button type="button" class="btn" :style="blueStyle"
+        @click.stop.prevent="updateStatus(row)" :disabled="isDisabled" >修改状态</button>
+      <button type="button" class="btn " :style="greenStyle"
+        @click.stop.prevent="updateTable(row)" :disabled="isDisabled" >修改表格</button>
   </div>`,
-    props: ['row'],
-    computed: {
-      isDisabled: function () {
-        let state = this.row.state;
-        if (state === 2 || state === 3) {
-          return true
+      props: ['row'],
+      computed: {
+        blueStyle: function () {
+          let state = this.row.state;
+          let obj = {
+            fontSize: "14px",
+            color: "#fff",
+            marginRight: "5px"
+          };
+          if (state === 2 || state === 3) {
+            obj["background"] = "#ccc";
+          } else {
+            obj["background"] = "#00acec";
+          }
+          return obj;
+        },
+        greenStyle: function () {
+          let state = this.row.state;
+          let obj = {
+            fontSize: "14px",
+            color: "#fff",
+            marginRight: "5px"
+          };
+          if (state === 2 || state === 3) {
+            obj["background"] = "#ccc";
+          } else {
+            obj["background"] = "#49bf67";
+          }
+          return obj;
+        },
+        isDisabled: function () {
+          let state = this.row.state;
+          if (state === 2 || state === 3) {
+            return true
+          }
+          return false;
         }
-        return false;
-      }
-    },
-    methods: {
-      updateStatus(row) {
-        store.commit("setOldState", "");
-        store.commit("setIsUpdate", true);
-        store.commit("setProgram", row);
-        store.commit("setOldState", row.state);
-        store.commit("setProgramOperationType", "update");
       },
-      updateTable(row) {
-        store.commit("setProgram", row);
-        store.commit("setProgramItemShow", true);
-      }
-    }
-  });
+      methods:
+        {
+          updateStatus(row) {
+            store.commit("setOldState", "");
+            store.commit("setIsUpdate", true);
+            store.commit("setProgram", row);
+            store.commit("setOldState", row.state);
+            store.commit("setProgramOperationType", "update");
+          }
+          ,
+          updateTable(row) {
+            store.commit("setProgram", row);
+            store.commit("setProgramItemShow", true);
+          }
+        }
+    })
+  ;
 </script>
 <style lang="scss">
   .-table-body .table tr td {

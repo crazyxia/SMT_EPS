@@ -81,6 +81,7 @@ export default {
           if(result.page && result.list){
             this.page = result.page;
             this.data = result.list;
+            this.$emit('getDownloadInfo',result.page.currentPage,result.page.pageSize,this.clientInfos);
           }
           store.commit("setLoading",false);
         }

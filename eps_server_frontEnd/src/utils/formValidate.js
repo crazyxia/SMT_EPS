@@ -17,10 +17,7 @@ export const userTip = function (obj) {
 
 export const programTip = function (state) {
   let oldState = store.state.oldState;
-  if (oldState > state) {
-    alert("状态选择不正确");
-    return false;
-  } else if (oldState == 2 && state == 3) {
+  if (oldState >= state) {
     alert("状态选择不正确");
     return false;
   }
