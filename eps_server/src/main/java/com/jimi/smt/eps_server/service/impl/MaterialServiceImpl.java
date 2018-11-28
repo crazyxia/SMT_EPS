@@ -11,6 +11,7 @@ import com.jimi.smt.eps_server.entity.MaterialInfoExample.Criteria;
 import com.jimi.smt.eps_server.entity.Page;
 import com.jimi.smt.eps_server.mapper.MaterialInfoMapper;
 import com.jimi.smt.eps_server.service.MaterialService;
+import com.jimi.smt.eps_server.util.SqlUtil;
 
 @Service
 public class MaterialServiceImpl implements MaterialService {
@@ -82,7 +83,7 @@ public class MaterialServiceImpl implements MaterialService {
 			criteria.andIdEqualTo(id);
 		}
 		if (materialNo != null && !"".equals(materialNo)) {
-			criteria.andMaterialNoLike("%" + materialNo + "%");
+			criteria.andMaterialNoLike("%" + SqlUtil.getEscapeParameter(materialNo) + "%");
 		}
 		if (perifdOfValidity != null) {
 			criteria.andPerifdOfValidityEqualTo(perifdOfValidity);

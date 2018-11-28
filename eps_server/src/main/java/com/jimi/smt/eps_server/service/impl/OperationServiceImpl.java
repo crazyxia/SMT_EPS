@@ -38,6 +38,7 @@ import com.jimi.smt.eps_server.mapper.StockLogMapper;
 import com.jimi.smt.eps_server.service.LineService;
 import com.jimi.smt.eps_server.service.OperationService;
 import com.jimi.smt.eps_server.util.ExcelSpringHelper;
+import com.jimi.smt.eps_server.util.SqlUtil;
 
 @Service
 public class OperationServiceImpl implements OperationService {
@@ -54,6 +55,10 @@ public class OperationServiceImpl implements OperationService {
 	private OperationToOperationReportFiller operationToOperationReportFiller;
 	@Autowired
 	private StockLogToStockLogVOFiller stockLogToStockLogVOFiller;
+	
+	private static final Integer PAGE_SIZE = 99999999;
+	
+	private static final Integer CURRENT_PAGE = 1;
 		
 	
 	/** 
@@ -82,7 +87,7 @@ public class OperationServiceImpl implements OperationService {
 		}
 		// 筛选工单号
 		if (workOrderNo != null && !workOrderNo.equals("")) {
-			parameter.setWorkOrderNo("%" + workOrderNo + "%");
+			parameter.setWorkOrderNo("%" + SqlUtil.getEscapeParameter(workOrderNo) + "%");
 		}
 		// 筛选线别
 		if (line != null) {
@@ -90,15 +95,15 @@ public class OperationServiceImpl implements OperationService {
 		}
 		// 筛选客户
 		if (client != null && !client.equals("")) {
-			parameter.setClient("%" + client + "%");
+			parameter.setClient("%" + SqlUtil.getEscapeParameter(client) + "%");
 		}
 		// 筛选程序表编号
 		if (programNo != null && !programNo.equals("")) {
-			parameter.setProgramNo("%" + programNo + "%");
+			parameter.setProgramNo("%" + SqlUtil.getEscapeParameter(programNo) + "%");
 		}
 		// 筛选订单号
 		if (orderNo != null && !orderNo.equals("")) {
-			parameter.setOrderNo("%" + orderNo + "%");
+			parameter.setOrderNo("%" + SqlUtil.getEscapeParameter(orderNo) + "%");
 		}
 		if (page != null) {
 			// 获取总条数
@@ -119,10 +124,10 @@ public class OperationServiceImpl implements OperationService {
 
 	
 	@Override
-	public ResponseEntity<byte[]> downloadClientReport(String client, String programNo, Integer line, String orderNo, String workOrderNo, String startTime, String endTime) throws ParseException, IOException, OutOfMemoryError {
+	public ResponseEntity<byte[]> downloadClientReport(String client, String programNo, Integer line, String orderNo, String workOrderNo, String startTime, String endTime, Page page) throws ParseException, IOException, OutOfMemoryError {
 		ExcelSpringHelper helper = ExcelSpringHelper.create(true);
 		// 获取数据
-		List<ClientReport> clientReports = listClientReport(client, programNo, line, orderNo, workOrderNo, startTime, endTime, null);
+		List<ClientReport> clientReports = listClientReport(client, programNo, line, orderNo, workOrderNo, startTime, endTime, page);
 		helper.fill(clientReports);
 		return helper.getDownloadEntity("客户报表.xlsx", true);
 	}
@@ -203,7 +208,7 @@ public class OperationServiceImpl implements OperationService {
 		}
 		// 筛选工单号
 		if (workOrderNo != null && !workOrderNo.equals("")) {
-			parameter.setWorkOrderNo("%" + workOrderNo + "%");
+			parameter.setWorkOrderNo("%" + SqlUtil.getEscapeParameter(workOrderNo) + "%");
 		}
 		// 筛选线别
 		if (line != null) {
@@ -211,7 +216,7 @@ public class OperationServiceImpl implements OperationService {
 		}
 		// 筛选操作员
 		if (operator != null && !operator.equals("")) {
-			parameter.setOperator("%" + operator + "%");
+			parameter.setOperator("%" + SqlUtil.getEscapeParameter(operator) + "%");
 		}
 		// 过滤类型
 		if (type != null) {
@@ -219,7 +224,7 @@ public class OperationServiceImpl implements OperationService {
 		}
 		// 筛选客户
 		if (client != null && !client.equals("")) {
-			parameter.setClient("%" + client + "%");
+			parameter.setClient("%" + SqlUtil.getEscapeParameter(client) + "%");
 		}
 		if (page != null) {
 			page.setTotallyData(operationMapper.countByOperationParameter(parameter));
@@ -238,8 +243,17 @@ public class OperationServiceImpl implements OperationService {
 
 	
 	@Override
-	public ResponseEntity<byte[]> downloadOperationReport(String operator, String client, Integer line, String workOrderNo, String startTime, String endTime, Integer type) throws ParseException, IOException, OutOfMemoryError {
-		List<OperationReport> operationReports = listOperationReport(operator, client, line, workOrderNo, startTime, endTime, type, null);
+	public ResponseEntity<byte[]> downloadOperationReport(Integer line, String workOrderNo, String startTime, String endTime, Integer type, Page page) throws ParseException, IOException, OutOfMemoryError {
+		List<OperationReport> operationReports = new ArrayList<>();
+		List<OperationReportSummary> operationReportSummarys = listOperationReportSummary(line, workOrderNo, startTime, endTime, type, page);
+		Page operationReportPage = new Page();
+		if (operationReportSummarys != null && operationReportSummarys.size() > 0) {
+			operationReportPage.setCurrentPage(CURRENT_PAGE);
+			operationReportPage.setPageSize(PAGE_SIZE);
+			for (OperationReportSummary operationReportSummary : operationReportSummarys) {
+				operationReports.addAll(listOperationReport(operationReportSummary.getOperator(), null, line, operationReportSummary.getWorkOrderNo(), startTime, endTime, getOperationTypeByTypeString(operationReportSummary.getOperationType()), operationReportPage));
+			}
+		}
 		ExcelSpringHelper helper = ExcelSpringHelper.create(true);
 		// 解析操作类型
 		String title = null;
@@ -267,7 +281,7 @@ public class OperationServiceImpl implements OperationService {
 			}
 		}
 		helper.fill(operationReports, title);
-		return helper.getDownloadEntity(title + ".xls", true);
+		return helper.getDownloadEntity(title + ".xlsx", true);
 	}
 
 	
@@ -354,22 +368,22 @@ public class OperationServiceImpl implements OperationService {
 
 		// 筛选操作员
 		if (operator != null && !operator.equals("")) {
-			stockLogCriteria.andOperatorLike("%" + operator + "%");
+			stockLogCriteria.andOperatorLike("%" + SqlUtil.getEscapeParameter(operator) + "%");
 		}
 
 		// 筛选仓号
 		if (position != null && !position.equals("")) {
-			stockLogCriteria.andPositionLike("%" + position + "%");
+			stockLogCriteria.andPositionLike("%" + SqlUtil.getEscapeParameter(position) + "%");
 		}
 
 		// 筛选供应商
 		if (custom != null && !custom.equals("")) {
-			stockLogCriteria.andCustomLike("%" + custom + "%");
+			stockLogCriteria.andCustomLike("%" + SqlUtil.getEscapeParameter(custom) + "%");
 		}
 
 		// 筛选料号
 		if (materialNo != null && !materialNo.equals("")) {
-			stockLogCriteria.andMaterialNoLike("%" + materialNo + "%");
+			stockLogCriteria.andMaterialNoLike("%" + SqlUtil.getEscapeParameter(materialNo) + "%");
 		}
 
 		// 时间降序
@@ -393,5 +407,30 @@ public class OperationServiceImpl implements OperationService {
 		}		
 		return 0;
 	}
-				
+	
+	
+	/**@author HCJ
+	 * 根据描述得到操作类型
+	 * @date 2018年11月28日 下午3:39:07
+	 */
+	private Integer getOperationTypeByTypeString(String typeString) {
+		if (typeString != null && !"".equals(typeString)) {
+			switch (typeString) {
+			case "上料":
+				return 0;
+			case "换料":
+				return 1;
+			case "核料":
+				return 2;
+			case "全检":
+				return 3;
+			case "发料":
+				return 4;
+			default:
+				break;
+			}
+		}
+		return null;
+	}
+					
 }

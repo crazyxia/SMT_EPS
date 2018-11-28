@@ -327,7 +327,7 @@ public class ExcelHelper{
 	 * @throws IllegalArgumentException 
 	 */
 	public void fill(List<?> entities){
-		fill(headStyle, bodyStyle, entities , 0);
+		fill(headStyle, bodyStyle, entities , 1);
 	}
 	
 	
@@ -380,8 +380,8 @@ public class ExcelHelper{
 	 * @throws IllegalArgumentException 
 	 */
 	public void fill(CellStyle headStyle, CellStyle bodyStyle, List<?> entities, int startRowNum) {
-		for (int i = startRowNum; i < entities.size(); i++) {
-			Object entity = entities.get(i);
+		for (int i = startRowNum; i < entities.size() + 1; i++) {
+			Object entity = entities.get(i - 1);
 			Field[] fields = entity.getClass().getDeclaredFields();
 			for (Field field : fields) {
 				Excel e = field.getAnnotation(Excel.class);

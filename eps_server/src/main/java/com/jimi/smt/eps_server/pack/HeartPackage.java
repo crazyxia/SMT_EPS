@@ -1,21 +1,15 @@
 package com.jimi.smt.eps_server.pack;
 
-import java.io.Serializable;
 import java.util.Date;
 
 
 import cc.darhao.jiminal.annotation.Parse;
 import cc.darhao.jiminal.annotation.Protocol;
-import com.jimi.smt.eps_server.pack.BasePackage;
+import cc.darhao.jiminal.core.BasePackage;
 
 @Protocol(0x48)
-public class HeartPackage extends BasePackage implements Serializable{
+public class HeartPackage extends BasePackage {
 
-	/**
-	 * serialVersionUID : TODO
-	 */
-	private static final long serialVersionUID = 7789639345063527563L;
-	
 	@Parse({0,1})
 	private int line;
 	@Parse({1,4})

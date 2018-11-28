@@ -14,6 +14,7 @@ import com.jimi.smt.eps_server.entity.filler.UserToUserVOFiller;
 import com.jimi.smt.eps_server.entity.vo.UserVO;
 import com.jimi.smt.eps_server.mapper.UserMapper;
 import com.jimi.smt.eps_server.service.UserService;
+import com.jimi.smt.eps_server.util.SqlUtil;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -67,10 +68,10 @@ public class UserServiceImpl implements UserService {
 		UserExample userExample = new UserExample();
 		Criteria criteria = userExample.createCriteria();
 		if (id != null && !id.equals("")) {
-			criteria.andIdLike("%" + id + "%");
+			criteria.andIdLike("%" + SqlUtil.getEscapeParameter(id) + "%");
 		}
 		if (name != null && !name.equals("")) {
-			criteria.andNameLike("%" + name + "%");
+			criteria.andNameLike("%" + SqlUtil.getEscapeParameter(name) + "%");
 		}
 		if(type != null) {
 			criteria.andTypeEqualTo(type);

@@ -1,19 +1,13 @@
 package com.jimi.smt.eps_server.pack;
 
-import java.io.Serializable;
 import java.util.Date;
 
 import cc.darhao.jiminal.annotation.Parse;
 import cc.darhao.jiminal.annotation.Protocol;
-import com.jimi.smt.eps_server.pack.BasePackage;
+import cc.darhao.jiminal.core.BasePackage;
 
 @Protocol(0x4C)
-public class LoginReplyPackage extends BasePackage implements Serializable{
-	
-	/**
-	 * serialVersionUID : TODO
-	 */
-	private static final long serialVersionUID = 6830238646377104506L;
+public class LoginReplyPackage extends BasePackage {
 	
 	@Parse({0,1})
 	private int line;

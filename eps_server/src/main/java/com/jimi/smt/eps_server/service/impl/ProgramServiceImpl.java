@@ -6,6 +6,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +39,7 @@ import com.jimi.smt.eps_server.service.ProgramService;
 import com.jimi.smt.eps_server.timer.TimeoutTimer;
 import com.jimi.smt.eps_server.util.ExcelSpringHelper;
 import com.jimi.smt.eps_server.util.ResultUtil;
+import com.jimi.smt.eps_server.util.SqlUtil;
 
 import cc.darhao.dautils.api.FieldUtil;
 import cc.darhao.dautils.api.UuidUtil;
@@ -85,7 +88,12 @@ public class ProgramServiceImpl implements ProgramService {
 		if (!header.equals(helper.getString(1, 0 + offset))) {
 			throw new RuntimeException("头部错误：没有找到\"SMT FEEDER LIST\"标题栏");
 		}
-
+		
+		// 校验文件内容是否有效且存在
+		if(isProgramFileContentAvailable(helper) == false) {
+			throw new RuntimeException("站位表部分内容为空或错误：请正确填写");
+		}
+		
 		// 分割解析工单和线号
 		String[] workOrders = helper.getString(4, 6 + offset).split("\\+");
 		String[] lines = helper.getString(3, 6 + offset).split("\\+");
@@ -95,7 +103,7 @@ public class ProgramServiceImpl implements ProgramService {
 			if (lineService.getLineIdByName(line) == null) {
 				throw new RuntimeException("线号错误:请填写正确的线号");
 			}
-		}
+		}	
 		
 		// 创建所有工单
 		List<Program> programs = new ArrayList<Program>(workOrders.length * lines.length);
@@ -207,11 +215,11 @@ public class ProgramServiceImpl implements ProgramService {
 
 		// 筛选程序名
 		if (programName != null && !programName.equals("")) {
-			programCriteria.andProgramNameLike("%" + programName + "%");
+			programCriteria.andProgramNameLike("%" + SqlUtil.getEscapeParameter(programName) + "%");
 		}
 		// 筛选文件名
 		if (fileName != null && !fileName.equals("")) {
-			programCriteria.andFileNameLike("%" + fileName + "%");
+			programCriteria.andFileNameLike("%" + SqlUtil.getEscapeParameter(fileName) + "%");
 		}
 		// 筛选线别
 		if (line != null) {
@@ -219,7 +227,7 @@ public class ProgramServiceImpl implements ProgramService {
 		}
 		// 筛选工单号
 		if (workOrder != null && !workOrder.equals("")) {
-			programCriteria.andWorkOrderLike("%" + workOrder + "%");
+			programCriteria.andWorkOrderLike("%" + SqlUtil.getEscapeParameter(workOrder) + "%");
 		}
 		// 筛选状态
 		if (state != null) {
@@ -732,7 +740,7 @@ public class ProgramServiceImpl implements ProgramService {
 			return 0;
 		}
 		for (Integer result : results) {
-			if (!result.equals(2) && result.equals(3)) {
+			if (!result.equals(2) && !result.equals(3)) {
 				allResult = 0;
 				break;
 			}
@@ -929,6 +937,96 @@ public class ProgramServiceImpl implements ProgramService {
 		} else {
 			return Integer.parseInt(planProduct);
 		}
+	}
+	
+	
+	/**@author HCJ
+	 * 根据ExcelSpringHelper获取的文件内容，判断其是否符合要求
+	 * @date 2018年11月27日 下午4:28:55
+	 */
+	private boolean isProgramFileContentAvailable(ExcelSpringHelper helper) {
+		// 因添加流水号而导致的表格列号偏移量
+		int offset = 1;
+		boolean isProgramFileHeadExist = false;
+		boolean isProgramFileBodyExist = false;
+		boolean isAuditorAvailable = false;
+		boolean isSerialNoAvailable = false;
+		// 判断各个格子的内容是否存在
+		boolean isClientExist = isContentExist(helper.getString(2, 1 + offset));
+		boolean isMachineNameExist = isContentExist(helper.getString(2, 4 + offset));
+		boolean isVersionExist = isContentExist(helper.getString(2, 6 + offset));
+		boolean isMachineConfigExist = isContentExist(helper.getString(3, 1 + offset));
+		boolean isProgramNoExist = isContentExist(helper.getString(3, 4 + offset));
+		boolean isLineExist = isContentExist(helper.getString(3, 6 + offset));
+		boolean isEffectiveDateExist = isContentExist(helper.getString(4, 1 + offset));
+		boolean isPcbNoExist = isContentExist(helper.getString(4, 4 + offset));
+		boolean isWorkOrderExist = isContentExist(helper.getString(4, 6 + offset));
+		boolean isBomExist = isContentExist(helper.getString(5, 1 + offset));
+		boolean isProgramNameExist = isContentExist(helper.getString(6, 1 + offset));
+		boolean isPlanProductExist = isContentExist(helper.getString(6, 5 + offset));
+		boolean isStructureExist = isContentExist(helper.getString(6, 8 + offset));
+		if (isContentExist(helper.getString(7, 4 + offset))) {
+			if (helper.getString(7, 4 + offset).length() > 3) {
+				isAuditorAvailable = true;
+			}
+		}
+		if (isClientExist && isMachineNameExist && isVersionExist && isMachineConfigExist && isProgramNoExist && isLineExist && isEffectiveDateExist && isPcbNoExist && isWorkOrderExist && isBomExist && isProgramNameExist && isPlanProductExist && isStructureExist && isAuditorAvailable) {
+			isProgramFileHeadExist = true;
+		}
+		int sum = helper.getBook().getNumberOfSheets();
+		int realBodyRowNum = 0;
+		int planBodyRowNum = 0;
+		for (int i = 0; i < sum; i++) {
+			helper.switchSheet(i);
+			// 站位表body中含有序列号的行的数量
+			for (int j = 9; j < helper.getBook().getSheetAt(i).getLastRowNum() - 3; j++) {
+				if (isContentExist(helper.getString(j, -1 + offset)) && isNumber(helper.getString(j, -1 + offset))) {
+					planBodyRowNum++;
+				}
+				isSerialNoAvailable = isContentExist(helper.getString(j, -1 + offset)) && isNumber(helper.getString(j, -1 + offset));
+				boolean isLineseatExist = isContentExist(helper.getString(j, 0 + offset));
+				boolean isMaterialNoExist = isContentExist(helper.getString(j, 1 + offset));
+				boolean isSpecitificationExist = isContentExist(helper.getString(j, 3 + offset));
+				boolean isPositionExist = isContentExist(helper.getString(j, 4 + offset));
+				// 填写有效的站位表body中含有序列号的行的数量
+				if (isLineseatExist && isMaterialNoExist && isSpecitificationExist && isPositionExist && isSerialNoAvailable) {
+					realBodyRowNum++;
+				}
+			}
+		}
+		if (planBodyRowNum == realBodyRowNum) {
+			isProgramFileBodyExist = true;
+		}
+		if (isProgramFileHeadExist && isProgramFileBodyExist) {
+			return true;
+		}
+		return false;
+	}
+	
+	
+	/**@author HCJ
+	 * 判断字符串是否为空或者空字符串
+	 * @date 2018年11月28日 上午8:38:43
+	 */
+	private boolean isContentExist(String content) {
+		if (content == null || "".equals(content) || content.length() == 0 || content.trim().isEmpty()) {
+			return false;
+		}
+		return true;
+	}
+
+	
+	/**@author HCJ
+	 * 判断字符串是否为数字
+	 * @date 2018年11月28日 上午8:40:02
+	 */
+	private boolean isNumber(String str) {
+		Pattern pattern = Pattern.compile("[0-9]*");
+		Matcher isNum = pattern.matcher(str);
+		if (!isNum.matches()) {
+			return false;
+		}
+		return true;
 	}
 
 }
