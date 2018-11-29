@@ -15,14 +15,14 @@ public class HttpHelper {
 
 	private final OkHttpClient client = new OkHttpClient();
 
-	private String URL = "http://localhost:8080/eps_server/";
+	private String URL/* = "http://localhost:8080/eps_server/"*/;
 	
 	private static final String CONFIG_FILE = "/config.ini";
 	
 	
 	public HttpHelper() {
-		/*Map<String, String> map_url = IniReader.getItem(System.getProperty("user.dir") + CONFIG_FILE, "url");
-		URL = map_url.get("url");*/
+		Map<String, String> urlMap = IniReader.getItem(System.getProperty("user.dir") + CONFIG_FILE, "url");
+		URL = urlMap.get("url");
 	}
 	
 	
