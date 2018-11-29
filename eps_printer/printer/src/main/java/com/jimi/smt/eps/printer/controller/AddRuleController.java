@@ -132,6 +132,8 @@ public class AddRuleController implements Initializable {
 		scanTa.setDisable(false);
 		resultTa.setText("");
 		ruleItems.delete(0, ruleItems.length());
+		scanTaString = null;
+		resultTaString =null;
 	}
 	
 

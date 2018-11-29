@@ -261,23 +261,12 @@ public class MainController implements Initializable {
 
 	private static final String INSERT_STOCK_ACTION = "stock/insert";
 
-	private boolean focusOnQuantityTf;
-
-	private boolean focusOnSeatNoTf;
-
-	private boolean focusOnDescriptionTf;
-
-	private boolean focusOnNameTf;
-
-	private boolean focusOnRemarkTf;
-
-	private boolean focusOnDateTf;
-
-	private boolean focusOncopyTf;
-
+	private List<TextField> printTaskInfoTfs = new ArrayList<TextField>();
+	
 	
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		initTableCol();
+		initPrintTaskInfoTfs();
 		initFocusTarget();
 		initMaterialNoTfListener();
 		initTableSelectorCbListener();
@@ -383,7 +372,7 @@ public class MainController implements Initializable {
 	}
 
 	
-	public void onIgnoreClick() {
+	public void onIgnoreCbClick() {
 		if (ignoreCb.isSelected()) {
 			nameTf.setDisable(false);
 			descriptionTf.setDisable(false);
@@ -479,8 +468,8 @@ public class MainController implements Initializable {
 			error("发生错误：" + e.getMessage());
 			throw e;
 		}
-		materialNoTf.setText("");
-		materialNoTf.requestFocus();
+		scanMaterialNoTf.setText("");
+		scanMaterialNoTf.requestFocus();
 		printBt.setText("打印");
 		// 提交数据库
 		commitDataBase();
@@ -534,66 +523,66 @@ public class MainController implements Initializable {
 		showManageRuleWindow();
 	}
 
-	
-	public void onQuantityClick() {
+
+	public void onQuantityCbClick() {
 		if (quantityCb.isSelected()) {
-			focusOnQuantityTf = true;
+			printTaskInfoTfs.set(0, quantityTf);
 		} else {
-			focusOnQuantityTf = false;
+			printTaskInfoTfs.set(0, null);
 		}
 	}
 
 	
-	public void onSeatNoClick() {
+	public void onSeatNoCbClick() {
 		if (seatNoCb.isSelected()) {
-			focusOnSeatNoTf = true;
+			printTaskInfoTfs.set(1, seatNoTf);
 		} else {
-			focusOnSeatNoTf = false;
+			printTaskInfoTfs.set(1, null);
 		}
 	}
 
 	
-	public void onDescriptionClick() {
+	public void onDescriptionCbClick() {
 		if (descriptionCb.isSelected()) {
-			focusOnDescriptionTf = true;
+			printTaskInfoTfs.set(2, descriptionTf);
 		} else {
-			focusOnDescriptionTf = false;
+			printTaskInfoTfs.set(2, null);
 		}
 	}
 
 	
-	public void onNameClick() {
+	public void onNameCbClick() {
 		if (nameCb.isSelected()) {
-			focusOnNameTf = true;
+			printTaskInfoTfs.set(3, nameTf);
 		} else {
-			focusOnNameTf = false;
+			printTaskInfoTfs.set(3, null);
 		}
 	}
 
 	
-	public void onRemarkClick() {
+	public void onRemarkCbClick() {
 		if (remarkCb.isSelected()) {
-			focusOnRemarkTf = true;
+			printTaskInfoTfs.set(4, remarkTf);
 		} else {
-			focusOnRemarkTf = false;
+			printTaskInfoTfs.set(4, null);
 		}
 	}
 
 	
-	public void onDateClick() {
+	public void onDateCbClick() {
 		if (dateCb.isSelected()) {
-			focusOnDateTf = true;
+			printTaskInfoTfs.set(5, dateTf);
 		} else {
-			focusOnDateTf = false;
+			printTaskInfoTfs.set(5, null);
 		}
 	}
 
 	
-	public void onCopyClick() {
+	public void onCopyCbClick() {
 		if (copyCb.isSelected()) {
-			focusOncopyTf = true;
+			printTaskInfoTfs.set(6, copyTf);
 		} else {
-			focusOncopyTf = false;
+			printTaskInfoTfs.set(6, null);
 		}
 	}
 
@@ -872,28 +861,19 @@ public class MainController implements Initializable {
 		dateTf.setText(DateUtil.yyyyMMdd(new Date()));
 	}
 
-	
+
 	private void initHotKey() {
 		// 初始化打印热键
 		parentAp.setOnKeyReleased(new EventHandler<KeyEvent>() {
 			@Override
 			public void handle(KeyEvent event) {
 				if (event.getCode().compareTo(KeyCode.ENTER) == 0) {
-					// 控制焦点转移或打印
-					if (quantityTf.isFocused()) {
-						setFocusTarget(quantityTf);
-					} else if (seatNoTf.isFocused()) {
-						setFocusTarget(seatNoTf);
-					} else if (descriptionTf.isFocused()) {
-						setFocusTarget(descriptionTf);
-					} else if (nameTf.isFocused()) {
-						setFocusTarget(nameTf);
-					} else if (remarkTf.isFocused()) {
-						setFocusTarget(remarkTf);
-					} else if (dateTf.isFocused()) {
-						setFocusTarget(dateTf);
-					} else if (copyTf.isFocused()) {
-						setFocusTarget(copyTf);
+					for (TextField textField : printTaskInfoTfs) {
+						if (textField != null && textField.isFocused()) {
+							setFocusTarget(textField);
+							break;
+						}
+
 					}
 				}
 			}
@@ -1090,6 +1070,7 @@ public class MainController implements Initializable {
 	}
 
 	
+	
 	private void initMaterialNoTfListener() {
 		// 初始化物料编号文本域监听器
 		materialNoTf.textProperty().addListener(new ChangeListener<String>() {
@@ -1132,27 +1113,19 @@ public class MainController implements Initializable {
 						materialNoTf.setStyle("-fx-text-fill: green;");
 
 						printBt.setDisable(false);
-
-						// 焦点移至勾选的输入框
-						if (focusOnQuantityTf == true) {
-							quantityTf.requestFocus();
-						} else if (focusOnSeatNoTf == true) {
-							seatNoTf.requestFocus();
-						} else if (focusOnDescriptionTf == true) {
-							descriptionTf.requestFocus();
-						} else if (focusOnNameTf == true) {
-							nameTf.requestFocus();
-						} else if (focusOnRemarkTf == true) {
-							remarkTf.requestFocus();
-						} else if (focusOnDateTf == true) {
-							dateTf.requestFocus();
-						} else if (focusOncopyTf == true) {
-							copyTf.requestFocus();
-						} else {
-							if (!printBt.isDisable()) {
-								onPrintBtClick();
+						// 设置第一个焦点
+						boolean isCheckBoxSelected = false;
+						for (TextField textField : printTaskInfoTfs) {
+							if (textField != null) {
+								textField.requestFocus();
+								isCheckBoxSelected = true;
+								break;
 							}
 						}
+						if (!isCheckBoxSelected && !printBt.isDisable()) {
+							onPrintBtClick();
+						}
+						
 						info("料号存在，打印已就绪（热键：回车）");
 						break;
 					}
@@ -1278,7 +1251,6 @@ public class MainController implements Initializable {
 
 	}
 
-	
 	private void showRfidAlert() {
 		try {
 			FXMLLoader loader = new FXMLLoader(ResourcesUtil.getResourceURL("fxml/rfid.fxml"));
@@ -1298,7 +1270,6 @@ public class MainController implements Initializable {
 		}
 	}
 
-	
 	/**
 	 * @author HCJ 打开规则管理窗口
 	 * @date 2018年10月29日 下午3:35:51
@@ -1322,7 +1293,6 @@ public class MainController implements Initializable {
 		}
 	}
 
-	
 	private void resetControllers() {
 		nameTf.setDisable(true);
 		descriptionTf.setDisable(true);
@@ -1348,7 +1318,6 @@ public class MainController implements Initializable {
 		printBt.setDisable(true);
 	}
 
-	
 	/**
 	 * 日期类型校验
 	 * 
@@ -1368,7 +1337,6 @@ public class MainController implements Initializable {
 
 	}
 
-	
 	/**
 	 * @author HCJ 扫描料号监听器
 	 * @date 2018年10月31日 下午5:04:46
@@ -1402,7 +1370,6 @@ public class MainController implements Initializable {
 		});
 	}
 
-	
 	/**
 	 * @author HCJ 根据料号规则解析得到料号
 	 * @date 2018年10月31日 下午5:05:10
@@ -1415,10 +1382,10 @@ public class MainController implements Initializable {
 			} catch (Exception e) {
 				materialNoArray = removeSpace(materialNoString.split("\\" + ruleString.substring(ruleString.indexOf(":") + 1, ruleString.indexOf("="))));
 			}
-			return materialNoArray[Integer.parseInt(ruleString.substring(ruleString.indexOf("=") + 1, ruleString.length()))];
+			return materialNoArray[Integer.parseInt(ruleString.substring(ruleString.indexOf("=") + 1, ruleString.indexOf(")")))];
 		} else if (ruleString.contains("长度")) {
-			int start = Integer.parseInt(ruleString.substring(ruleString.indexOf(":") + 1, ruleString.indexOf("->")));
-			int end = Integer.parseInt(ruleString.substring(ruleString.indexOf("->") + 1, ruleString.length()));
+			int start = Integer.parseInt(ruleString.substring(ruleString.indexOf(":") + 1, ruleString.indexOf("-")));
+			int end = Integer.parseInt(ruleString.substring(ruleString.indexOf(">") + 1, ruleString.indexOf(")")));
 			return materialNoString.substring(start, end);
 		} else if (ruleString.contains("默认规则")) {
 			return materialNoString;
@@ -1427,86 +1394,24 @@ public class MainController implements Initializable {
 	}
 
 	
+	/**@author HCJ
+	 * 根据当前焦点所在的TextField设置点击Enter键后的下一个焦点或者显示输入id的输入框
+	 * @date 2018年11月29日 上午11:19:56
+	 */
 	private void setFocusTarget(TextField textField) {
-		if (textField == quantityTf) {
-			if (focusOnSeatNoTf == true) {
-				seatNoTf.requestFocus();
-			} else if (focusOnDescriptionTf == true) {
-				descriptionTf.requestFocus();
-			} else if (focusOnNameTf == true) {
-				nameTf.requestFocus();
-			} else if (focusOnRemarkTf == true) {
-				remarkTf.requestFocus();
-			} else if (focusOnDateTf == true) {
-				dateTf.requestFocus();
-			} else if (focusOncopyTf == true) {
-				copyTf.requestFocus();
-			} else {
-				if (!printBt.isDisable()) {
-					onPrintBtClick();
+		boolean isNextSelectedCheckBoxExist = false;
+		if (printTaskInfoTfs.indexOf(textField) < printTaskInfoTfs.size() - 1) {
+			for (int i = printTaskInfoTfs.indexOf(textField) + 1; i < printTaskInfoTfs.size(); i++) {
+				if (printTaskInfoTfs.get(i) != null) {
+					printTaskInfoTfs.get(i).requestFocus();
+					isNextSelectedCheckBoxExist = true;
+					break;
 				}
 			}
-		} else if (textField == seatNoTf) {
-			if (focusOnDescriptionTf == true) {
-				descriptionTf.requestFocus();
-			} else if (focusOnNameTf == true) {
-				nameTf.requestFocus();
-			} else if (focusOnRemarkTf == true) {
-				remarkTf.requestFocus();
-			} else if (focusOnDateTf == true) {
-				dateTf.requestFocus();
-			} else if (focusOncopyTf == true) {
-				copyTf.requestFocus();
-			} else {
-				if (!printBt.isDisable()) {
-					onPrintBtClick();
-				}
+			if (!isNextSelectedCheckBoxExist && !printBt.isDisable()) {
+				onPrintBtClick();
 			}
-		} else if (textField == descriptionTf) {
-			if (focusOnNameTf == true) {
-				nameTf.requestFocus();
-			} else if (focusOnRemarkTf == true) {
-				remarkTf.requestFocus();
-			} else if (focusOnDateTf == true) {
-				dateTf.requestFocus();
-			} else if (focusOncopyTf == true) {
-				copyTf.requestFocus();
-			} else {
-				if (!printBt.isDisable()) {
-					onPrintBtClick();
-				}
-			}
-		} else if (textField == nameTf) {
-			if (focusOnRemarkTf == true) {
-				remarkTf.requestFocus();
-			} else if (focusOnDateTf == true) {
-				dateTf.requestFocus();
-			} else if (focusOncopyTf == true) {
-				copyTf.requestFocus();
-			} else {
-				if (!printBt.isDisable()) {
-					onPrintBtClick();
-				}
-			}
-		} else if (textField == remarkTf) {
-			if (focusOnDateTf == true) {
-				dateTf.requestFocus();
-			} else if (focusOncopyTf == true) {
-				copyTf.requestFocus();
-			} else {
-				if (!printBt.isDisable()) {
-					onPrintBtClick();
-				}
-			}
-		} else if (textField == dateTf) {
-			if (focusOncopyTf == true) {
-				copyTf.requestFocus();
-			} else {
-				if (!printBt.isDisable()) {
-					onPrintBtClick();
-				}
-			}
-		} else if (textField == copyTf) {
+		} else {
 			if (!printBt.isDisable()) {
 				onPrintBtClick();
 			}
@@ -1514,11 +1419,30 @@ public class MainController implements Initializable {
 	}
 
 	
+	/**@author HCJ
+	 * 设置初始勾选的CheckBox
+	 * @date 2018年11月29日 上午11:18:18
+	 */
 	private void initFocusTarget() {
 		quantityCb.setSelected(true);
 		copyCb.setSelected(true);
-		onQuantityClick();
-		onCopyClick();
+		onQuantityCbClick();
+		onCopyCbClick();
+	}
+	
+	
+	/**@author HCJ
+	 * 设置初始的TextField集合
+	 * @date 2018年11月29日 上午11:16:55
+	 */
+	private void initPrintTaskInfoTfs() {
+		printTaskInfoTfs.add(0, quantityTf);
+		printTaskInfoTfs.add(1, null);
+		printTaskInfoTfs.add(2, null);
+		printTaskInfoTfs.add(3, null);
+		printTaskInfoTfs.add(4, null);
+		printTaskInfoTfs.add(5, null);
+		printTaskInfoTfs.add(6, copyTf);
 	}
 
 	
@@ -1534,12 +1458,10 @@ public class MainController implements Initializable {
 		}
 	}
 
-	
 	public Stage getPrimaryStage() {
 		return primaryStage;
 	}
 
-	
 	public void setPrimaryStage(Stage primaryStage) {
 		this.primaryStage = primaryStage;
 	}
@@ -1548,17 +1470,14 @@ public class MainController implements Initializable {
 		return printerSocket;
 	}
 
-	
 	public String getUserId() {
 		return userId;
 	}
 
-	
 	public void setUserId(String userId) {
 		this.userId = userId;
 	}
 
-	
 	/**
 	 * 二维码和RFID内的数据<br>
 	 * 格式：料号@数量@时间戳@工号
@@ -1567,12 +1486,10 @@ public class MainController implements Initializable {
 		return data;
 	}
 
-	
 	public static Socket getRfidSocket() {
 		return rfidSocket;
 	}
 
-	
 	public String[] removeSpace(String[] array) {
 		List<String> tmp = new ArrayList<String>();
 		for (String str : array) {
