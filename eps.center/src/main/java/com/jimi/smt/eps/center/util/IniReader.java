@@ -16,7 +16,7 @@ import org.ini4j.Ini;
  */
 public class IniReader {
 
-private static Ini ini = new Ini();
+	private static Ini ini = new Ini();
 
 	
 	public static Map<String, String> getItem(String filename, String item) {

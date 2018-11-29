@@ -31,6 +31,10 @@ import com.pi4j.io.gpio.RaspiPin;
 
 import cc.darhao.dautils.api.TextFileUtil;
 
+/**中控远程方法实现类：接收控制包、接收板子数量重置包
+ * @author   HCJ
+ * @date     2018年11月29日 上午11:49:03
+ */
 public class CenterRemoteImpl implements CenterRemote {
 
 	private static Logger logger = LogManager.getRootLogger();
@@ -38,7 +42,7 @@ public class CenterRemoteImpl implements CenterRemote {
 	/**
 	 * 初始化GPIO口数据
 	 */
-	final GpioController gpio = GpioFactory.getInstance();
+	private final GpioController gpio = GpioFactory.getInstance();
 	GpioPinDigitalOutput io13 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_02, PinState.LOW);
 	GpioPinDigitalOutput io15 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_03, PinState.LOW);
 	GpioPinDigitalOutput io16 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_04, PinState.LOW);
@@ -65,16 +69,16 @@ public class CenterRemoteImpl implements CenterRemote {
 	private ServerRemote server;
 
 	/**
-	 * connect_to_server_ip : 服务器的IP
+	 * serverIp : 服务器的IP
 	 */
-	private String connect_to_server_ip;
+	private String serverIp;
 
 	
 	public CenterRemoteImpl() {
-		Map<String, String> map_ip = IniReader.getItem(System.getProperty("user.dir") + CONFIG_FILE, "ip");
-		connect_to_server_ip = map_ip.get("connect_to_server_ip");
+		Map<String, String> ipMap = IniReader.getItem(System.getProperty("user.dir") + CONFIG_FILE, "ip");
+		serverIp = ipMap.get("serverIp");
 		try {
-			server = (ServerRemote) LocateRegistry.getRegistry(connect_to_server_ip).lookup("server");
+			server = (ServerRemote) LocateRegistry.getRegistry(serverIp).lookup("server");
 		} catch (Exception e) {
 			new CenterRemoteImpl();
 			logger.error("查找RMI服务端失败:" + e.getMessage());
@@ -82,8 +86,11 @@ public class CenterRemoteImpl implements CenterRemote {
 	}
 
 	
+	/** <p>Title: receiveControl</p>
+	 * <p>Description: 接收控制包,根据控制包信息进行相应操作</p>
+	 */
 	@Override
-	public ControlReplyPackage receiveControlPackage(ControlPackage controlPackage) {
+	public ControlReplyPackage receiveControl(ControlPackage controlPackage) {
 		ControlReplyPackage controlReplyPackage = new ControlReplyPackage();
 		try {
 			ControlledDevice controlledDevice = controlPackage.getControlledDevice();
@@ -189,6 +196,9 @@ public class CenterRemoteImpl implements CenterRemote {
 	}
 	
 	
+	/** <p>Title: resetBoardNum</p>
+	 * <p>Description: 接收板子数量重置包，重置板子数</p>
+	 */
 	@Override
 	public BoardResetReplyPackage resetBoardNum(BoardResetPackage boardResetPackage) {
 		BoardResetReplyPackage boardResetReplyPackage = new BoardResetReplyPackage();
@@ -206,7 +216,7 @@ public class CenterRemoteImpl implements CenterRemote {
 			boardNumPackage.protocol = "BoardNum";
 			boardNumPackage.serialNo = 0;
 			boardNumPackage.senderIp = IpHelper.getLinuxLocalIp();
-			boardNumPackage.receiverIp = connect_to_server_ip;
+			boardNumPackage.receiverIp = serverIp;
 			server.updateBoardNum(boardNumPackage);
 			logger.info("在时间:" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(boardNumPackage.getTimestamp()) + " ID为：" + boardResetPackage.getLine() + " 的产线display客户端发送上传板子数量包");
 			TextFileUtil.writeToFile(System.getProperty("user.dir") + BOARDNUM_FILE, "0");

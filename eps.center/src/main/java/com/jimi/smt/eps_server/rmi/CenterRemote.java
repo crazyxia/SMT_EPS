@@ -14,7 +14,7 @@ public interface CenterRemote extends Remote{
 	 * 接收控制包
 	 * @date 2018年11月5日 下午4:14:04
 	 */
-	public ControlReplyPackage receiveControlPackage(ControlPackage controlPackage)throws RemoteException;
+	public ControlReplyPackage receiveControl(ControlPackage controlPackage)throws RemoteException;
 	
 	/**@author HCJ
 	 * 接收板子数量重置包，重置板子数量

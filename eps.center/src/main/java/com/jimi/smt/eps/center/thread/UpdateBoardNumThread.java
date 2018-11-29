@@ -17,7 +17,7 @@ import com.pi4j.io.gpio.event.GpioPinListenerDigital;
 
 import cc.darhao.dautils.api.TextFileUtil;
 
-/**与服务端进行通讯更新板子数量线程
+/**监听红外线和更新板子数量线程
  * @package  com.jimi.smt.eps.center.thread
  * @file     UpdateBoardNumThread.java
  * @author   HCJ

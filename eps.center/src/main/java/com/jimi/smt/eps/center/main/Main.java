@@ -10,7 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.config.ConfigurationSource;
 import org.apache.logging.log4j.core.config.Configurator;
 
-import com.jimi.smt.eps.center.thread.ConnectToServerRemoteThread;
+import com.jimi.smt.eps.center.thread.SendBoardNumPackageThread;
 import com.jimi.smt.eps.center.thread.UpdateBoardNumThread;
 import com.jimi.smt.eps.center.util.IpHelper;
 import com.jimi.smt.eps_server.rmi.CenterRemote;
@@ -25,6 +25,16 @@ public class Main {
 	 * fileNameTemp : 文件名
 	 */
 	private static String fileNameTemp;
+	
+	/**
+	 * SERVICE_PORT : RMI通信服务端口
+	 */
+	private static final int SERVICE_PORT = 12345;
+	
+	/**
+	 * REGISTERED_PORT : RMI注册端口
+	 */
+	private static final int REGISTERED_PORT = 1099;
 
 	
 	public static void main(String[] args) throws IOException {
@@ -32,26 +42,21 @@ public class Main {
 		ConfigurationSource source;
 		try {
 			// 初始化文件内容
-			createFile("/board_num", "0");
-			createFile("/state", "00000011");
+			writeToFile("/board_num", "0");
+			writeToFile("/state", "00000011");
 			source = new ConfigurationSource(ResourcesUtil.getResourceAsStream("log4j/log4j.xml"));
 			Configurator.initialize(null, source);
 			// 开启中控RMI服务端
 			System.setProperty("java.rmi.server.hostname", IpHelper.getLinuxLocalIp());
-			CenterRemote centerRemote = (CenterRemote) UnicastRemoteObject.exportObject(new CenterRemoteImpl(), 12345);
-			LocateRegistry.createRegistry(1099);
-			try {
-				LocateRegistry.getRegistry().bind("center", centerRemote);
-			} catch (AlreadyBoundException e) {
-				System.out.println("请勿重复绑定");
-				e.printStackTrace();
-			}
+			CenterRemote centerRemote = (CenterRemote) UnicastRemoteObject.exportObject(new CenterRemoteImpl(), SERVICE_PORT);
+			LocateRegistry.createRegistry(REGISTERED_PORT);
+			LocateRegistry.getRegistry().bind("center", centerRemote);
 			LogManager.getRootLogger().info("中控："+ IpHelper.getLinuxLocalIp() + " RMI服务端开启");
-			// 开启连接服务端线程
-			new ConnectToServerRemoteThread().start();
+			// 开启上传板子数量包到服务端线程
+			new SendBoardNumPackageThread().start();
 			// 开启更新板子数量线程
 			new UpdateBoardNumThread().start();
-		} catch (IOException e) {
+		} catch (IOException | AlreadyBoundException e) {
 			LogManager.getRootLogger().error(e.getMessage());
 			e.printStackTrace();
 		}
@@ -66,7 +71,7 @@ public class Main {
 	 * @return void
 	 * @date 2018年9月25日 下午4:40:50
 	 */
-	private static void createFile(String fileName, String fileContent) {
+	private static void writeToFile(String fileName, String fileContent) {
 		fileNameTemp = System.getProperty("user.dir") + fileName + ".txt";
 		File file = new File(fileNameTemp);
 		try {
