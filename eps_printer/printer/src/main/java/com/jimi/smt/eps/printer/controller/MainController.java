@@ -147,6 +147,8 @@ public class MainController implements Initializable {
 	@FXML
 	private Label dateLb;
 	@FXML
+	private Label supplierLb;
+	@FXML
 	private Label remarkLb;
 	@FXML
 	private ImageView codeIv;
@@ -164,6 +166,8 @@ public class MainController implements Initializable {
 	private Label seatLb1;
 	@FXML
 	private Label dateLb1;
+	@FXML
+	private Label supplierLb1;
 	@FXML
 	private Label remarkLb1;
 	@FXML
@@ -623,9 +627,11 @@ public class MainController implements Initializable {
 			stringBuffer.append(materialId);
 		}
 		stringBuffer.append("@");
+		stringBuffer.append(descriptionLb.getText().trim());
+		stringBuffer.append("@");
 		stringBuffer.append(userId);
 		stringBuffer.append("@");
-		stringBuffer.append(tableSelectCb.getSelectionModel().getSelectedItem().toString().trim());
+		stringBuffer.append(supplierLb.getText());
 		stringBuffer.append("@");
 		stringBuffer.append(seatLb.getText().trim());
 		stringBuffer.append("@");
@@ -661,10 +667,10 @@ public class MainController implements Initializable {
 					log.setMaterialNo(datas[0] == null ? "" : datas[0]);
 					log.setQuantity(Integer.valueOf(datas[1]));
 					log.setTimestamp(datas[2] == null ? "" : datas[2]);
-					log.setOperator(datas[3] == null ? "" : datas[3]);
-					log.setCustom(datas[4] == null ? "" : datas[4]);
-					log.setPosition(datas[5] == null ? "" : datas[5]);
-					log.setProductionDate(new SimpleDateFormat("yyyy-MM-dd").parse(datas[7]));
+					log.setOperator(datas[4] == null ? "" : datas[4]);
+					log.setCustom(datas[5] == null ? "" : datas[5]);
+					log.setPosition(datas[6] == null ? "" : datas[6]);
+					log.setProductionDate(new SimpleDateFormat("yyyy-MM-dd").parse(datas[8]));
 					log.setOperationTime(new Date());
 					stockList.add(log);
 				}
@@ -705,7 +711,7 @@ public class MainController implements Initializable {
 		hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
 		try {
 			// 生成矩阵
-			BitMatrix bitMatrix = new MultiFormatWriter().encode(data, BarcodeFormat.QR_CODE, 260, 260, hints);
+			BitMatrix bitMatrix = new MultiFormatWriter().encode(data, BarcodeFormat.QR_CODE, 320, 320, hints);
 			// 输出并显示图像
 			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 			MatrixToImageWriter.writeToStream(bitMatrix, "gif", byteArrayOutputStream);
@@ -731,6 +737,7 @@ public class MainController implements Initializable {
 		quantityLb1.setText(quantityLb.getText());
 		remarkLb1.setText(userId + " / " + remarkLb.getText());
 		dateLb1.setText(dateLb.getText());
+		supplierLb1.setText(supplierLb.getText());
 		codeIv1.setImage(codeIv.getImage());
 		previewAp1.setVisible(true);
 		Image image = previewAp1.snapshot(null, null);
@@ -1057,7 +1064,9 @@ public class MainController implements Initializable {
 					// 存配置
 					properties.setProperty(CONFIG_KEY_SHEET_NAME, excel.getBook().getSheetName(newValue.intValue()));
 					// 设置料号为空
-					materialNoTf.setText("");
+					scanMaterialNoTf.setText("");
+					scanMaterialNoTf.requestFocus();
+					supplierLb.setText(excel.getBook().getSheetName(newValue.intValue()).trim());
 				}
 				try {
 					properties.store(new FileOutputStream(new File(CONFIG_FILE_NAME)), null);

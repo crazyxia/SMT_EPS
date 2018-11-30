@@ -5,7 +5,7 @@
 
 	<groupId>com.jimi.smt</groupId>
 	<artifactId>EPS_Printer</artifactId>
-	<version>1.9.1</version>
+	<version>1.10.0</version>
 	<packaging>jar</packaging>
 
 	<name>EPS_Printer</name>
