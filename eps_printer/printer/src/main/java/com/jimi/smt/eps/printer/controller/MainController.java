@@ -322,9 +322,9 @@ public class MainController implements Initializable {
 		String quantity = quantityTf.getText();
 		String seat = seatNoTf.getText();
 		String date = dateTf.getText();
-		if (quantity == null || quantity.equals("") || seat == null || seat.equals("") || date == null
-				|| date.equals("")) {
-			error("请填写数量、位置和生产日期信息");
+		String materialNo = materialNoTf.getText();
+		if (materialNo == null || "".equals(materialNo) || quantity == null || quantity.equals("") || seat == null || seat.equals("") || date == null || date.equals("")) {
+			error("请填写料号、数量、位置和生产日期信息");
 			return;
 		}
 		// 日期类型校验
@@ -344,7 +344,7 @@ public class MainController implements Initializable {
 			copies = copyInt;
 			showIdWindow();
 		} catch (NumberFormatException e) {
-			error("请输入正整数");
+			error("请输入正整数并且保证数值大小不大于2147483647");
 		}
 	}
 
@@ -714,7 +714,7 @@ public class MainController implements Initializable {
 		}else {
 			error("数据解析失败，请参考\\\"标准范例表\\\"编写供应商料号表文件");
 		}
-		materialNoTf.requestFocus();
+		scanMaterialNoTf.requestFocus();
 	}
 
 	
@@ -787,7 +787,7 @@ public class MainController implements Initializable {
 	
 	private void initHotKey() {
 		// 初始化打印热键
-		parentAp.setOnKeyReleased(new EventHandler<KeyEvent>() {
+		parentAp.setOnKeyPressed(new EventHandler<KeyEvent>() {
 			@Override
 			public void handle(KeyEvent event) {
 				if (event.getCode().compareTo(KeyCode.ENTER) == 0) {
@@ -1264,28 +1264,38 @@ public class MainController implements Initializable {
 		scanMaterialNoTf.textProperty().addListener(new ChangeListener<String>() {
 			@Override
 			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-				Rule rule = new Rule();
-				if (ManageRuleController.currentRule == null) {
-					rule.setName("默认规则");
-					rule.setDetails("默认规则:" + ",");
-				}else {
-					rule = ManageRuleController.currentRule;
-				}
+
 				if (newValue == null || newValue.equals("") || newValue.length() < 0) {
 					materialNoTf.setText("");
 				}
-				try {
-					if (newValue != null && !newValue.equals("") && newValue.length() > 0) {
-						String[] ruleArray = rule.getDetails().split(",");
-						for (String ruleString : ruleArray) {
-							newValue = getMaterialNo(ruleString, newValue);
+				scanMaterialNoTf.setOnKeyReleased(new EventHandler<KeyEvent>() {
+					@Override
+					public void handle(KeyEvent event) {
+						if (event.getCode() == KeyCode.ENTER) {
+							try {
+								if (newValue != null && !newValue.equals("") && newValue.length() > 0) {
+									Rule rule = new Rule();
+									if (ManageRuleController.currentRule == null) {
+										rule.setName("默认规则");
+										rule.setDetails("默认规则:" + ",");
+									} else {
+										rule = ManageRuleController.currentRule;
+									}
+									String[] ruleArray = rule.getDetails().split(",");
+									String scanMaterialNoTfValue = newValue;
+									// 利用应用的规则得到识别后的料号
+									for (String ruleString : ruleArray) {
+										scanMaterialNoTfValue = getMaterialNo(ruleString, scanMaterialNoTfValue);
+									}
+									materialNoTf.setText(scanMaterialNoTfValue);
+								}
+							} catch (Exception e) {
+								error("请应用规则并且扫描有效二维码");
+								logger.error("请应用规则并且扫描有效二维码");
+							}
 						}
-						materialNoTf.setText(newValue);
 					}
-				} catch (Exception e) {
-					error("请应用规则并且扫描有效二维码");
-					logger.error("请应用规则并且扫描有效二维码");
-				}
+				});
 			}
 		});
 	}
