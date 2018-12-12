@@ -85,7 +85,6 @@
     },
     methods: {
       foldInfo: function (index) {
-        console.log(index);
         if (index == 1) {
           this.className = 'fold';
           this.imgChange = true;

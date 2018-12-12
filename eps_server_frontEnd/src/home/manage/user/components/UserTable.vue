@@ -18,6 +18,7 @@
         {title: '姓名', field: 'name', colStyle: {'width': '80px'}},
         {title: '岗位', field: 'typeName', colStyle: {'width': '100px'}},
         {title: '班别', field: 'classTypeName', colStyle: {'width': '80px'}},
+        {title: '是否在职',field:'enabledString',colStyle:{'width':'70px'}},
         {title: '入职时间', field: 'createTimeString', colStyle: {'width': '120px'}},
         {title: '操作', field: 'operation', tdComp: 'UserOperation', colStyle: {'width': '100px'}}
       ],
@@ -86,6 +87,9 @@
               this.pageSize = page.pageSize;
               store.commit("setUserList", list);
               this.data = list;
+              this.data.map((item, index) => {
+                item.enabledString = item.enabled === true?'是':'否';
+              });
             }
           }
         }).catch(err => {
@@ -102,7 +106,6 @@
         options.data["orderBy"] = 'create_time desc';
         options.data["currentPage"] = this.currentPage;
         options.data["pageSize"] = this.pageSize;
-        options.data["enabled"] = 1;
         this.fetchData(options);
       },
       filterData: function (query) {
@@ -114,32 +117,15 @@
   }
 
   export const UserOperation = Vue.component('UserOperation', {
-    template: `<span>
-      <span title="编辑" @click.stop.prevent="update(row)" style="padding-right:8px;cursor:pointer">
+    template: `<span title="编辑" @click.stop.prevent="update(row)" style="padding-right:8px;cursor:pointer">
         <icon name="edit" scale="2.5"></icon>
-      </span>
-      <span title="删除" @click.stop.prevent="deleteRow(row)" style="padding-right:8px;cursor:pointer">
-        <icon name="delete" scale="2.5"></icon>
-      </span>
-      <span title="工号二维码" @click.stop.prevent="getCodePic(row)" style="cursor:pointer">
-        <icon name="codePic" scale="2.5"></icon>
-      </span>
-    </span>`,
+      </span>`,
     props: ['row'],
     methods: {
       update(row) {
         store.commit("setUser", row);
         store.commit("setUserOperationType", "update");
         store.commit("setIsUpdate", true);
-      },
-      deleteRow(row) {
-        store.commit("setUser", row);
-        store.commit("setUserOperationType", "delete");
-        store.commit("setIsDelete", true);
-      },
-      getCodePic(row) {
-        store.commit("setUserId", row.id);
-        store.commit("setIsGetCodePic", true);
       }
     }
   });

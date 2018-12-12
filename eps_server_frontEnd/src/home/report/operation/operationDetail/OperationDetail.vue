@@ -19,7 +19,7 @@
         <input type="text" class="form-control" id="type" disabled="disabled" v-model="item.operationType">
       </div>
     </form>
-    <OperationDetailTable :operationInfos="operationInfos"></OperationDetailTable>
+    <OperationDetailTable :item="item"></OperationDetailTable>
   </div>
 </template>
 
@@ -28,9 +28,9 @@ import OperationDetailTable from './components/OperationDetailTable'
 import store from './../../../../store'
 export default {
   name:'operationDetail',
-  props:['operationInfos'],
   data () {
     return {
+
     }
   },
   components:{

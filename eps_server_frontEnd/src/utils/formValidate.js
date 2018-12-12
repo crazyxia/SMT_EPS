@@ -19,10 +19,7 @@ export const userTip = function (obj) {
 
 export const programTip = function (state) {
   let oldState = store.state.oldState;
-  if (oldState > state) {
-    alert("状态选择不正确");
-    return false;
-  } else if (oldState == 2 && state == 3) {
+  if (oldState >= state) {
     alert("状态选择不正确");
     return false;
   }
@@ -55,14 +52,13 @@ export const configTip = function (arr) {
       alert("值不能为空");
       return false;
     }
-    let val = Number(obj.value);
-    if (!judge(val) && val !== 0) {
+    if(!judge(obj.value) && obj.value !== "0"){
       alert("格式不对");
       return false;
     }
     if (obj.name === "ipqc_error_alarm" || obj.name === "operator_error_alarm") {
-      let number = val;
-      if (number !== 0 && number !== 1 && number !== 2 && number !== 3) {
+      let number = obj.value;
+      if (number !== "0" && number !== "1" && number !== "2" && number !== "3") {
         alert("格式不对");
         return false;
       }
@@ -87,9 +83,9 @@ export const materialTip = function (obj) {
 
 //判断是否为正整数
 export const judge = function isNumber(num) {
-  var val = num;
-  var regu = /^[1-9]\d*$/;
-  if (val != "") {
+  let val = num;
+  let regu = /^[1-9]*[1-9][0-9]*$/;
+  if (val !== "") {
     if (regu.test(val)) {
       return true;
     } else {

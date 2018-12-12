@@ -1,5 +1,6 @@
 <template>
   <div class="programDetail">
+    <p class="tip">提示：编辑完成之后请记得点击保存</p>
     <form class="form-inline" role="form">
       <span title="返回" @click="returnToProgram"><icon name="returnB" scale="4"></icon></span>
       <div class="form-group">
@@ -19,7 +20,6 @@
         <button type="button" class="btn btn_conserve" @click="save">保存</button>
       </div>
     </form>
-    <p>温馨提示：编辑完成之后请记得点击保存</p>
     <ProgramItemTable></ProgramItemTable>
     <ProgramItemModal @getModalInfo="getModalMessage"></ProgramItemModal>
   </div>
@@ -197,5 +197,12 @@ export default {
 </script>
 
 <style scoped lang="scss">
+  .tip{
+    font-size:20px;
+    color:red;
+    border-bottom:1px solid #ddd;
+    margin-bottom:10px;
+    padding-bottom:10px;
+  }
 @import '@/assets/css/common.scss';
 </style>

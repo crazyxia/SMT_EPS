@@ -32,7 +32,7 @@ export default new Vuex.Store({
     programList:[],
     programOperationType:"",
     program:{},
-    oldState:"",
+    oldState:null,
     programItemShow:false,
     programItemList:[],
     programItemOperationType:"",

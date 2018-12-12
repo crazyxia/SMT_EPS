@@ -80,7 +80,7 @@ export default {
         data:{
           id:store.state.program.id
         }
-      }
+      };
       axiosPost(options).then(response => {
         if (response.data) {
           let result = response.data.result;
@@ -88,6 +88,7 @@ export default {
             store.commit("setIsRefresh",true);
           }else{
             errTip(result);
+            store.commit("setIsRefresh",true);
           }
         }
       }).catch(err => {
