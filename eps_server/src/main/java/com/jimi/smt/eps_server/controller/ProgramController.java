@@ -166,8 +166,7 @@ public class ProgramController {
 		} catch (IOException e) {
 			return ResultUtil.failed("上传失败，IO错误，请重试，或联系开发者", e);
 		} catch (RuntimeException e) {
-			return ResultUtil.failed("上传失败，解析文件时出错，请参考排位表标准格式规范：http://wx.jimi-iot.com/eps_server/static/standard.docx",
-					e);
+			return ResultUtil.failed("上传失败，解析文件时出错，请检查站位表内容是否为空或者内容填写错误", e);
 		}
 
 		// 结果检查

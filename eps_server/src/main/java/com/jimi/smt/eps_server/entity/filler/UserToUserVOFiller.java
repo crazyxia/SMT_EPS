@@ -15,8 +15,8 @@ public class UserToUserVOFiller extends EntityFieldFiller<User, UserVO> {
 	@Override
 	public UserVO fill(User user) {
 		UserVO userVO = new UserVO();
-		
 		BeanUtils.copyProperties(user, userVO);
+		userVO.setPassword("***");
 		switch (userVO.getType()) {
 		case 0:
 			userVO.setTypeName("仓库操作员");

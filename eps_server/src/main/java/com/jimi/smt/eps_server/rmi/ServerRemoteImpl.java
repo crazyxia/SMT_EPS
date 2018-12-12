@@ -62,7 +62,6 @@ public class ServerRemoteImpl implements ServerRemote {
 	@Autowired
 	private LineMapper lineMapper;
 
-
 	/**
 	 * clientSockets : 所有线别的报警模块列表
 	 */

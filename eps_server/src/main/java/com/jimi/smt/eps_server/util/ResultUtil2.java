@@ -37,9 +37,7 @@ public class ResultUtil2 {
 		return "ResultUtil2 [code=" + code + ", msg=" + msg + ", data=" + data + "]";
 	}
 	
-	public ResultUtil2() {
-		
-	}
+	public ResultUtil2() {}
 	
 	public ResultUtil2(int code, String msg) {
 		this.code = code;

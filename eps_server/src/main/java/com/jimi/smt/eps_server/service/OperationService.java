@@ -42,7 +42,7 @@ public interface OperationService {
 	 * @throws ParseException 
 	 * @throws IOException 
 	 */
-	ResponseEntity<byte[]> downloadClientReport(String client, String programNo, Integer line, String orderNo, String workOrderNo, String startTime, String endTime) throws ParseException, IOException;
+	ResponseEntity<byte[]> downloadClientReport(String client, String programNo, Integer line, String orderNo, String workOrderNo, String startTime, String endTime, Page page) throws ParseException, IOException;
 
 	
 	/**
@@ -67,7 +67,7 @@ public interface OperationService {
 	 * @throws ParseException 
 	 * @throws IOException 
 	 */
-	ResponseEntity<byte[]> downloadOperationReport(String operator, String client, Integer line, String workOrderNo, String startTime, String endTime , Integer type) throws ParseException, IOException;
+	ResponseEntity<byte[]> downloadOperationReport(Integer line, String workOrderNo, String startTime, String endTime , Integer type, Page page) throws ParseException, IOException;
 
 	
 	/**

@@ -12,24 +12,24 @@ import com.jimi.smt.eps_server.util.ResultUtil2;
 /**
  * 打印控制器
  * @author coke
- *
  */
 @Controller
 @RequestMapping("/task")
 public class PrinterController {
-	
+
 	@Autowired
 	private PrinterService printerService;
+
 	
 	@Open
 	@ResponseBody
 	@RequestMapping("/printBarcode")
-	public ResultUtil2 printBarcode(String printerIP, String materialId, String materialNo, Integer remainingQuantity, String productDate, String user, String supplier) throws InterruptedException{
+	public ResultUtil2 printBarcode(String printerIP, String materialId, String materialNo, Integer remainingQuantity, String productDate, String user, String supplier) throws InterruptedException {
 		if (printerIP == null || materialId == null || materialNo == null || remainingQuantity == null || productDate == null || user == null || supplier == null) {
-			return new ResultUtil2(400,"参数不足");
-		}else if("".equals(printerIP)) {
-			return new ResultUtil2(400,"打印机IP不能为空");
-		}else{
+			return new ResultUtil2(400, "参数不足");
+		} else if ("".equals(printerIP)) {
+			return new ResultUtil2(400, "打印机IP不能为空");
+		} else {
 			ResultUtil2 resultUtil2 = printerService.printBarcode(printerIP, materialId, materialNo, remainingQuantity, productDate, user, supplier);
 			return resultUtil2;
 		}

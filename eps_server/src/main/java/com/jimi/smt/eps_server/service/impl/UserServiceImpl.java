@@ -14,6 +14,7 @@ import com.jimi.smt.eps_server.entity.filler.UserToUserVOFiller;
 import com.jimi.smt.eps_server.entity.vo.UserVO;
 import com.jimi.smt.eps_server.mapper.UserMapper;
 import com.jimi.smt.eps_server.service.UserService;
+import com.jimi.smt.eps_server.util.SqlUtil;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -49,8 +50,8 @@ public class UserServiceImpl implements UserService {
 			return "failed_not_found";
 		}
 		User user = new User();
-		user.setId("".equals(id) ? null : id);
-		user.setName("".equals(name) ? null : name);
+		user.setId(id.equals("") ? null : id);
+		user.setName(name.equals("") ? null : name);
 		user.setType(type);
 		user.setPassword("".equals(password) ? null : password);
 		user.setEnabled(enabled);
@@ -63,14 +64,14 @@ public class UserServiceImpl implements UserService {
 
 	
 	@Override
-	public List<UserVO> list(String id, Integer classType, String name, Integer type, String orderBy, Boolean enabled, Page page,String password) {
+	public List<UserVO> list(String id, Integer classType, String name, Integer type, String orderBy, Boolean enabled, Page page) {
 		UserExample userExample = new UserExample();
 		Criteria criteria = userExample.createCriteria();
 		if (id != null && !id.equals("")) {
-			criteria.andIdLike("%" + id + "%");
+			criteria.andIdLike("%" + SqlUtil.escapeParameter(id) + "%");
 		}
 		if (name != null && !name.equals("")) {
-			criteria.andNameLike("%" + name + "%");
+			criteria.andNameLike("%" + SqlUtil.escapeParameter(name) + "%");
 		}
 		if(type != null) {
 			criteria.andTypeEqualTo(type);
@@ -80,9 +81,6 @@ public class UserServiceImpl implements UserService {
 		}
 		if(classType != null) {
 			criteria.andClassTypeEqualTo(classType);
-		}
-		if(password != null) {
-			criteria.andPasswordIsNotNull();
 		}
 		userExample.setOrderByClause(orderBy);
 		if(page != null) {

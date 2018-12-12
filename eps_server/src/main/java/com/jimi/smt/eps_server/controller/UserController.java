@@ -77,7 +77,7 @@ public class UserController {
 		page.setCurrentPage(currentPage);
 		page.setPageSize(pageSize);
 		PageVO<UserVO> pageVO = new PageVO<UserVO>();
-		pageVO.setList(userService.list(id, classType, name, type, orderBy, enabled, page, password));
+		pageVO.setList(userService.list(id, classType, name, type, orderBy, enabled, page));
 		pageVO.setPage(page);
 		return pageVO;
 	}
@@ -110,7 +110,7 @@ public class UserController {
 	@ResponseBody
 	@RequestMapping("/login")
 	public ResultUtil login(String id, String password, HttpServletRequest request) {
-		if(id == null || password == null) {
+		if (id == null) {
 			ResultUtil.failed("参数不足");
 			return ResultUtil.failed();
 		}
@@ -119,7 +119,7 @@ public class UserController {
 		}
 		User user = userService.selectUserById(id);
 		if (user == null) {
-			return ResultUtil.failed("failed_not_found");
+			return ResultUtil.failed("failed_not_admin");
 		}
 		if (user.getEnabled() == false) {
 			return ResultUtil.failed("failed_not_enabled");
@@ -228,6 +228,7 @@ public class UserController {
 		}
 		return null;
 	}
+	
 	
 	@Open
 	@ResponseBody

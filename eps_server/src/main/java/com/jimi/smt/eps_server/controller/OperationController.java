@@ -59,9 +59,12 @@ public class OperationController {
 	
 	@Role(RoleType.IPQC)
 	@RequestMapping("/downloadClientReport")
-	public ResponseEntity<byte[]> downloadClientReport(String client, String programNo, Integer line, String orderNo, String workOrderNo, String startTime, String endTime) {
+	public ResponseEntity<byte[]> downloadClientReport(String client, String programNo, Integer line, String orderNo, String workOrderNo, String startTime, String endTime, Integer currentPage, Integer pageSize) {
+		Page page = new Page();
+		page.setCurrentPage(currentPage);
+		page.setPageSize(pageSize);
 		try {
-			return operationService.downloadClientReport(client, programNo, line, orderNo, workOrderNo, startTime, endTime);
+			return operationService.downloadClientReport(client, programNo, line, orderNo, workOrderNo, startTime, endTime, page);
 		} catch (ParseException e) {
 			ResultUtil.failed("日期格式不正确", e);
 		} catch (IOException e) {
@@ -111,9 +114,12 @@ public class OperationController {
 	
 	@Role(RoleType.IPQC)
 	@RequestMapping("/downloadOperationReport")
-	public ResponseEntity<byte[]> downloadOperationReport(String operator, String client, Integer line, String workOrderNo, String startTime, String endTime, Integer type) {
+	public ResponseEntity<byte[]> downloadOperationReport(Integer line, String workOrderNo, String startTime, String endTime, Integer type, Integer currentPage, Integer pageSize) {
+		Page page = new Page();
+		page.setCurrentPage(currentPage);
+		page.setPageSize(pageSize);
 		try {
-			return operationService.downloadOperationReport(operator, client, line, workOrderNo, startTime, endTime, type);
+			return operationService.downloadOperationReport(line, workOrderNo, startTime, endTime, type, page);
 		} catch (ParseException e) {
 			ResultUtil.failed("日期格式不正确", e);
 		} catch (IOException e) {

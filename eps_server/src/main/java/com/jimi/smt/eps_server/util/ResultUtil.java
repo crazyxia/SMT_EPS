@@ -60,7 +60,7 @@ public class ResultUtil {
 	public static ResultUtil succeed(String result, Object data) {
 		return new ResultUtil(result, data);
 	}
-	
+
 	public ResultUtil(String result) {
 		this.result = result;
 	}

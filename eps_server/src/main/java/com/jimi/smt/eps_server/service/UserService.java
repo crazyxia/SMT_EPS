@@ -57,7 +57,7 @@ public interface UserService {
 	 * @param enabled
 	 * @return
 	 */
-	List<UserVO> list(String id, Integer classType, String name, Integer type, String orderBy, Boolean enabled, Page page, String password);
+	List<UserVO> list(String id, Integer classType, String name, Integer type, String orderBy, Boolean enabled, Page page);
 				
 	
 	/**

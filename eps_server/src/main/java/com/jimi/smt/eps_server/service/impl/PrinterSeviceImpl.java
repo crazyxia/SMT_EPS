@@ -1,8 +1,4 @@
-
-
-
 package com.jimi.smt.eps_server.service.impl;
-
 
 import org.springframework.stereotype.Service;
 
@@ -14,8 +10,10 @@ import com.jimi.smt.eps_server.util.ResultUtil2;
 
 @Service
 public class PrinterSeviceImpl implements PrinterService{
+	
 	// 等待反馈的时间
 	private static final int TIME_OUT = 60000;
+	
 	
 	@Override
 	public ResultUtil2 printBarcode(String printerIP, String materialId, String materialNo, Integer remainingQuantity, String productDate, String user, String supplier) throws InterruptedException{
