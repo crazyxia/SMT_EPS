@@ -129,13 +129,13 @@
             case "换料":
               type = 1;
               break;
-            case "全检":
+            case "核料":
               type = 2;
               break;
-            case "抽检":
+            case "全检":
               type = 3;
               break;
-            case "仓库":
+            case "发料":
               type = 4;
               break;
             default:

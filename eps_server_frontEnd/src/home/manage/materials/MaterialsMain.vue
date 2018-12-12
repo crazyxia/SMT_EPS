@@ -7,7 +7,7 @@
       </div>
       <div class="form-group">
         <label for="perifdOfValidity">保质期(天)</label>
-        <input type="text" class="form-control" id="perifdOfValidity" v-model.number="materialInfos.perifdOfValidity">
+        <input type="text" class="form-control" id="perifdOfValidity" v-model="materialInfos.perifdOfValidity">
       </div>
       <div class="btn-group">
         <button type="button" class="btn btn_find" @click="find">查询</button>

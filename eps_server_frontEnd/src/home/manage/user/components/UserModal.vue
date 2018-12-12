@@ -19,8 +19,8 @@
               <input type="text" class="form-control" id="modalName" v-model.trim="modalInfo.name">
             </div>
             <div class="form-group">
-              <label for="modaltype">岗位</label>
-              <select class="form-control" id="modaltype" v-model.trim="modalInfo.type">
+              <label for="modalType">岗位</label>
+              <select class="form-control" id="modalType" v-model.trim="modalInfo.type">
                 <option selected="selected" disabled="disabled"  style='display: none' value=''></option>
                 <option value="0">仓库操作员</option>
                 <option value="1">厂线操作员</option>
@@ -37,6 +37,14 @@
                 <option selected="selected" disabled="disabled"  style='display: none' value=''></option>
                 <option value="0">白班</option>
                 <option value="1">夜班</option>
+              </select>
+            </div>
+            <div class="form-group" v-if="isDisabled">
+              <label for="modalEnabled">在职</label>
+              <select class="form-control" id="modalEnabled" v-model.trim="modalInfo.enabled">
+                <option selected="selected" disabled="disabled"  style='display: none' value=''></option>
+                <option value="1">是</option>
+                <option value="0">否</option>
               </select>
             </div>
           </form>
@@ -80,13 +88,11 @@ export default {
       obj.name = user.name;
       obj.type = user.type;
       obj.classType = user.classType;
+      obj.enabled = user.enabled === true?'1':'0';
       return obj;
     },
     isAdd:function(){
       return store.state.isAdd;
-    },
-    isDelete:function(){
-      return store.state.isDelete;
     },
     isUpdate:function(){
       return store.state.isUpdate;
@@ -103,12 +109,6 @@ export default {
       if(val === true){
         store.commit("setIsUpdate",false);
         $('#myModal').modal({backdrop:'static', keyboard: false});
-      }
-    },
-    isDelete:function(val){
-      if(val == true){
-        store.commit("setIsDelete",false);
-        this.update(false,"删除成功");
       }
     }
   },
@@ -144,7 +144,7 @@ export default {
         alert("error:" + JSON.stringify(err));
       });
     },
-    update:function(isEnabled,succeedTip){
+    update:function(succeedTip){
       let options ={
         url:updateUserUrl,
         data:{
@@ -152,7 +152,7 @@ export default {
           name:this.modalInfo.name,
           type:this.modalInfo.type,
           classType:this.modalInfo.classType,
-          enabled:isEnabled
+          enabled:this.modalInfo.enabled
         }
       };
       axiosPost(options).then(response => {
@@ -176,7 +176,7 @@ export default {
         if(operationType === "add"){
           this.add();
         }else if(operationType === "update"){
-          this.update(true,"修改成功");
+          this.update("修改成功");
         }
       }
     },

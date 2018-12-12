@@ -8,8 +8,8 @@
             <option value="">不限</option>
             <option value="0">上料</option>
             <option value="1">换料</option>
-            <option value="2">全检</option>
-            <option value="3">抽检</option>
+            <option value="2">核料</option>
+            <option value="3">全检</option>
             <option value="4">发料</option>
           </select>
         </div>

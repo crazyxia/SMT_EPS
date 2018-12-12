@@ -30,6 +30,14 @@
           <option value="1">夜班</option>
     		</select>
   		</div>
+      <div class="form-group">
+        <label for="enabled">是否在职</label>
+        <select class="form-control" id="enabled" v-model.trim="userInfos.enabled">
+          <option selected="selected" value=''>不限</option>
+          <option value="1">是</option>
+          <option value="0">否</option>
+        </select>
+      </div>
   		<div class="btn-group">
     		<button type="button" class="btn btn_find" @click="find">查询</button>
     		<button type="button" class="btn btn_add" @click="addModal">添加</button>
@@ -56,7 +64,8 @@ export default {
         name:"",
         type:"",
         classType:"",
-        password:""
+        password:"",
+        enabled:''
       },
     }
   },

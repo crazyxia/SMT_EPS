@@ -93,7 +93,7 @@ export default {
       axiosPost(options).then(response => {
         if (response.data) {
           let result = response.data.result;
-          if(result == "succeed"){
+          if(result === "succeed"){
             alert("添加成功");
             let infos = {
               materialNo:"",
