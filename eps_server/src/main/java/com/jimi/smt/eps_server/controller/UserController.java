@@ -1,14 +1,9 @@
 package com.jimi.smt.eps_server.controller;
 
-import java.awt.Font;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileOutputStream;
-import java.util.Base64;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -23,12 +18,9 @@ import com.jimi.smt.eps_server.entity.filler.UserToUserVOFiller;
 import com.jimi.smt.eps_server.entity.vo.PageVO;
 import com.jimi.smt.eps_server.entity.vo.UserVO;
 import com.jimi.smt.eps_server.service.UserService;
-import com.jimi.smt.eps_server.util.QRCodeUtil;
 import com.jimi.smt.eps_server.util.ResultUtil;
 import com.jimi.smt.eps_server.util.ResultUtil2;
 import com.jimi.smt.eps_server.util.TokenBox;
-import org.apache.commons.io.*;
-import cc.darhao.dautils.api.FontImageUtil;
 
 /**
  * 用户控制器
@@ -38,7 +30,7 @@ import cc.darhao.dautils.api.FontImageUtil;
 @RequestMapping("/user")
 public class UserController {
 
-	private static final Object lock = new Object();
+	/*private static final Object lock = new Object();*/
 
 	public static final String SESSION_KEY_LOGIN_USER = "loginUser";
 	
@@ -142,7 +134,7 @@ public class UserController {
 	}
 
 	
-	@Open
+	/*@Open
 	@ResponseBody
 	@RequestMapping("/getCodePic")
 	public ResultUtil getCodePic(HttpSession session, String id) throws Exception {
@@ -171,7 +163,7 @@ public class UserController {
 			fileOutputStream.close();
 		}
 		return ResultUtil.succeed("/static/png/" + fileName);
-	}
+	}*/
 
 	
 	@Open

@@ -22,7 +22,7 @@
 
 	<!-- 支持上传文件 -->
 	<bean id="multipartResolver"
-		class="org.springframework.web.multipart.commons.CommonsMultipartResolver" />
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver"/>
 
 	<!-- mvc开关 -->
 	<!-- utf-8编码 -->
@@ -66,11 +66,11 @@
 	<mvc:resources mapping="/static/**" location="/static/" />
 
 	<!-- 配置SpringMVC的视图解析器 -->
-	<bean
+	<!-- <bean
 		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
 		<property name="prefix" value="/WEB-INF/jsp/" />
 		<property name="suffix" value=".jsp" />
-	</bean>
+	</bean> -->
 
 
 	<!-- 引入jdbc配置文件 -->
@@ -137,10 +137,11 @@
     <!-- 配置事务切面 -->  
     <aop:config>  
         <aop:pointcut id="serviceOperation"  
-            expression="execution(* com.jimi.smt.eps_server.service..*.*(..))" />  
-        <aop:advisor advice-ref="txAdvice" pointcut-ref="serviceOperation" />  
-    </aop:config>  
+            expression="execution(* com.jimi.smt.eps_server.service..*.*(..))" />
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="serviceOperation" />
+    </aop:config>
 	
-	<bean id ="TokenBox" class="com.jimi.smt.eps_server.util.TokenBox" scope="singleton" init-method="begin"/>
+	<bean id ="TokenBox" class="com.jimi.smt.eps_server.util.TokenBox" scope="singleton" init-method="begin" destroy-method="stop"/>
+	<bean id ="RMIServer" class="com.jimi.smt.eps_server.rmi.RMIServer" scope="singleton" destroy-method="stop"/>
 
 </beans>  

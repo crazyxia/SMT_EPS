@@ -269,6 +269,9 @@ public class OperationServiceImpl implements OperationService {
 			case 4:
 				title = "SMT仓库发料报表";
 				break;
+			case 5:
+				title = "SMT首检报表";
+				break;
 			default:
 				break;
 			}
@@ -319,7 +322,11 @@ public class OperationServiceImpl implements OperationService {
 				summary.setOperator(operationReportSummaryKeys.get(i).getOperator());
 				summary.setPassCount(map.get(operationReportSummaryKeys.get(i)).getPassCount());
 				summary.setFailCount(map.get(operationReportSummaryKeys.get(i)).getFailCount());
-				summary.setOperationType(operationReportSummaryKeys.get(i).getOperationType());
+				if(type == null) {
+					summary.setOperationType("");
+				}else {
+					summary.setOperationType(operationReportSummaryKeys.get(i).getOperationType());
+				}
 				operationReportSummaries.add(summary);
 				if (operationReportSummaries.size() == page.getPageSize()) {
 					break;
@@ -333,7 +340,11 @@ public class OperationServiceImpl implements OperationService {
 				summary.setOperator(operationReportSummaryKeys.get(i).getOperator());
 				summary.setPassCount(map.get(operationReportSummaryKeys.get(i)).getPassCount());
 				summary.setFailCount(map.get(operationReportSummaryKeys.get(i)).getFailCount());
-				summary.setOperationType(operationReportSummaryKeys.get(i).getOperationType());
+				if(type == null) {
+					summary.setOperationType("");
+				}else {
+					summary.setOperationType(operationReportSummaryKeys.get(i).getOperationType());
+				}
 				operationReportSummaries.add(summary);
 				if (operationReportSummaries.size() == operationReportSummaryKeys.size() - page.getFirstIndex() + 1) {
 					break;
@@ -419,6 +430,8 @@ public class OperationServiceImpl implements OperationService {
 				return 3;
 			case "发料":
 				return 4;
+			case "首检":
+				return 5;
 			default:
 				break;
 			}

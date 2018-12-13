@@ -99,6 +99,9 @@ public class OperationToOperationReportFiller extends EntityFieldFiller<Operatio
 				case 4:
 					operationReport.setOperationType("发料");
 					break;
+				case 5:
+					operationReport.setOperationType("首检");
+					break;
 				default:
 					break;
 				}
