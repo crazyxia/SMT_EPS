@@ -739,8 +739,9 @@ public class ProgramServiceImpl implements ProgramService {
 			System.out.println("超出程序范围");
 			return 0;
 		}
+		// 判断是否重置工单:上次操作时间是否存在和结果是否为2
 		for (Integer result : results) {
-			if (!result.equals(2) && !result.equals(3)) {
+			if (!result.equals(2)) {
 				allResult = 0;
 				break;
 			}

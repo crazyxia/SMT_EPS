@@ -111,7 +111,7 @@ public class UserController {
 		}
 		User user = userService.selectUserById(id);
 		if (user == null) {
-			return ResultUtil.failed("failed_not_admin");
+			return ResultUtil.failed("failed_not_found");
 		}
 		if (user.getEnabled() == false) {
 			return ResultUtil.failed("failed_not_enabled");

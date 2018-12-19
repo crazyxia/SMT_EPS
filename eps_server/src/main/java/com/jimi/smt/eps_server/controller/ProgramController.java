@@ -378,4 +378,12 @@ public class ProgramController {
 		}
 		return ResultUtil.succeed(result);
 	}
+	
+	
+	@Open
+	@ResponseBody
+	@RequestMapping("/getTimesTamp")
+	public long getTimesTamp() {
+		return System.currentTimeMillis();
+	}
 }
