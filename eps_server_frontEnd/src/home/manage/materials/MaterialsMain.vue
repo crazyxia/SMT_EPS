@@ -51,9 +51,11 @@
         store.commit("setIsAdd", true);
       },
       find: function () {
-        if (this.materialInfos.perifdOfValidity !== "" && !judge(this.materialInfos.perifdOfValidity)) {
-          alert("物料保质期必须为正整数");
-          return;
+        if (this.materialInfos.perifdOfValidity !== "") {
+          if (!judge(this.materialInfos.perifdOfValidity)) {
+            alert("物料保质期必须为不以0开头的正整数");
+            return;
+          }
         }
         store.commit("setIsFind", true);
       }

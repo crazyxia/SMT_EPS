@@ -4,7 +4,7 @@ export const errTip = function (code) {
       alert("该工号已存在，请重新填写工号");
       break;
     case "failed_not_found":
-      alert("id不存在");
+      alert("用户不存在");
       break;
     case "failed_not_admin":
       alert("请先成为管理员");
