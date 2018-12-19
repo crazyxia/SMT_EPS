@@ -8,7 +8,6 @@ import java.util.Enumeration;
 
 public class IpHelper {
 
-	
 	/**
 	 * 获取linux系统下的本地IP
 	 */
@@ -23,9 +22,9 @@ public class IpHelper {
 						InetAddress inetAddress = enumIpAddr.nextElement();
 						if (!inetAddress.isLoopbackAddress()) {
 							String ipaddress = inetAddress.getHostAddress().toString();
-							if (!ipaddress.contains("::") && !ipaddress.contains("0:0:")
-									&& !ipaddress.contains("fe80")) {
+							if (!ipaddress.contains("::") && !ipaddress.contains("0:0:") && !ipaddress.contains("fe80")) {
 								ip = ipaddress;
+								return ip;
 							}
 						}
 					}

@@ -254,6 +254,9 @@ public class DisplayController implements Initializable {
 	private static final String GET_ITEMVISIT_ACTION = "program/selectItemVisitByProgram";
 	// 查询产线配置请求
 	private static final String GET_CONFIG_ACTION = "config/list";
+	// 查询服务器时间戳请求
+	private static final String GET_TIMESTAMP_ACTION = "program/getTimesTamp";
+	
 
 	
 	public void initialize(URL arg0, ResourceBundle arg1) {
@@ -920,9 +923,7 @@ public class DisplayController implements Initializable {
 				}
 				for (ProgramItemVisit programItemVisit : programItemVisits) {
 					boolean isInitialState = programItemVisit.getCheckAllResult().equals(2);
-					boolean isCheckTimeout = ((programItemVisit.getCheckAllTime().getTime())
-							+ getConfigValue(CHECK_ALL_CYCLE_TIME) * ONE_SECOND_TO_MILLISECOND) > System
-									.currentTimeMillis();
+					boolean isCheckTimeout = ((programItemVisit.getCheckAllTime().getTime()) + getConfigValue(CHECK_ALL_CYCLE_TIME) * ONE_SECOND_TO_MILLISECOND) > Long.parseLong(sendRequest(GET_TIMESTAMP_ACTION, null));
 					if (isInitialState && isCheckTimeout) {
 						programItemVisit.setCheckAllResult(5);
 						programItemVisit.setCheckAllTime(minCheckAllTime);
@@ -970,7 +971,11 @@ public class DisplayController implements Initializable {
 				break;
 			case 3:
 				typeLb.setText("全  检");
-				showResult(programItemVisit.getCheckAllResult());
+				if (programItemVisit.getCheckAllResult().equals(5)) {
+					showResult(1);
+				} else {
+					showResult(programItemVisit.getCheckAllResult());
+				}
 				break;
 			case 4:
 				typeLb.setText("发  料");
@@ -1051,7 +1056,7 @@ public class DisplayController implements Initializable {
 			boolean isResultCorrect = (programItemVisit.getCheckResult() != 0 && programItemVisit.getCheckResult() != 3);
 			boolean notYetCheck = programItemVisit.getChangeTime().getTime() > programItemVisit.getCheckTime().getTime();
 			if (hasChangeButNeedCheck && isResultCorrect && notYetCheck) {
-				Integer k = (int) (getConfigValue(CHECK_AFTER_CHANGE_TIME) + (programItemVisit.getChangeTime().getTime()) / ONE_SECOND_TO_MILLISECOND - (System.currentTimeMillis()) / ONE_SECOND_TO_MILLISECOND);
+				Integer k = (int) (getConfigValue(CHECK_AFTER_CHANGE_TIME) + (programItemVisit.getChangeTime().getTime()) / ONE_SECOND_TO_MILLISECOND - (Long.parseLong(sendRequest(GET_TIMESTAMP_ACTION, null))) / ONE_SECOND_TO_MILLISECOND);
 				if (0 < k && k < getConfigValue(CHECK_AFTER_CHANGE_TIME)) {
 					resultData.setCheckResult(k + CONSTANT_FOR_CHECK_RESULT);
 				} else {
@@ -1061,9 +1066,11 @@ public class DisplayController implements Initializable {
 				resultData.setCheckResult(programItemVisit.getCheckResult());
 			}
 			if (programItemVisit.getCheckAllResult().equals(5)) {
-				Integer k = (int) (getConfigValue(CHECK_ALL_CYCLE_TIME) + (programItemVisit.getCheckAllTime().getTime()) / ONE_SECOND_TO_MILLISECOND - (System.currentTimeMillis()) / ONE_SECOND_TO_MILLISECOND);
+				Integer k = (int) (getConfigValue(CHECK_ALL_CYCLE_TIME) + (programItemVisit.getCheckAllTime().getTime()) / ONE_SECOND_TO_MILLISECOND - (Long.parseLong(sendRequest(GET_TIMESTAMP_ACTION, null))) / ONE_SECOND_TO_MILLISECOND);
 				if (0 < k && k < getConfigValue(CHECK_ALL_CYCLE_TIME)) {
 					resultData.setCheckAllResult(k + CONSTANT_FOR_CHECK_ALL_RESULT);
+				} else {
+					resultData.setCheckAllResult(1);
 				}
 			} else {
 				resultData.setCheckAllResult(programItemVisit.getCheckAllResult());
