@@ -8,7 +8,7 @@ import java.io.InputStreamReader;
 import org.apache.logging.log4j.core.config.ConfigurationSource;
 import org.apache.logging.log4j.core.config.Configurator;
 
-import com.jimi.smt.eps.printer.controller.MainController;
+import com.jimi.smt.eps.printer.controller.LoginController;
 
 import cc.darhao.dautils.api.ResourcesUtil;
 import javafx.application.Application;
@@ -22,7 +22,7 @@ import javafx.stage.Stage;
 
 public class Main extends Application {
 
-	private MainController mainController;
+	private LoginController loginController;
 
 	private static final String VERSION = "1.10.0";
 
@@ -43,18 +43,21 @@ public class Main extends Application {
 			}).start();
 		} else {
 			clearDeadProcess();
-			FXMLLoader loader = new FXMLLoader(ResourcesUtil.getResourceURL("fxml/app.fxml"));
+			FXMLLoader loader = new FXMLLoader(ResourcesUtil.getResourceURL("fxml/login.fxml"));
 			Parent root = loader.load();
 			// 把Stage存入MainController
-			mainController = loader.getController();
-			mainController.setPrimaryStage(primaryStage);
-			// 显示
+			loginController = loader.getController();
+			loginController.setPrimaryStage(primaryStage);
+			// 初始化登录界面关闭事件
+			loginController.initCloseEvent(primaryStage);
+			primaryStage.setResizable(false);
 			primaryStage.setTitle("防错料系统 - 条码打印器 " + VERSION);
 			primaryStage.setScene(new Scene(root));
 			primaryStage.show();
 		}
 	}
 
+	
 	/**
 	 * 程序入口
 	 * 
@@ -72,14 +75,18 @@ public class Main extends Application {
 		launch(args);
 	}
 
+	
 	@Override
 	public void stop() throws Exception {
-		mainController.getPrinterSocket().close();
-		// 发送RFID程序关闭指令
-		MainController.getRfidSocket().getOutputStream().write('0');
-		MainController.getRfidSocket().close();
+		/*
+		 * mainController.getPrinterSocket().close(); // 发送RFID程序关闭指令
+		 * MainController.getRfidSocket().getOutputStream().write('0');
+		 * MainController.getRfidSocket().close();
+		 * MainController.getRfidSocket().close();
+		 */
 	}
 
+	
 	/**
 	 * 判断是否已经有一个实例在运行
 	 * 
@@ -102,6 +109,7 @@ public class Main extends Application {
 		return false;
 	}
 
+	
 	/**
 	 * 清除僵尸进程
 	 * 
@@ -111,7 +119,7 @@ public class Main extends Application {
 		Runtime.getRuntime().exec("taskkill /im printer.exe /f");
 		Runtime.getRuntime().exec("taskkill /im SMT_EPS_RFID_WRITER.exe /f");
 	}
-	
+
 	
 	public static String getVersion() {
 		return VERSION;

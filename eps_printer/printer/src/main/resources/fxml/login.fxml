@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.PasswordField?>
+
+<AnchorPane maxHeight="225.0" maxWidth="402.0" minHeight="210.0" minWidth="400.0" prefHeight="210.0" prefWidth="402.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.jimi.smt.eps.printer.controller.LoginController">
+   <children>
+      <Label layoutX="40.0" layoutY="21.0" prefHeight="45.0" prefWidth="100.0" text="工   号 :">
+         <font>
+            <Font name="Microsoft YaHei Bold" size="24.0" />
+         </font>
+      </Label>
+      <TextField fx:id="userIdTf" layoutX="140.0" layoutY="21.0" prefHeight="45.0" prefWidth="225.0" style="-fx-background-radius: 10;">
+         <font>
+            <Font name="Microsoft YaHei" size="20.0" />
+         </font></TextField>
+      <Label layoutX="40.0" layoutY="85.0" prefHeight="45.0" prefWidth="100.0" text="密   码 :">
+         <font>
+            <Font name="Microsoft YaHei Bold" size="24.0" />
+         </font>
+      </Label>
+      <PasswordField fx:id="userPwdTf" layoutX="140.0" layoutY="85.0" prefHeight="45.0" prefWidth="225.0" style="-fx-background-radius: 10;">
+         <font>
+            <Font name="Microsoft YaHei" size="20.0" />
+         </font></PasswordField>
+      <Button fx:id="loginBt" layoutX="144.0" layoutY="152.0" mnemonicParsing="false" onAction="#onLoginButtonClick" prefHeight="45.0" prefWidth="112.0" style="-fx-background-radius: 12;" text="登  录">
+         <font>
+            <Font name="Microsoft YaHei" size="25.0" />
+         </font>
+      </Button>
+   </children>
+</AnchorPane>

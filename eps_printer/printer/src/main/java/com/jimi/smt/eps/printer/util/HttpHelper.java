@@ -12,6 +12,8 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 
 public class HttpHelper {
+	
+	public static HttpHelper me = new HttpHelper();
 
 	private final OkHttpClient client = new OkHttpClient();
 	

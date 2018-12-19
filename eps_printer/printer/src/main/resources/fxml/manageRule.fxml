@@ -8,7 +8,7 @@
 
 <AnchorPane fx:id="parentAp" prefHeight="695.0" prefWidth="1148.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.jimi.smt.eps.printer.controller.ManageRuleController">
    <children>
-      <Label fx:id="versionLb" alignment="CENTER" contentDisplay="CENTER" layoutX="155.0" layoutY="666.0" prefHeight="30.0" prefWidth="426.0" text="© 2017 几米物联技术有限公司  All rights reserved." AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="155.0" AnchorPane.rightAnchor="93.0" />
+      <Label fx:id="versionLb" alignment="CENTER" contentDisplay="CENTER" layoutX="155.0" layoutY="666.0" prefHeight="30.0" prefWidth="426.0" text="© 2018 几米物联技术有限公司  All rights reserved." AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="155.0" AnchorPane.rightAnchor="93.0" />
       <TableView fx:id="ruleDataTv" layoutX="21.0" layoutY="44.0" prefHeight="574.0" prefWidth="955.0" AnchorPane.bottomAnchor="77.0" AnchorPane.leftAnchor="21.0">
          <columns>
             <TableColumn fx:id="ruleNameCol" editable="false" prefWidth="102.0" sortable="false" text="名称" />

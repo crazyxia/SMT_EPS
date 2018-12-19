@@ -11,6 +11,7 @@ import cc.darhao.dautils.api.TextFileUtil;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.paint.Color;
@@ -32,9 +33,11 @@ public class ConfigController implements Initializable {
 	@FXML
 	private TextField resolutionTf;
 	@FXML
-	private Button adjustBt;
+	private Button saveBt;
 	@FXML
 	private Label tipLb;
+	@FXML
+	private CheckBox reomtePrintCb;
 
 	private Stage stage;
 
@@ -45,9 +48,14 @@ public class ConfigController implements Initializable {
 			marginLeftTf.setText(configs[0]);
 			marginTopTf.setText(configs[1]);
 			resolutionTf.setText(configs[2]);
+			if (configs[3].equals("0")) {
+				reomtePrintCb.setSelected(false);
+			} else {
+				reomtePrintCb.setSelected(true);
+			}
 		} catch (IOException e) {
 			try {
-				TextFileUtil.writeToFile("e.cfg", "0,0,300");
+				TextFileUtil.writeToFile("e.cfg", "0,0,300,0");
 				initialize(arg0, arg1);
 			} catch (IOException e1) {
 				logger.error("e.cfg文件创建失败");
@@ -56,7 +64,8 @@ public class ConfigController implements Initializable {
 		}
 	}
 
-	public void onAdjustClick() {
+	
+	public void onSaveBtClick() {
 		try {
 			Integer.parseInt(marginLeftTf.getText());
 			Integer.parseInt(marginTopTf.getText());
@@ -66,8 +75,14 @@ public class ConfigController implements Initializable {
 				logger.error("分辨率必须为正整数");
 				return;
 			}
-			TextFileUtil.writeToFile("e.cfg",
+			StringBuilder config = new StringBuilder(
 					marginLeftTf.getText() + "," + marginTopTf.getText() + "," + resolutionTf.getText());
+			if (reomtePrintCb.isSelected()) {
+				config.append(",1");
+			} else {
+				config.append(",0");
+			}
+			TextFileUtil.writeToFile("e.cfg", config.toString());
 			stage.close();
 		} catch (IOException e) {
 			error("保存失败");
@@ -78,12 +93,14 @@ public class ConfigController implements Initializable {
 		}
 	}
 
+	
 	public void error(String message) {
 		tipLb.setTextFill(Color.RED);
 		tipLb.setText(message);
 		logger.error(message);
 	}
 
+	
 	public void setStage(Stage stage) {
 		this.stage = stage;
 	}

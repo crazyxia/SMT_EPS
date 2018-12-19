@@ -5,30 +5,47 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefHeight="227.0" prefWidth="248.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.jimi.smt.eps.printer.controller.ConfigController">
+<AnchorPane prefHeight="229.0" prefWidth="320.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.jimi.smt.eps.printer.controller.ConfigController">
    <children>
-      <TabPane prefHeight="227.0" prefWidth="248.0" tabClosingPolicy="UNAVAILABLE">
-        <tabs>
-          <Tab text="打印校正">
-            <content>
-              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-                     <children>
-                        <Label layoutX="25.0" layoutY="35.0" prefHeight="15.0" prefWidth="55.0" text="左边距：" />
-                        <Label layoutX="25.0" layoutY="67.0" prefHeight="15.0" prefWidth="52.0" text="顶边距：" />
-                        <TextField fx:id="marginTopTf" layoutX="79.0" layoutY="63.0" prefHeight="23.0" prefWidth="118.0" />
-                        <TextField fx:id="marginLeftTf" layoutX="79.0" layoutY="31.0" prefHeight="23.0" prefWidth="118.0" />
-                        <Button fx:id="adjustBt" layoutX="168.0" layoutY="155.0" mnemonicParsing="false" onAction="#onAdjustClick" prefHeight="23.0" prefWidth="55.0" text="确定" />
-                        <Label layoutX="200.0" layoutY="35.0" text="mm" />
-                        <Label layoutX="200.0" layoutY="67.0" text="mm" />
-                        <Label layoutX="200.0" layoutY="100.0" text="dpi" />
-                        <TextField fx:id="resolutionTf" layoutX="79.0" layoutY="96.0" prefHeight="23.0" prefWidth="118.0" />
-                        <Label layoutX="25.0" layoutY="100.0" prefHeight="15.0" prefWidth="52.0" text="分辨率：" />
-                        <Label fx:id="tipLb" layoutX="42.0" layoutY="131.0" prefHeight="15.0" prefWidth="164.0" />
-                     </children>
-                  </AnchorPane>
-            </content>
-          </Tab>
-        </tabs>
-      </TabPane>
+    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+         <children>
+            <TabPane prefHeight="227.0" prefWidth="248.0" tabClosingPolicy="UNAVAILABLE">
+              <tabs>
+                <Tab text="打印校正">
+                  <content>
+                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                           <children>
+                              <Label layoutX="25.0" layoutY="35.0" prefHeight="15.0" prefWidth="55.0" text="左边距：" />
+                              <Label layoutX="25.0" layoutY="67.0" prefHeight="15.0" prefWidth="52.0" text="顶边距：" />
+                              <TextField fx:id="marginTopTf" layoutX="79.0" layoutY="63.0" prefHeight="23.0" prefWidth="118.0" />
+                              <TextField fx:id="marginLeftTf" layoutX="79.0" layoutY="31.0" prefHeight="23.0" prefWidth="118.0" />
+                              <Label layoutX="200.0" layoutY="35.0" text="mm" />
+                              <Label layoutX="200.0" layoutY="67.0" text="mm" />
+                              <Label layoutX="200.0" layoutY="100.0" text="dpi" />
+                              <TextField fx:id="resolutionTf" layoutX="79.0" layoutY="96.0" prefHeight="23.0" prefWidth="118.0" />
+                              <Label layoutX="25.0" layoutY="100.0" prefHeight="15.0" prefWidth="52.0" text="分辨率：" />
+                              <Label fx:id="tipLb" layoutX="42.0" layoutY="131.0" prefHeight="15.0" prefWidth="164.0" />
+                           </children>
+                        </AnchorPane>
+                  </content>
+                </Tab>
+                  <Tab text="远程打印">
+                     <content>
+                        <AnchorPane prefHeight="177.0" prefWidth="247.0">
+                           <children>
+                              <Label layoutX="56.0" layoutY="68.0" prefHeight="39.0" prefWidth="65.0" text="远程打印：" />
+                              <CheckBox fx:id="reomtePrintCb" layoutX="124.0" layoutY="80.0" mnemonicParsing="false" prefHeight="16.0" prefWidth="15.0" />
+                              <Label layoutX="6.0" layoutY="139.0" prefHeight="23.0" prefWidth="231.0" text="远程打印：勾选该选项可以在智能仓储系统" />
+                              <Label layoutX="67.0" layoutY="162.0" prefHeight="23.0" prefWidth="172.0" text="网页端进行物料标签的远程打印" />
+                           </children>
+                        </AnchorPane>
+                     </content>
+                  </Tab>
+              </tabs>
+            </TabPane>
+         </children>
+      </AnchorPane>
+      <Button fx:id="saveBt" layoutX="256.0" layoutY="184.0" mnemonicParsing="false" onAction="#onSaveBtClick" prefHeight="17.0" prefWidth="57.0" text="保存" />
+      <Separator layoutX="237.0" layoutY="29.0" orientation="VERTICAL" prefHeight="200.0" prefWidth="24.0" />
    </children>
 </AnchorPane>

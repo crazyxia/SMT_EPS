@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.jimi.smt.eps.printer.controller.MaterialFileInfoManagerController">
+   <children>
+      <TableView fx:id="materialTb" layoutX="19.0" layoutY="127.0" prefHeight="426.0" prefWidth="761.0">
+        <columns>
+          <TableColumn fx:id="fileNameCl" prefWidth="166.0" text="名称" />
+            <TableColumn fx:id="fileSizeCl" prefWidth="137.0" text="文件大小" />
+          <TableColumn fx:id="filePathCl" prefWidth="457.0" text="路径" />
+        </columns>
+      </TableView>
+      <Label layoutX="21.0" layoutY="14.0" prefHeight="60.0" prefWidth="204.0" text="料号表路径管理">
+         <font>
+            <Font name="Microsoft YaHei" size="26.0" />
+         </font>
+      </Label>
+      <Button fx:id="fileSelectBt" layoutX="274.0" layoutY="95.0" mnemonicParsing="false" onAction="#onFileSelectBtClick" prefHeight="23.0" prefWidth="95.0" text="浏览" />
+      <TextField fx:id="fileSelectTf" layoutX="19.0" layoutY="95.0" prefHeight="23.0" prefWidth="247.0" />
+      <Label layoutX="21.0" layoutY="72.0" text="供应商料号表文件：" />
+      <Button fx:id="deleteFilePathBt" layoutX="685.0" layoutY="95.0" mnemonicParsing="false" onAction="#onDeleteFilePathBtClick" prefHeight="23.0" prefWidth="95.0" text="删除" />
+      <Button fx:id="saveFilePathBt" layoutX="685.0" layoutY="561.0" mnemonicParsing="false" onAction="#onSaveFilePathBtClick" prefHeight="31.0" prefWidth="95.0" text="保存">
+         <font>
+            <Font name="Microsoft YaHei" size="16.0" />
+         </font>
+      </Button>
+   </children>
+</AnchorPane>
