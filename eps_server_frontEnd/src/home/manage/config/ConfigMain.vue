@@ -55,28 +55,28 @@
             line: "统一",
             alias: "核料延时时间",
             name: "check_after_change_time",
-            value: 0,
+            value: "",
             description: "换料后超过该时间未核料，会触发报警。单位：分钟"
           },
           {
             line: "统一",
             alias: "全检周期时间  ",
             name: "check_all_cycle_time",
-            value: 0,
+            value: "",
             description: "该周期时间内未执行全检，会触发报警。单位：分钟"
           },
           {
             line: "统一",
             alias: "操作员出错时响应",
             name: "operator_error_alarm",
-            value: 0,
+            value: "",
             description: "操作员操作（上料、换料）出错时，系统将执行的操作。0为报警+停接驳台；1为仅报警；2为仅停接驳台；3为无动作"
           },
           {
             line: "统一",
             alias: "IPQC出错时响应",
             name: "ipqc_error_alarm",
-            value: 0,
+            value: "",
             description: "IPQC操作（核料、全检、首检）出错时，系统将执行的操作。0为报警+停接驳台；1为仅报警；2为仅停接驳台；3为无动作"
           }
         ],
@@ -85,6 +85,11 @@
     },
     watch: {
       line: function (val) {
+        if(val === "统一"){
+          for(let i =0;i<this.totalItem.length;i++){
+            this.totalItem[i].value = "";
+          }
+        }
         if (val !== "") {
           this.getList();
         }

@@ -7,7 +7,7 @@
       </div>
       <div class="form-group">
         <label for="perifdOfValidity">保质期(天)</label>
-        <input type="text" class="form-control" id="perifdOfValidity" v-model="materialInfos.perifdOfValidity">
+        <input type="text" class="form-control" id="perifdOfValidity" v-model.trim="materialInfos.perifdOfValidity">
       </div>
       <div class="btn-group">
         <button type="button" class="btn btn_find" @click="find">查询</button>
@@ -51,9 +51,11 @@
         store.commit("setIsAdd", true);
       },
       find: function () {
-        if (this.materialInfos.perifdOfValidity !== "" && !judge(this.materialInfos.perifdOfValidity)) {
-          alert("物料保质期必须为正整数");
-          return;
+        if (this.materialInfos.perifdOfValidity !== "") {
+          if (!judge(this.materialInfos.perifdOfValidity)) {
+            alert("物料保质期必须为不以0开头的正整数");
+            return;
+          }
         }
         store.commit("setIsFind", true);
       }

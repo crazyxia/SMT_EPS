@@ -58,7 +58,7 @@
           store.commit("setProgramItemRefresh", false);
           this.total = store.state.programItemList.length;
           let index = store.state.operationIndex + 1;
-          if (index === this.total) {
+          if (index === this.total && index > this.query.limit) {
             let a = (index - this.query.limit) % this.query.limit;
             let b = parseInt((index - this.query.limit) / this.query.limit);
             if (a !== 0) {

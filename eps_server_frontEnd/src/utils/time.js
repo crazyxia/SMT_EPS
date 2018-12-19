@@ -34,7 +34,7 @@ export const checkClientTime = function(startTime,endTime){
         }
         fromDate = parseInt(fromDate);
         toDate = parseInt(toDate);
-        if (fromDate > toDate) {
+        if (fromDate > toDate || fromDate === 0 || toDate === 0) {
             alert("时间输入错误！请重新输入");
             startTime = "";
             endTime = "";
@@ -57,7 +57,7 @@ export const checkOperationTime = function(startTime,endTime){
     }
     fromDate = parseInt(fromDate);
     toDate = parseInt(toDate);
-    if (fromDate > toDate) {
+    if (fromDate > toDate || fromDate === 0 || toDate === 0) {
       alert("时间输入错误！请重新输入");
       startTime = "";
       endTime = "";
@@ -83,7 +83,7 @@ export const checkTimeByFind = function(startTime,endTime){
         }
         fromDate = parseInt(fromDate);
         toDate = parseInt(toDate);
-        if (fromDate > toDate) {
+        if (fromDate > toDate || fromDate === 0 || toDate === 0) {
             alert("时间输入错误！请重新输入");
             startTime = "";
             endTime = "";

@@ -14,7 +14,6 @@ export const loginUrl = user + '/login'
 export const addUserUrl = user + '/add'
 export const updateUserUrl = user + '/update'
 export const userListUrl = user + '/list'
-export const getCodePicUrl = user + '/getCodePic'
 
 /*program*/
 let program = url + '/program';
