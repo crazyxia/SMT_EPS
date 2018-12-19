@@ -42,7 +42,7 @@ public class CenterRemoteImpl implements CenterRemote {
 	/**
 	 * 初始化GPIO口数据
 	 */
-	private final GpioController gpio = GpioFactory.getInstance();
+	final GpioController gpio = GpioFactory.getInstance();
 	GpioPinDigitalOutput io13 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_02, PinState.LOW);
 	GpioPinDigitalOutput io15 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_03, PinState.LOW);
 	GpioPinDigitalOutput io16 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_04, PinState.LOW);
@@ -80,8 +80,8 @@ public class CenterRemoteImpl implements CenterRemote {
 		try {
 			server = (ServerRemote) LocateRegistry.getRegistry(serverIp).lookup("server");
 		} catch (Exception e) {
-			new CenterRemoteImpl();
 			logger.error("查找RMI服务端失败:" + e.getMessage());
+			new CenterRemoteImpl();
 		}
 	}
 

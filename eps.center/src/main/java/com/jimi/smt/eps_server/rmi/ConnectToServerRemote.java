@@ -13,7 +13,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.jimi.smt.eps_server.pack.BoardNumPackage;
-import com.jimi.smt.eps_server.pack.HeartPackage;
 import com.jimi.smt.eps_server.pack.LoginPackage;
 import com.jimi.smt.eps_server.pack.LoginReplyPackage;
 import com.jimi.smt.eps.center.util.IniReader;
@@ -40,11 +39,6 @@ public class ConnectToServerRemote {
     private static final String BOARDNUM_FILE = "/board_num.txt";
 
     /**
-     * STATE_FILE : 记录报警灯、接驳台等硬件状态的文件
-     */
-    private static final String STATE_FILE = "/state.txt";
-
-    /**
      * CONFIG_FILE : 记录各项配置的文件
      */
     private static final String CONFIG_FILE = "/config.ini";
@@ -52,7 +46,7 @@ public class ConnectToServerRemote {
     /**
      * connect_to_server_ip : 服务器的IP
      */
-    private String connect_to_server_ip;
+    private String serverIp;
     
     /**
      * localIp : 本地IP
@@ -70,11 +64,11 @@ public class ConnectToServerRemote {
      * <p>Description: 初始化操作</p>
      */
 	public ConnectToServerRemote() {
-		Map<String, String> map_ip = IniReader.getItem(System.getProperty("user.dir") + CONFIG_FILE, "ip");
-		connect_to_server_ip = map_ip.get("connect_to_server_ip");
+		Map<String, String> ipMap = IniReader.getItem(System.getProperty("user.dir") + CONFIG_FILE, "ip");
+		serverIp = ipMap.get("serverIp");
 		localIp = IpHelper.getLinuxLocalIp();
 		try {
-			server = (ServerRemote) LocateRegistry.getRegistry(connect_to_server_ip).lookup("server");
+			server = (ServerRemote) LocateRegistry.getRegistry(serverIp).lookup("server");
 			sendLoginPackageToServerRemote();
 		} catch (Exception e) {
 			new ConnectToServerRemote();
@@ -82,41 +76,8 @@ public class ConnectToServerRemote {
 		}
 		logger.info("ID为：" + line + " 的产线已连接服务器");
 	}
-
-    
-    /**@author HCJ
-     * 发送心跳包到服务器
-     * @date 2018年11月5日 下午4:09:28
-     */
-    public synchronized void sendHeartPackageToServerRemote() throws Exception {
-		HeartPackage heartPackage = new HeartPackage();
-		heartPackage.setLine(line);
-		heartPackage.setTimestamp(new Date());
-		String state = TextFileUtil.readFromFile(System.getProperty("user.dir") + STATE_FILE);
-		if (state.substring(state.length() - 3, state.length() - 2).equals("1")) {
-			heartPackage.setAlarmEnabled(true);
-		} else {
-			heartPackage.setAlarmEnabled(false);
-		}
-		if (state.substring(state.length() - 2, state.length() - 1).equals("1")) {
-			heartPackage.setConveyorEnabled(true);
-		} else {
-			heartPackage.setConveyorEnabled(false);
-		}
-		if (state.substring(state.length() - 1, state.length()).equals("1")) {
-			heartPackage.setInfraredEnabled(true);
-		} else {
-			heartPackage.setInfraredEnabled(false);
-		}
-		heartPackage.protocol = "Heart";
-		heartPackage.senderIp = localIp;
-		heartPackage.receiverIp = connect_to_server_ip;
-		heartPackage.serialNo = 0;
-		server.saveHeartPackageLog(heartPackage);
-		logger.info("在时间: " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(heartPackage.getTimestamp()) + " ID为: " + line + " 的产线发送心跳包");
-    }
-
-    
+	
+	
 	/**
 	 * @author HCJ 发送登录包到服务器
 	 * @throws Exception
@@ -127,7 +88,7 @@ public class ConnectToServerRemote {
 		loginPackage.setCenterControllerMAC(getMACAddress());
 		loginPackage.protocol = "Login";
 		loginPackage.senderIp = localIp;
-		loginPackage.receiverIp = connect_to_server_ip;
+		loginPackage.receiverIp = serverIp;
 		loginPackage.serialNo = 0;
 		LoginReplyPackage loginReplyPackage = server.login(loginPackage);
 		line = loginReplyPackage.getLine();
@@ -152,7 +113,7 @@ public class ConnectToServerRemote {
 		boardNumPackage.setTimestamp(new Date());
 		boardNumPackage.protocol = "BoardNum";
 		boardNumPackage.senderIp = localIp;
-		boardNumPackage.receiverIp = connect_to_server_ip;
+		boardNumPackage.receiverIp = serverIp;
 		boardNumPackage.serialNo = 0;
 		server.updateBoardNum(boardNumPackage);
 		logger.info("在时间: " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(boardNumPackage.getTimestamp()) + " ID为: " + line + " 的产线发送上传板子数量包");
