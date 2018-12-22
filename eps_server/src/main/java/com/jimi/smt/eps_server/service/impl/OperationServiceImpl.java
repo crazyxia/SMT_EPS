@@ -37,6 +37,7 @@ import com.jimi.smt.eps_server.mapper.OperationMapper;
 import com.jimi.smt.eps_server.mapper.StockLogMapper;
 import com.jimi.smt.eps_server.service.LineService;
 import com.jimi.smt.eps_server.service.OperationService;
+import com.jimi.smt.eps_server.service.ProgramService;
 import com.jimi.smt.eps_server.util.ExcelSpringHelper;
 import com.jimi.smt.eps_server.util.SqlUtil;
 
@@ -49,6 +50,8 @@ public class OperationServiceImpl implements OperationService {
 	private StockLogMapper stockLogMapper;
 	@Autowired
 	private LineService lineService;
+	@Autowired
+	private ProgramService programService;
 	@Autowired
 	private OperationToClientReportFiller operationToClientReportFiller;
 	@Autowired
@@ -71,7 +74,7 @@ public class OperationServiceImpl implements OperationService {
 	 */
 	@Override
 	public synchronized List<ClientReport> listClientReport(String client, String programNo, Integer line, String orderNo, String workOrderNo, String startTime, String endTime, Page page) throws ParseException {
-		operationToClientReportFiller.init();
+//		operationToClientReportFiller.init();
 		List<ClientReport> clientReports = new ArrayList<ClientReport>();
 		ReportParameter parameter = new ReportParameter();
 		// 筛选时间
@@ -114,7 +117,7 @@ public class OperationServiceImpl implements OperationService {
 			// 把操作日志转化为客户报告
 			clientReports.add(operationToClientReportFiller.fill(operation));
 		}
-		operationToClientReportFiller.destroy();
+//		operationToClientReportFiller.destroy();
 		return clientReports;
 	}
 
@@ -192,7 +195,7 @@ public class OperationServiceImpl implements OperationService {
 	 */
 	@Override
 	public synchronized List<OperationReport> listOperationReport(String operator, String client, Integer line, String workOrderNo, String startTime, String endTime, Integer type, Page page) throws ParseException {
-		operationToOperationReportFiller.init();
+//		operationToOperationReportFiller.init();
 		List<OperationReport> operationReports = new ArrayList<OperationReport>();
 		ReportParameter parameter = new ReportParameter();
 		// 筛选时间
@@ -233,7 +236,7 @@ public class OperationServiceImpl implements OperationService {
 			// 把操作日志转化为操作报告
 			operationReports.add(operationToOperationReportFiller.fill(operation));
 		}
-		operationToOperationReportFiller.destroy();
+//		operationToOperationReportFiller.destroy();
 		return operationReports;
 	}
 
@@ -403,7 +406,7 @@ public class OperationServiceImpl implements OperationService {
 	
 	@Override
 	public Integer add(Operation operation) {
-		operation.setTime(new Date());
+		operation.setTime(programService.getCurrentTime());
 		Integer lineId = lineService.getLineIdByName(operation.getLine().toString());
 		if(lineId != null) {
 			operation.setLine(lineId);

@@ -1,6 +1,5 @@
 package com.jimi.smt.eps_server.service.impl;
 
-import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +12,7 @@ import com.jimi.smt.eps_server.entity.UserExample.Criteria;
 import com.jimi.smt.eps_server.entity.filler.UserToUserVOFiller;
 import com.jimi.smt.eps_server.entity.vo.UserVO;
 import com.jimi.smt.eps_server.mapper.UserMapper;
+import com.jimi.smt.eps_server.service.ProgramService;
 import com.jimi.smt.eps_server.service.UserService;
 import com.jimi.smt.eps_server.util.SqlUtil;
 
@@ -23,6 +23,8 @@ public class UserServiceImpl implements UserService {
 	private UserMapper userMapper;
 	@Autowired
 	private UserToUserVOFiller filler;
+	@Autowired
+	private ProgramService programService;
 	
 	
 	@Override
@@ -35,7 +37,7 @@ public class UserServiceImpl implements UserService {
 		user.setName(name);
 		user.setType(type);
 		user.setPassword("".equals(password) ? null : password);
-		user.setCreateTime(new Date());
+		user.setCreateTime(programService.getCurrentTime());
 		user.setClassType(classType);
 		if(userMapper.insertSelective(user) == 1) {
 			return "succeed";

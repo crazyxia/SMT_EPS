@@ -125,7 +125,7 @@ public class ProgramServiceImpl implements ProgramService {
 				program.setAuditor(helper.getString(7, 4 + offset).substring(3));
 				program.setFileName(programFile.getOriginalFilename());
 				program.setId(UuidUtil.get32UUID());
-				program.setCreateTime(new Date());
+				program.setCreateTime(getCurrentTime());
 				program.setBoardType(boardType);
 				program.setWorkOrder(workOrder);
 				programs.add(program);
@@ -292,7 +292,7 @@ public class ProgramServiceImpl implements ProgramService {
 
 		// 对新Program进行赋值
 		newProgram.setId(newProgramId);
-		newProgram.setCreateTime(new Date());
+		newProgram.setCreateTime(getCurrentTime());
 
 		// 提交新旧Program
 		programMapper.updateByPrimaryKey(oldProgram);
@@ -305,32 +305,37 @@ public class ProgramServiceImpl implements ProgramService {
 		for (EditProgramItemBO bo : BOs) {
 			ProgramItem newItem = new ProgramItem();
 			FieldUtil.copy(bo, newItem);
-			for (int i = 0; i < items.size(); i++) {
-				ProgramItem programItem = items.get(i);
-				// 匹配记录
-				if (bo.getTargetLineseat().equals(programItem.getLineseat())
-						&& bo.getTargetMaterialNo().equals(programItem.getMaterialNo())) {
-					int index = items.indexOf(programItem);
-					// 执行编辑操作
-					switch (bo.getOperation()) {
-					case 0:
-						items.add(index, newItem);
+			if (items != null && items.size() > 0) {
+				for (int i = 0; i < items.size(); i++) {
+					ProgramItem programItem = items.get(i);
+					// 匹配记录
+					if (bo.getTargetLineseat().equals(programItem.getLineseat())
+							&& bo.getTargetMaterialNo().equals(programItem.getMaterialNo())) {
+						int index = items.indexOf(programItem);
+						// 执行编辑操作
+						switch (bo.getOperation()) {
+						case 0:
+							items.add(index, newItem);
+							break;
+						case 1:
+							items.set(index, newItem);
+							break;
+						case 2:
+							items.remove(index);
+							break;
+						default:
+							break;
+						}
 						break;
-					case 1:
-						items.set(index, newItem);
-						break;
-					case 2:
-						items.remove(index);
-						break;
-					default:
+					} else if (bo.getTargetLineseat().equals("") && bo.getTargetMaterialNo().equals("") && bo.getOperation() == 0) {
+						// 如果目标站位和料号为空并且操作类型为增加，则追加在列表尾部
+						items.add(newItem);
 						break;
 					}
-					break;
-				} else if (bo.getTargetLineseat().equals("") && bo.getTargetMaterialNo().equals("")
-						&& bo.getOperation() == 0) {
-					// 如果目标站位和料号为空并且操作类型为增加，则追加在列表尾部
+				}
+			} else {
+				if (bo.getOperation() == 0) {
 					items.add(newItem);
-					break;
 				}
 			}
 		}
@@ -355,23 +360,28 @@ public class ProgramServiceImpl implements ProgramService {
 			programItemVisitExample.createCriteria().andProgramIdEqualTo(oldProgramId);
 			List<ProgramItemVisit> oldVisits = programItemVisitMapper.selectByExample(programItemVisitExample);
 			if (oldVisits == null || oldVisits.isEmpty()) {
-				ResultUtil.failed("找不到VisitItem，ID不存在");
-				throw new RuntimeException("failed_visit_not_found");
-			}
-			for (ProgramItemVisit newVisit : newVisits) {
-				for (ProgramItemVisit oldVisit : oldVisits) {
-					if (newVisit.getLineseat().equals(oldVisit.getLineseat())
-							&& newVisit.getMaterialNo().equals(oldVisit.getMaterialNo())) {
-						// 覆盖数据
-						FieldUtil.copy(oldVisit, newVisit);
-						// 设置新id
-						newVisit.setProgramId(newProgramId);
-					}
-					// 删除旧visit数据
-					programItemVisitMapper.deleteByPrimaryKey(oldVisit);
+				for (ProgramItemVisit newVisit : newVisits) {
+					// 设置新id
+					newVisit.setProgramId(newProgramId);
+					// 插入新visit数据
+					programItemVisitMapper.insert(newVisit);
 				}
-				// 插入新visit数据
-				programItemVisitMapper.insert(newVisit);
+			}else {
+				for (ProgramItemVisit newVisit : newVisits) {
+					for (ProgramItemVisit oldVisit : oldVisits) {
+						if (newVisit.getLineseat().equals(oldVisit.getLineseat())
+								&& newVisit.getMaterialNo().equals(oldVisit.getMaterialNo())) {
+							// 覆盖数据
+							FieldUtil.copy(oldVisit, newVisit);
+							// 设置新id
+							newVisit.setProgramId(newProgramId);
+						}
+						// 删除旧visit数据
+						programItemVisitMapper.deleteByPrimaryKey(oldVisit);
+					}
+					// 插入新visit数据
+					programItemVisitMapper.insert(newVisit);
+				}
 			}
 		}
 		return "succeed";
@@ -505,7 +515,7 @@ public class ProgramServiceImpl implements ProgramService {
 			}
 			if (flag == 1) {
 				for (ProgramItemVisit programItemVisit : programItemVisits) {
-					programItemVisit.setCheckAllTime(new Date());
+					programItemVisit.setCheckAllTime(getCurrentTime());
 					programItemVisitMapper.updateByPrimaryKey(programItemVisit);
 				}
 			}
@@ -535,8 +545,8 @@ public class ProgramServiceImpl implements ProgramService {
 				// 核料
 				case 2:
 					programItemVisit.setLastOperationType(2);
-					programItemVisit.setLastOperationTime(new Date());
-					programItemVisit.setCheckTime(new Date());
+					programItemVisit.setLastOperationTime(getCurrentTime());
+					programItemVisit.setCheckTime(getCurrentTime());
 					programItemVisit.setCheckResult(operationResult);
 					// 如果核料成功，把换料结果也置为成功
 					if (operationResult == 1) {
@@ -546,8 +556,8 @@ public class ProgramServiceImpl implements ProgramService {
 				// 全检
 				case 3:
 					programItemVisit.setLastOperationType(3);
-					programItemVisit.setLastOperationTime(new Date());
-					programItemVisit.setCheckAllTime(new Date());
+					programItemVisit.setLastOperationTime(getCurrentTime());
+					programItemVisit.setCheckAllTime(getCurrentTime());
 					programItemVisit.setCheckAllResult(operationResult);
 					break;
 				default:
@@ -573,7 +583,7 @@ public class ProgramServiceImpl implements ProgramService {
 		}
 		synchronized (timeoutTimer.getLock(line)) {
 			for (ProgramItemVisit programItemVisit : programItemVisits) {
-				programItemVisit.setLastOperationTime(new Date());
+				programItemVisit.setLastOperationTime(getCurrentTime());
 				programItemVisit.setLastOperationType(null);
 				programItemVisit.setFeedResult(2);
 				programItemVisit.setChangeResult(2);
@@ -642,19 +652,19 @@ public class ProgramServiceImpl implements ProgramService {
 		int type = programItemVisit.getLastOperationType();
 		switch (type) {
 		case 0:
-			programItemVisit.setLastOperationTime(new Date());
-			programItemVisit.setFeedTime(new Date());
+			programItemVisit.setLastOperationTime(getCurrentTime());
+			programItemVisit.setFeedTime(getCurrentTime());
 			result = programItemVisitMapper.updateFeedResult(programItemVisit);
 			break;
 		case 1:
-			programItemVisit.setLastOperationTime(new Date());
-			programItemVisit.setChangeTime(new Date());
+			programItemVisit.setLastOperationTime(getCurrentTime());
+			programItemVisit.setChangeTime(getCurrentTime());
 			programItemVisit.setCheckResult(2);
 			result = programItemVisitMapper.updateChangeResult(programItemVisit);
 			break;
 		case 2:
-			programItemVisit.setLastOperationTime(new Date());
-			programItemVisit.setCheckTime(new Date());
+			programItemVisit.setLastOperationTime(getCurrentTime());
+			programItemVisit.setCheckTime(getCurrentTime());
 			if (programItemVisit.getCheckResult() != null && programItemVisit.getCheckResult() == 0) {
 				result = programItemVisitMapper.updateCheckFailResult(programItemVisit);
 			} else if (programItemVisit.getCheckResult() != null && programItemVisit.getCheckResult() == 1) {
@@ -662,18 +672,18 @@ public class ProgramServiceImpl implements ProgramService {
 			}
 			break;
 		case 3:
-			programItemVisit.setLastOperationTime(new Date());
-			programItemVisit.setCheckAllTime(new Date());
+			programItemVisit.setLastOperationTime(getCurrentTime());
+			programItemVisit.setCheckAllTime(getCurrentTime());
 			result = programItemVisitMapper.updateAllResult(programItemVisit);
 			break;
 		case 4:
-			programItemVisit.setLastOperationTime(new Date());
-			programItemVisit.setStoreIssueTime(new Date());
+			programItemVisit.setLastOperationTime(getCurrentTime());
+			programItemVisit.setStoreIssueTime(getCurrentTime());
 			result = programItemVisitMapper.updateStoreResult(programItemVisit);
 			break;
 		case 5:
-			programItemVisit.setLastOperationTime(new Date());
-			programItemVisit.setFirstCheckAllTime(new Date());
+			programItemVisit.setLastOperationTime(getCurrentTime());
+			programItemVisit.setFirstCheckAllTime(getCurrentTime());
 			result = programItemVisitMapper.updateFirstAllResult(programItemVisit);
 			break;
 		default:
@@ -689,7 +699,7 @@ public class ProgramServiceImpl implements ProgramService {
 		example.createCriteria().andProgramIdEqualTo(programId);
 		ProgramItemVisit programItemVisit = new ProgramItemVisit();
 		programItemVisit.setCheckAllResult(1);
-		programItemVisit.setCheckAllTime(new Date());
+		programItemVisit.setCheckAllTime(getCurrentTime());
 		return programItemVisitMapper.updateByExampleSelective(programItemVisit, example);
 	}
 
@@ -905,6 +915,27 @@ public class ProgramServiceImpl implements ProgramService {
 	}
 
 	
+	@Override
+	public String isCheckAllTimeOut(String line, String workOrder, Integer boardType) {
+		// TODO Auto-generated method stub
+		Integer isCheckAllTimeOutExist = 0;
+		List<ProgramItemVisit> programItemVisits = getVisits(line, workOrder, boardType);
+		for (ProgramItemVisit programItemVisit : programItemVisits) {
+			if (programItemVisit.getCheckAllResult() == 3) {
+				isCheckAllTimeOutExist = 1;
+				break;
+			}
+		}
+		return "{\"programId\":\"" + programItemVisits.get(0).getProgramId() + "\",\"isCheckAllTimeOutExist\":" + isCheckAllTimeOutExist + "}";
+	}
+
+
+	@Override
+	public Date getCurrentTime() {
+		return new Date();
+	}
+
+
 	private void clearVisits(String programId) {
 		ProgramItemVisitExample programItemVisitExample = new ProgramItemVisitExample();
 		programItemVisitExample.createCriteria().andProgramIdEqualTo(programId);

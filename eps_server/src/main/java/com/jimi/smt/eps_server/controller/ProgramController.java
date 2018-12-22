@@ -209,6 +209,7 @@ public class ProgramController {
 	}
 
 	
+	@Log
 	@Open
 	@ResponseBody
 	@RequestMapping("/operate")
@@ -279,6 +280,7 @@ public class ProgramController {
 	}
 
 	
+	@Log
 	@Open
 	@ResponseBody
 	@RequestMapping("/updateItemVisit")
@@ -296,6 +298,7 @@ public class ProgramController {
 	}
 
 	
+	@Log
 	@Open
 	@ResponseBody
 	@RequestMapping("/resetCheckAll")
@@ -384,6 +387,14 @@ public class ProgramController {
 	@ResponseBody
 	@RequestMapping("/getTimesTamp")
 	public long getTimesTamp() {
-		return System.currentTimeMillis();
+		return programService.getCurrentTime().getTime();
+	}
+	
+	
+	@Open
+	@ResponseBody
+	@RequestMapping("/isCheckAllTimeOut")
+	public String isCheckAllTimeOut(String line, String workOrder, Integer boardType) {
+		return programService.isCheckAllTimeOut(line, workOrder, boardType);
 	}
 }

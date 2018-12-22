@@ -1,6 +1,5 @@
 package com.jimi.smt.eps_server.timer;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -76,7 +75,7 @@ public class TimeoutTimer {
 			lineInfos.put(i, new LineInfo());
 		}
 	}
-	
+
 	
 	/**
 	 * 每隔5秒检查是否有超时项目
@@ -145,7 +144,7 @@ public class TimeoutTimer {
 			//当前全检时间加上设置的超时时间
 			long temp = programItemVisit.getCheckAllTime().getTime() + lineInfos.get(line).getCheckAllTimeout() * 60 * 1000;
 			//当前时间是否大于全检超时后的时间
-			boolean isCheckAllTimeout = new Date().getTime() > temp;
+			boolean isCheckAllTimeout = programService.getCurrentTime().getTime() > temp;
 			//是否已经正常首检
 			boolean hasFirstCheckAll = programItemVisit.getFirstCheckAllResult() == 1;
 			//全检结果是否不为超时
@@ -154,7 +153,7 @@ public class TimeoutTimer {
 				for (ProgramItemVisit programItemVisit2 : programItemVisits) {
 					programItemVisit2.setCheckAllResult(3);
 					programItemVisit2.setLastOperationType(3);
-					programItemVisit2.setLastOperationTime(new Date());
+					programItemVisit2.setLastOperationTime(programService.getCurrentTime());
 					programService.updateVisit(programItemVisit2);
 				}
 			}
@@ -162,7 +161,7 @@ public class TimeoutTimer {
 			//当前换料时间加上设置的超时时间
 			long temp2 = programItemVisit.getChangeTime().getTime() + lineInfos.get(line).getCheckTimeout() * 60 * 1000;
 			//当前时间是否大于换料超时后的时间
-			boolean isCheckTimeout = new Date().getTime() > temp2;
+			boolean isCheckTimeout = programService.getCurrentTime().getTime() > temp2;
 			//核料时间是否小于换料时间
 			boolean notYetCheck = programItemVisit.getCheckTime().getTime() < programItemVisit.getChangeTime().getTime();
 			//是否处于待核料状态
@@ -172,7 +171,7 @@ public class TimeoutTimer {
 			if(isCheckTimeout && notYetCheck && hasChangeButNeedCheck && isNotInCheckTimeoutState) {
 				 programItemVisit.setCheckResult(3);
 				 programItemVisit.setLastOperationType(2);
-				 programItemVisit.setLastOperationTime(new Date());
+				 programItemVisit.setLastOperationTime(programService.getCurrentTime());
 				 programService.updateVisit(programItemVisit);
 			}
 		}

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.jimi.smt.eps_server.annotation.Log;
 import com.jimi.smt.eps_server.annotation.Open;
 import com.jimi.smt.eps_server.annotation.Role;
 import com.jimi.smt.eps_server.annotation.Role.RoleType;
@@ -39,6 +40,7 @@ public class OperationController {
 
 	
 	// 分页查询客户报表
+	@Log
 	@Role(RoleType.IPQC)
 	@ResponseBody
 	@RequestMapping("/listClientReport")
@@ -76,6 +78,7 @@ public class OperationController {
 	}
 
 	
+	@Log
 	@Role(RoleType.IPQC)
 	@ResponseBody
 	@RequestMapping("/listOperationReport")
@@ -94,6 +97,7 @@ public class OperationController {
 	}
 
 	
+	@Log
 	@Role(RoleType.IPQC)
 	@ResponseBody
 	@RequestMapping("/listOperationReportSummary")
@@ -131,6 +135,7 @@ public class OperationController {
 	}
 
 	
+	@Log
 	@Role(RoleType.IPQC)
 	@ResponseBody
 	@RequestMapping("/listStockLogs")
@@ -149,6 +154,7 @@ public class OperationController {
 	}
 
 	
+	@Log
 	@Open
 	@ResponseBody
 	@RequestMapping("/listDisplayReport")
@@ -162,6 +168,7 @@ public class OperationController {
 	}
 
 	
+	@Log
 	@Open
 	@ResponseBody
 	@RequestMapping("/add")

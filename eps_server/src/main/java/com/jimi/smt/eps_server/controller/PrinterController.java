@@ -5,6 +5,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.jimi.smt.eps_server.annotation.Log;
 import com.jimi.smt.eps_server.annotation.Open;
 import com.jimi.smt.eps_server.service.PrinterService;
 import com.jimi.smt.eps_server.util.ResultUtil2;
@@ -21,6 +22,7 @@ public class PrinterController {
 	private PrinterService printerService;
 
 	
+	@Log
 	@Open
 	@ResponseBody
 	@RequestMapping("/printBarcode")

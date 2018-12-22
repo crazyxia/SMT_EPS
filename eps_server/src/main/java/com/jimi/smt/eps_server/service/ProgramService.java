@@ -1,6 +1,7 @@
 package com.jimi.smt.eps_server.service;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -264,5 +265,19 @@ public interface ProgramService {
 	 * @date 2018年9月25日 下午4:29:28
 	 */
 	String getProgramId(String line, String workOrder, Integer boardType);
+	
+	
+	/**@author HCJ
+	 * 判断当前工单全检是否超时
+	 * @date 2018年12月21日 上午9:58:10
+	 */
+	String isCheckAllTimeOut(String line, String workOrder, Integer boardType);
+	
+	
+	/**@author HCJ
+	 * 获取服务器当前时间
+	 * @date 2018年12月21日 下午6:59:10
+	 */
+	Date getCurrentTime();
 	
 }

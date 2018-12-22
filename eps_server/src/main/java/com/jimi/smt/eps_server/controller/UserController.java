@@ -222,6 +222,7 @@ public class UserController {
 	}
 	
 	
+	@Log
 	@Open
 	@ResponseBody
 	@RequestMapping("/updatePassword")
