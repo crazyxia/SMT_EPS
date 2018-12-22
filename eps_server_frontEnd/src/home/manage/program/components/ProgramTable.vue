@@ -76,6 +76,7 @@
         }
       },
       isRefresh: function (val) {
+        console.log(store.state.isRefresh);
         if (val === true) {
           store.commit("setIsRefresh", false);
           this.find();

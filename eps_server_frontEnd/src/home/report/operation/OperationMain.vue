@@ -97,9 +97,8 @@
       },
       operationDetailShow: function (val) {
         if (val === true) {
-          this.isShow = false;
-        } else {
-          this.isShow = true;
+          store.commit("setOperationDetailShow", false);
+          this.isShow = !this.isShow;
         }
       }
     },

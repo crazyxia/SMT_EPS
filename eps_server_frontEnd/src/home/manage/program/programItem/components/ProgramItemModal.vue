@@ -14,19 +14,19 @@
           <form class="form-inline" role="form">
             <div class="form-group">
               <label for="lineseat">站位</label>
-              <input type="text" class="form-control" id="lineseat" v-model="modalInfo.lineseat">
+              <input type="text" class="form-control" id="lineseat" v-model.trim="modalInfo.lineseat">
             </div>
             <div class="form-group">
               <label for="materialNo">程序料号</label>
-              <input type="text" class="form-control" id="materialNo" v-model="modalInfo.materialNo">
+              <input type="text" class="form-control" id="materialNo" v-model.trim="modalInfo.materialNo">
             </div>
             <div class="form-group">
               <label for="quantity">数量</label>
-              <input type="text" class="form-control" id="quantity" v-model="modalInfo.quantity">
+              <input type="text" class="form-control" id="quantity" v-model.trim="modalInfo.quantity">
             </div>
             <div class="form-group">
               <label for="materialType">料别</label>
-              <select class="form-control" id="materialType" v-model="modalInfo.materialType">
+              <select class="form-control" id="materialType" v-model.trim="modalInfo.materialType">
                 <option selected="selected" disabled="disabled" style='display: none' value=''></option>
                 <option>主料</option>
                 <option>替料</option>
@@ -34,11 +34,11 @@
             </div>
             <div class="form-group">
               <label for="specitification">BOM料号/规格</label>
-              <textarea v-model="modalInfo.specitification" id="specitification" class="form-control"></textarea>
+              <textarea v-model.trim="modalInfo.specitification" id="specitification" class="form-control"></textarea>
             </div>
             <div class="form-group">
               <label for="position">单板位置</label>
-              <textarea class="form-control" id="position" v-model="modalInfo.position"></textarea>
+              <textarea class="form-control" id="position" v-model.trim="modalInfo.position"></textarea>
             </div>
           </form>
         </div>

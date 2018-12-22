@@ -70,6 +70,9 @@
     components:{
       UserTable,UserModal
     },
+    created(){
+      store.commit("setIsRefresh", false);
+    },
     methods:{
       addModal:function(){
         store.commit("setUserOperationType","add");

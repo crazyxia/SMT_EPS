@@ -39,6 +39,8 @@ export const programItemTip = function (obj) {
     alert("BOM料号/规格不能为空");
   } else if (obj.position === "") {
     alert("单板位置不能为空");
+  } else if (!judge(obj.quantity )&& obj.quantity != "0"){
+    alert("数量必须为不以0开头的正整数或者0")
   } else {
     return true;
   }

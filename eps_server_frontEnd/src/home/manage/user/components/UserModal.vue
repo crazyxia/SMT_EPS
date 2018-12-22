@@ -166,9 +166,11 @@ export default {
         if (response.data) {
           let result = response.data.result;
           if(result === "succeed"){
+            console.log(store.state.isRefresh);
+            store.commit("setIsRefresh",true);
+            console.log(store.state.isRefresh);
             alert(succeedTip);
             $('#myModal').modal('hide');
-            store.commit("setIsRefresh",true);
           }else{
             errTip(result);
           }

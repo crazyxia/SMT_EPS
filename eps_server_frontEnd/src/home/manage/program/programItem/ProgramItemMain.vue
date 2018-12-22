@@ -5,15 +5,15 @@
       <span title="返回" @click="returnToProgram"><icon name="returnB" scale="4"></icon></span>
       <div class="form-group">
         <label for="workOrder">工单</label>
-        <input type="text" class="form-control" id="workOrder" v-model="programInfos.workOrder" disabled="disabled">
+        <input type="text" class="form-control" id="workOrder" v-model.trim="programInfos.workOrder" disabled="disabled">
       </div>
       <div class="form-group">
         <label for="boardType">版面</label>
-        <input type="text" class="form-control" id="boardType" v-model="programInfos.boardTypeName" disabled="disabled" >
+        <input type="text" class="form-control" id="boardType" v-model.trim="programInfos.boardTypeName" disabled="disabled" >
       </div>
       <div class="form-group">
         <label for="line">线号</label>
-        <input type="text" class="form-control" id="line" v-model="programInfos.lineName" disabled="disabled" >
+        <input type="text" class="form-control" id="line" v-model.trim="programInfos.lineName" disabled="disabled" >
       </div>
       <div class="btn-group">
         <button type="button" class="btn btn_add" @click="addModal">追加</button>
@@ -53,6 +53,9 @@ export default {
       },
       modalInfo:{}
     }
+  },
+  created(){
+    store.commit("setIsProgramItemRefresh", false);
   },
   components:{
     ProgramItemTable,ProgramItemModal
@@ -175,7 +178,7 @@ export default {
         store.commit("setLoading",false);
         if (response.data) {
           let result = response.data.result;
-          if(result == "succeed"){
+          if(result === "succeed"){
             alert("编辑成功");
             this.operations = [];
             this.resetOperation();
@@ -184,7 +187,6 @@ export default {
             errTip(result);
             this.operations = [];
           }
-          store.commit("setIsRefresh",true);
         }
       }).catch(err => {
         store.commit("setLoading",false);
