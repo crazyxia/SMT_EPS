@@ -36,7 +36,7 @@
         </div>
         <div class="form-group">
           <label for="boardType">版面</label>
-          <select class="form-control" id="boardType" v-model="fileInfos.boardType">
+          <select class="form-control" id="boardType" v-model.trim="fileInfos.boardType">
             <option selected="selected" disabled="disabled" style='display: none' value=''></option>
             <option value="0">默认</option>
             <option value="1">AB面</option>
@@ -81,6 +81,9 @@
           boardType: ""
         }
       }
+    },
+    created(){
+      store.commit("setIsRefresh", false);
     },
     mounted() {
       store.commit("setProgramItemShow", false);

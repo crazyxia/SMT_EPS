@@ -53,6 +53,7 @@
   import OperationDetail from './operationDetail/OperationDetail'
   import {setInitialTime, checkOperationTime, checkTimeByFind} from "./../../../utils/time"
   import {downloadOperationReportUrl} from './../../../config/globalUrl'
+  import {checkOperationFindTime} from "../../../utils/time";
 
   export default {
     name: 'operation',
@@ -97,9 +98,8 @@
       },
       operationDetailShow: function (val) {
         if (val === true) {
-          this.isShow = false;
-        } else {
-          this.isShow = true;
+          store.commit("setOperationDetailShow", false);
+          this.isShow = !this.isShow;
         }
       }
     },
@@ -122,7 +122,7 @@
     },
     methods: {
       find: function () {
-        let isOk = checkTimeByFind(this.operationInfos.startTime, this.operationInfos.endTime);
+        let isOk = checkOperationFindTime(this.operationInfos.startTime, this.operationInfos.endTime);
         if (isOk) {
           store.commit("setIsFind", true);
         }

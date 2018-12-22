@@ -6,21 +6,21 @@
           <h5 class="modal-title" id="myModalLabel">
             {{message}}
           </h5>
-          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true" @click="resetData">&times;</button>
         </div>
         <div class="modal-body">
           <form class="form form-inline" role="form">
             <div class="form-group">
               <label for="line">线号</label>
-              <input type="text" class="form-control" id="line" disabled="disabled" v-model="modalInfo.lineName">
+              <input type="text" class="form-control" id="line" disabled="disabled" v-model.trim="modalInfo.lineName">
             </div>
             <div class="form-group">
               <label for="workOrder">工单</label>
-              <input type="text" class="form-control" id="WorkOrder" disabled="disabled" v-model="modalInfo.workOrder">
+              <input type="text" class="form-control" id="WorkOrder" disabled="disabled" v-model.trim="modalInfo.workOrder">
             </div>
             <div class="form-group">
               <label for="state">状态</label>
-              <select class="form-control" id="state" v-model="modalInfo.state">
+              <select class="form-control" id="state" v-model.trim="modalInfo.state">
                 <option selected="selected" disabled="disabled"  style='display: none' value=''></option>
                 <option value="0">未开始</option>
                 <option value="1">进行中</option>
@@ -119,6 +119,9 @@ export default {
     },
     setCancel:function(){
       this.fetchData(programCancelUrl);
+    },
+    resetData:function(){
+      store.commit("setIsRefresh",true);
     }
   }
 }

@@ -15,6 +15,7 @@ export default new Vuex.Store({
     isAdd:false ,//是否点击添加
     isFind:false,//是否点击查询
     isRefresh:false,//是否刷新列表
+    isProgramItemRefresh:false,  //是否刷新站位表
     isUpdate:false, //是否点击修改
     isDelete:false, //是否点击删除
     isGetCodePic:false, //是否点击生成工号二维码
@@ -103,6 +104,9 @@ export default new Vuex.Store({
     },
     setIsDetail(state,isDetail){
       state.isDetail = isDetail;
+    },
+    setIsProgramItemRefresh(state,isProgramItemRefresh){
+      state.isProgramItemRefresh = isProgramItemRefresh;
     },
 
     /*user*/

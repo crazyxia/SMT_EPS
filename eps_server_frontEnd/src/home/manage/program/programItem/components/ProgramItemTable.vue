@@ -13,6 +13,7 @@
     name: 'programItemTable',
     data: () => ({
       columns: [
+        {title:'序列号',field:'serialNo',colStyle: {'width': '50px'}},
         {title: '站位', field: 'lineseat', colStyle: {'width': '60px'}},
         {title: '程序料号', field: 'materialNo', colStyle: {'width': '120px'}},
         {title: '数量', field: 'quantity', colStyle: {'width': '50px'}},
@@ -42,8 +43,8 @@
       programItemRefresh: function () {
         return store.state.programItemRefresh;
       },
-      isRefresh: function () {
-        return store.state.isRefresh;
+      isProgramItemRefresh: function () {
+        return store.state.isProgramItemRefresh;
       }
     },
     watch: {
@@ -58,7 +59,11 @@
           store.commit("setProgramItemRefresh", false);
           this.total = store.state.programItemList.length;
           let index = store.state.operationIndex + 1;
-          if (index === this.total && index > this.query.limit) {
+          let programItemOperationType = store.state.programItemOperationType;
+          if(this.query.offset % this.query.limit === 0 && this.total % this.query.limit === 0 && programItemOperationType === "delete"){
+            index = index -1;
+          }
+          if (index === this.total && index >= this.query.limit) {
             let a = (index - this.query.limit) % this.query.limit;
             let b = parseInt((index - this.query.limit) / this.query.limit);
             if (a !== 0) {
@@ -70,9 +75,9 @@
           this.filterData(this.query);
         }
       },
-      isRefresh: function (val) {
+      isProgramItemRefresh: function (val) {
         if (val === true) {
-          store.commit("setIsRefresh", false);
+          store.commit("setIsProgramItemRefresh", false);
           this.getList();
         }
       }

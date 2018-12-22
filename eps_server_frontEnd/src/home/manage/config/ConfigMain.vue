@@ -3,7 +3,7 @@
     <form class="form-inline" role="form">
       <div class="form-group">
         <label for="line">产线设置筛选</label>
-        <select class="form-control" id="line" v-model="line">
+        <select class="form-control" id="line" v-model.trim="line">
           <option selected="selected" disabled="disabled" style='display:none' value=''></option>
           <option>统一</option>
           <option v-for="item in lines">{{item.line}}</option>

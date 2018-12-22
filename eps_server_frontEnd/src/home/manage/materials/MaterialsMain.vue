@@ -37,6 +37,9 @@
         },
       }
     },
+    created(){
+      store.commit("setIsRefresh", false);
+    },
     components: {
       MaterialTable, MaterialModal
     },

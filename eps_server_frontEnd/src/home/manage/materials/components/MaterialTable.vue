@@ -62,9 +62,9 @@
       },
       isRefresh: function (val) {
         if (val === true) {
-          store.commit("setIsRefresh", false);
           this.resetMaterialInfos();
           this.find();
+          store.commit("setIsRefresh", false);
         }
       },
       isFind: function (val) {
