@@ -19,7 +19,7 @@
     position: absolute;
     display: flex;
     width: 100%;
-    height: 80%;
+    height:calc(100% - 60px);
     justify-content: center;
     align-items: center;
   }
@@ -30,7 +30,7 @@
     align-items: center;
     justify-content: center;
     border-radius: 10px;
-    opacity: 0.5;
+    opacity:0.8;
     width: 10rem;
     height: 10rem;
   }

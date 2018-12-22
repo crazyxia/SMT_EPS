@@ -9,11 +9,13 @@ export default new Vuex.Store({
     lines:[],
     lineSize:0,
     loading:false,
+    denied:false,
 
     /*操作按钮*/
     isAdd:false ,//是否点击添加
     isFind:false,//是否点击查询
     isRefresh:false,//是否刷新列表
+    isProgramItemRefresh:false,  //是否刷新站位表
     isUpdate:false, //是否点击修改
     isDelete:false, //是否点击删除
     isGetCodePic:false, //是否点击生成工号二维码
@@ -31,7 +33,7 @@ export default new Vuex.Store({
     programList:[],
     programOperationType:"",
     program:{},
-    oldState:"",
+    oldState:null,
     programItemShow:false,
     programItemList:[],
     programItemOperationType:"",
@@ -74,6 +76,9 @@ export default new Vuex.Store({
     setLineSize(state,lineSize){
       state.lineSize = lineSize;
     },
+    setDenied(state,denied){
+      state.denied = denied;
+    },
 
     /*operation*/
     setIsAdd(state,isAdd){
@@ -99,6 +104,9 @@ export default new Vuex.Store({
     },
     setIsDetail(state,isDetail){
       state.isDetail = isDetail;
+    },
+    setIsProgramItemRefresh(state,isProgramItemRefresh){
+      state.isProgramItemRefresh = isProgramItemRefresh;
     },
 
     /*user*/

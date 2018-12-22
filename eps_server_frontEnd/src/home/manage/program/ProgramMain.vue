@@ -1,6 +1,7 @@
 <template>
   <div class="program">
     <div class="programInfo" v-if="isShow">
+      <p class="tip">提醒：上传站位表时，若“未开始”的项目列表中存在“版面类型”、“工单号”、“线别”三者一致时，将覆盖上一份“未开始”中的项目</p>
       <form class="form-inline" role="form">
         <div class="form-group">
           <label for="programName">站位表</label>
@@ -35,7 +36,7 @@
         </div>
         <div class="form-group">
           <label for="boardType">版面</label>
-          <select class="form-control" id="boardType" v-model="fileInfos.boardType">
+          <select class="form-control" id="boardType" v-model.trim="fileInfos.boardType">
             <option selected="selected" disabled="disabled" style='display: none' value=''></option>
             <option value="0">默认</option>
             <option value="1">AB面</option>
@@ -72,7 +73,7 @@
         programInfos: {
           programName: "",
           workOrder: "",
-          state: "",
+          state:"",
           line: ""
         },
         fileInfos: {
@@ -80,6 +81,9 @@
           boardType: ""
         }
       }
+    },
+    created(){
+      store.commit("setIsRefresh", false);
     },
     mounted() {
       store.commit("setProgramItemShow", false);
@@ -92,13 +96,12 @@
         return store.state.programItemShow;
       },
       lines: function () {
-        console.log(store.state.lines);
         return store.state.lines;
       }
     },
     watch: {
       programItemShow: function (val) {
-        if (val == true) {
+        if (val === true) {
           this.isShow = false;
         } else {
           this.isShow = true;
@@ -109,9 +112,9 @@
       getfileName: function () {
         let fileName = $('#inputfile').val();
         let filetype = fileName.substr(fileName.lastIndexOf(".") + 1);
-        if (filetype != "xls" && filetype != 'xlsx') {
+        if (filetype !== "xls" && filetype !== 'xlsx') {
           alert("文件格式错误");
-          $('#inputfile').val();
+          $('#inputfile')[0].value = "";
         } else {
           let programFile = $('#inputfile')[0].files[0];
           this.fileInfos.programFile = programFile;
@@ -121,20 +124,23 @@
         store.commit("setIsFind", true);
       },
       upload: function () {
-        if (this.fileInfos.programFile != "" && this.fileInfos.boardType != "") {
-          let param = new FormData()
-          param.append('programFile', this.fileInfos.programFile)
-          param.append('boardType', this.fileInfos.boardType)
-          param.append('#TOKEN#', store.state.token)
+        if (this.fileInfos.programFile !== "" && this.fileInfos.boardType !== "") {
+          let param = new FormData();
+          param.append('programFile', this.fileInfos.programFile);
+          param.append('boardType', this.fileInfos.boardType);
+          param.append('#TOKEN#', store.state.token);
           let config = {
             headers: {'Content-Type': 'multipart/form-data'}
-          }
+          };
           axios.post(programFileUploadUrl, param, config).then(response => {
             if (response.data) {
               let result = response.data.result;
               alert(result);
-              if (result == "上传完成，共解析到1张表") {
+              if (result === "上传完成，共解析到1张表" || result === "覆盖完成，共解析到1张表") {
                 store.commit("setIsUploadFinish", true);
+                $('#inputfile')[0].value = "";
+                this.fileInfos.programFile = "";
+                this.fileInfos.boardType = "";
               }
             }
           });
@@ -147,5 +153,12 @@
 </script>
 
 <style scoped lang="scss">
+  .tip{
+    font-size:20px;
+    color:red;
+    border-bottom:1px solid #ddd;
+    margin-bottom:10px;
+    padding-bottom:10px;
+  }
   @import '@/assets/css/common.scss';
 </style>

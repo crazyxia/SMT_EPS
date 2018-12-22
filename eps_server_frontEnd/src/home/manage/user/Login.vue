@@ -38,7 +38,7 @@ export default {
   },
   methods:{
     login:function(){
-      if(this.loginInfos.id != ""){
+      if(this.loginInfos.id !== ""){
         let loginOptions = {
           url:loginUrl,
           data:{

@@ -132,8 +132,6 @@
         allsChart = value;
       });
 
-      this.mark ++;
-
       setInterval(() => {
         let updatedData = this.getUpdatedConf(this.mark);
         let updateFeedConf = {

@@ -53,7 +53,7 @@ export default {
               component:'ClientReport',
             },{
               name:'操作报表',
-              component:'OperiationReport',
+              component:'OperationReport',
             },{
               name:'仓库出入库报表',
               component:'IOReport',

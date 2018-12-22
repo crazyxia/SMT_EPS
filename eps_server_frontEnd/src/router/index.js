@@ -22,7 +22,10 @@ const router = new Router({
     {
       path:'/display',
       name:'display',
-      component:Display
+      component:Display,
+      meta: {
+        requireAuth: true,  // 进入这个路由是需要登录
+      }
     },
     {
       path:'/home',
