@@ -1,28 +1,16 @@
 package com.jimi.smt.eps_server.entity.filler;
 
 import java.text.SimpleDateFormat;
-import java.util.List;
 
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.jimi.smt.eps_server.entity.Line;
-import com.jimi.smt.eps_server.entity.Operation;
-import com.jimi.smt.eps_server.entity.ProgramItem;
-import com.jimi.smt.eps_server.entity.ProgramItemExample;
+import com.jimi.smt.eps_server.entity.OperationDetials;
 import com.jimi.smt.eps_server.entity.vo.ClientReport;
-import com.jimi.smt.eps_server.mapper.LineMapper;
-import com.jimi.smt.eps_server.mapper.ProgramItemMapper;
 import com.jimi.smt.eps_server.util.EntityFieldFiller;
 
 @Component
-public class OperationToClientReportFiller extends EntityFieldFiller<Operation, ClientReport> {
-
-	@Autowired
-	private ProgramItemMapper programItemMapper;
-	@Autowired
-	private LineMapper lineMapper;
+public class OperationToClientReportFiller extends EntityFieldFiller<OperationDetials, ClientReport> {
 	
 //	private List<ProgramItem> programItems;
 	
@@ -45,16 +33,15 @@ public class OperationToClientReportFiller extends EntityFieldFiller<Operation, 
 	
 	
 	@Override
-	public ClientReport fill(Operation operation) {	
+	public ClientReport fill(OperationDetials operation) {	
 
 		ClientReport clientReport = new ClientReport();
 		//拷贝相同属性
 		BeanUtils.copyProperties(operation, clientReport);
 		//填写工单
 		clientReport.setWorkOrderNo(operation.getWorkOrder());
-		Line line = lineMapper.selectByPrimaryKey(operation.getLine());
-		if(line != null) {
-			clientReport.setLine(line.getLine());
+		if(operation.getLine() != null) {
+			clientReport.setLine(operation.getLine());
 		}
 		
 		String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(operation.getTime());
@@ -62,19 +49,11 @@ public class OperationToClientReportFiller extends EntityFieldFiller<Operation, 
 		
 		//匹配程序表子项目和操作日志
 //		String key = operation.getProgramId()+operation.getLineseat()+operation.getMaterialNo();
-		List<ProgramItem> programItems;
-		ProgramItemExample programItemExample = new ProgramItemExample();
-		programItemExample.createCriteria()
-			.andProgramIdEqualTo(operation.getProgramId())
-			.andLineseatEqualTo(operation.getLineseat())
-			.andMaterialNoEqualTo(operation.getMaterialNo());
-		programItems = programItemMapper.selectByExample(programItemExample);
 //		ProgramItem programItem = programItemMaps.get(key);
 		
-		if (programItems != null && !programItems.isEmpty()) {
+		if (operation.getProgramId() != null) {
 			//解析料描述和料规格
-			ProgramItem programItem = programItems.get(0);
-			String specitification = programItem.getSpecitification();
+			String specitification = operation.getSpecitification();
 			try {
 				String materialDescription = specitification.substring(0, specitification.indexOf(","));
 				String temp = specitification.substring(specitification.indexOf(";") + 5, specitification.lastIndexOf(";") - 4);

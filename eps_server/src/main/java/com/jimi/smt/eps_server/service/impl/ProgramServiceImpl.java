@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.jimi.smt.eps_server.entity.Display;
 import com.jimi.smt.eps_server.entity.DisplayExample;
+import com.jimi.smt.eps_server.entity.LineExample;
 import com.jimi.smt.eps_server.entity.Page;
 import com.jimi.smt.eps_server.entity.Program;
 import com.jimi.smt.eps_server.entity.ProgramExample;
@@ -31,6 +32,7 @@ import com.jimi.smt.eps_server.entity.filler.ProgramToProgramVOFiller;
 import com.jimi.smt.eps_server.entity.vo.ProgramItemVO;
 import com.jimi.smt.eps_server.entity.vo.ProgramVO;
 import com.jimi.smt.eps_server.mapper.DisplayMapper;
+import com.jimi.smt.eps_server.mapper.LineMapper;
 import com.jimi.smt.eps_server.mapper.ProgramItemMapper;
 import com.jimi.smt.eps_server.mapper.ProgramItemVisitMapper;
 import com.jimi.smt.eps_server.mapper.ProgramMapper;
@@ -55,6 +57,8 @@ public class ProgramServiceImpl implements ProgramService {
 	private ProgramItemVisitMapper programItemVisitMapper;
 	@Autowired
 	private DisplayMapper displayMapper;
+	@Autowired
+	private LineMapper lineMapper;
 	@Autowired
 	private ProgramToProgramVOFiller programToProgramVOFiller;
 	@Autowired
@@ -648,48 +652,69 @@ public class ProgramServiceImpl implements ProgramService {
 	
 	@Override
 	public Integer updateItemVisit(ProgramItemVisit programItemVisit) {
-		int result = 0;
-		int type = programItemVisit.getLastOperationType();
-		switch (type) {
-		case 0:
-			programItemVisit.setLastOperationTime(getCurrentTime());
-			programItemVisit.setFeedTime(getCurrentTime());
-			result = programItemVisitMapper.updateFeedResult(programItemVisit);
-			break;
-		case 1:
-			programItemVisit.setLastOperationTime(getCurrentTime());
-			programItemVisit.setChangeTime(getCurrentTime());
-			programItemVisit.setCheckResult(2);
-			result = programItemVisitMapper.updateChangeResult(programItemVisit);
-			break;
-		case 2:
-			programItemVisit.setLastOperationTime(getCurrentTime());
-			programItemVisit.setCheckTime(getCurrentTime());
-			if (programItemVisit.getCheckResult() != null && programItemVisit.getCheckResult() == 0) {
-				result = programItemVisitMapper.updateCheckFailResult(programItemVisit);
-			} else if (programItemVisit.getCheckResult() != null && programItemVisit.getCheckResult() == 1) {
-				result = programItemVisitMapper.updateCheckSucceedResult(programItemVisit);
+		ProgramExample programExample = new ProgramExample();
+		LineExample lineExample = new LineExample();
+		programExample.createCriteria().andIdEqualTo(programItemVisit.getProgramId());
+		lineExample.createCriteria().andIdEqualTo(programMapper.selectByExample(programExample).get(0).getLine());
+		String line = lineMapper.selectByExample(lineExample).get(0).getLine();
+		synchronized (timeoutTimer.getLock(line)) {
+			int result = 0;
+			int type = programItemVisit.getLastOperationType();
+			switch (type) {
+			case 0:
+				programItemVisit.setLastOperationTime(getCurrentTime());
+				programItemVisit.setFeedTime(getCurrentTime());
+				result = programItemVisitMapper.updateFeedResult(programItemVisit);
+				break;
+			case 1:
+				programItemVisit.setLastOperationTime(getCurrentTime());
+				programItemVisit.setChangeTime(getCurrentTime());
+				programItemVisit.setCheckResult(2);
+				result = programItemVisitMapper.updateChangeResult(programItemVisit);
+				break;
+			case 2:
+				programItemVisit.setLastOperationTime(getCurrentTime());
+				programItemVisit.setCheckTime(getCurrentTime());
+				if (programItemVisit.getCheckResult() != null && programItemVisit.getCheckResult() == 0) {
+					result = programItemVisitMapper.updateCheckFailResult(programItemVisit);
+				} else if (programItemVisit.getCheckResult() != null && programItemVisit.getCheckResult() == 1) {
+					result = programItemVisitMapper.updateCheckSucceedResult(programItemVisit);
+				}
+				break;
+			case 3:
+				programItemVisit.setLastOperationTime(getCurrentTime());
+				programItemVisit.setCheckAllTime(getCurrentTime());
+				result = programItemVisitMapper.updateAllResult(programItemVisit);
+				break;
+			case 4:
+				programItemVisit.setLastOperationTime(getCurrentTime());
+				programItemVisit.setStoreIssueTime(getCurrentTime());
+				result = programItemVisitMapper.updateStoreResult(programItemVisit);
+				break;
+			case 5:
+				programItemVisit.setLastOperationTime(getCurrentTime());
+				programItemVisit.setFirstCheckAllTime(getCurrentTime());
+				result = programItemVisitMapper.updateFirstAllResult(programItemVisit);
+				//遍历首检结果，如果全部为成功，则调用resetCheckAll()方法，APP不再在首检完成后调用resetCheckAll()方法。本方法要加Timeout类的线锁
+				boolean hasFirstCheckAll = true;
+				ProgramItemVisitExample programItemVisitExample = new ProgramItemVisitExample();
+				programItemVisitExample.createCriteria().andProgramIdEqualTo(programItemVisit.getProgramId());
+				List<ProgramItemVisit> programItemVisits = programItemVisitMapper.selectByExample(programItemVisitExample);
+				for (ProgramItemVisit itemVisit : programItemVisits) {
+					if (itemVisit.getFirstCheckAllResult() != 1) {
+						hasFirstCheckAll = false;
+						break;
+					}
+				}
+				if (hasFirstCheckAll == true) {
+					resetCheckAll(programItemVisit.getProgramId());
+				}
+				break;
+			default:
+				break;
 			}
-			break;
-		case 3:
-			programItemVisit.setLastOperationTime(getCurrentTime());
-			programItemVisit.setCheckAllTime(getCurrentTime());
-			result = programItemVisitMapper.updateAllResult(programItemVisit);
-			break;
-		case 4:
-			programItemVisit.setLastOperationTime(getCurrentTime());
-			programItemVisit.setStoreIssueTime(getCurrentTime());
-			result = programItemVisitMapper.updateStoreResult(programItemVisit);
-			break;
-		case 5:
-			programItemVisit.setLastOperationTime(getCurrentTime());
-			programItemVisit.setFirstCheckAllTime(getCurrentTime());
-			result = programItemVisitMapper.updateFirstAllResult(programItemVisit);
-			break;
-		default:
-			break;
+			return result;
 		}
-		return result;
 	}
 
 	
@@ -917,12 +942,11 @@ public class ProgramServiceImpl implements ProgramService {
 	
 	@Override
 	public String isCheckAllTimeOut(String line, String workOrder, Integer boardType) {
-		// TODO Auto-generated method stub
-		Integer isCheckAllTimeOutExist = 0;
+		Integer isCheckAllTimeOutExist = 1;
 		List<ProgramItemVisit> programItemVisits = getVisits(line, workOrder, boardType);
 		for (ProgramItemVisit programItemVisit : programItemVisits) {
-			if (programItemVisit.getCheckAllResult() == 3) {
-				isCheckAllTimeOutExist = 1;
+			if (!programItemVisit.getCheckAllResult().equals(3)) {
+				isCheckAllTimeOutExist = 0;
 				break;
 			}
 		}

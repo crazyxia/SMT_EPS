@@ -521,9 +521,9 @@
     update program_item_visit
     set scan_lineseat = #{scanLineseat,jdbcType=VARCHAR},
       scan_material_no = #{scanMaterialNo,jdbcType=VARCHAR},
-      last_operation_type = #{lastOperationType,jdbcType=INTEGER},     
+      last_operation_type = #{lastOperationType,jdbcType=INTEGER},  
       first_check_all_result = #{firstCheckAllResult,jdbcType=INTEGER},
-      first_check_all_time = #{firstCheckAllTime,jdbcType=TIMESTAMP},    
+      first_check_all_time = #{firstCheckAllTime,jdbcType=TIMESTAMP},
       last_operation_time = #{lastOperationTime,jdbcType=TIMESTAMP}
     where lineseat = #{lineseat,jdbcType=VARCHAR}
       and program_id = #{programId,jdbcType=VARCHAR}

@@ -139,14 +139,20 @@ public class TimeoutTimer {
 	 * 超时检测
 	 */
 	private void checkTimeout(List<ProgramItemVisit> programItemVisits, int line) {
+		// 是否已经正常首检
+		boolean hasFirstCheckAll = true;
+		for (ProgramItemVisit programItemVisit : programItemVisits) {
+			if (programItemVisit.getFirstCheckAllResult() != 1) {
+				hasFirstCheckAll = false;
+				break;
+			}
+		}
 		for (ProgramItemVisit programItemVisit : programItemVisits) {
 			//全检超时检测
 			//当前全检时间加上设置的超时时间
 			long temp = programItemVisit.getCheckAllTime().getTime() + lineInfos.get(line).getCheckAllTimeout() * 60 * 1000;
 			//当前时间是否大于全检超时后的时间
 			boolean isCheckAllTimeout = programService.getCurrentTime().getTime() > temp;
-			//是否已经正常首检
-			boolean hasFirstCheckAll = programItemVisit.getFirstCheckAllResult() == 1;
 			//全检结果是否不为超时
 			boolean isNotInCheckAllTimeoutState = programItemVisit.getCheckAllResult() != 3;
 			if(isCheckAllTimeout  && hasFirstCheckAll && isNotInCheckAllTimeoutState) {

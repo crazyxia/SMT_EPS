@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.jimi.smt.eps_server.entity.Operation;
+import com.jimi.smt.eps_server.entity.OperationDetials;
 import com.jimi.smt.eps_server.entity.OperationExample;
 import com.jimi.smt.eps_server.entity.Page;
 import com.jimi.smt.eps_server.entity.StockLogExample;
@@ -111,9 +112,9 @@ public class OperationServiceImpl implements OperationService {
 			parameter.setFirstIndex(page.getFirstIndex());
 			parameter.setPageSize(page.getPageSize());
 		}
-		List<Operation> operations = operationMapper.selectByClientParameter(parameter);
+		List<OperationDetials> operations = operationMapper.selectByClientParameter(parameter);
 		// 匹配
-		for (Operation operation : operations) {
+		for (OperationDetials operation : operations) {
 			// 把操作日志转化为客户报告
 			clientReports.add(operationToClientReportFiller.fill(operation));
 		}
@@ -230,9 +231,11 @@ public class OperationServiceImpl implements OperationService {
 			parameter.setFirstIndex(page.getFirstIndex());
 			parameter.setPageSize(page.getPageSize());
 		}
-		List<Operation> operations = operationMapper.selectByOperationParameter(parameter);
+		
+		List<OperationDetials> operations = operationMapper.selectByOperationParameter(parameter);
+
 		// 包装
-		for (Operation operation : operations) {
+		for (OperationDetials operation : operations) {
 			// 把操作日志转化为操作报告
 			operationReports.add(operationToOperationReportFiller.fill(operation));
 		}
@@ -287,8 +290,7 @@ public class OperationServiceImpl implements OperationService {
 	@Override
 	public List<OperationReportSummary> listOperationReportSummary(Integer line, String workOrderNo, String startTime, String endTime, Integer type, Page page) throws ParseException {
 		// 筛选数据
-		List<OperationReport> operationReports = listOperationReport(null, null, line, workOrderNo, startTime, endTime,
-				type, null);
+		List<OperationReport> operationReports = listOperationReport(null, null, line, workOrderNo, startTime, endTime, type, null);
 		// 创建分组Map，按OperationReportSummaryKey分组，值为result的与运算
 		Map<OperationReportSummaryKey, OperationReportSummaryValue> map = new HashMap<OperationReportSummaryKey, OperationReportSummaryValue>();
 		for (OperationReport operationReport : operationReports) {

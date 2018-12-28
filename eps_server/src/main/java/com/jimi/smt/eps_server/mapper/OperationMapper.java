@@ -1,6 +1,7 @@
 package com.jimi.smt.eps_server.mapper;
 
 import com.jimi.smt.eps_server.entity.Operation;
+import com.jimi.smt.eps_server.entity.OperationDetials;
 import com.jimi.smt.eps_server.entity.OperationExample;
 import com.jimi.smt.eps_server.entity.bo.ReportParameter;
 
@@ -96,11 +97,11 @@ public interface OperationMapper {
      */
     int updateByPrimaryKey(Operation record);
     
-    List<Operation> selectByClientParameter(ReportParameter record);
+    List<OperationDetials> selectByClientParameter(ReportParameter record);
     
     int countByClientParameter(ReportParameter record);
     
-    List<Operation> selectByOperationParameter(ReportParameter record);
+    List<OperationDetials> selectByOperationParameter(ReportParameter record);
     
     int countByOperationParameter(ReportParameter record);
 }
