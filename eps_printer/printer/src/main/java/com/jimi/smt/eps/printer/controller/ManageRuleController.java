@@ -442,7 +442,7 @@ public class ManageRuleController implements Initializable {
 	 * @date 2018年10月29日 下午3:32:17
 	 */
 	private void initVersionLb() {
-		versionLb.setText("V" + Main.getVersion() + " © 2018 几米物联技术有限公司  All rights reserved.");
+		versionLb.setText("V" + Main.getVersion() + " © 2019 几米物联技术有限公司  All rights reserved.");
 	}
 
 }

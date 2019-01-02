@@ -11,7 +11,7 @@
 
 <AnchorPane fx:id="parentAp" prefHeight="701.0" prefWidth="989.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.jimi.smt.eps.printer.controller.MainController">
    <children>
-      <Label alignment="CENTER" contentDisplay="CENTER" layoutX="351.0" layoutY="680.0" prefHeight="15.0" prefWidth="288.0" text="© 2018 几米物联技术有限公司  All rights reserved." AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="351.0" AnchorPane.rightAnchor="350.0" />
+      <Label alignment="CENTER" contentDisplay="CENTER" layoutX="351.0" layoutY="680.0" prefHeight="15.0" prefWidth="288.0" text="© 2019 几米物联技术有限公司  All rights reserved." AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="351.0" AnchorPane.rightAnchor="350.0" />
       <Label fx:id="stateLb" layoutX="41.0" layoutY="640.0" prefHeight="15.0" prefWidth="506.0" text="无状态" AnchorPane.bottomAnchor="41.0" AnchorPane.leftAnchor="41.0" AnchorPane.rightAnchor="442.0" />
       <TableView fx:id="materialTb" layoutX="41.0" layoutY="118.0" prefHeight="519.0" prefWidth="506.0" AnchorPane.bottomAnchor="64.0" AnchorPane.leftAnchor="41.0" AnchorPane.rightAnchor="442.0" AnchorPane.topAnchor="118.0">
         <columns>
@@ -43,12 +43,12 @@
       </Button>
       <AnchorPane fx:id="previewAp" layoutX="586.0" layoutY="475.0" prefHeight="189.0" prefWidth="357.0" style="-fx-background-color: white;" AnchorPane.rightAnchor="46.0" AnchorPane.topAnchor="475.0">
          <children>
-            <Label layoutX="13.0" layoutY="12.0" prefHeight="15.0" prefWidth="36.0" text="编号：" />
+            <Label layoutX="13.0" layoutY="12.0" prefHeight="15.0" prefWidth="36.0" text="料号：" />
             <Label layoutX="13.0" layoutY="35.0" prefHeight="15.0" prefWidth="36.0" text="型号：" />
             <Label layoutX="13.0" layoutY="58.0" prefHeight="15.0" prefWidth="36.0" text="名称：" />
             <Label layoutX="13.0" layoutY="79.0" prefHeight="15.0" prefWidth="36.0" text="数量：" />
             <Label layoutX="13.0" layoutY="101.0" prefHeight="15.0" prefWidth="36.0" text="位置：" />
-            <Label layoutX="13.0" layoutY="122.0" prefHeight="15.0" prefWidth="36.0" text="生产：" />
+            <Label layoutX="13.0" layoutY="122.0" prefHeight="15.0" prefWidth="60.0" text="生产日期：" />
             <Label layoutX="13.0" layoutY="162.0" prefHeight="15.0" prefWidth="36.0" text="备注：" />
             <ImageView fx:id="codeIv" fitHeight="95.0" fitWidth="95.0" layoutX="249.0" layoutY="76.0" pickOnBounds="true" preserveRatio="true">
                <image>
@@ -64,10 +64,10 @@
             <Label fx:id="nameLb" layoutX="49.0" layoutY="58.0" prefHeight="15.0" prefWidth="187.0" />
             <Label fx:id="quantityLb" layoutX="49.0" layoutY="79.0" prefHeight="15.0" prefWidth="187.0" />
             <Label fx:id="seatLb" layoutX="49.0" layoutY="101.0" prefHeight="15.0" prefWidth="187.0" />
-            <Label fx:id="dateLb" layoutX="49.0" layoutY="122.0" prefHeight="15.0" prefWidth="187.0" />
+            <Label fx:id="dateLb" layoutX="67.0" layoutY="122.0" prefHeight="15.0" prefWidth="169.0" />
             <Label fx:id="remarkLb" layoutX="49.0" layoutY="162.0" prefHeight="15.0" prefWidth="187.0" />
-            <Label fx:id="supplierLb" layoutX="49.0" layoutY="141.0" prefHeight="15.0" prefWidth="187.0" />
-            <Label layoutX="13.0" layoutY="142.0" prefHeight="15.0" prefWidth="36.0" text="供应：" />
+            <Label fx:id="supplierLb" layoutX="56.0" layoutY="141.0" prefHeight="15.0" prefWidth="180.0" />
+            <Label layoutX="13.0" layoutY="142.0" prefHeight="15.0" prefWidth="48.0" text="供应商：" />
          </children>
       </AnchorPane>
             <Label layoutX="39.0" layoutY="26.0" prefHeight="24.0" prefWidth="95.0" text="当前用户：" AnchorPane.leftAnchor="39.0" AnchorPane.rightAnchor="855.0" AnchorPane.topAnchor="26.0">
@@ -83,17 +83,17 @@
       <Button fx:id="changePwdBt" layoutX="474.0" layoutY="30.0" mnemonicParsing="false" prefHeight="23.0" prefWidth="72.0" text="修改密码" AnchorPane.rightAnchor="443.0" AnchorPane.topAnchor="30.0" />
       <AnchorPane fx:id="previewAp1" layoutX="103.0" layoutY="61.0" prefHeight="481.0" prefWidth="791.0" style="-fx-background-color: white;" visible="false">
          <children>
-            <Label layoutX="32.0" layoutY="34.0" prefHeight="44.0" prefWidth="101.0" text="编号：">
+            <Label layoutX="32.0" layoutY="34.0" prefHeight="44.0" prefWidth="101.0" text="料号：">
                <font>
                   <Font name="Microsoft YaHei Bold" size="32.0" />
                </font>
             </Label>
-            <Label fx:id="supplierLb1" layoutX="122.0" layoutY="355.0" prefHeight="34.0" prefWidth="390.0">
+            <Label fx:id="supplierLb1" layoutX="151.0" layoutY="355.0" prefHeight="44.0" prefWidth="390.0">
                <font>
                   <Font name="Microsoft YaHei Bold" size="32.0" />
                </font>
             </Label>
-            <Label fx:id="dateLb1" layoutX="122.0" layoutY="305.0" prefHeight="34.0" prefWidth="390.0">
+            <Label fx:id="dateLb1" layoutX="187.0" layoutY="305.0" prefHeight="44.0" prefWidth="403.0">
                <font>
                   <Font name="Microsoft YaHei Bold" size="32.0" />
                </font>
@@ -133,12 +133,12 @@
                   <Image url="@../img/code.png" />
                </image>
             </ImageView>
-            <Label layoutX="32.0" layoutY="355.0" prefHeight="44.0" prefWidth="101.0" text="供应：">
+            <Label layoutX="32.0" layoutY="355.0" prefHeight="44.0" prefWidth="134.0" text="供应商：">
                <font>
                   <Font name="Microsoft YaHei Bold" size="32.0" />
                </font>
             </Label>
-            <Label layoutX="32.0" layoutY="305.0" prefHeight="44.0" prefWidth="101.0" text="生产：">
+            <Label layoutX="32.0" layoutY="305.0" prefHeight="44.0" prefWidth="169.0" text="生产日期：">
                <font>
                   <Font name="Microsoft YaHei Bold" size="32.0" />
                </font>

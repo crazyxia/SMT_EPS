@@ -520,8 +520,14 @@ public class MainController implements Initializable {
 		String seat = seatNoTf.getText();
 		String date = dateTf.getText();
 		String materialNo = materialNoTf.getText();
-		if (materialNo == null || "".equals(materialNo) || quantity == null || quantity.equals("") || seat == null || seat.equals("") || date == null || date.equals("")) {
-			error("请填写料号、数量、位置和生产日期信息");
+		String name = nameTf.getText();
+		String description = descriptionTf.getText();
+		boolean isMaterialNoExist = materialNo == null || "".equals(materialNo) || materialNo.trim().isEmpty();
+		boolean isSeatExist = seat == null || "".equals(seat) || seat.trim().isEmpty();
+		boolean isNameExist = name == null || "".equals(name) || name.trim().isEmpty();
+		boolean isDescriptionExist = description == null || "".equals(description) || description.trim().isEmpty();
+		if (isMaterialNoExist || quantity == null || "".equals(quantity) || isNameExist || isSeatExist || isDescriptionExist || date == null || "".equals(date)) {
+			error("请填写料号、数量、位置、型号、名称和生产日期信息");
 			return;
 		}
 		// 日期类型校验
@@ -560,18 +566,20 @@ public class MainController implements Initializable {
 		}
 		// 现在是否开启远程打印
 		if (isOpenRemotePrint == 0) {
-			try {
-				session.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			if (!remotePrintThread.isAlive()) {
+			if (remotePrintThread.isAlive()) {
 				remotePrintThread.interrupt();
 			}
 			return;
 		} else {
-			if (!session.isOpen()) {
-				if (!remotePrintThread.isAlive()) {
+			if (!(session != null && session.isOpen() && remotePrintThread.isAlive())) {
+				if (session != null && session.isOpen() && !remotePrintThread.isAlive()) {
+					try {
+						session.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+				if (remotePrintThread.isAlive()) {
 					remotePrintThread.interrupt();
 				}
 				remotePrintThread = new Thread(remotePrintRunnable);
@@ -989,12 +997,14 @@ public class MainController implements Initializable {
 	@SuppressWarnings("unchecked")
 	private void loadTableSelectorData() {
 		tableSelectCb.setItems(suppliers);
+		info("数据解析成功，请在上方选择表");
 		if (suppliers.contains(selectedSheet)) {
 			tableSelectCb.getSelectionModel().select(suppliers.indexOf(selectedSheet));
 		} else if (suppliers != null && suppliers.size() > 0) {
 			tableSelectCb.getSelectionModel().select(0);
+		} else {
+			info("请选择有效的文件");
 		}
-		info("数据解析成功，请在上方选择表");
 	}
 
 	
