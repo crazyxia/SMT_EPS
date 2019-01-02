@@ -1,5 +1,7 @@
 package com.jimi.smt.eps_server.service;
 
+import java.io.IOException;
+
 import com.jimi.smt.eps_server.util.ResultUtil2;
 
 public interface PrinterService {
@@ -14,7 +16,8 @@ public interface PrinterService {
 	 * @param user
 	 * @return
 	 * @throws InterruptedException 
+	 * @throws IOException 
 	 */
-	ResultUtil2 printBarcode(String printerIP, String materialId, String materialNo, Integer remainingQuantity, String productDate, String user, String supplier) throws InterruptedException;
+	ResultUtil2 printBarcode(String printerIP, String materialId, String materialNo, Integer remainingQuantity, String productDate, String user, String supplier) throws InterruptedException, IOException;
 
 }

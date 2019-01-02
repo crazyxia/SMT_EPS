@@ -493,10 +493,10 @@
       		and o.work_order like #{workOrderNo}
     	</if>   	
     	<if test="startTime != null">
-      		<![CDATA[ and DATE_FORMAT(o.time, '%Y-%m-%d %H:%i:%S') > DATE_FORMAT(#{startTime}, '%Y-%m-%d %H:%i:%S')]]>
+      		and o.time <![CDATA[ > DATE_FORMAT(#{startTime}, '%Y-%m-%d %H:%i:%S')]]>
     	</if>
     	<if test="endTime != null">
-      		<![CDATA[ and DATE_FORMAT(o.time, '%Y-%m-%d %H:%i:%S') < DATE_FORMAT(#{endTime}, '%Y-%m-%d %H:%i:%S')]]>
+      		and o.time <![CDATA[ < DATE_FORMAT(#{endTime}, '%Y-%m-%d %H:%i:%S')]]>
     	</if>
 		ORDER BY o.time DESC
 		<if test="firstIndex != null and pageSize&gt;=0">
@@ -504,8 +504,13 @@
     	</if>
   </select>
   <select id="countByClientParameter" parameterType="com.jimi.smt.eps_server.entity.bo.ReportParameter" resultType="java.lang.Integer">
-    SELECT count(*) from operation  
-	where operation.result = 'PASS'
+    SELECT count(*) FROM operation JOIN line JOIN program_item p
+	ON 
+		line.id = operation.line 
+		AND p.lineseat = operation.lineseat 
+		AND p.program_id = operation.program_id 
+		AND p.material_no = operation.material_no
+	WHERE operation.result = 'PASS'
 		<if test="(client != null and client != '') or (programNo != null and programNo != '') or (orderNo != null and orderNo != '')">
       		and operation.program_id in 
       		(SELECT id FROM program 
@@ -528,10 +533,10 @@
       		and operation.work_order like #{workOrderNo}
     	</if>
     	<if test="startTime != null">
-      		<![CDATA[ and DATE_FORMAT(operation.time, '%Y-%m-%d %H:%i:%S') > DATE_FORMAT(#{startTime}, '%Y-%m-%d %H:%i:%S')]]>
+      		and operation.time <![CDATA[ > DATE_FORMAT(#{startTime}, '%Y-%m-%d %H:%i:%S')]]>
     	</if>
     	<if test="endTime != null">
-      		<![CDATA[ and DATE_FORMAT(operation.time, '%Y-%m-%d %H:%i:%S') < DATE_FORMAT(#{endTime}, '%Y-%m-%d %H:%i:%S')]]>
+      		and operation.time <![CDATA[ < DATE_FORMAT(#{endTime}, '%Y-%m-%d %H:%i:%S')]]>
     	</if>		
   </select>
   <select id="selectByOperationParameter" parameterType="com.jimi.smt.eps_server.entity.bo.ReportParameter" resultMap="DetailResultMap">
@@ -561,10 +566,10 @@
       		and o.operator like #{operator}
     	</if>
     	<if test="startTime != null">
-      		<![CDATA[ and DATE_FORMAT(o.time, '%Y-%m-%d %H:%i:%S') > DATE_FORMAT(#{startTime}, '%Y-%m-%d %H:%i:%S')]]>
+      		and o.time <![CDATA[ > DATE_FORMAT(#{startTime}, '%Y-%m-%d %H:%i:%S')]]>
     	</if>
     	<if test="endTime != null">
-      		<![CDATA[ and DATE_FORMAT(o.time, '%Y-%m-%d %H:%i:%S') < DATE_FORMAT(#{endTime}, '%Y-%m-%d %H:%i:%S')]]>
+      		and o.time <![CDATA[ < DATE_FORMAT(#{endTime}, '%Y-%m-%d %H:%i:%S')]]>
     	</if>
 		ORDER BY o.time DESC
 		<if test="firstIndex != null and pageSize&gt;=0">
@@ -572,8 +577,13 @@
     	</if>
   </select>
   <select id="countByOperationParameter" parameterType="com.jimi.smt.eps_server.entity.bo.ReportParameter" resultType="java.lang.Integer">
-    SELECT count(*) from operation
-	where 1=1
+    SELECT count(*) FROM operation JOIN line JOIN program_item p
+	ON 
+		line.id = operation.line 
+		AND p.lineseat = operation.lineseat 
+		AND p.program_id = operation.program_id 
+		AND p.material_no = operation.material_no
+	WHERE 1=1
 		<if test="type != null">
       		and operation.type = #{type}
     	</if>
@@ -590,10 +600,10 @@
       		and operation.operator like #{operator}
     	</if>
     	<if test="startTime != null">
-      		<![CDATA[ and DATE_FORMAT(operation.time, '%Y-%m-%d %H:%i:%S') > DATE_FORMAT(#{startTime}, '%Y-%m-%d %H:%i:%S')]]>
+      		and operation.time <![CDATA[ > DATE_FORMAT(#{startTime}, '%Y-%m-%d %H:%i:%S')]]>
     	</if>
     	<if test="endTime != null">
-      		<![CDATA[ and DATE_FORMAT(operation.time, '%Y-%m-%d %H:%i:%S') < DATE_FORMAT(#{endTime}, '%Y-%m-%d %H:%i:%S')]]>
+      		and operation.time <![CDATA[ < DATE_FORMAT(#{endTime}, '%Y-%m-%d %H:%i:%S')]]>
     	</if>
   </select>
 </mapper>

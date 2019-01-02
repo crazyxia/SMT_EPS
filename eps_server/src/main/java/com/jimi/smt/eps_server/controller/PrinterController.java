@@ -1,5 +1,7 @@
 package com.jimi.smt.eps_server.controller;
 
+import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,7 +28,7 @@ public class PrinterController {
 	@Open
 	@ResponseBody
 	@RequestMapping("/printBarcode")
-	public ResultUtil2 printBarcode(String printerIP, String materialId, String materialNo, Integer remainingQuantity, String productDate, String user, String supplier) throws InterruptedException {
+	public ResultUtil2 printBarcode(String printerIP, String materialId, String materialNo, Integer remainingQuantity, String productDate, String user, String supplier) throws InterruptedException, IOException {
 		if (printerIP == null || materialId == null || materialNo == null || remainingQuantity == null || productDate == null || user == null || supplier == null) {
 			return new ResultUtil2(400, "参数不足");
 		} else if ("".equals(printerIP)) {

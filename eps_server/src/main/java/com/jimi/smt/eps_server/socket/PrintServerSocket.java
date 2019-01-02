@@ -34,7 +34,13 @@ public class PrintServerSocket {
 
 	
 	@OnClose
-	public void onClose(@PathParam("printerIP") String printerIP) {
+	public void onClose(Session session,@PathParam("printerIP") String printerIP) {
+		try {
+			session.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		clients.remove(printerIP);
 	}
 
@@ -55,6 +61,12 @@ public class PrintServerSocket {
 	
 	@OnError
 	public void onError(@PathParam("printerIP") String printerIP, Session session, Throwable error) {
+		try {
+			session.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		clients.remove(printerIP);
 		error.printStackTrace();
 	}
