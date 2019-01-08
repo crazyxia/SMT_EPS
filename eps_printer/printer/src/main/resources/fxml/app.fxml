@@ -113,7 +113,7 @@
                   <Font name="Microsoft YaHei Bold" size="32.0" />
                </font>
             </Label>
-            <Label fx:id="descriptionLb1" layoutX="122.0" layoutY="87.0" prefHeight="33.0" prefWidth="431.0">
+            <Label fx:id="descriptionLb1" layoutX="122.0" layoutY="87.0" prefHeight="33.0" prefWidth="451.0">
                <font>
                   <Font name="Microsoft YaHei Bold" size="32.0" />
                </font>
@@ -123,7 +123,7 @@
                   <Font name="Microsoft YaHei Bold" size="32.0" />
                </font>
             </Label>
-            <ImageView fitHeight="83.0" fitWidth="187.0" layoutX="559.0" layoutY="50.0" pickOnBounds="true">
+            <ImageView fitHeight="83.0" fitWidth="187.0" layoutX="574.0" layoutY="50.0" pickOnBounds="true">
                <image>
                   <Image url="@../img/jimi.png" />
                </image>

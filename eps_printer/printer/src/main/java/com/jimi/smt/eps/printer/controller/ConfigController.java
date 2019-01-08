@@ -55,7 +55,7 @@ public class ConfigController implements Initializable {
 			}
 		} catch (IOException e) {
 			try {
-				TextFileUtil.writeToFile("e.cfg", "0,0,300,0");
+				TextFileUtil.writeToFile("e.cfg", "0,-5,190,0");
 				initialize(arg0, arg1);
 			} catch (IOException e1) {
 				logger.error("e.cfg文件创建失败");

@@ -24,7 +24,7 @@ public class Main extends Application {
 
 	private LoginController loginController;
 
-	private static final String VERSION = "1.10.1";
+	private static final String VERSION = "1.10.2";
 
 	private static final String FILE_NAME = "EPS_Printer-" + VERSION + ".jar";
 
