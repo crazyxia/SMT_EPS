@@ -5,7 +5,7 @@
 
 	<groupId>com.jimi.smt</groupId>
 	<artifactId>EPS_Printer</artifactId>
-	<version>1.10.1</version>
+	<version>1.10.2</version>
 	<packaging>jar</packaging>
 
 	<name>EPS_Printer</name>
@@ -16,7 +16,7 @@
 	</properties>
 
 	<build>
-		<finalName>SMT-Printer_1.10.1_201901021048</finalName>
+		<finalName>SMT-Printer_1.10.2_201901081520</finalName>
 		<resources>
 			<resource>
 				<directory>src/main/java</directory>

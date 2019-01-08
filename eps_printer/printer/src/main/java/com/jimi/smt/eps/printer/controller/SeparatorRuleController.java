@@ -59,7 +59,7 @@ public class SeparatorRuleController implements Initializable {
 	 */
 	public void onConfirmDelimiterBtClick() {
 		info("");
-		if (checkScanContentIsExist() && separatorTf.getText() != null && !separatorTf.getText().equals("") && scanTa.getText().contains(separatorTf.getText())) {
+		if (checkScanContentIsExist() && separatorTf.getText() != null && !separatorTf.getText().equals("") && scanTa.getText().contains(separatorTf.getText()) && !separatorTf.getText().contains(",") && !separatorTf.getText().contains(")") && !separatorTf.getText().contains("=")) {
 			String[] contents = null;
 			try {
 				if(separatorTf.getText().contains(".") || separatorTf.getText().contains("|") || separatorTf.getText().contains("^")) {
@@ -77,8 +77,8 @@ public class SeparatorRuleController implements Initializable {
 			}
 			scanContentsTa.setText(contentLbString.toString());
 		} else {
-			error("请输入有效的分割符，并且保证分割符的长度为1和需要进行分割的内容长度达到要求");
-			logger.error("请输入有效的分割符，并且保证分割符的长度为1和需要进行分割的内容长度达到要求");
+			error("请输入除英文逗号、括号、等号外有效的分割符，并且保证分割符的长度为1和需要进行分割的内容长度达到要求");
+			logger.error("请输入除英文逗号、括号、等号外有效的分割符，并且保证分割符的长度为1和需要进行分割的内容长度达到要求");
 		}
 	}
 	

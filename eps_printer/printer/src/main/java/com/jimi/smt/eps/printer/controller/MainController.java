@@ -8,7 +8,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.Inet4Address;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URI;
@@ -370,6 +369,7 @@ public class MainController implements Initializable {
 		WebSocketContainer container = ContainerProvider.getWebSocketContainer();
 		Map<String, String> map_url = IniReader.getItem(System.getProperty("user.dir") + CONFIG_FILE, "websocketurl");
 		String webSocketURL = map_url.get("websocketurl");
+		String ip = map_url.get("printerIp");
 		// 连接webSocket
 		remotePrintRunnable = new Runnable() {
 
@@ -377,10 +377,16 @@ public class MainController implements Initializable {
 			public void run() {
 				try {
 					infoRunLater("开始启用远程打印功能，连接WebSocekt...");
-					String ip = Inet4Address.getLocalHost().getHostAddress();
 					session = container.connectToServer(remoteReceiver, URI.create(webSocketURL + ip));
 					infoRunLater("连接WebSocekt成功，启动远程打印成功");
 					while (!Thread.currentThread().isInterrupted()) {
+						try {
+							Thread.sleep(500);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+							session.close();
+							return;
+						}
 					}
 					session.close();
 				} catch (DeploymentException | IOException e) {
@@ -390,6 +396,8 @@ public class MainController implements Initializable {
 			}
 		};
 		remotePrintThread = new Thread(remotePrintRunnable);
+		remotePrintThread.setName("remotePrintThread");
+		remotePrintThread.setDaemon(true);
 		// 接收到打印请求时执行
 		remoteReceiver.setReceiveCallBack((session, info) -> {
 			RemotePrintTaskResult result = new RemotePrintTaskResult();
@@ -1020,7 +1028,9 @@ public class MainController implements Initializable {
 				materialPropertiesList.add(materialProperties);
 			}
 			materialTb.setItems(materialPropertiesList);
+			info("切换表格成功");
 		} else {
+			error("数据解析失败，请参考\"标准范例表\"编写供应商料号表文件");
 			materialTb.setItems(null);
 		}
 		// 料号表选择后,将焦点移动到料号输入框
@@ -1499,9 +1509,13 @@ public class MainController implements Initializable {
 	 */
 	private String getMaterialNo(String ruleString, String materialNoString) {
 		if (ruleString.contains("分隔符")) {
-			String[] materialNoArray;
+			String[] materialNoArray = null;
 			try {
-				materialNoArray = removeSpace(materialNoString.split(ruleString.substring(ruleString.indexOf(":") + 1, ruleString.indexOf("="))));
+				if (ruleString.contains(".") || ruleString.contains("|") || ruleString.contains("^")) {
+					materialNoArray = removeSpace(materialNoString.split("\\" + ruleString.substring(ruleString.indexOf(":") + 1, ruleString.indexOf("="))));
+				} else {
+					materialNoArray = removeSpace(materialNoString.split(ruleString.substring(ruleString.indexOf(":") + 1, ruleString.indexOf("="))));
+				}
 			} catch (Exception e) {
 				materialNoArray = removeSpace(materialNoString.split("\\" + ruleString.substring(ruleString.indexOf(":") + 1, ruleString.indexOf("="))));
 			}
@@ -1603,6 +1617,9 @@ public class MainController implements Initializable {
 				// 清空供应商和料号表之间的映射关系
 				if (supplierAndMaterialsMap != null && supplierAndMaterialsMap.size() > 0) {
 					supplierAndMaterialsMap.clear();
+				}
+				if(remotePrintThread != null && remotePrintThread.isAlive()) {
+					remotePrintThread.interrupt();
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
