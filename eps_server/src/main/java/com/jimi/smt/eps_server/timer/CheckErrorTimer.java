@@ -13,8 +13,10 @@ import com.jimi.smt.eps_server.constant.ControlledDevice;
 import com.jimi.smt.eps_server.entity.Config;
 import com.jimi.smt.eps_server.entity.ConfigExample;
 import com.jimi.smt.eps_server.entity.Line;
+import com.jimi.smt.eps_server.entity.LineOperationResult;
 import com.jimi.smt.eps_server.entity.Program;
 import com.jimi.smt.eps_server.entity.ProgramItemVisit;
+import com.jimi.smt.eps_server.entity.ProgramItemVisitExample;
 import com.jimi.smt.eps_server.entity.bo.CenterControllerErrorCounter;
 import com.jimi.smt.eps_server.mapper.ConfigMapper;
 import com.jimi.smt.eps_server.mapper.ProgramItemVisitMapper;
@@ -130,30 +132,40 @@ public class CheckErrorTimer {
 	private void scanErrors() {
 		try {
 			long s = System.currentTimeMillis();
-			// 查询所有State为1且被客户端选中的Program条目
-			List<Program> programs = programMapper.selectByWorkOrderAndBoardType();
-			// 查询所有visit
-			List<ProgramItemVisit> programItemVisits = programItemVisitMapper.selectByExample(null);
+			List<LineOperationResult> lineOperationResults = programItemVisitMapper.selectLineOperationResult();
 			System.out.println("查询耗时：" + (System.currentTimeMillis() - s) + "ms");
-			// 遍历Visit
-			for (ProgramItemVisit programItemVisit : programItemVisits) {
-				// 匹配线别
-				for (Program program : programs) {
-					if (program.getId().equals(programItemVisit.getProgramId())) {
-						try {
-							// 遍历字段
-							int line = getIndexByLineId(program.getLine());
-							updateLineErrorCounter(line, 0, programItemVisit.getFeedResult());
-							updateLineErrorCounter(line, 1, programItemVisit.getChangeResult());
-							updateLineErrorCounter(line, 2, programItemVisit.getCheckResult());
-							updateLineErrorCounter(line, 3, programItemVisit.getCheckAllResult());
-							updateLineErrorCounter(line, 5, programItemVisit.getFirstCheckAllResult());
-							break;
-						} catch (Exception e) {
-						}
-					}
+			for (LineOperationResult lineOperationResult : lineOperationResults) {
+				try {
+					// 遍历字段
+					int line = getIndexByLineId(lineOperationResult.getLine());
+					updateLineErrorCounter(line, 0, lineOperationResult.getFeedResult());
+					updateLineErrorCounter(line, 1, lineOperationResult.getChangeResult());
+					updateLineErrorCounter(line, 2, lineOperationResult.getCheckResult());
+					updateLineErrorCounter(line, 3, lineOperationResult.getCheckAllResult());
+					updateLineErrorCounter(line, 5, lineOperationResult.getFirstCheckAllResult());
+				} catch (Exception e) {
+
 				}
 			}
+				// 遍历Visit
+				/*for (ProgramItemVisit programItemVisit : programItemVisits) {
+					// 匹配线别
+					for (Program program : programs) {
+						if (program.getId().equals(programItemVisit.getProgramId())) {
+							try {
+								// 遍历字段
+								int line = getIndexByLineId(program.getLine());
+								updateLineErrorCounter(line, 0, programItemVisit.getFeedResult());
+								updateLineErrorCounter(line, 1, programItemVisit.getChangeResult());
+								updateLineErrorCounter(line, 2, programItemVisit.getCheckResult());
+								updateLineErrorCounter(line, 3, programItemVisit.getCheckAllResult());
+								updateLineErrorCounter(line, 5, programItemVisit.getFirstCheckAllResult());
+								break;
+							} catch (Exception e) {
+							}
+						}
+					}
+				}*/
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 			e.printStackTrace();

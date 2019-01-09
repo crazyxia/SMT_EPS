@@ -1,6 +1,5 @@
 package com.jimi.smt.eps_server.service.impl;
 
-
 import java.io.IOException;
 
 import org.springframework.stereotype.Service;
@@ -55,4 +54,3 @@ public class PrinterSeviceImpl implements PrinterService{
 		}
 	}
 }
-

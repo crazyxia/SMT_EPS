@@ -80,7 +80,7 @@ public class TimeoutTimer {
 	/**
 	 * 每隔5秒检查是否有超时项目
 	 */
-	@Scheduled(cron = "0/5 * * * * ?")
+	@Scheduled(fixedDelay = 5000)
 	public void check(){
 		//设置超时时间
 		setTimeoutTime();

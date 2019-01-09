@@ -38,7 +38,6 @@ public class PrintServerSocket {
 		try {
 			session.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		clients.remove(printerIP);
@@ -64,7 +63,6 @@ public class PrintServerSocket {
 		try {
 			session.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		clients.remove(printerIP);

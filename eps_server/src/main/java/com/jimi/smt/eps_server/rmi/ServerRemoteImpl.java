@@ -173,7 +173,7 @@ public class ServerRemoteImpl implements ServerRemote {
 	 * @return void
 	 * @date 2018年9月26日 上午8:52:33
 	 */
-	@Scheduled(cron = "0/3 * * * * ?")
+	@Scheduled(fixedDelay = 3000)
 	public void checkError() {
 		if (checkErrorTimer != null) {
 			logger.info("SMT 系统监听错误中。。。");

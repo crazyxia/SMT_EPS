@@ -141,7 +141,7 @@
     <if test="distinct">
       distinct
     </if>
-    <include refid="Details_Column_List" />
+    <include refid="Base_Column_List" />
     from operation
     <if test="_parameter != null">
       <include refid="Example_Where_Clause" />

@@ -1,5 +1,6 @@
 package com.jimi.smt.eps_server.mapper;
 
+import com.jimi.smt.eps_server.entity.LineOperationResult;
 import com.jimi.smt.eps_server.entity.Program;
 import com.jimi.smt.eps_server.entity.ProgramItemVisit;
 import com.jimi.smt.eps_server.entity.ProgramItemVisitExample;
@@ -53,4 +54,6 @@ public interface ProgramItemVisitMapper {
     int updateFirstAllResult(ProgramItemVisit record);
     
     List<ProgramItemVisit> selectItemVisitByProgram(Program record);
+    
+    List<LineOperationResult> selectLineOperationResult();
 }

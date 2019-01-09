@@ -22,6 +22,14 @@
     <result column="first_check_all_time" property="firstCheckAllTime" jdbcType="TIMESTAMP" />
     <result column="last_operation_time" property="lastOperationTime" jdbcType="TIMESTAMP" />
   </resultMap>
+  <resultMap id="LineOperationResultMap" type="com.jimi.smt.eps_server.entity.LineOperationResult" >
+  	<result column="line" property="line" jdbcType="INTEGER" />
+    <result column="feed_result" property="feedResult" jdbcType="INTEGER" />
+    <result column="change_result" property="changeResult" jdbcType="INTEGER" />
+    <result column="check_result" property="checkResult" jdbcType="INTEGER" />
+    <result column="check_all_result" property="checkAllResult" jdbcType="INTEGER" />
+    <result column="first_check_all_result" property="firstCheckAllResult" jdbcType="INTEGER" />
+  </resultMap>
   <sql id="Example_Where_Clause" >
     <where >
       <foreach collection="oredCriteria" item="criteria" separator="or" >
@@ -555,5 +563,14 @@
     and work_order = #{workOrder,jdbcType=VARCHAR}
     and board_type = #{boardType,jdbcType=INTEGER}
     and (store_issue_result != 0 OR feed_result != 0 OR (change_result % 4) !=0 OR (check_all_result % 3) != 0 OR (check_result % 3) != 0 OR first_check_all_result != 0))
+  </select>
+  <select id="selectLineOperationResult" resultMap="LineOperationResultMap" >
+    SELECT program.line, program_item_visit.feed_result, program_item_visit.change_result, program_item_visit.check_result, program_item_visit.check_all_result, program_item_visit.first_check_all_result 
+    from program INNER JOIN program_item_visit INNER JOIN display 
+    where program.`work_order` = display.`work_order` 
+    AND program.`board_type` = display.`board_type` 
+    AND program.`line` = display.`line` 
+    AND program.`state`= 1 
+    AND program.id = program_item_visit.program_id
   </select>  
 </mapper>

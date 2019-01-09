@@ -36,21 +36,18 @@ public class SendCmdThread extends Thread{
 	
 	@Override
 	public void run() {
-		try {
-			//发送命令
-			if(controlledDevice == ControlledDevice.ALARM) {
-				connectToCenterRemote.sendCmdToAlarm(clientDevice, isAlarm);
-			}else if(controlledDevice == ControlledDevice.CONVEYOR) {
-				connectToCenterRemote.sendCmdToConvery(clientDevice, isAlarm);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			logger.error(e.getMessage());
+		while (true) {
 			try {
-				run();
-			} catch (Exception e1) {
-				e1.printStackTrace();
-				logger.error(e1.getMessage());
+				// 发送命令
+				if (controlledDevice == ControlledDevice.ALARM) {
+					connectToCenterRemote.sendCmdToAlarm(clientDevice, isAlarm);
+				} else if (controlledDevice == ControlledDevice.CONVEYOR) {
+					connectToCenterRemote.sendCmdToConvery(clientDevice, isAlarm);
+				}
+				break;
+			} catch (Exception e) {
+				e.printStackTrace();
+				logger.error(e.getMessage());
 			}
 		}
 	}
