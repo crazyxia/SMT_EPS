@@ -66,6 +66,14 @@ public class LoginController implements Initializable {
 	 * SUPER_ADMINISTRATOR : 超级管理员
 	 */
 	private static final Integer SUPER_ADMINISTRATOR = 3;
+	/**
+	 * WAREHOUSE_SUPERVISOR : 仓库主管
+	 */
+	private static final Integer WAREHOUSE_SUPERVISOR = 7;
+	/**
+	 * WAREHOUSE_FOREMAN : 仓库领班
+	 */
+	private static final Integer WAREHOUSE_FOREMAN = 8;
 
 	
 	@Override
@@ -108,8 +116,7 @@ public class LoginController implements Initializable {
 						int resultCode = object.getInteger("result");
 						String userVOData = object.getString("data");
 						UserVO userVO = JSON.parseObject(userVOData, UserVO.class);
-						boolean isUserPermissionExist = userVO.getType().equals(WAREHOUSE_OPERATOR)
-								|| userVO.getType().equals(SUPER_ADMINISTRATOR);
+						boolean isUserPermissionExist = userVO.getType().equals(WAREHOUSE_OPERATOR) || userVO.getType().equals(SUPER_ADMINISTRATOR) || userVO.getType().equals(WAREHOUSE_FOREMAN) || userVO.getType().equals(WAREHOUSE_SUPERVISOR);
 						if (resultCode == 200 && isUserPermissionExist) {
 							// 成功登录
 							Platform.runLater(() -> {
