@@ -528,14 +528,12 @@ public class MainController implements Initializable {
 		String seat = seatNoTf.getText();
 		String date = dateTf.getText();
 		String materialNo = materialNoTf.getText();
-		String name = nameTf.getText();
 		String description = descriptionTf.getText();
 		boolean isMaterialNoExist = materialNo == null || "".equals(materialNo) || materialNo.trim().isEmpty();
 		boolean isSeatExist = seat == null || "".equals(seat) || seat.trim().isEmpty();
-		boolean isNameExist = name == null || "".equals(name) || name.trim().isEmpty();
 		boolean isDescriptionExist = description == null || "".equals(description) || description.trim().isEmpty();
-		if (isMaterialNoExist || quantity == null || "".equals(quantity) || isNameExist || isSeatExist || isDescriptionExist || date == null || "".equals(date)) {
-			error("请填写料号、数量、位置、型号、名称和生产日期信息");
+		if (isMaterialNoExist || quantity == null || "".equals(quantity) || isSeatExist || isDescriptionExist || date == null || "".equals(date)) {
+			error("请填写料号、数量、位置、型号和生产日期信息");
 			return;
 		}
 		// 日期类型校验
@@ -1598,8 +1596,9 @@ public class MainController implements Initializable {
 				stage.setTitle("防错料系统 - 条码打印器 " + Main.getVersion());
 				stage.setScene(new Scene(root));
 				stage.show();
-
-				properties.setProperty(CONFIG_KEY_SHEET_NAME, selectedSheet);
+				if(selectedSheet != null && !selectedSheet.equals("")) {
+					properties.setProperty(CONFIG_KEY_SHEET_NAME, selectedSheet);
+				}
 				try {
 					properties.store(new FileOutputStream(new File(CONFIG_FILE_NAME)), null);
 				} catch (IOException e) {

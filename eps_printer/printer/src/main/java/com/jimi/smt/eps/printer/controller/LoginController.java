@@ -6,9 +6,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.jimi.smt.eps.printer.app.Main;
+import com.jimi.smt.eps.printer.entity.vo.UserVO;
 import com.jimi.smt.eps.printer.util.HttpHelper;
 
 import cc.darhao.dautils.api.ResourcesUtil;
@@ -18,6 +20,9 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -50,11 +55,22 @@ public class LoginController implements Initializable {
 	private PasswordField userPwdTf;
 	@FXML
 	private Button loginBt;
+	@FXML
+	private AnchorPane loginAp;
+	
+	/**
+	 * WAREHOUSE_OPERATOR : 仓库操作员
+	 */
+	private static final Integer WAREHOUSE_OPERATOR = 0;
+	/**
+	 * SUPER_ADMINISTRATOR : 超级管理员
+	 */
+	private static final Integer SUPER_ADMINISTRATOR = 3;
 
 	
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
-
+		initLoginHotKey();
 	}
 
 	
@@ -90,7 +106,11 @@ public class LoginController implements Initializable {
 					JSONObject object = (JSONObject) JSONArray.parse(responseString);
 					try {
 						int resultCode = object.getInteger("result");
-						if (resultCode == 200) {
+						String userVOData = object.getString("data");
+						UserVO userVO = JSON.parseObject(userVOData, UserVO.class);
+						boolean isUserPermissionExist = userVO.getType().equals(WAREHOUSE_OPERATOR)
+								|| userVO.getType().equals(SUPER_ADMINISTRATOR);
+						if (resultCode == 200 && isUserPermissionExist) {
 							// 成功登录
 							Platform.runLater(() -> {
 								// 启动主界面，关闭登录界面
@@ -117,7 +137,7 @@ public class LoginController implements Initializable {
 							});
 
 						} else {
-							showAlertAndUnlockUI("登录失败");
+							showAlertAndUnlockUI("登录失败,请查看是否有权限进行登录");
 						}
 					} catch (NumberFormatException e) {
 						try {
@@ -192,6 +212,23 @@ public class LoginController implements Initializable {
 			public void handle(WindowEvent event) {
 				System.exit(0);
 
+			}
+		});
+	}
+	
+	
+	/**@author HCJ
+	 * 初始化登录热键
+	 * @date 2019年1月14日 上午11:47:47
+	 */
+	private void initLoginHotKey() {
+		loginAp.setOnKeyPressed(new EventHandler<KeyEvent>() {
+
+			@Override
+			public void handle(KeyEvent event) {
+				if (event.getCode().compareTo(KeyCode.ENTER) == 0) {
+					onLoginButtonClick();
+				}
 			}
 		});
 	}
