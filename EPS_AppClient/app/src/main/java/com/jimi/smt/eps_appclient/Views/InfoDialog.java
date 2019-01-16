@@ -71,9 +71,10 @@ public class InfoDialog extends Dialog implements View.OnClickListener {
 
         //设置点击外部消失
         setCanceledOnTouchOutside(false);
+        setCancelable(false);
         //设置标题和内容
-        TextView titleTv = (TextView) findViewById(itemResIds[1]);
-        TextView msgTv = (TextView) findViewById(itemResIds[2]);
+        TextView titleTv = findViewById(itemResIds[1]);
+        TextView msgTv = findViewById(itemResIds[2]);
         if (titleInfo != null) {
             //设置title消息
             titleTv.setText(titleInfo[0]);
@@ -87,8 +88,11 @@ public class InfoDialog extends Dialog implements View.OnClickListener {
             }
 
             //已发料的站位信息
-            if (titleInfo.length >= 3) {
-                TextView waredSeat = (TextView) findViewById(itemResIds[4]);
+            if (titleInfo.length < 3) {
+                TextView waredSeat = findViewById(itemResIds[4]);
+                waredSeat.setVisibility(View.GONE);
+            } else {
+                TextView waredSeat = findViewById(itemResIds[4]);
                 waredSeat.setText(titleInfo[2]);
                 waredSeat.setTextColor(msgStype[2]);
             }

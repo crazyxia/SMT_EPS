@@ -115,6 +115,9 @@ public class ProgramItemVisit extends ProgramItemVisitKey {
                 itemVisit.setFeedResult(result);
                 break;
             case Constants.CHANGEMATERIAL:
+                if (result == 1){
+                    result = 4;
+                }
                 itemVisit.setChangeResult(result);
                 break;
             case Constants.CHECKMATERIAL:

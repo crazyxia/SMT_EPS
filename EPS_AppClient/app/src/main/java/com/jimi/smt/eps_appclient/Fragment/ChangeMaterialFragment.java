@@ -114,13 +114,13 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
         factoryLineActivity = (FactoryLineActivity) getActivity();
         globalData = (GlobalData) getActivity().getApplication();
         globalFunc = new GlobalFunc(getActivity());
-        mHttpUtils = new HttpUtils(this);
+        mHttpUtils = new HttpUtils(this, getContext());
     }
 
     //监听订阅的消息
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEventMainThread(EvenBusTest event) {
-        Log.d(TAG, "onEventMainThread - " + event.getUpdated());
+//        Log.d(TAG, "onEventMainThread - " + event.getUpdated());
         if (event.getUpdated() == 0) {
             if (infoDialog != null && infoDialog.isShowing()) {
                 infoDialog.cancel();
@@ -133,9 +133,10 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
                     factoryLineActivity.updateDialog.cancel();
                     factoryLineActivity.updateDialog.dismiss();
                 }
-                showLoading();
-                checkFirstCondition = 2;
-                mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
+//                clearAndSetFocus();
+//                showLoading();
+//                checkFirstCondition = 2;
+//                mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
             }
         }
     }
@@ -150,6 +151,7 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
                 factoryLineActivity.updateDialog.cancel();
                 factoryLineActivity.updateDialog.dismiss();
             }
+            clearAndSetFocus();
             //判断是否首次全检
             showLoading();
             checkFirstCondition = 0;
@@ -342,7 +344,7 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
                                 if (edt_ChgMaterial.getText().toString().equals(edt_OrgMaterial.getText().toString())) {
                                     displayResult(0, mChangeMaterialBeans.get(curChangeMaterialId).getLineseat(), "换料成功!", 1);
                                 } else {
-                                    displayResult(0, mChangeMaterialBeans.get(curChangeMaterialId).getMaterialNo(), "主替料换料成功!", 1);
+                                    displayResult(0, mChangeMaterialBeans.get(curChangeMaterialId).getLineseat(), "主替料换料成功!", 1);
                                 }
                                 //清空该站位的料号(包括替换料)、和位置
                                 materialIndex.clear();
@@ -440,6 +442,7 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
     }
 
     private void clearAndSetFocus() {
+        Log.i(TAG, " - clearAndSetFocus - " );
         edt_LineSeat.setText("");
         edt_OrgMaterial.setText("");
         edt_ChgMaterial.setText("");
@@ -502,9 +505,11 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
                         }
                         break;
                     case 2://站位表更新
+                        /*
                         if (checkFirst == 0) {
                             showInfo("站位表更新!", "IPQC未做首次全检");
                         }
+                        */
                         break;
                 }
                 break;
@@ -535,7 +540,6 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
     }
 
     private void showLoading() {
-        dismissLoading();
         loadingDialog = new LoadingDialog(getActivity(), "正在加载...");
         loadingDialog.setCanceledOnTouchOutside(false);
         loadingDialog.show();

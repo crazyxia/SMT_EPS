@@ -27,9 +27,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Activity.WareHouseActivity" />
-        <activity android:name=".Activity.FactoryLineActivity" />
-        <activity android:name=".Activity.QCActivity" />
+        <activity
+            android:name=".Activity.WareHouseActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activity.FactoryLineActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activity.QCActivity"
+            android:screenOrientation="portrait" />
 
         <service
             android:name=".Service.UpdateAppService"
@@ -38,9 +44,12 @@
         <service
             android:name=".Service.RefreshCacheService"
             android:enabled="true"
-            android:exported="true" />
+            android:exported="true"
+            />
 
-        <activity android:name=".Activity.AdminActivity"></activity>
+        <activity
+            android:name=".Activity.AdminActivity"
+            android:screenOrientation="portrait" />
     </application>
 
 </manifest>

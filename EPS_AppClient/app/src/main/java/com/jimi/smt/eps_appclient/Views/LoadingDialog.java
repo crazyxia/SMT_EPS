@@ -35,5 +35,6 @@ public class LoadingDialog extends Dialog {
         tv_title.setText(mTitle);
         LinearLayout linearLayout =  this.findViewById(R.id.LinearLayout);
         linearLayout.getBackground().setAlpha(230);
+        setCancelable(false);
     }
 }

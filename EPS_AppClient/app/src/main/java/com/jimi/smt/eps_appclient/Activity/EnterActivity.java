@@ -15,7 +15,9 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
@@ -23,6 +25,8 @@ import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -32,6 +36,7 @@ import com.google.gson.Gson;
 import com.jimi.smt.eps_appclient.Adapter.EnterOrdersAdapter;
 import com.jimi.smt.eps_appclient.Beans.BaseMsg;
 import com.jimi.smt.eps_appclient.Beans.Material;
+import com.jimi.smt.eps_appclient.Beans.Program;
 import com.jimi.smt.eps_appclient.Func.CheckPermissionUtils;
 import com.jimi.smt.eps_appclient.Func.GlobalFunc;
 import com.jimi.smt.eps_appclient.Func.HttpUtils;
@@ -156,6 +161,13 @@ public class EnterActivity extends Activity implements TextView.OnEditorActionLi
             }
         }
     };
+    private AlertDialog setIpDialog;
+    private EditText edt_ip1;
+    private EditText edt_ip2;
+    private EditText edt_ip3;
+    private EditText edt_ip4;
+    private EditText edt_password;
+    private boolean isSetable;
 
 
     @Override
@@ -175,7 +187,7 @@ public class EnterActivity extends Activity implements TextView.OnEditorActionLi
         //获取全局变量
         globalData = (GlobalData) getApplication();
         globalFunc = new GlobalFunc(this);
-        mHttpUtils = new HttpUtils(this);
+        mHttpUtils = new HttpUtils(this, getApplicationContext());
 
         //创建apk下载路径
         createApkDownloadDir();
@@ -220,6 +232,7 @@ public class EnterActivity extends Activity implements TextView.OnEditorActionLi
     private void initViews() {
         TextView tv_version_no = findViewById(R.id.tv_version_no);
         tv_version_no.setText(packageInfo.versionName);
+        findViewById(R.id.iv_set_ip).setOnClickListener(this);
         et_enter_line = findViewById(R.id.et_enter_line);
         et_enter_operator = findViewById(R.id.et_enter_operator);
         lv_orders = findViewById(R.id.lv_orders);
@@ -293,8 +306,12 @@ public class EnterActivity extends Activity implements TextView.OnEditorActionLi
     private void showInfo() {
 
         //对话框所有控件id
+//        int itemResIds[] = new int[]{R.id.dialog_title_view,
+//                R.id.dialog_title, R.id.tv_alert_info, R.id.info_trust};
+
         int itemResIds[] = new int[]{R.id.dialog_title_view,
-                R.id.dialog_title, R.id.tv_alert_info, R.id.info_trust};
+                R.id.dialog_title, R.id.tv_alert_info, R.id.info_trust, R.id.tv_alert_msg};
+
         //标题和内容
         String titleMsg[] = new String[]{"警告", "请检查网络连接是否正常!"};
         //内容的样式
@@ -433,6 +450,89 @@ public class EnterActivity extends Activity implements TextView.OnEditorActionLi
                 }
 
                 break;
+
+            case R.id.iv_set_ip://设置IP
+                setIp();
+                break;
+        }
+    }
+
+    private void setIp() {
+        dismissDialog();
+        isSetable = false;
+        setIpDialog = new AlertDialog.Builder(this).create();
+        setIpDialog.show();
+        Window window = setIpDialog.getWindow();
+        assert window != null;
+        window.setContentView(R.layout.set_ip_layout);
+        window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
+        setIpDialog.setCancelable(false);
+        LinearLayout ll_ip = window.findViewById(R.id.ll_ip);
+        LinearLayout ll_port = window.findViewById(R.id.ll_port);
+        edt_ip1 = window.findViewById(R.id.edt_ip1);
+        edt_ip2 = window.findViewById(R.id.edt_ip2);
+        edt_ip3 = window.findViewById(R.id.edt_ip3);
+        edt_ip4 = window.findViewById(R.id.edt_ip4);
+        EditText edt_port = window.findViewById(R.id.edt_port);
+        edt_password = window.findViewById(R.id.edt_password);
+        edt_password.requestFocus();
+        window.findViewById(R.id.btn_ip_sure).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (!isSetable) {
+                    if (!TextUtils.isEmpty(edt_password.getText().toString().trim())) {
+                        if ("12348765".equals(edt_password.getText().toString().trim())) {
+                            edt_password.setVisibility(View.GONE);
+                            ll_ip.setVisibility(View.VISIBLE);
+                            ll_port.setVisibility(View.VISIBLE);
+                            isSetable = true;
+                            edt_ip1.requestFocus();
+                        } else {
+                            Toast.makeText(getApplicationContext(), "密码不正确", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Toast.makeText(getApplicationContext(), "请输入密码", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    if (TextUtils.isEmpty(edt_ip1.getText().toString().trim())
+                            || TextUtils.isEmpty(edt_ip2.getText().toString().trim())
+                            || TextUtils.isEmpty(edt_ip3.getText().toString().trim())
+                            || TextUtils.isEmpty(edt_ip4.getText().toString().trim())) {
+                        Toast.makeText(getApplicationContext(), "请填写完整IP", Toast.LENGTH_SHORT).show();
+                    } else {
+                        if (!TextUtils.isEmpty(edt_port.getText().toString().trim())) {
+                            String url = "http://" +
+                                    edt_ip1.getText().toString().trim() + "." +
+                                    edt_ip2.getText().toString().trim() + "." +
+                                    edt_ip3.getText().toString().trim() + "." +
+                                    edt_ip4.getText().toString().trim() + ":" +
+                                    edt_port.getText().toString().trim() + "/eps_server";
+                            globalData.setIp(url);
+                            dismissIpDialog();
+                            Toast.makeText(getApplicationContext(), "IP设置成功", Toast.LENGTH_SHORT).show();
+                            Log.d(TAG, "url - " + globalData.getIp());
+                        } else {
+                            Toast.makeText(getApplicationContext(), "请填写端口", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
+            }
+        });
+
+        window.findViewById(R.id.btn_ip_cancel).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dismissIpDialog();
+            }
+        });
+    }
+
+    private void dismissIpDialog() {
+        if (null != setIpDialog && setIpDialog.isShowing()) {
+            setIpDialog.dismiss();
+            et_enter_line.setText("");
+            et_enter_operator.setText("");
+            et_enter_line.requestFocus();
         }
     }
 
@@ -440,11 +540,10 @@ public class EnterActivity extends Activity implements TextView.OnEditorActionLi
      * http返问回调
      *
      * @param code 请求码
-     * @param s 返回信息
+     * @param s    返回信息
      */
     @Override
     public void showHttpResponse(int code, Object request, String s) {
-        // TODO: 2018/8/27  showHttpResponse
         Log.d(TAG, "showHttpResponse - " + s);
         int resCode = -1;
         try {
@@ -468,6 +567,9 @@ public class EnterActivity extends Activity implements TextView.OnEditorActionLi
                 } else if (resCode == 1) {
                     this.mProgramBeans = line.fromJson(s, com.jimi.smt.eps_appclient.Beans.Program.class).getData();
                     if ((mProgramBeans != null) && (mProgramBeans.size() > 0)) {
+                        for (Program.ProgramBean bean : mProgramBeans) {
+                            bean.setLine(String.valueOf(request));
+                        }
                         //显示工单
                         ordersAdapter = new EnterOrdersAdapter(getApplicationContext(), mProgramBeans);
                         lv_orders.setAdapter(ordersAdapter);
@@ -517,6 +619,8 @@ public class EnterActivity extends Activity implements TextView.OnEditorActionLi
                         bean.setLine(programBean.getLine());
                         bean.setWorkOrder(programBean.getWorkOrder());
                         bean.setBoardType(programBean.getBoardType());
+
+//                        Log.d(TAG, "MaterialBean - " + bean.getMaterialStr());
                     }
                     globalData.setProgramId(programBean.getId());
                     globalData.setMaterialBeans(materialBeans);
@@ -524,10 +628,14 @@ public class EnterActivity extends Activity implements TextView.OnEditorActionLi
                     globalData.setMinusLine(programBean.getLine());
                     globalData.setWork_order(programBean.getWorkOrder());
                     globalData.setBoard_type(programBean.getBoardType());
+
+//                    Log.d(TAG, "getRefreshProgram - " + "  line : " + globalData.getLine() + "  workOrder: " + globalData.getWork_order() + "  boardType: " + globalData.getBoard_type());
+
                     //成功获取料号表,操作员在职
                     Log.d(TAG, "mOperatorBean - " + mOperatorBean.getType());
                     Message message = Message.obtain();
                     message.what = mOperatorBean.getType();
+                    message.obj = programBean;
                     curOrderNum = programBean.getWorkOrder();
                     curOperatorNum = mOperatorBean.getId();
                     //发送消息
@@ -563,7 +671,7 @@ public class EnterActivity extends Activity implements TextView.OnEditorActionLi
      * http返问出错回调
      *
      * @param code 请求码
-     * @param s 返回信息
+     * @param s    返回信息
      */
     @Override
     public void showHttpError(int code, Object request, String s) {
@@ -572,6 +680,7 @@ public class EnterActivity extends Activity implements TextView.OnEditorActionLi
         Log.d(TAG, "showHttpError-" + s);
         showInfo();
     }
+
 
     /**
      * 升级apk进度广播

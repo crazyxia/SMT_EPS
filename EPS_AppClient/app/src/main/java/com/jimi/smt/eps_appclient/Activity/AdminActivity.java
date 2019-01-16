@@ -143,8 +143,12 @@ public class AdminActivity extends Activity implements View.OnClickListener {
     //弹出提示消息窗口
     private void showInfo() {
         //对话框所有控件id
+//        int itemResIds[] = new int[]{R.id.dialog_title_view,
+//                R.id.dialog_title, R.id.tv_alert_info, R.id.info_trust};
+
         int itemResIds[] = new int[]{R.id.dialog_title_view,
-                R.id.dialog_title, R.id.tv_alert_info, R.id.info_trust};
+                R.id.dialog_title, R.id.tv_alert_info, R.id.info_trust, R.id.tv_alert_msg};
+
         //标题和内容
         String titleMsg[] = new String[]{"警告", "请检查网络连接是否正常!"};
         //内容的样式

@@ -53,7 +53,14 @@ public class Constants {
 //    public static final String urlBase = "http://192.168.66.9:8080/eps_server";
     //测试 10.10.11.186:8080/eps_server
 //    public static final String urlBase = "http://10.10.11.186:8080/eps_server";
-    public static final String urlBase = "http://10.10.11.110:8080/eps_server";
+    //城杰
+    static final String urlBase = "http://10.10.11.90:8080/eps_server";
+    //四楼
+//    public static final String urlBase = "http://192.168.2.110:8080/eps_server";
+    //培鹏
+//    public static final String urlBase = "http://10.10.11.119:8080/eps_server";
+    //昌鑫
+//    public static final String urlBase = "http://192.168.39.220:8080/eps_server";
 
     //数据库
 //    public static String dataBaseUrl = "jdbc:mysql://10.10.11.153:3306/smt_eps?useSSL=false&serverTimezone=GMT%2B8";//MYSQL测试数据库连接Url

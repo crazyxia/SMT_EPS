@@ -53,6 +53,7 @@ public class GreenDaoUtil {
 
     //根据条件查询数据库有无上料纪录
     public List<Feed> queryFeedRecord(String operator, String order, String line, int boardType) {
+        Log.d(TAG, " - queryFeedRecord - ");
         QueryBuilder<Feed> feedQuery = getFeedDao().queryBuilder();
         feedQuery.where(FeedDao.Properties.Operator.eq(operator),
                 FeedDao.Properties.Order.eq(order),
@@ -68,6 +69,7 @@ public class GreenDaoUtil {
 
     //根据条件查询数据库有无发料纪录
     public List<Ware> queryWareRecord(String operator, String order, String line, int boardType) {
+        Log.d(TAG, " - queryWareRecord - ");
         QueryBuilder<Ware> wareQuery = getWareDao().queryBuilder();
         wareQuery.where(WareDao.Properties.Operator.eq(operator),
                 WareDao.Properties.Order.eq(order),
@@ -83,6 +85,7 @@ public class GreenDaoUtil {
 
     //根据条件查询数据库有无操作员全检纪录
     public List<FLCheckAll> queryFLCheckRecord(String operator, String order, String line, int boardType) {
+        Log.d(TAG, " - queryFLCheckRecord - ");
         QueryBuilder<FLCheckAll> flCheckQuery = getFlCheckAllDao().queryBuilder();
         flCheckQuery.where(FLCheckAllDao.Properties.Operator.eq(operator),
                 FLCheckAllDao.Properties.Order.eq(order),
@@ -98,6 +101,7 @@ public class GreenDaoUtil {
 
     //根据条件查询数据库有无IPQC全检纪录
     public List<QcCheckAll> queryQcCheckRecord(String operator, String order, String line, int boardType) {
+        Log.d(TAG, " - queryQcCheckRecord - ");
         QueryBuilder<QcCheckAll> qcCheckQuery = getQcCheckAllDao().queryBuilder();
         qcCheckQuery.where(QcCheckAllDao.Properties.Operator.eq(operator),
                 QcCheckAllDao.Properties.Order.eq(order),
@@ -113,6 +117,7 @@ public class GreenDaoUtil {
 
     //批量插入上料初始数据
     public boolean insertMultiFeedMaterial(final List<Feed> feedList) {
+        Log.d(TAG, " - insertMultiFeedMaterial - ");
         boolean result = false;
         try {
             GreenDaoManager.getInstance().getmDaoSession().runInTx(new Runnable() {
@@ -132,6 +137,7 @@ public class GreenDaoUtil {
 
     //批量插入发料初始数据
     public boolean insertMultiWareMaterial(final List<Ware> wareList) {
+        Log.d(TAG, " - insertMultiWareMaterial - ");
         boolean result = false;
         try {
             GreenDaoManager.getInstance().getmDaoSession().runInTx(new Runnable() {
@@ -151,6 +157,7 @@ public class GreenDaoUtil {
 
     //批量插入操作员全检初始数据
     public boolean insertMultiFLCheckMaterial(final List<FLCheckAll> flCheckAllList) {
+        Log.d(TAG, " - insertMultiFLCheckMaterial - ");
         boolean result = false;
         try {
             GreenDaoManager.getInstance().getmDaoSession().runInTx(new Runnable() {
@@ -170,6 +177,7 @@ public class GreenDaoUtil {
 
     //批量插入IPQC全检初始数据
     public boolean insertMultiQcCheckMaterial(final List<QcCheckAll> qcCheckAllList) {
+        Log.d(TAG, " - insertMultiQcCheckMaterial - ");
         boolean result = false;
         try {
             GreenDaoManager.getInstance().getmDaoSession().runInTx(new Runnable() {
@@ -189,6 +197,7 @@ public class GreenDaoUtil {
 
     //更新某一项上料结果
     public boolean updateFeed(Feed feed) {
+        Log.d(TAG, " - updateFeed - ");
         boolean updateRes = false;
         try {
             getFeedDao().update(feed);
@@ -228,6 +237,7 @@ public class GreenDaoUtil {
 
     //更新某一项发料结果
     public boolean updateWare(Ware ware) {
+        Log.d(TAG, " - updateWare - ");
         boolean updateRes = false;
         try {
             getWareDao().update(ware);
@@ -240,6 +250,7 @@ public class GreenDaoUtil {
 
     //更新某一项操作员全检结果
     public boolean updateFLCheck(FLCheckAll flCheckAll) {
+        Log.d(TAG, " - updateFLCheck - ");
         boolean updateRes = false;
         try {
             getFlCheckAllDao().update(flCheckAll);
@@ -252,6 +263,7 @@ public class GreenDaoUtil {
 
     //更新某一项IPQC全检结果
     public boolean updateQcCheck(QcCheckAll qcCheckAll) {
+        Log.d(TAG, " - updateQcCheck - ");
         boolean updateRes = false;
         try {
             getQcCheckAllDao().update(qcCheckAll);
@@ -264,6 +276,7 @@ public class GreenDaoUtil {
 
     //初始化所有上料结果
     public boolean updateAllFeed(List<Feed> feeds) {
+        Log.d(TAG, " - updateAllFeed - ");
         boolean updateRes = false;
         try {
             GreenDaoManager.getInstance().getmDaoSession().runInTx(() -> {
@@ -284,6 +297,7 @@ public class GreenDaoUtil {
 
     //初始化所有发料结果
     public boolean updateAllWare(List<Ware> wares) {
+        Log.d(TAG, " - updateAllWare - ");
         boolean updateRes = false;
         try {
             GreenDaoManager.getInstance().getmDaoSession().runInTx(new Runnable() {
@@ -307,6 +321,7 @@ public class GreenDaoUtil {
 
     //初始化所有操作员全检结果
     public boolean updateAllFLCheck(List<FLCheckAll> flCheckAlls) {
+        Log.d(TAG, " - updateAllFLCheck - ");
         boolean updateRes = false;
         try {
             GreenDaoManager.getInstance().getmDaoSession().runInTx(new Runnable() {
@@ -330,6 +345,7 @@ public class GreenDaoUtil {
 
     //初始化所有IPQC全检结果
     public boolean updateAllQcCheck(List<QcCheckAll> qcCheckAlls) {
+        Log.d(TAG, " - updateAllQcCheck - ");
         boolean updateRes = false;
         try {
             GreenDaoManager.getInstance().getmDaoSession().runInTx(new Runnable() {
@@ -351,6 +367,106 @@ public class GreenDaoUtil {
         return updateRes;
     }
 
+
+    /**
+     * 更新上料结果,重置的时候使用
+     *
+     * @param workOrder
+     * @param line
+     * @param boardType
+     * @return
+     */
+    public boolean updateFeed(String workOrder, String line, int boardType) {
+        boolean updateRes = false;
+        QueryBuilder<Feed> queryBuilder = getFeedDao().queryBuilder();
+        queryBuilder.where(FeedDao.Properties.Order.eq(workOrder),
+                FeedDao.Properties.Line.eq(line),
+                FeedDao.Properties.Board_type.eq(boardType));
+        List<Feed> feedList = queryBuilder.list();
+        if (null != feedList && feedList.size() > 0) {
+            for (Feed feed : feedList) {
+                feed.setScanLineSeat("");
+                feed.setScanMaterial("");
+                feed.setResult("");
+                feed.setRemark("");
+            }
+            try {
+                getFeedDao().updateInTx(feedList);
+                updateRes = true;
+            } catch (Exception e) {
+                Log.d(TAG, "updateFeed - " + e.toString());
+            }
+        }
+        return updateRes;
+    }
+
+    /**
+     * 更新IPQC全检结果,重置的时候使用
+     *
+     * @param workOrder
+     * @param line
+     * @param boardType
+     * @return
+     */
+    public boolean updateQcCheck(String workOrder, String line, int boardType) {
+        Log.d(TAG, " - updateQcCheck - ");
+        boolean updateRes = false;
+        QueryBuilder<QcCheckAll> queryBuilder = getQcCheckAllDao().queryBuilder();
+        queryBuilder.where(QcCheckAllDao.Properties.Order.eq(workOrder),
+                QcCheckAllDao.Properties.Line.eq(line),
+                QcCheckAllDao.Properties.Board_type.eq(boardType));
+        List<QcCheckAll> qcList = queryBuilder.list();
+        if (null != qcList && qcList.size() > 0) {
+            for (QcCheckAll qc : qcList) {
+                qc.setScanLineSeat("");
+                qc.setScanMaterial("");
+                qc.setResult("");
+                qc.setRemark("");
+            }
+            try {
+                getQcCheckAllDao().updateInTx(qcList);
+                updateRes = true;
+            } catch (Exception e) {
+                Log.d(TAG, "updateQcCheck - " + e.toString());
+            }
+        }
+        return updateRes;
+    }
+
+    /**
+     * 更新厂线操作员全检结果,重置的时候使用
+     *
+     * @param workOrder
+     * @param line
+     * @param boardType
+     * @return
+     */
+    public boolean updateFLCheck(String workOrder, String line, int boardType) {
+        Log.d(TAG, " - updateFLCheck - ");
+        boolean updateRes = false;
+        QueryBuilder<FLCheckAll> queryBuilder = getFlCheckAllDao().queryBuilder();
+        queryBuilder.where(FLCheckAllDao.Properties.Order.eq(workOrder),
+                FLCheckAllDao.Properties.Line.eq(line),
+                FLCheckAllDao.Properties.Board_type.eq(boardType));
+        List<FLCheckAll> flList = queryBuilder.list();
+        if (null != flList && flList.size() > 0) {
+            for (FLCheckAll fl : flList) {
+                fl.setScanLineSeat("");
+                fl.setScanMaterial("");
+                fl.setResult("");
+                fl.setRemark("");
+            }
+            try {
+                getFlCheckAllDao().updateInTx(flList);
+                updateRes = true;
+            } catch (Exception e) {
+                Log.d(TAG, "updateFLCheck - " + e.toString());
+            }
+        }
+        return updateRes;
+    }
+
+
     //删除所有上料结果
     /*public boolean deleteAllFeed(List<Feed> feeds){
         boolean updateRes = false;
@@ -365,6 +481,7 @@ public class GreenDaoUtil {
 
     //删除上料数据库所有数据
     public boolean deleteAllFeedData() {
+        Log.d(TAG, " - deleteAllFeedData - ");
         boolean updateRes = false;
         try {
             getFeedDao().deleteAll();
@@ -377,6 +494,7 @@ public class GreenDaoUtil {
 
     //删除发料数据库所有数据
     public boolean deleteAllWareData() {
+        Log.d(TAG, " - deleteAllWareData - ");
         boolean updateRes = false;
         try {
             getWareDao().deleteAll();
@@ -389,6 +507,7 @@ public class GreenDaoUtil {
 
     //删除操作员全检数据库所有数据
     public boolean deleteAllFLCheck() {
+        Log.d(TAG, " - deleteAllFLCheck - ");
         boolean updateRes = false;
         try {
             getFlCheckAllDao().deleteAll();
@@ -401,6 +520,7 @@ public class GreenDaoUtil {
 
     //删除IPQC全检数据库所有数据
     public boolean deleteAllQcCheck() {
+        Log.d(TAG, " - deleteAllQcCheck - ");
         boolean updateRes = false;
         try {
             getQcCheckAllDao().deleteAll();
@@ -413,6 +533,7 @@ public class GreenDaoUtil {
 
     //删除对应站位的上料纪录
     public boolean deleteFeedBySeat(List<String> seats) {
+        Log.d(TAG, " - deleteFeedBySeat - ");
         boolean result = false;
         try {
             for (String s : seats) {
@@ -428,6 +549,7 @@ public class GreenDaoUtil {
 
     //删除对应站位的发料纪录
     public boolean deleteWareBySeat(List<String> seats) {
+        Log.d(TAG, " - deleteWareBySeat - ");
         boolean result = false;
         try {
             for (String s : seats) {
@@ -443,6 +565,7 @@ public class GreenDaoUtil {
 
     //删除对应站位的操作员全检纪录
     public boolean deleteFLCheckBySeat(List<String> seats) {
+        Log.d(TAG, " - deleteFLCheckBySeat - ");
         boolean result = false;
         try {
             for (String s : seats) {
@@ -458,6 +581,7 @@ public class GreenDaoUtil {
 
     //删除对应站位的IPQC全检纪录
     public boolean deleteQcCheckBySeat(List<String> seats) {
+        Log.d(TAG, " - deleteQcCheckBySeat - ");
         boolean result = false;
         try {
             for (String s : seats) {
@@ -473,6 +597,7 @@ public class GreenDaoUtil {
 
     //更新或插入新上料数据
     public boolean updateOrInsertFeed(List<Feed> feeds) {
+        Log.d(TAG, " - updateOrInsertFeed - ");
         boolean result = false;
         try {
             for (Feed feed : feeds) {
@@ -487,6 +612,7 @@ public class GreenDaoUtil {
 
     //更新或插入新发料数据
     public boolean updateOrInsertWare(List<Ware> wares) {
+        Log.d(TAG, " - updateOrInsertWare - ");
         boolean result = false;
         try {
             for (Ware ware : wares) {
@@ -501,6 +627,7 @@ public class GreenDaoUtil {
 
     //更新或插入新操作员全检数据
     public boolean updateOrInsertFLCheck(List<FLCheckAll> flCheckAlls) {
+        Log.d(TAG, " - updateOrInsertFLCheck - ");
         boolean result = false;
         try {
             for (FLCheckAll flCheckAll : flCheckAlls) {
@@ -515,6 +642,7 @@ public class GreenDaoUtil {
 
     //更新或插入新IPQC全检数据
     public boolean updateOrInsertQcCheck(List<QcCheckAll> qcCheckAlls) {
+        Log.d(TAG, " - updateOrInsertQcCheck - ");
         boolean result = false;
         try {
             for (QcCheckAll qcCheckAll : qcCheckAlls) {

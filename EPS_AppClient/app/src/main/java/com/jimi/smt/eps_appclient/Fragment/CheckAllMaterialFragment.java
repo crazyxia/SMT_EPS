@@ -91,7 +91,7 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
             factoryLineActivity.updateDialog.cancel();
             factoryLineActivity.updateDialog.dismiss();
         }
-        mHttpUtils = new HttpUtils(this);
+        mHttpUtils = new HttpUtils(this, getContext());
         showLoading();
         checkFistCondition = 1;
         mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
@@ -131,8 +131,58 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEventMainThread(EvenBusTest event) {
         if (event.getUpdated() == 0) {
-            Log.d(TAG, "onEventMainThread - " + event.getUpdated());
-            if (Constants.isCache) {
+            Log.d(TAG, "onEventMainThread - getUpdated - ");
+            if (inputDialog != null && inputDialog.isShowing()) {
+                inputDialog.cancel();
+                inputDialog.dismiss();
+                selectRow = -1;
+            }
+            if (resultInfoDialog != null && resultInfoDialog.isShowing()) {
+                resultInfoDialog.cancel();
+                resultInfoDialog.dismiss();
+            }
+            if (event.getFlCheckAllList() != null && event.getFlCheckAllList().size() > 0) {
+                flCheckAllList.clear();
+                flCheckAllList.addAll(event.getFlCheckAllList());
+                curCheckId = 0;
+                mCheckAllMaterialBeans.clear();
+
+                FLCheckAll flCheckAll;
+                for (int i = 0, len = flCheckAllList.size(); i < len; i++) {
+                    flCheckAll = flCheckAllList.get(i);
+                    Material.MaterialBean bean = new Material.MaterialBean(flCheckAll.getOrder(), flCheckAll.getBoard_type(), flCheckAll.getLine(),
+                            flCheckAll.getProgramId(), flCheckAll.getSerialNo(), flCheckAll.getAlternative(), flCheckAll.getOrgLineSeat(), flCheckAll.getOrgMaterial(),
+                            flCheckAll.getScanLineSeat(), flCheckAll.getScanMaterial(), flCheckAll.getResult(), flCheckAll.getRemark());
+                    mCheckAllMaterialBeans.add(bean);
+
+                    if ((null != flCheckAll.getResult()) && ((flCheckAll.getResult().equalsIgnoreCase("PASS")) || (flCheckAll.getResult().equalsIgnoreCase("FAIL")))) {
+                        if (i == flCheckAllList.size() - 1) {
+                            curCheckId = i;
+                        } else {
+                            curCheckId = i + 1;
+                        }
+                    }
+                }
+
+            }
+            //更新显示
+            materialAdapter.notifyDataSetChanged();
+//            edt_ScanMaterial.requestFocus();
+            Log.d(TAG, "mHidden - " + mHidden);
+            Log.d(TAG, "isUpdateProgram - " + globalData.isUpdateProgram());
+            //提示首检或上料
+            if (!mHidden) {
+                if (factoryLineActivity.updateDialog != null && factoryLineActivity.updateDialog.isShowing()) {
+                    factoryLineActivity.updateDialog.cancel();
+                    factoryLineActivity.updateDialog.dismiss();
+                }
+                edt_ScanMaterial.requestFocus();
+            }
+        } else {
+            // TODO: 2018/12/26
+            if (event.getCheckAllTimeOut() == 1) {
+                Log.d(TAG, "onEventMainThread - getCheckAllTimeOut - ");
+                //超时
                 if (inputDialog != null && inputDialog.isShowing()) {
                     inputDialog.cancel();
                     inputDialog.dismiss();
@@ -155,20 +205,12 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                                 flCheckAll.getProgramId(), flCheckAll.getSerialNo(), flCheckAll.getAlternative(), flCheckAll.getOrgLineSeat(), flCheckAll.getOrgMaterial(),
                                 flCheckAll.getScanLineSeat(), flCheckAll.getScanMaterial(), flCheckAll.getResult(), flCheckAll.getRemark());
                         mCheckAllMaterialBeans.add(bean);
-
-                        if ((null != flCheckAll.getResult()) && ((flCheckAll.getResult().equalsIgnoreCase("PASS")) || (flCheckAll.getResult().equalsIgnoreCase("FAIL")))) {
-                            if (i == flCheckAllList.size() - 1) {
-                                curCheckId = i;
-                            } else {
-                                curCheckId = i + 1;
-                            }
-                        }
                     }
 
                 }
                 //更新显示
                 materialAdapter.notifyDataSetChanged();
-                edt_ScanMaterial.requestFocus();
+//                edt_ScanMaterial.requestFocus();
                 Log.d(TAG, "mHidden - " + mHidden);
                 Log.d(TAG, "isUpdateProgram - " + globalData.isUpdateProgram());
                 //提示首检或上料
@@ -177,12 +219,12 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                         factoryLineActivity.updateDialog.cancel();
                         factoryLineActivity.updateDialog.dismiss();
                     }
-                    showInfo("站位表更新!", "IPQC未完成首次全检", 1);
+                    edt_ScanMaterial.requestFocus();
                 }
+
             }
         }
     }
-
 
     @Override
     public void onHiddenChanged(boolean hidden) {
@@ -195,13 +237,12 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                 factoryLineActivity.updateDialog.cancel();
                 factoryLineActivity.updateDialog.dismiss();
             }
+            clearLineSeatMaterialScan();
             showLoading();
             checkFistCondition = 1;
             mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
-
         }
     }
-
 
     @Override
     public void onDestroy() {
@@ -308,10 +349,14 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
             mCheckAllMaterialBeans = globalData.getMaterialBeans();
             if (Constants.isCache) {
                 for (Material.MaterialBean bean : mCheckAllMaterialBeans) {
-                    //操作员 todo
+                    //操作员
+                    bean.setScanlineseat("");
+                    bean.setScanMaterial("");
+                    bean.setRemark("");
+                    bean.setResult("");
                     FLCheckAll flCheckAll = new FLCheckAll(null, bean.getProgramId(), bean.getWorkOrder(), globalData.getOperator(),
                             bean.getBoardType(), bean.getLine(), bean.getSerialNo(), bean.isAlternative(), bean.getLineseat(), bean.getMaterialNo(),
-                            bean.getScanlineseat(), bean.getScanMaterial(), bean.getResult(), bean.getRemark());
+                            "", "", "", "");
                     flCheckAllList.add(flCheckAll);
                 }
                 //保存到数据库中
@@ -523,26 +568,15 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
     }
 
     //IPQC未做首次全检
-    private void showInfo(String message, String tip, final int userType) {
-
+    private void showInfo() {
         //对话框所有控件id
         int itemResIds[] = new int[]{R.id.dialog_title_view, R.id.dialog_title, R.id.tv_alert_info,
                 R.id.info_trust, R.id.tv_alert_msg};
         //标题和内容
-        String titleMsg[];
+        String titleMsg[] = new String[]{"提示", "IPQC未做首次全检"};
         //内容的样式
-        int msgStype[];
-        if (userType == 3) {
-            msgStype = new int[]{22, Color.argb(255, 102, 153, 0)};
-            titleMsg = new String[]{"提示", message};
-        } else {
-            msgStype = new int[]{22, Color.RED, Color.argb(255, 219, 201, 36)};
-            titleMsg = new String[]{"提示", message, tip};
-        }
-
-        InfoDialog infoDialog = new InfoDialog(getActivity(),
-                R.layout.info_dialog_layout, itemResIds, titleMsg, msgStype);
-
+        int msgStype[] = new int[]{22, Color.RED, Color.argb(255, 219, 201, 36)};
+        InfoDialog infoDialog = new InfoDialog(getActivity(), R.layout.info_dialog_layout, itemResIds, titleMsg, msgStype);
         infoDialog.setOnDialogItemClickListener((dialog, view) -> {
             switch (view.getId()) {
                 case R.id.info_trust:
@@ -582,8 +616,8 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                 titleMsg = new String[]{"全检完成", "PASS"};
                 msgStyle = new int[]{66, Color.argb(255, 102, 153, 0)};
             } else {
-                titleMsg = new String[]{"全检失败,请检查!", "FAIL"};
-                msgStyle = new int[]{66, Color.RED};
+                titleMsg = new String[]{"全检未完成，请检查!", "请继续全检"};
+                msgStyle = new int[]{66, Color.argb(255, 212, 179, 17)};
             }
             showResultInfo(titleMsg, msgStyle, checkResult);
         }
@@ -594,8 +628,12 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
     private void showResultInfo(String[] titleMsg, int[] msgStyle, final boolean result) {
 
         //对话框所有控件id
+//        int itemResIds[] = new int[]{R.id.dialog_title_view,
+//                R.id.dialog_title, R.id.tv_alert_info, R.id.info_trust};
+
+
         int itemResIds[] = new int[]{R.id.dialog_title_view,
-                R.id.dialog_title, R.id.tv_alert_info, R.id.info_trust};
+                R.id.dialog_title, R.id.tv_alert_info, R.id.info_trust, R.id.tv_alert_msg};
 
         resultInfoDialog = new InfoDialog(getActivity(),
                 R.layout.info_dialog_layout, itemResIds, titleMsg, msgStyle);
@@ -657,7 +695,7 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
      * http返问回调
      *
      * @param code 请求码
-     * @param s 返回信息
+     * @param s    返回信息
      */
     @Override
     public void showHttpResponse(int code, Object request, String s) {
@@ -671,7 +709,7 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                     case 1:
                         if (checkFirst == 0) {
                             //未首检
-                            showInfo("IPQC未做首次全检", "", 1);
+                            showInfo();
                             checkResetCondition = 4;
                             mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
                         }
@@ -684,7 +722,7 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                             mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
                         } else {
                             //未首检
-                            showInfo("IPQC未做首次全检", "", 1);
+                            showInfo();
                             checkResetCondition = 4;
                             mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
                         }
@@ -697,7 +735,7 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                             mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
                         } else {
                             //未首检
-                            showInfo("IPQC未做首次全检", "", 1);
+                            showInfo();
                             checkResetCondition = 4;
                             mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
                         }
@@ -808,7 +846,7 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
      * http返问出错回调
      *
      * @param code 请求码
-     * @param s 返回信息
+     * @param s    返回信息
      */
     @Override
     public void showHttpError(int code, Object request, String s) {

@@ -22,6 +22,8 @@ public class EvenBusTest {
     private int updated;
     //0 未重置;1 重置
     private int reseted;
+    //0 未超时; 1 超时
+    private int checkAllTimeOut;
     private List<Feed> feedList;
     private List<Ware> wareList;
     private List<FLCheckAll> flCheckAllList;
@@ -33,6 +35,14 @@ public class EvenBusTest {
 
     public void setUpdated(int updated) {
         this.updated = updated;
+    }
+
+    public int getCheckAllTimeOut() {
+        return checkAllTimeOut;
+    }
+
+    public void setCheckAllTimeOut(int checkAllTimeOut) {
+        this.checkAllTimeOut = checkAllTimeOut;
     }
 
     public int getReseted() {

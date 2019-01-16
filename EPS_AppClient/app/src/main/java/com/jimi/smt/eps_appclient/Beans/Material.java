@@ -93,6 +93,23 @@ public class Material extends BaseMsg {
             this.serialNo = serialNo;
         }
 
+        public MaterialBean copy(MaterialBean bean){
+            MaterialBean materialBean = new MaterialBean();
+            materialBean.setProgramId(bean.getProgramId());
+            materialBean.setLine(bean.getLine());
+            materialBean.setWorkOrder(bean.getWorkOrder());
+            materialBean.setBoardType(bean.getBoardType());
+            materialBean.setLineseat(bean.getLineseat());
+            materialBean.setMaterialNo(bean.getMaterialNo());
+            materialBean.setSerialNo(bean.getSerialNo());
+            materialBean.setScanlineseat(bean.getLineseat());
+            materialBean.setScanMaterial(bean.getScanMaterial());
+            materialBean.setRemark(bean.getRemark());
+            materialBean.setResult(bean.getResult());
+            materialBean.setAlternative(bean.isAlternative());
+            return materialBean;
+        }
+
         @Override
         public boolean equals(Object obj) {
             MaterialBean bean = (MaterialBean) obj;

@@ -43,17 +43,26 @@ public class GlobalFunc {
      *
      * @param title           提示
      * @param message         提示内容
-     * @param netFailToastStr 未联网提示
+     * @param toast 提示
      */
-    public void showInfo(String title, String message, final String netFailToastStr) {
+    public void showInfo(String title, String message, final String toast) {
 
         //对话框所有控件id
+//        int itemResIds[] = new int[]{R.id.dialog_title_view,
+//                R.id.dialog_title, R.id.tv_alert_info, R.id.info_trust};
+
         int itemResIds[] = new int[]{R.id.dialog_title_view,
-                R.id.dialog_title, R.id.tv_alert_info, R.id.info_trust};
+                R.id.dialog_title, R.id.tv_alert_info, R.id.info_trust, R.id.tv_alert_msg};
+
+
         //标题和内容
         String titleMsg[] = new String[]{title, message};
         //内容的样式
         int msgStype[] = new int[]{22, Color.RED};
+
+        if (message.equalsIgnoreCase("站位表更新!")){
+            msgStype = new int[]{22,Color.GREEN};
+        }
 
         InfoDialog infoDialog = new InfoDialog(context,
                 R.layout.info_dialog_layout, itemResIds, titleMsg, msgStype);
@@ -62,12 +71,14 @@ public class GlobalFunc {
             switch (view.getId()) {
                 case R.id.info_trust:
                     dialog.dismiss();
-                    Toast.makeText(context, netFailToastStr, Toast.LENGTH_LONG).show();
+                    Toast.makeText(context, toast, Toast.LENGTH_LONG).show();
                     break;
             }
         });
         infoDialog.show();
     }
+
+
 
     //获取扫描的线号
     public String getLineNum(String scanValue) {

@@ -6,6 +6,8 @@ import android.content.Context;
 
 import com.jimi.smt.eps_appclient.Beans.Material;
 import com.jimi.smt.eps_appclient.Dao.GreenDaoManager;
+import com.jimi.smt.eps_appclient.Func.Log;
+import com.jimi.smt.eps_appclient.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +29,7 @@ public class GlobalData extends Application {
     public void onCreate() {
         super.onCreate();
         context = getApplicationContext();
+        setIp(Constants.urlBase);
         //greenDao全局配置,只希望有一个数据库操作对象
         GreenDaoManager.getInstance();
     }
@@ -35,6 +38,26 @@ public class GlobalData extends Application {
         return context;
     }
 
+    private int clearAfterTimeOut = 1;
+
+    public int getClearAfterTimeOut() {
+        return clearAfterTimeOut;
+    }
+
+    public void setClearAfterTimeOut(int clearAfterTimeOut) {
+        this.clearAfterTimeOut = clearAfterTimeOut;
+    }
+
+    //连接IP
+    private String ip = "";
+
+    public String getIp() {
+        return ip;
+    }
+
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
 
     //料号表
     private List<Material.MaterialBean> materialBeans = new ArrayList<>();

@@ -16,8 +16,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.jimi.smt.eps_appclient.Dao.FLCheckAll;
+import com.jimi.smt.eps_appclient.Dao.GreenDaoUtil;
+import com.jimi.smt.eps_appclient.Dao.QcCheckAll;
 import com.jimi.smt.eps_appclient.Fragment.CheckMaterialFragment;
 import com.jimi.smt.eps_appclient.Fragment.QCcheckAllFragment;
+import com.jimi.smt.eps_appclient.Func.GlobalFunc;
 import com.jimi.smt.eps_appclient.Func.Log;
 import com.jimi.smt.eps_appclient.R;
 import com.jimi.smt.eps_appclient.Service.RefreshCacheService;
@@ -31,6 +35,8 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.List;
+
 /**
  * 类名:QCActivity
  * 创建人:Liang GuoChang
@@ -43,6 +49,7 @@ public class QCActivity extends FragmentActivity implements View.OnClickListener
     private TextView tv_check_some;
     private TextView tv_check_all;
     private GlobalData globalData;
+    private GlobalFunc globalFunc;
     private QCActivityInterface qcActivityInterface;
     public LoadingDialog updateDialog;
     private InfoDialog infoDialog;
@@ -51,6 +58,7 @@ public class QCActivity extends FragmentActivity implements View.OnClickListener
     private FragmentManager fragmentManager;
     // 定义一个变量，来标识是否退出
     private static boolean isExit = false;
+
     @SuppressLint("HandlerLeak")
     private Handler mQCHandler = new Handler() {
         @Override
@@ -68,6 +76,7 @@ public class QCActivity extends FragmentActivity implements View.OnClickListener
         //使屏幕常亮
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         globalData = (GlobalData) getApplication();
+        globalFunc = new GlobalFunc(this);
         fragmentManager = getSupportFragmentManager();
         //开启服务
         startService(new Intent(this, RefreshCacheService.class));
@@ -81,42 +90,61 @@ public class QCActivity extends FragmentActivity implements View.OnClickListener
     //监听订阅的消息
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEventMainThread(EvenBusTest event) {
+        // TODO: 2018/12/26
         if (event.getUpdated() == 0) {
             Log.d(TAG, "onEventMainThread - " + event.getUpdated());
-            showUpdateDialog();
+            if (event.getCheckAllTimeOut() == 1) {
+                //判断本地数据是否清空
+                boolean clear = true;
+                List<QcCheckAll> qcCheckAlls = new GreenDaoUtil().queryQcCheckRecord(globalData.getOperator(), globalData.getWork_order()
+                        , globalData.getLine(), globalData.getBoard_type());
+                for (QcCheckAll qcCheckAll : qcCheckAlls) {
+                    if ((null != qcCheckAll.getResult()) && ((qcCheckAll.getResult().equalsIgnoreCase("PASS")) || (qcCheckAll.getResult().equalsIgnoreCase("FAIL")))) {
+                        clear = false;
+                        break;
+                    }
+                }
+                if (!clear) {
+                    showUpdateDialog("全检超时!", "全检超时!");
+                }
+            } else {
+                showUpdateDialog("站位表更新!", "站位表更新!");
+            }
+            globalData.setUpdateProgram(false);
+        } else {
+            if (event.getCheckAllTimeOut() == 1) {
+                //判断本地数据是否清空
+                boolean clear = true;
+                List<QcCheckAll> qcCheckAlls = new GreenDaoUtil().queryQcCheckRecord(globalData.getOperator(), globalData.getWork_order()
+                        , globalData.getLine(), globalData.getBoard_type());
+                for (QcCheckAll qcCheckAll : qcCheckAlls) {
+                    if ((null != qcCheckAll.getResult()) && ((qcCheckAll.getResult().equalsIgnoreCase("PASS")) || (qcCheckAll.getResult().equalsIgnoreCase("FAIL")))) {
+                        clear = false;
+                        break;
+                    }
+                }
+                if (!clear) {
+                    showUpdateDialog("全检超时!", "全检超时!");
+                }
+            }
         }
     }
 
-    // TODO: 2018/9/12
-    private void showUpdateDialog() {
+    private void showUpdateDialog(String msg, String toast) {
         Log.d(TAG, "showUpdateDialog");
         if (infoDialog != null && infoDialog.isShowing()) {
             infoDialog.cancel();
             infoDialog.dismiss();
         }
-        updateDialog = new LoadingDialog(this, "站位表更新...");
-        updateDialog.setCanceledOnTouchOutside(false);
-        updateDialog.show();
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                globalData.setUpdateProgram(false);
-                updateDialog.cancel();
-                updateDialog.dismiss();
-            }
-        }).start();
+
+        globalFunc.showInfo("提示", msg, toast);
     }
 
     //初始化布局
     private void initView() {
-        ImageView iv_QC_back =  findViewById(R.id.iv_QC_back);
-        tv_check_some =  findViewById(R.id.tv_check_some);
-        tv_check_all =  findViewById(R.id.tv_check_all);
+        ImageView iv_QC_back = findViewById(R.id.iv_QC_back);
+        tv_check_some = findViewById(R.id.tv_check_some);
+        tv_check_all = findViewById(R.id.tv_check_all);
         iv_QC_back.setOnClickListener(this);
         tv_check_some.setOnClickListener(this);
         tv_check_all.setOnClickListener(this);

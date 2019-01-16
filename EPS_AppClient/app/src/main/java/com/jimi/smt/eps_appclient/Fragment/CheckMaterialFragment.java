@@ -95,6 +95,7 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
                 qcActivity.updateDialog.dismiss();
             }
 
+            clearAndSetFocus();
             showLoading();
             checkFirstCondition = 2;
             mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
@@ -117,7 +118,7 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
             qcActivity.updateDialog.dismiss();
         }
 
-        mHttpUtils = new HttpUtils(this);
+        mHttpUtils = new HttpUtils(this, getContext());
 
         showLoading();
         checkFirstCondition = 2;
@@ -141,9 +142,9 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
                     qcActivity.updateDialog.cancel();
                     qcActivity.updateDialog.dismiss();
                 }
-                showLoading();
-                checkFirstCondition = 1;
-                mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
+//                showLoading();
+//                checkFirstCondition = 1;
+//                mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
             }
 
         }
@@ -271,12 +272,12 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
 
     private void doCheck(String scanLine) {
         for (int j = 0, len = mCheckBeanList.size(); j < len; j++) {
-            Material.MaterialBean materialItem = mCheckBeanList.get(j);
-            if (materialItem.getLineseat().equalsIgnoreCase(scanLine)) {
+            Material.MaterialBean bean = mCheckBeanList.get(j).copy(mCheckBeanList.get(j));
+            if (bean.getLineseat().equalsIgnoreCase(scanLine)) {
                 curCheckMaterialId = j;
-                materialItem.setScanlineseat(scanLine);
-                checkItems.add(materialItem);
-                Log.i(TAG, "materialItem - " + materialItem.getMaterialNo());
+                bean.setScanlineseat(scanLine);
+                checkItems.add(bean);
+                Log.i(TAG, "materialItem - " + bean.getMaterialNo());
             }
         }
         if (curCheckMaterialId < 0) {
@@ -385,9 +386,11 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
                         break;
 
                     case 1:
+                        /*
                         if (checkFirst == 0) {
                             qcActivity.showInfo("提示", "站位表更新!", "IPQC未做首次全检");
                         }
+                        */
                         break;
 
                     case 2:

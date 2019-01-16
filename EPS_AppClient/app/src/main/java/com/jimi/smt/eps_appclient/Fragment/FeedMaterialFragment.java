@@ -128,7 +128,7 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
         Log.i(TAG, "onCreate");
         //注册订阅
         EventBus.getDefault().register(this);
-        mHttpUtils = new HttpUtils(this);
+        mHttpUtils = new HttpUtils(this, getContext());
         mActivity = (FactoryLineActivity) getActivity();
         globalData = (GlobalData) getActivity().getApplication();
         globalFunc = new GlobalFunc(getActivity());
@@ -238,9 +238,13 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                         mActivity.updateDialog.cancel();
                         mActivity.updateDialog.dismiss();
                     }
-                    checkWareCondition = 2;
-                    showLoading();
-                    mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.STORE_ISSUE);
+
+                    // TODO: 2018/9/17
+                    dismissFeedLogin();
+
+//                    checkWareCondition = 2;
+//                    showLoading();
+//                    mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.STORE_ISSUE);
 
                 }
             }
@@ -587,7 +591,7 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
         //默认上料结果是PASS
         boolean feedResult = true;
         for (Material.MaterialBean feedMaterialItem : mFeedMaterialBeans) {
-            if (!feedMaterialItem.getResult().equalsIgnoreCase("PASS")) {
+            if ((feedMaterialItem.getResult() == null) || (!feedMaterialItem.getResult().equalsIgnoreCase("PASS"))) {
                 feedResult = false;
                 break;
             }
@@ -596,20 +600,24 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
         String titleMsg[];
         int msgStyle[];
         if (feedResult) {
-            titleMsg = new String[]{"上料结果", "PASS"};
+            titleMsg = new String[]{"上料完成", "PASS"};
             msgStyle = new int[]{66, Color.argb(255, 102, 153, 0)};
         } else {
-            titleMsg = new String[]{"上料失败，请检查!", "FAIL"};
-            msgStyle = new int[]{66, Color.RED};
+            titleMsg = new String[]{"上料未完成，请检查!", "请继续上料"};
+            msgStyle = new int[]{66, Color.argb(255, 212, 179, 17)};
         }
         showInfo(titleMsg, msgStyle, feedResult, 1);
     }
 
     //弹出消息窗口
-    private boolean showInfo(String[] titleMsg, int[] msgStyle, final boolean result, final int resultType) {
+    private void showInfo(String[] titleMsg, int[] msgStyle, final boolean result, final int resultType) {
         //对话框所有控件id
+//        int itemResIds[] = new int[]{R.id.dialog_title_view,
+//                R.id.dialog_title, R.id.tv_alert_info, R.id.info_trust};
+
+
         int itemResIds[] = new int[]{R.id.dialog_title_view,
-                R.id.dialog_title, R.id.tv_alert_info, R.id.info_trust};
+                R.id.dialog_title, R.id.tv_alert_info, R.id.info_trust, R.id.tv_alert_msg};
 
         InfoDialog infoDialog = new InfoDialog(getActivity(),
                 R.layout.info_dialog_layout, itemResIds, titleMsg, msgStyle);
@@ -627,7 +635,7 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                         if (resultType == 1) {
                             //将未成功数加到
                             for (Material.MaterialBean feedMaterialItem : mFeedMaterialBeans) {
-                                if (!feedMaterialItem.getResult().equalsIgnoreCase("PASS")) {
+                                if ((feedMaterialItem.getResult() == null) || (!feedMaterialItem.getResult().equalsIgnoreCase("PASS"))) {
                                     allCount++;
                                 }
                             }
@@ -638,7 +646,6 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
         });
         infoDialog.show();
 
-        return true;
     }
 
     //弹出解锁上料
@@ -777,11 +784,14 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                             break;
 
                         case 2:
+                            // TODO: 2018/9/17  
                             if (checkWareOrFeed == 0) {
                                 dismissFeedLogin();
+                                /*
                                 String titleMsg[] = new String[]{"站位表更新!", "仓库未完成发料!"};
                                 int msgStyle[] = new int[]{22, Color.argb(255, 219, 201, 36)};
                                 showInfo(titleMsg, msgStyle, false, 2);
+                                */
                             }
                             break;
 
@@ -840,15 +850,21 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                     globalFunc.showInfo("警告", "请检查网络连接是否正常!", "请连接网络!");
                 } else if (result.equalsIgnoreCase("succeed")) {
                     //清空上料结果
+                    // TODO: 2018/12/17 不止清空上料记录，全检，首检 都要清空 
                     if (Constants.isCache) {
                         boolean updateAllFeed = new GreenDaoUtil().updateAllFeed(feedList);
+                        boolean updateFlCheck = new GreenDaoUtil().updateFLCheck(globalData.getWork_order(),
+                                globalData.getLine(), globalData.getBoard_type());
+                        boolean updateQcCheck = new GreenDaoUtil().updateQcCheck(globalData.getWork_order(),
+                                globalData.getLine(), globalData.getBoard_type());
                         Log.d(TAG, "updateAllFeed - " + updateAllFeed);
+                        Log.d(TAG, "updateFlCheck - " + updateFlCheck);
+                        Log.d(TAG, "updateQcCheck - " + updateQcCheck);
                     }
                     //清空上料页面结果
                     clearFeedDisplay();
                     edt_pwd.setText("");
                     dismissFeedLogin();
-
                 }
                 break;
         }

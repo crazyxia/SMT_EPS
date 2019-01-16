@@ -117,7 +117,7 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
         startService(new Intent(this, RefreshCacheService.class));
         //注册订阅
         EventBus.getDefault().register(this);
-        mHttpUtils = new HttpUtils(this);
+        mHttpUtils = new HttpUtils(this, getApplicationContext());
         //全局变量
         globalData = (GlobalData) getApplication();
         Intent intent = getIntent();
@@ -185,8 +185,8 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
                         ware.getProgramId(), ware.getSerialNo(), ware.getAlternative(), ware.getOrgLineSeat(), ware.getOrgMaterial(),
                         ware.getScanLineSeat(), ware.getScanMaterial(), ware.getResult(), ware.getRemark());
                 mWareMaterialBeans.add(bean);
-                Log.d(TAG, "bean - " + bean.getLineseat());
-                Log.d(TAG, "bean - " + bean.getSerialNo());
+//                Log.d(TAG, "bean - " + bean.getLineseat());
+//                Log.d(TAG, "bean - " + bean.getSerialNo());
 
                 //获取成功发料次数
                 if ((null != ware.getResult()) && (ware.getResult().equalsIgnoreCase("PASS"))) {
@@ -275,6 +275,12 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
             wareResultDialog.dismiss();
         }
         Log.d(TAG, "showUpdateDialog");
+
+        globalFunc.showInfo("提示", "站位表更新!", "站位表更新!");
+//        globalData.setUpdateProgram(false);
+
+
+        /*
         final LoadingDialog loadingDialog = new LoadingDialog(this, "站位表更新...");
         loadingDialog.setCanceledOnTouchOutside(false);
         loadingDialog.show();
@@ -290,6 +296,10 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
                 loadingDialog.dismiss();
             }
         }).start();
+
+        */
+
+
     }
 
     @Override
@@ -473,7 +483,7 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
             //显示最终结果
             boolean result = true;
             for (Material.MaterialBean materialItem : mWareMaterialBeans) {
-                if (!materialItem.getResult().equalsIgnoreCase("PASS")) {
+                if ((null == materialItem.getResult()) || (!materialItem.getResult().equalsIgnoreCase("PASS"))) {
                     result = false;
                     break;
                 }
@@ -482,11 +492,11 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
             String titleMsg[];
             int msgStyle[];
             if (result) {
-                titleMsg = new String[]{"发料结果", "PASS"};
+                titleMsg = new String[]{"发料完成", "PASS"};
                 msgStyle = new int[]{66, Color.argb(255, 102, 153, 0)};
             } else {
-                titleMsg = new String[]{"发料失败，请检查!", "FAIL"};
-                msgStyle = new int[]{66, Color.RED};
+                titleMsg = new String[]{"发料未完成，请检查!", "请继续发料"};
+                msgStyle = new int[]{66, Color.argb(255, 212, 179, 17)};
             }
             showIssueInfo(titleMsg, msgStyle, result);
         }
@@ -495,8 +505,11 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
     //发料结果
     private void showIssueInfo(String[] titleMsg, int[] msgStyle, final boolean result) {
         //对话框所有控件id
+//        int itemResIds[] = new int[]{R.id.dialog_title_view,
+//                R.id.dialog_title, R.id.tv_alert_info, R.id.info_trust};
+
         int itemResIds[] = new int[]{R.id.dialog_title_view,
-                R.id.dialog_title, R.id.tv_alert_info, R.id.info_trust};
+                R.id.dialog_title, R.id.tv_alert_info, R.id.info_trust, R.id.tv_alert_msg};
 
         wareResultDialog = new InfoDialog(this,
                 R.layout.info_dialog_layout, itemResIds, titleMsg, msgStyle);
@@ -517,7 +530,7 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
                         et_ware_scan_material.setText("");
                         //将未成功数加到
                         for (Material.MaterialBean bean : mWareMaterialBeans) {
-                            if (!bean.getResult().equalsIgnoreCase("PASS")) {
+                            if ((null == bean.getResult()) || (!bean.getResult().equalsIgnoreCase("PASS"))) {
                                 allCount++;
                             }
                         }

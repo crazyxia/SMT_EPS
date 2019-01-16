@@ -1,6 +1,7 @@
 package com.jimi.smt.eps_appclient.Activity;
 
 import android.annotation.SuppressLint;
+import android.graphics.Color;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.content.Intent;
@@ -17,6 +18,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.jimi.smt.eps_appclient.Dao.FLCheckAll;
+import com.jimi.smt.eps_appclient.Dao.GreenDaoUtil;
 import com.jimi.smt.eps_appclient.Fragment.ChangeMaterialFragment;
 import com.jimi.smt.eps_appclient.Fragment.CheckAllMaterialFragment;
 import com.jimi.smt.eps_appclient.Fragment.FeedMaterialFragment;
@@ -27,11 +30,14 @@ import com.jimi.smt.eps_appclient.Service.RefreshCacheService;
 import com.jimi.smt.eps_appclient.Unit.Constants;
 import com.jimi.smt.eps_appclient.Unit.EvenBusTest;
 import com.jimi.smt.eps_appclient.Unit.GlobalData;
+import com.jimi.smt.eps_appclient.Views.InfoDialog;
 import com.jimi.smt.eps_appclient.Views.LoadingDialog;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+
+import java.util.List;
 
 
 /**
@@ -111,34 +117,48 @@ public class FactoryLineActivity extends FragmentActivity implements View.OnClic
     //监听订阅的消息
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEventMainThread(EvenBusTest event) {
-        Log.d(TAG, "onEventMainThread - " + event.getUpdated());
+        // TODO: 2018/12/26
         if (event.getUpdated() == 0) {
-            showUpdateDialog();
+            Log.d(TAG, "onEventMainThread - " + event.getUpdated());
+            if (event.getCheckAllTimeOut() == 1) {
+                //判断本地数据是否清空
+                boolean clear = true;
+                List<FLCheckAll> flCheckAlls = new GreenDaoUtil().queryFLCheckRecord(globalData.getOperator(), globalData.getWork_order(),
+                        globalData.getLine(), globalData.getBoard_type());
+                for (FLCheckAll flCheckAll : flCheckAlls) {
+                    if ((null != flCheckAll.getResult()) && ((flCheckAll.getResult().equalsIgnoreCase("PASS")) || (flCheckAll.getResult().equalsIgnoreCase("FAIL")))) {
+                        clear = false;
+                        break;
+                    }
+                }
+                if (!clear) {
+                    showUpdateDialog("全检超时!", "全检超时!");
+                }
+            } else {
+                showUpdateDialog("站位表更新!", "站位表更新!");
+            }
+            globalData.setUpdateProgram(false);
+        } else {
+            if (event.getCheckAllTimeOut() == 1) {
+                //判断本地数据是否清空
+                boolean clear = true;
+                List<FLCheckAll> flCheckAlls = new GreenDaoUtil().queryFLCheckRecord(globalData.getOperator(), globalData.getWork_order(),
+                        globalData.getLine(), globalData.getBoard_type());
+                for (FLCheckAll flCheckAll : flCheckAlls) {
+                    if ((null != flCheckAll.getResult()) && ((flCheckAll.getResult().equalsIgnoreCase("PASS")) || (flCheckAll.getResult().equalsIgnoreCase("FAIL")))) {
+                        clear = false;
+                        break;
+                    }
+                }
+                if (!clear) {
+                    showUpdateDialog("全检超时!", "全检超时!");
+                }
+            }
         }
     }
 
-    // TODO: 2018/9/12  
-    private void showUpdateDialog() {
-        Log.d(TAG, "showUpdateDialog");
-        updateDialog = new LoadingDialog(this, "站位表更新...");
-        updateDialog.setCanceledOnTouchOutside(false);
-        updateDialog.show();
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                if (updateDialog != null && updateDialog.isShowing()) {
-                    updateDialog.cancel();
-                    updateDialog.dismiss();
-                }
-                globalData.setUpdateProgram(false);
-
-            }
-        }).start();
+    private void showUpdateDialog(String msg, String toast) {
+        globalFunc.showInfo("提示", msg, toast);
     }
 
     @Override
@@ -150,63 +170,70 @@ public class FactoryLineActivity extends FragmentActivity implements View.OnClic
                 break;
 
             case R.id.tv_factory_feed://上料
-
-                if (oldFragmentIndex != 0) {
-                    setTabSelection(0);
-                }
-
+                setTabSelection(0);
                 break;
 
             case R.id.tv_factory_change://换料
-                if (oldFragmentIndex != 1) {
-                    setTabSelection(1);
-                }
+                setTabSelection(1);
                 break;
 
             case R.id.tv_factory_checkAll://全检
-                if (oldFragmentIndex != 2) {
-                    setTabSelection(2);
-                }
+                setTabSelection(2);
                 break;
         }
     }
 
     public void setTabSelection(int index) {
-        resetTitle();
         // 开启一个Fragment事务
         FragmentTransaction transaction = fragmentManager.beginTransaction();
-        hideFragments(transaction);
-        oldFragmentIndex = index;
         switch (index) {
             case 0:
-                globalData.setOperType(Constants.FEEDMATERIAL);
-                tv_factory_feed.setBackgroundResource(R.drawable.factory_feed_click_shape);
                 if (feedMaterialFragment == null) {
+                    resetTitle();
+                    hideFragments(transaction);
+                    globalData.setOperType(Constants.FEEDMATERIAL);
+                    tv_factory_feed.setBackgroundResource(R.drawable.factory_feed_click_shape);
                     feedMaterialFragment = new FeedMaterialFragment();
                     transaction.add(R.id.factory_layouts_content, feedMaterialFragment);
-                } else {
+                } else if (feedMaterialFragment.isHidden()) {
+                    resetTitle();
+                    hideFragments(transaction);
+                    globalData.setOperType(Constants.FEEDMATERIAL);
+                    tv_factory_feed.setBackgroundResource(R.drawable.factory_feed_click_shape);
                     transaction.show(feedMaterialFragment);
                 }
                 break;
 
             case 1:
-                globalData.setOperType(Constants.CHANGEMATERIAL);
-                tv_factory_change.setBackgroundResource(R.drawable.factory_change_click_shape);
                 if (changeMaterialFragment == null) {
+                    resetTitle();
+                    hideFragments(transaction);
+                    globalData.setOperType(Constants.CHANGEMATERIAL);
+                    tv_factory_change.setBackgroundResource(R.drawable.factory_change_click_shape);
                     changeMaterialFragment = new ChangeMaterialFragment();
                     transaction.add(R.id.factory_layouts_content, changeMaterialFragment);
-                } else {
+                } else if (changeMaterialFragment.isHidden()) {
+                    resetTitle();
+                    hideFragments(transaction);
+                    globalData.setOperType(Constants.CHANGEMATERIAL);
+                    tv_factory_change.setBackgroundResource(R.drawable.factory_change_click_shape);
                     transaction.show(changeMaterialFragment);
                 }
                 break;
 
             case 2:
-                globalData.setOperType(Constants.CHECKALLMATERIAL);
-                tv_factory_checkAll.setBackgroundResource(R.drawable.factory_checkall_click_shape);
                 if (checkAllMaterialFragment == null) {
+                    resetTitle();
+                    hideFragments(transaction);
+                    globalData.setOperType(Constants.CHECKALLMATERIAL);
+                    tv_factory_checkAll.setBackgroundResource(R.drawable.factory_checkall_click_shape);
                     checkAllMaterialFragment = new CheckAllMaterialFragment();
                     transaction.add(R.id.factory_layouts_content, checkAllMaterialFragment);
-                } else {
+                } else if (checkAllMaterialFragment.isHidden()) {
+                    resetTitle();
+                    hideFragments(transaction);
+                    globalData.setOperType(Constants.CHECKALLMATERIAL);
+                    tv_factory_checkAll.setBackgroundResource(R.drawable.factory_checkall_click_shape);
                     transaction.show(checkAllMaterialFragment);
                 }
                 break;
@@ -228,13 +255,13 @@ public class FactoryLineActivity extends FragmentActivity implements View.OnClic
      * @param transaction 用于对Fragment执行操作的事务
      */
     private void hideFragments(FragmentTransaction transaction) {
-        if (feedMaterialFragment != null) {
+        if (feedMaterialFragment != null && feedMaterialFragment.isVisible()) {
             transaction.hide(feedMaterialFragment);
         }
-        if (changeMaterialFragment != null) {
+        if (changeMaterialFragment != null && changeMaterialFragment.isVisible()) {
             transaction.hide(changeMaterialFragment);
         }
-        if (checkAllMaterialFragment != null) {
+        if (checkAllMaterialFragment != null && checkAllMaterialFragment.isVisible()) {
             transaction.hide(checkAllMaterialFragment);
         }
     }

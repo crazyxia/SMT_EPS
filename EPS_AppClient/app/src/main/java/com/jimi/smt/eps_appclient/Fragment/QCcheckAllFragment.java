@@ -76,8 +76,8 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
         //注册订阅
         EventBus.getDefault().register(this);
         globalData = (GlobalData) getActivity().getApplication();
-        globalFunc = new GlobalFunc(globalData);
         mQcActivity = (QCActivity) getActivity();
+        globalFunc = new GlobalFunc(mQcActivity.getApplicationContext());
         if (Constants.isCache) {
             //查询本地数据库是否存在缓存
             List<QcCheckAll> qcCheckAlls = new GreenDaoUtil().queryQcCheckRecord(globalData.getOperator(),
@@ -103,7 +103,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
             mQcActivity.updateDialog.dismiss();
         }
 
-        mHttpUtils = new HttpUtils(this);
+        mHttpUtils = new HttpUtils(this, getContext());
 
         showLoading();
         checkFeedCondition = 0;
@@ -119,7 +119,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
     public void onEventMainThread(EvenBusTest event) {
         if (Constants.isCache) {
             if (event.getUpdated() == 0) {
-                Log.d(TAG, "onEventMainThread - update - " + event.getUpdated());
+                Log.d(TAG, "onEventMainThread - update - ");
                 //更新或重置
                 if (inputDialog != null && inputDialog.isShowing()) {
                     inputDialog.cancel();
@@ -135,7 +135,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                     qcCheckAllList.addAll(event.getQcCheckAllList());
                     curCheckId = 0;
                     mQcCheckALLMaterialBeans.clear();
-                    for (int i = 0; i < qcCheckAllList.size(); i++) {
+                    for (int i = 0, len = qcCheckAllList.size(); i < len; i++) {
                         QcCheckAll qcCheckAll = qcCheckAllList.get(i);
                         Material.MaterialBean bean = new Material.MaterialBean(qcCheckAll.getOrder(), qcCheckAll.getBoard_type(), qcCheckAll.getLine(),
                                 qcCheckAll.getProgramId(), qcCheckAll.getSerialNo(), qcCheckAll.getAlternative(), qcCheckAll.getOrgLineSeat(), qcCheckAll.getOrgMaterial(),
@@ -150,9 +150,10 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                         }
                     }
                 }
+
                 //更新显示
                 materialAdapter.notifyDataSetChanged();
-                edt_ScanMaterial.requestFocus();
+//                edt_ScanMaterial.requestFocus();
                 Log.d(TAG, "mHidden - " + mHidden);
                 //提示首检或上料
                 if (!mHidden) {
@@ -160,6 +161,50 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                         mQcActivity.updateDialog.cancel();
                         mQcActivity.updateDialog.dismiss();
                     }
+                    edt_ScanMaterial.requestFocus();
+                }
+
+            } else {
+                // TODO: 2018/12/26
+                if (event.getCheckAllTimeOut() == 1) {
+                    Log.d(TAG, "onEventMainThread - getCheckAllTimeOut - ");
+                    //超时
+                    if (inputDialog != null && inputDialog.isShowing()) {
+                        inputDialog.cancel();
+                        inputDialog.dismiss();
+                        selectRow = -1;
+                    }
+                    if (resultInfoDialog != null && resultInfoDialog.isShowing()) {
+                        resultInfoDialog.cancel();
+                        resultInfoDialog.dismiss();
+                    }
+                    if (event.getQcCheckAllList() != null && event.getQcCheckAllList().size() > 0) {
+                        qcCheckAllList.clear();
+                        qcCheckAllList.addAll(event.getQcCheckAllList());
+                        curCheckId = 0;
+                        mQcCheckALLMaterialBeans.clear();
+                        for (int i = 0, len = qcCheckAllList.size(); i < len; i++) {
+                            QcCheckAll qcCheckAll = qcCheckAllList.get(i);
+                            Material.MaterialBean bean = new Material.MaterialBean(qcCheckAll.getOrder(), qcCheckAll.getBoard_type(), qcCheckAll.getLine(),
+                                    qcCheckAll.getProgramId(), qcCheckAll.getSerialNo(), qcCheckAll.getAlternative(), qcCheckAll.getOrgLineSeat(), qcCheckAll.getOrgMaterial(),
+                                    qcCheckAll.getScanLineSeat(), qcCheckAll.getScanMaterial(), qcCheckAll.getResult(), qcCheckAll.getRemark());
+                            mQcCheckALLMaterialBeans.add(bean);
+                        }
+                    }
+
+                    //更新显示
+                    materialAdapter.notifyDataSetChanged();
+//                    edt_ScanMaterial.requestFocus();
+                    Log.d(TAG, "mHidden - " + mHidden);
+                    //提示首检或上料
+                    if (!mHidden) {
+                        if (mQcActivity.updateDialog != null && mQcActivity.updateDialog.isShowing()) {
+                            mQcActivity.updateDialog.cancel();
+                            mQcActivity.updateDialog.dismiss();
+                        }
+                        edt_ScanMaterial.requestFocus();
+                    }
+
                 }
             }
         }
@@ -176,6 +221,15 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                 mQcActivity.updateDialog.cancel();
                 mQcActivity.updateDialog.dismiss();
             }
+            // TODO: 2019/1/15
+            materialAdapter.notifyDataSetChanged();
+            for (Material.MaterialBean bean:mQcCheckALLMaterialBeans) {
+                Log.d(TAG,"linseat - "+bean.getLineseat());
+                Log.d(TAG,"material - "+bean.getMaterialNo());
+                Log.d(TAG,"mark - "+bean.getRemark());
+                Log.d(TAG,"result - "+bean.getResult());
+            }
+            clearLineSeatMaterialScan();
             showLoading();
             checkFeedCondition = 0;
             mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FEEDMATERIAL);
@@ -222,12 +276,17 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
         mQcCheckALLMaterialBeans.clear();
         if (!isRestoreCache) {
             //不存在缓存
+            // TODO: 2018/12/25 清空全局变量
             mQcCheckALLMaterialBeans = globalData.getMaterialBeans();
             if (Constants.isCache) {
                 for (Material.MaterialBean bean : mQcCheckALLMaterialBeans) {
+                    bean.setScanlineseat("");
+                    bean.setScanMaterial("");
+                    bean.setRemark("");
+                    bean.setResult("");
                     QcCheckAll qcCheckAll = new QcCheckAll(null, bean.getProgramId(), bean.getWorkOrder(), globalData.getOperator(),
                             bean.getBoardType(), bean.getLine(), bean.getSerialNo(), bean.isAlternative(), bean.getLineseat(), bean.getMaterialNo(),
-                            bean.getScanlineseat(), bean.getScanMaterial(), bean.getResult(), bean.getRemark());
+                            "", "", "", "");
                     qcCheckAllList.add(qcCheckAll);
                 }
                 boolean cacheResult = new GreenDaoUtil().insertMultiQcCheckMaterial(qcCheckAllList);
@@ -544,8 +603,8 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                 titleMsg = new String[]{"全检完成", "PASS"};
                 msgStyle = new int[]{66, Color.argb(255, 102, 153, 0)};
             } else {
-                titleMsg = new String[]{"全检失败,请检查!", "FAIL"};
-                msgStyle = new int[]{66, Color.RED};
+                titleMsg = new String[]{"全检未完成，请检查!", "请继续全检"};
+                msgStyle = new int[]{66, Color.argb(255, 212, 179, 17)};
             }
             showResultInfo(titleMsg, msgStyle, checkResult);
         }
@@ -554,26 +613,39 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
     //弹出消息窗口
     private void showResultInfo(String[] titleMsg, int[] msgStyle, final boolean result) {
         //对话框所有控件id
-        int itemResIds[] = new int[]{R.id.dialog_title_view, R.id.dialog_title, R.id.tv_alert_info, R.id.info_trust};
+        int itemResIds[] = new int[]{R.id.dialog_title_view,
+                R.id.dialog_title, R.id.tv_alert_info, R.id.info_trust, R.id.tv_alert_msg};
 
         resultInfoDialog = new InfoDialog(getActivity(), R.layout.info_dialog_layout, itemResIds, titleMsg, msgStyle);
 
         resultInfoDialog.setOnDialogItemClickListener((dialog, view) -> {
             switch (view.getId()) {
                 case R.id.info_trust:
-
                     //获取全检结果
+                    showLoading();
                     checkFirstCondition = 0;
                     mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
-
-
+                    // TODO: 2018/12/28
                     dialog.dismiss();
                     if (result) {
                         clearMaterialInfo();
                         mHttpUtils.resetCheckAllRR(globalData.getProgramId());
                     } else {
-                        edt_ScanMaterial.setText("");
-                        edt_ScanMaterial.requestFocus();
+                        boolean checkResult = true;
+                        for (Material.MaterialBean checkMaterialItem : mQcCheckALLMaterialBeans) {
+                            if ((checkMaterialItem.getResult() == null) || (!(checkMaterialItem.getResult().equals("FAIL")))) {
+                                checkResult = false;
+                                break;
+                            }
+                        }
+                        if (checkResult) {
+                            //初始化全检
+                            clearLineSeatMaterialScan();
+                            curCheckId = 0;
+                            clearCheckAllDisplay();
+                        } else {
+                            clearLineSeatMaterialScan();
+                        }
                     }
                     break;
             }
@@ -582,7 +654,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
 
     }
 
-
+    //初始化全检
     private void clearMaterialInfo() {
         Log.d(TAG, "clearMaterialInfo");
         clearLineSeatMaterialScan();
@@ -617,11 +689,11 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
      * http返问回调
      *
      * @param code 请求码
-     * @param s 返回信息
+     * @param s    返回信息
      */
     @Override
     public void showHttpResponse(int code, Object request, String s) {
-        dismissLoading();
+//        dismissLoading();
         Log.d(TAG, "showHttpResponse - " + "  code:" + code + "  s:" + s);
         switch (code) {
             case HttpUtils.CodeIsAllDone:
@@ -633,7 +705,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                 if (type == 0) {//feed
                     Log.d(TAG, "checkFeedCondition - " + checkFeedCondition);
                     switch (checkFeedCondition) {
-                        case 0:
+                        case 0://切换到该页面
                             if (checkFeedOrFirst == 1) {
                                 checkFirstCondition = 0;
                                 mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
@@ -682,6 +754,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                     Log.d(TAG, "checkFirstCondition - " + checkFirstCondition);
                     switch (checkFirstCondition) {
                         case 0:
+                            dismissLoading();
                             if (checkFeedOrFirst == 0) {
                                 showInfo("将进行首次全检", "", 3);
                             }
@@ -716,6 +789,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                             break;
 
                         case 4:
+                            dismissLoading();
                             ArrayList<Integer> integers = (ArrayList<Integer>) ((Object[]) request)[2];
                             Material.MaterialBean bean = (Material.MaterialBean) ((Object[]) request)[3];
                             int condition = (int) ((Object[]) request)[4];
@@ -752,6 +826,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                 Log.d(TAG, "checkResetCondition - " + checkResetCondition);
                 switch (checkResetCondition) {
                     case 1:
+                        dismissLoading();
                         if (reset == 1 && !reseted) {
                             clearMaterialInfo();
                             Log.d(TAG, "isResteted - 重置了");
@@ -759,12 +834,14 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                         break;
                     case 2:
                         if (reset == 1 && !reseted) {
+                            dismissLoading();
                             clearMaterialInfo();
                             Log.d(TAG, "isResteted - 重置了");
                         } else {
                             if (curCheckId >= 0) {
                                 beginOperate(curCheckId, edt_ScanMaterial.getText().toString().trim(), 2);
                             } else {
+                                dismissLoading();
                                 curCheckId = 0;
                                 clearLineSeatMaterialScan();
                             }
@@ -772,6 +849,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                         break;
                     case 3:
                         if (reset == 1 && !reseted) {
+                            dismissLoading();
                             clearMaterialInfo();
                             Log.d(TAG, "isResteted - 重置了");
                         } else {
@@ -884,10 +962,11 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
      * http返问出错回调
      *
      * @param code 请求码
-     * @param s 返回信息
+     * @param s    返回信息
      */
     @Override
     public void showHttpError(int code, Object request, String s) {
+        dismissLoading();
         Log.d(TAG, "showHttpResponse - " + s);
         globalFunc.showInfo("警告", "请检查网络连接是否正常!", "请连接网络!");
         switch (code) {
