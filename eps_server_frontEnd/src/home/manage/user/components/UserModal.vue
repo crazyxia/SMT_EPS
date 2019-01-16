@@ -12,19 +12,19 @@
           <form class ="form form-inline" role="form">
             <div class="form-group">
               <label for="modalId">工号</label>
-              <input type="text" class="form-control" id="modalId" v-model="modalInfo.id">
+              <input type="text" class="form-control" id="modalId" v-model.trim="modalInfo.id" :disabled="isDisabled">
             </div>
             <div class="form-group">
-              <label for="modalName">姓名</label>
-              <input type="text" class="form-control" id="modalName" v-model="modalInfo.name">
+            <label for="modalName">姓名</label>
+            <input type="text" class="form-control" id="modalName" v-model.trim="modalInfo.name">
+          </div>
+            <div class="form-group">
+              <label for="password">密码</label>
+              <input type="text" class="form-control" id="password" v-model.trim="modalInfo.password">
             </div>
             <div class="form-group">
-              <label for="modalPassword">密码</label>
-              <input type="password" class="form-control" id="modalPassword" v-model="modalInfo.password">
-            </div>
-            <div class="form-group">
-              <label for="modaltype">岗位</label>
-              <select class="form-control" id="modaltype" v-model="modalInfo.type">
+              <label for="modalType">岗位</label>
+              <select class="form-control" id="modalType" v-model.trim="modalInfo.type">
                 <option selected="selected" disabled="disabled"  style='display: none' value=''></option>
                 <option value="0">仓库操作员</option>
                 <option value="1">厂线操作员</option>
@@ -37,10 +37,18 @@
             </div>
             <div class="form-group">
               <label for="modalClassType">班别</label>
-              <select class="form-control" id="modalClassType" v-model="modalInfo.classType">
+              <select class="form-control" id="modalClassType" v-model.trim="modalInfo.classType">
                 <option selected="selected" disabled="disabled"  style='display: none' value=''></option>
                 <option value="0">白班</option>
                 <option value="1">夜班</option>
+              </select>
+            </div>
+            <div class="form-group" v-if="isDisabled">
+              <label for="modalEnabled">在职</label>
+              <select class="form-control" id="modalEnabled" v-model.trim="modalInfo.enabled">
+                <option selected="selected" disabled="disabled"  style='display: none' value=''></option>
+                <option value="1">是</option>
+                <option value="0">否</option>
               </select>
             </div>
           </form>
@@ -63,55 +71,49 @@ export default {
   name:'userModal',
   data () {
     return {
-
+      isDisabled:false
     }
   },
   computed:{
     message:function(){
       let operationType = store.state.userOperationType;
-      if(operationType == "update"){
+      if(operationType === "update"){
+        this.isDisabled = true;
         return "修改信息";
-      }else if(operationType == "add"){
+      }else if(operationType === "add"){
+        this.isDisabled = false;
         return "添加信息";
       }
     },
     modalInfo:function(){
-      return store.state.user;
+      let user = store.state.user;
+      let obj = {};
+      obj.id = user.id;
+      obj.name = user.name;
+      obj.type = user.type;
+      obj.classType = user.classType;
+      obj.password = user.password;
+      obj.enabled = user.enabled === true?'1':'0';
+      return obj;
     },
     isAdd:function(){
       return store.state.isAdd;
     },
-    isDelete:function(){
-      return store.state.isDelete;
-    },
     isUpdate:function(){
       return store.state.isUpdate;
-    },
-    token:function(){
-      let token = store.state.token;
-      if(token == ""){
-        token = window.localStorage.getItem("token");
-      }
-      return token;
     }
   },
   watch:{
     isAdd:function(val){
-      if(val == true){
+      if(val === true){
         store.commit("setIsAdd",false);
         $('#myModal').modal({backdrop:'static', keyboard: false});
       }
     },
     isUpdate:function(val){
-      if(val == true){
+      if(val === true){
         store.commit("setIsUpdate",false);
         $('#myModal').modal({backdrop:'static', keyboard: false});
-      }
-    },
-    isDelete:function(val){
-      if(val == true){
-        store.commit("setIsDelete",false);
-        this.update(false,"删除成功");
       }
     }
   },
@@ -120,18 +122,17 @@ export default {
       let options ={
         url:addUserUrl,
         data:{
-          "#TOKEN#":this.token,
           id:this.modalInfo.id,
           name:this.modalInfo.name,
           type:this.modalInfo.type,
-          password:this.modalInfo.password,
-          classType:this.modalInfo.classType
+          classType:this.modalInfo.classType,
+          password:this.modalInfo.password
         }
       }
       axiosPost(options).then(response => {
         if (response.data) {
           let result = response.data.result;
-          if(result == "succeed"){
+          if(result === "succeed"){
             alert("添加成功");
             let infos = {
               id:"",
@@ -139,7 +140,7 @@ export default {
               type:"",
               classType:"",
               password:""
-            }
+            };
             store.commit("setUser",infos);
           }else{
             errTip(result);
@@ -149,27 +150,27 @@ export default {
         alert("error:" + JSON.stringify(err));
       });
     },
-    update:function(isEnabled,succeedTip){
+    update:function(succeedTip){
       let options ={
         url:updateUserUrl,
         data:{
-          "#TOKEN#":this.token,
           id:this.modalInfo.id,
           name:this.modalInfo.name,
           type:this.modalInfo.type,
           classType:this.modalInfo.classType,
           password:this.modalInfo.password,
-          enabled:isEnabled
+          enabled:this.modalInfo.enabled
         }
-      }
-      let that = this;
+      };
       axiosPost(options).then(response => {
         if (response.data) {
           let result = response.data.result;
-          if(result == "succeed"){
+          if(result === "succeed"){
+            console.log(store.state.isRefresh);
+            store.commit("setIsRefresh",true);
+            console.log(store.state.isRefresh);
             alert(succeedTip);
             $('#myModal').modal('hide');
-            store.commit("setIsRefresh",true);
           }else{
             errTip(result);
           }
@@ -179,13 +180,12 @@ export default {
       });
     },
     save:function(){
-      console.log(this.modalInfo);
       if(userTip(this.modalInfo)){
         let operationType = store.state.userOperationType;
-        if(operationType == "add"){
+        if(operationType === "add"){
           this.add();
-        }else if(operationType == "update"){
-          this.update(true,"修改成功");
+        }else if(operationType === "update"){
+          this.update("修改成功");
         }
       }
     },
@@ -195,7 +195,7 @@ export default {
   }
 }
 
-</script> 
+</script>
 
 <style scoped lang="scss">
 .modal{

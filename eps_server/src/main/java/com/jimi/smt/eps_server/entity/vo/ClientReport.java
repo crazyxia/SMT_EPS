@@ -34,11 +34,11 @@ public class ClientReport{
 	public void setLine(String line) {
 		this.line = line;
 	}
-
+		
 	public String getMaterialDescription() {
 		return materialDescription;
 	}
-
+	
 	public void setMaterialDescription(String materialDescription) {
 		this.materialDescription = materialDescription;
 	}

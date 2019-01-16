@@ -18,6 +18,7 @@
   import Dashboard from './../../components/Dashboard'
   import BottomComp from './../../components/BottomComp'
   import SideComp from './../../components/SideComp'
+
   let debounce = require('lodash.debounce');
 
   export default {
@@ -32,46 +33,44 @@
       BottomComp,
       SideComp
     },
-    created(){
+    created() {
       this.initChart();
-      if(this.lines.length !== 0){
-        this.getData(this.mark,this.lines);
-        this.mark++;
-        
+      if (this.lines.length !== 0) {
+        this.getData(this.mark, this.lines);
       }
       window.mainInterval = setInterval(() => {
-          this.getData(this.mark,this.lines)
-          this.mark++;
-          if (this.mark === this.lineSize) {
-            this.mark = 0;
-          }
-        }, 6000);
+        this.mark++;
+        if (this.mark === this.lineSize) {
+          this.mark = 0;
+        }
+        this.getData(this.mark, this.lines);
+      }, 6000);
     },
     mounted() {
       let display = $('.display');
-      if(display.length>0){
+      if (display.length > 0) {
         this.pixelCalc();
         let that = this;
-        window.onresize = debounce(function (){
+        window.onresize = debounce(function () {
           that.pixelCalc()
         }, 200)
-      }else{
+      } else {
         document.getElementsByTagName('html')[0].style.fontSize = 18 + "px";
       }
     },
-    computed:{
-      lines:function(){
+    computed: {
+      lines: function () {
         return store.state.lines;
       },
-      lineSize:function(){
+      lineSize: function () {
         return store.state.lineSize;
       }
     },
-    methods:{
+    methods: {
       pixelCalc: function () {
         document.getElementsByTagName('html')[0].style.fontSize = (window.innerWidth / 1920) * 625 + '%'
       },
-      initChart:function(){
+      initChart: function () {
         Chart.pluginService.register({
           beforeRender: function (chart) {
             if (chart.config.options.showAllTooltips) {
@@ -93,10 +92,10 @@
           afterDraw: function (chart, easing) {
             if (chart.config.options.showAllTooltips) {
               if (!chart.allTooltipsOnce) {
-                if (easing !== 1)return;
+                if (easing !== 1) return;
                 chart.allTooltipsOnce = true;
               }
-              
+
               // turn on tooltips
               chart.options.tooltips.enabled = true;
               Chart.helpers.each(chart.pluginTooltips, function (tooltip) {
@@ -111,7 +110,7 @@
           }
         })
       },
-      getData:function(thisMark,lines){
+      getData: function (thisMark, lines) {
         let hourOptions = {
           url: getAllStatusDetails
         };
@@ -120,13 +119,13 @@
             store.commit('setAllDayData', {data: response.data})
           }
         }).catch(err => {
-          
+
         });
-            
+
         let lineOptions = {
           url: getLineData,
           data: {
-            line:lines[thisMark]
+            line: lines[thisMark].id
           }
         };
         axiosPost(lineOptions).then(response => {
@@ -134,7 +133,7 @@
             store.commit('setLineData', {data: response.data})
           }
         }).catch(err => {
-         
+
         });
       }
     }
@@ -143,9 +142,10 @@
 
 <style scoped>
   .display {
-    width:19.2rem;
+    width: 19.2rem;
     background: #333;
   }
+
   .up-container {
     display: flex;
   }

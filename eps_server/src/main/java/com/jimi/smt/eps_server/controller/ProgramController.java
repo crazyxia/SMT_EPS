@@ -16,16 +16,16 @@ import com.jimi.smt.eps_server.annotation.Log;
 import com.jimi.smt.eps_server.annotation.Open;
 import com.jimi.smt.eps_server.annotation.Role;
 import com.jimi.smt.eps_server.annotation.Role.*;
-import com.jimi.smt.eps_server.entity.Program;
-import com.jimi.smt.eps_server.entity.ProgramItem;
+import com.jimi.smt.eps_server.entity.Page;
 import com.jimi.smt.eps_server.entity.ProgramItemVisit;
-import com.jimi.smt.eps_server.entity.ResultJson;
 import com.jimi.smt.eps_server.entity.bo.EditProgramItemBO;
+import com.jimi.smt.eps_server.entity.vo.PageVO;
 import com.jimi.smt.eps_server.entity.vo.ProgramItemVO;
 import com.jimi.smt.eps_server.entity.vo.ProgramVO;
 import com.jimi.smt.eps_server.service.LineService;
 import com.jimi.smt.eps_server.service.ProgramService;
 import com.jimi.smt.eps_server.util.ResultUtil;
+import com.jimi.smt.eps_server.util.ResultUtil2;
 
 /**
  * 排位表控制器
@@ -41,14 +41,21 @@ public class ProgramController {
 	@Autowired
 	private LineService lineService;
 
+	
 	@Role({ RoleType.ENGINEER, RoleType.PRODUCER })
 	@ResponseBody
 	@RequestMapping("/list")
-	public List<ProgramVO> list(String programName, String fileName, String line, String workOrder, Integer state,
-			String ordBy) {
-		return programService.list(programName, fileName, line, workOrder, state, ordBy);
+	public PageVO<ProgramVO> list(String programName, String fileName, Integer line, String workOrder, Integer state, String ordBy, Integer currentPage, Integer pageSize) {
+		Page page = new Page();
+		page.setCurrentPage(currentPage);
+		page.setPageSize(pageSize);
+		PageVO<ProgramVO> pageVO = new PageVO<ProgramVO>();
+		pageVO.setPage(page);
+		pageVO.setList(programService.list(programName, fileName, line, workOrder, state, ordBy, page));
+		return pageVO;
 	}
 
+	
 	@Log
 	@Role(RoleType.PRODUCER)
 	@ResponseBody
@@ -65,6 +72,7 @@ public class ProgramController {
 		}
 	}
 
+	
 	@Log
 	@Role(RoleType.PRODUCER)
 	@ResponseBody
@@ -80,6 +88,7 @@ public class ProgramController {
 		}
 	}
 
+	
 	@Log
 	@Role(RoleType.ENGINEER)
 	@ResponseBody
@@ -95,6 +104,7 @@ public class ProgramController {
 		}
 	}
 
+	
 	@Role(RoleType.ENGINEER)
 	@ResponseBody
 	@RequestMapping("/listItem")
@@ -102,10 +112,11 @@ public class ProgramController {
 		if (id == null) {
 			ResultUtil.failed("参数不足");
 			return null;
-		}
-		return programService.listItem(id);
+		}	
+		return programService.listItem(id);		
 	}
 
+	
 	@Log
 	@Role(RoleType.ENGINEER)
 	@ResponseBody
@@ -131,6 +142,7 @@ public class ProgramController {
 		}
 	}
 
+	
 	@Log
 	@Role(RoleType.ENGINEER)
 	@ResponseBody
@@ -154,8 +166,7 @@ public class ProgramController {
 		} catch (IOException e) {
 			return ResultUtil.failed("上传失败，IO错误，请重试，或联系开发者", e);
 		} catch (RuntimeException e) {
-			return ResultUtil.failed("上传失败，解析文件时出错，请参考排位表标准格式规范：http://wx.jimi-iot.com/eps_server/static/standard.docx",
-					e);
+			return ResultUtil.failed("上传失败，解析文件时出错，请检查站位表内容是否为空或者内容填写错误", e);
 		}
 
 		// 结果检查
@@ -183,6 +194,7 @@ public class ProgramController {
 		}
 	}
 
+	
 	@Log
 	@Open
 	@ResponseBody
@@ -196,6 +208,8 @@ public class ProgramController {
 		}
 	}
 
+	
+	@Log
 	@Open
 	@ResponseBody
 	@RequestMapping("/operate")
@@ -210,6 +224,7 @@ public class ProgramController {
 		}
 	}
 
+	
 	@Log
 	@Open
 	@ResponseBody
@@ -223,62 +238,67 @@ public class ProgramController {
 		}
 	}
 
+	
 	@Open
 	@ResponseBody
 	@RequestMapping("/selectWorkingProgram")
-	public ResultJson selectWorkingProgram(String line) {
-		int result = lineService.selectLine(line);
-		ResultJson resultJson = new ResultJson();
-		if (result == 0) {
-			resultJson.setCode(0);
-			resultJson.setMsg("此线号不存在");
-			return resultJson;
+	public ResultUtil2 selectWorkingProgram(String line) {
+		ResultUtil2 resultUtil2 = new ResultUtil2();
+		if (lineService.getLineIdByName(line) == null) {
+			resultUtil2.setCode(0);
+			resultUtil2.setMsg("此线号不存在");
+			return resultUtil2;
 		}
-		List<Program> list = programService.selectWorkingProgram(line);
+		List<ProgramVO> list = programService.selectWorkingProgram(line);
 		if (list.size() == 0) {
-			resultJson.setCode(0);
-			resultJson.setMsg("此线号不存在工单");
+			resultUtil2.setCode(0);
+			resultUtil2.setMsg("此线号不存在工单");
 		} else {
-			resultJson.setCode(1);
-			resultJson.setMsg("此线号存在工单");
-			resultJson.setData(list);
+			resultUtil2.setCode(1);
+			resultUtil2.setMsg("此线号存在工单");
+			resultUtil2.setData(list);
 		}
-		return resultJson;
+		return resultUtil2;
 	}
 
+	
 	@Open
 	@ResponseBody
 	@RequestMapping("/selectProgramItem")
-	public ResultJson selectProgramItem(String programId) {
-		List<ProgramItem> list = programService.selectProgramItem(programId);
-		ResultJson resultJson = new ResultJson();
+	public ResultUtil2 selectProgramItem(String programId) {
+		List<ProgramItemVO> list = programService.listItem(programId);
+		ResultUtil2 resultUtil2 = new ResultUtil2();
 		if (list.size() == 0) {
-			resultJson.setCode(0);
-			resultJson.setMsg("工单不存在");
+			resultUtil2.setCode(0);
+			resultUtil2.setMsg("工单不存在");
 		} else {
-			resultJson.setCode(1);
-			resultJson.setMsg("工单存在");
-			resultJson.setData(list);
+			resultUtil2.setCode(1);
+			resultUtil2.setMsg("工单存在");
+			resultUtil2.setData(list);
 		}
-		return resultJson;
+		return resultUtil2;
 	}
 
+	
+	@Log
 	@Open
 	@ResponseBody
 	@RequestMapping("/updateItemVisit")
-	public ResultJson updateItemVisit(@RequestBody ProgramItemVisit programItemVisit) {
+	public ResultUtil2 updateItemVisit(@RequestBody ProgramItemVisit programItemVisit) {
 		int result = programService.updateItemVisit(programItemVisit);
-		ResultJson resultJson = new ResultJson();
+		ResultUtil2 resultUtil2 = new ResultUtil2();
 		if (result > 0) {
-			resultJson.setCode(1);
-			resultJson.setMsg("更新成功");
+			resultUtil2.setCode(1);
+			resultUtil2.setMsg("更新成功");
 		} else {
-			resultJson.setCode(0);
-			resultJson.setMsg("更新失败");
+			resultUtil2.setCode(0);
+			resultUtil2.setMsg("更新失败");
 		}
-		return resultJson;
+		return resultUtil2;
 	}
 
+	
+	@Log
 	@Open
 	@ResponseBody
 	@RequestMapping("/resetCheckAll")
@@ -294,6 +314,7 @@ public class ProgramController {
 		}
 	}
 
+	
 	@Open
 	@ResponseBody
 	@RequestMapping("/checkIsReset")
@@ -301,6 +322,7 @@ public class ProgramController {
 		return programService.checkIsReset(programId, type);
 	}
 
+	
 	@Open
 	@ResponseBody
 	@RequestMapping("/isAllDone")
@@ -308,6 +330,7 @@ public class ProgramController {
 		return programService.isAllDone(programId, type);
 	}
 
+	
 	@Open
 	@ResponseBody
 	@RequestMapping("/isChangeSucceed")
@@ -315,6 +338,7 @@ public class ProgramController {
 		return programService.isChangeSucceed(programId, lineseat);
 	}
 
+	
 	@Open
 	@ResponseBody
 	@RequestMapping("/selectWorkingOrder")
@@ -322,13 +346,15 @@ public class ProgramController {
 		return programService.selectWorkingOrder(line);
 	}
 
+	
 	@Open
 	@ResponseBody
 	@RequestMapping("/selectWorkingBoardType")
-	public List<String> selectWorkingBoardType(String line, String workOrder) {
+	public List<Integer> selectWorkingBoardType(String line, String workOrder) {
 		return programService.selectWorkingBoardType(line, workOrder);
 	}
 
+	
 	@Open
 	@ResponseBody
 	@RequestMapping("/selectItemVisitByProgram")
@@ -336,12 +362,14 @@ public class ProgramController {
 		return programService.selectItemVisitByProgram(line, workOrder, boardType);
 	}
 
+	
 	@Open
 	@ResponseBody
 	@RequestMapping("/selectLastOperatorByProgram")
 	public String selectLastOperatorByProgram(String line, String workOrder, Integer boardType) {
 		return programService.selectLastOperatorByProgram(line, workOrder, boardType);
 	}
+	
 	
 	@Open
 	@ResponseBody
@@ -352,5 +380,21 @@ public class ProgramController {
 			return ResultUtil.failed("fail");
 		}
 		return ResultUtil.succeed(result);
+	}
+	
+	
+	@Open
+	@ResponseBody
+	@RequestMapping("/getTimesTamp")
+	public long getTimesTamp() {
+		return programService.getCurrentTime().getTime();
+	}
+	
+	
+	@Open
+	@ResponseBody
+	@RequestMapping("/isCheckAllTimeOut")
+	public String isCheckAllTimeOut(String line, String workOrder, Integer boardType) {
+		return programService.isCheckAllTimeOut(line, workOrder, boardType);
 	}
 }

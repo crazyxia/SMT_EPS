@@ -14,7 +14,17 @@ public class OperationReportSummaryKey {
 	
 	protected String operator;
 	
+	protected String operationType;
 	
+	
+	public String getOperationType() {
+		return operationType;
+	}
+
+	public void setOperationType(String operationType) {
+		this.operationType = operationType;
+	}
+
 	public String getLine() {
 		return line;
 	}

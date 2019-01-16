@@ -13,6 +13,16 @@ public class OperationReportSummary {
 	protected String workOrderNo;
 
 	protected String operator;
+	
+	protected String operationType;
+
+	public String getOperationType() {
+		return operationType;
+	}
+
+	public void setOperationType(String operationType) {
+		this.operationType = operationType;
+	}
 
 	public String getLine() {
 		return line;
@@ -21,7 +31,7 @@ public class OperationReportSummary {
 	public void setLine(String line) {
 		this.line = line;
 	}
-
+	
 	public String getWorkOrderNo() {
 		return workOrderNo;
 	}

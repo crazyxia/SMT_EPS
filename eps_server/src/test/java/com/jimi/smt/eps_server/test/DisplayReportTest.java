@@ -16,7 +16,7 @@ public class DisplayReportTest extends BaseJunit4 {
 	public void list() {
 		for (int i = 0; i < 100; i++) {
 			long a = System.currentTimeMillis();
-			com.jimi.smt.eps_server.entity.vo.DisplayReport displayReport = operationService.listDisplayReport("308");
+			com.jimi.smt.eps_server.entity.vo.DisplayReport displayReport = operationService.listDisplayReport(1);
 			FieldUtil.print(displayReport);
 			long b = System.currentTimeMillis();
 			System.out.println(b - a + "毫秒");

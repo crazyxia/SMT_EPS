@@ -20,11 +20,13 @@ public class OperationReport{
 	private String materialDescription;
 	@Excel(col=5, head="物料规格")
 	private String materialSpecitification;
-	@Excel(col=6, head="操作者")
+	@Excel(col=6, head="操作类型")
+	private String operationType;
+	@Excel(col=7, head="操作者")
 	private String operator;
-	@Excel(col=7, head="操作结果")
+	@Excel(col=8, head="操作结果")
 	private String result;
-	@Excel(col=8, head="操作时间")
+	@Excel(col=9, head="操作时间")
 	private String time;
 	
 	
@@ -63,6 +65,12 @@ public class OperationReport{
 	}
 	public void setMaterialSpecitification(String materialSpecitification) {
 		this.materialSpecitification = materialSpecitification;
+	}
+	public String getOperationType() {
+		return operationType;
+	}
+	public void setOperationType(String operationType) {
+		this.operationType = operationType;
 	}
 	public String getOperator() {
 		return operator;

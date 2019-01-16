@@ -1,11 +1,10 @@
 import axios from 'axios';
-import Qs from 'qs';
 import store from "../store";
 import router from '../router';
 import {programFileUploadUrl,loginUrl,downloadClientReportUrl} from './globalUrl';
 
-axios.defaults.timeout = 5000;
-axios.defaults.baseURL = window.g.API_URL + '/eps_server/';
+// /*axios.defaults.timeout = 5000;
+// axios.defaults.baseURL = window.g.API_URL + '/eps_server/';*/
 
 axios.interceptors.request.use(
   config => {
@@ -21,7 +20,6 @@ axios.interceptors.request.use(
         } else {
           config.data += ("&#TOKEN#=" + store.state.token);
         }
-      //console.log(config)
       }
     }
     return config;
@@ -30,5 +28,21 @@ axios.interceptors.request.use(
     return Promise.reject(error)
   }
 );
-
+axios.interceptors.response.use(
+  res => {
+    if (res.data.result === "failed_access_denied"){
+      alert("权限不足");
+      store.commit('setDenied',true);
+    }else{
+      store.commit('setDenied',false);
+    }
+    return res
+  },
+  error => {
+    if (error.response) {
+      console.log(JSON.stringify(error))
+    }
+    return Promise.reject(JSON.stringify(error))
+  }
+);
 export default axios;

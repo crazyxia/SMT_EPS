@@ -19,13 +19,7 @@ import com.jimi.smt.eps_server.entity.vo.StockLogVO;
  * @author 沫熊工作室 <a href="http://www.darhao.cc">www.darhao.cc</a>
  */
 public interface OperationService {
-
-	/**
-	 * 根据条件列出客户报表
-	 * @return
-	 * @throws ParseException 
-	 */
-	List<ClientReport> listClientReport(String client, String programNo, String line, String orderNo, String workOrderNo, String startTime, String endTime) throws ParseException;
+		
 	
 	/**
 	 * 根据条件分页列出列表
@@ -39,29 +33,8 @@ public interface OperationService {
 	 * @return
 	 * @throws ParseException
 	 */
-	List<ClientReport> listClientReportByPage(String client, String programNo, String line, String orderNo, String workOrderNo, String startTime, String endTime, Page page) throws ParseException;
+	List<ClientReport> listClientReport(String client, String programNo, Integer line, String orderNo, String workOrderNo, String startTime, String endTime, Page page) throws ParseException;
 
-	/**
-	 * 根据条件生成并下载excel
-	 * @return
-	 * @throws ParseException 
-	 * @throws IOException 
-	 */
-	ResponseEntity<byte[]> downloadClientReport(String client, String programNo, String line, String orderNo, String workOrderNo, String startTime, String endTime) throws ParseException, IOException;
-
-	/**
-	 * 根据线号显示实时展示报表
-	 * @param line
-	 * @return
-	 */
-	DisplayReport listDisplayReport(String line);
-
-	/**
-	 * 根据条件列出操作报表
-	 * @return
-	 * @throws ParseException 
-	 */
-	List<OperationReport> listOperationReport(String operator, String client, String line, String workOrderNo, String startTime, String endTime , Integer type) throws ParseException;
 	
 	/**
 	 * 根据条件生成并下载excel
@@ -69,8 +42,34 @@ public interface OperationService {
 	 * @throws ParseException 
 	 * @throws IOException 
 	 */
-	ResponseEntity<byte[]> downloadOperationReport(String operator, String client, String line, String workOrderNo, String startTime, String endTime , Integer type) throws ParseException, IOException;
+	ResponseEntity<byte[]> downloadClientReport(String client, String programNo, Integer line, String orderNo, String workOrderNo, String startTime, String endTime, Page page) throws ParseException, IOException;
 
+	
+	/**
+	 * 根据线号显示实时展示报表
+	 * @param line
+	 * @return
+	 */
+	DisplayReport listDisplayReport(Integer line);
+
+	
+	/**
+	 * 根据条件列出操作报表
+	 * @return
+	 * @throws ParseException 
+	 */
+	List<OperationReport> listOperationReport(String operator, String client, Integer line, String workOrderNo, String startTime, String endTime , Integer type, Page page) throws ParseException;
+	
+	
+	/**
+	 * 根据条件生成并下载excel
+	 * @return
+	 * @throws ParseException 
+	 * @throws IOException 
+	 */
+	ResponseEntity<byte[]> downloadOperationReport(Integer line, String workOrderNo, String startTime, String endTime , Integer type, Page page) throws ParseException, IOException;
+
+	
 	/**
 	 * 根据条件列出操作报表概要（已按操作员+工单+线号折叠分组），按线号升序
 	 * @param line
@@ -81,7 +80,7 @@ public interface OperationService {
 	 * @return
 	 * @throws ParseException 
 	 */
-	List<OperationReportSummary> listOperationReportSummary(String line, String workOrderNo, String startTime, String endTime, Integer type) throws ParseException;
+	List<OperationReportSummary> listOperationReportSummary(Integer line, String workOrderNo, String startTime, String endTime, Integer type, Page page) throws ParseException;
 	
 	
 	/**
@@ -95,16 +94,17 @@ public interface OperationService {
 	 * @return
 	 * @throws ParseException 
 	 */
-	List<StockLogVO> listStockLogs(String operator, String materialNo, String custom, String position, String startTime, String endTime) throws ParseException;
+	List<StockLogVO> listStockLogs(String operator, String materialNo, String custom, String position, String startTime, String endTime, Page page) throws ParseException;
 	
 	
-	/**
+	/**@author HCJ
 	 * 添加操作日志
+	 * @method add
 	 * @param operation
 	 * @return
+	 * @return Integer
+	 * @date 2018年9月25日 下午4:29:03
 	 */
-	int add(Operation operation);
-	
-	
-	
+	Integer add(Operation operation);
+			
 }

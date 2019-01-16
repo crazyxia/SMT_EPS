@@ -23,43 +23,37 @@
     data() {
       return {
         mark: 0,
+        lData:[[],[],[],[],[],[],[],[]],
         updatedConfig: {
           name: '',
           data: this.lData,
           label: []
         },
+        xAxisCount:8,
       };
     },
     computed:{
-      xAxisCount:function(){
-        return store.state.lineSize
-      },
       lineSize:function(){
         return store.state.lineSize
-      },
-      lData:function(){
-        let lData = [];
-        for(let i=0;i<this.lineSize;i++){
-          let arr = [];
-          lData.push(arr);
-        }
-        return lData;
       }
     },
     mounted() {
-      let ctx = document.getElementById("dashboard-canvas");
-      let config = JSON.parse(JSON.stringify(getChartsConf('bar')));
-      let dashboardChart;
-      this.initData();
-      this.getLineData();
-      this.initChart(ctx, config, this.updatedConfig).then((val) => {
+      this.$nextTick(() => {
+       let ctx = document.getElementById("dashboard-canvas");
+       let config = JSON.parse(JSON.stringify(getChartsConf('bar')));
+       let dashboardChart;
+       this.initData();
+       this.getLineData();
+       this.initChart(ctx, config, this.updatedConfig).then((val) => {
         dashboardChart = val
       });
-      this.myInterval = setInterval(() => {
+       this.myInterval = setInterval(() => {
         this.initData();
         this.getLineData();
         this.updateChart(dashboardChart);
       }, 12000)
+     })
+
 
     },
     methods: {
@@ -83,7 +77,7 @@
       },
       updateChart: function (chart) {
         chart.options.title.text = this.updatedConfig.name;
-        for (let i = 0; i < this.lineSize; i++) {
+        for (let i = 0; i < this.xAxisCount; i++) {   // 改过
           chart.data.datasets[i].data = this.updatedConfig.data[i]
         }
         chart.data.labels = this.updatedConfig.label;
@@ -114,57 +108,57 @@
 </script>
 
 <style scoped>
-  .dashboard {
-    position: relative;
-    width: 14.4rem;
-    height: 7.2rem;
-    background-color: #333;
-  }
+.dashboard {
+  position: relative;
+  width: 14.4rem;
+  height: 7.2rem;
+  background-color: #333;
+}
 
-  .dashboard-wrap {
-    position: absolute;
-    background-color: #333333;
-    width: 14rem;
-    height: 6.8rem;
-    margin: 0.2rem 0.15rem;
-    box-shadow: #222 0.05rem 0.05rem 0.5rem;
-  }
+.dashboard-wrap {
+  position: absolute;
+  background-color: #333333;
+  width: 14rem;
+  height: 6.8rem;
+  margin: 0.2rem 0.15rem;
+  box-shadow: #222 0.05rem 0.05rem 0.5rem;
+}
 
-  #main-title {
-    position: absolute;
-    width: 14rem;
-    height: 1rem;
-    color: #fff;
-    font-size: 0.16rem;
-    background: #0FD2FE;
-    box-shadow: #222 0.02rem 0 0.5rem;
-  }
+#main-title {
+  position: absolute;
+  width: 14rem;
+  height: 1rem;
+  color: #fff;
+  font-size: 0.16rem;
+  background: #0FD2FE;
+  box-shadow: #222 0.02rem 0 0.5rem;
+}
 
-  #main-title * {
-    margin: 0;
-  }
+#main-title * {
+  margin: 0;
+}
 
-  #main-title p{
-    text-align: center;
-  }
+#main-title p{
+  text-align: center;
+}
 
-  #main-title p:first-child{
-     margin: 0.2rem 0 0.1rem;
-     font-size:0.28rem;
+#main-title p:first-child{
+ margin: 0.2rem 0 0.1rem;
+ font-size:0.28rem;
 
-  }
-  
-  .dashboard-canvas-container {
-    position: relative;
-    display: flex;
-    margin-top: 1.2rem;
-    height: 5.4rem;
-    width: 14rem;
-    justify-content: space-around;
-  }
+}
 
-  .dashboard-canvas-content {
-    width: 13.6rem;
-    height: 5.4rem;
-  }
+.dashboard-canvas-container {
+  position: relative;
+  display: flex;
+  margin-top: 1.2rem;
+  height: 5.4rem;
+  width: 14rem;
+  justify-content: space-around;
+}
+
+.dashboard-canvas-content {
+  width: 13.6rem;
+  height: 5.4rem;
+}
 </style>

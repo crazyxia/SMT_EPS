@@ -1,17 +1,18 @@
 package com.jimi.smt.eps_server.entity.filler;
 
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.jimi.smt.eps_server.entity.Line;
 import com.jimi.smt.eps_server.entity.Operation;
 import com.jimi.smt.eps_server.entity.ProgramItem;
+import com.jimi.smt.eps_server.entity.ProgramItemExample;
 import com.jimi.smt.eps_server.entity.vo.OperationReport;
+import com.jimi.smt.eps_server.mapper.LineMapper;
 import com.jimi.smt.eps_server.mapper.ProgramItemMapper;
 import com.jimi.smt.eps_server.util.EntityFieldFiller;
 
@@ -20,20 +21,31 @@ public class OperationToOperationReportFiller extends EntityFieldFiller<Operatio
 
 	@Autowired
 	private ProgramItemMapper programItemMapper;
+	@Autowired
+	private LineMapper lineMapper;
 	
-	private List<ProgramItem> programItems;
-	private Map<String, ProgramItem> programItemMaps = new HashMap<>();
+//	private List<ProgramItem> programItems;
+//	
+//	private Map<String, ProgramItem> programItemMaps;
+//	
+//	
+//	public void init() {
+//		programItemMaps = new HashMap<>();
+//		programItems = programItemMapper.selectByExample(null);
+//		for (ProgramItem programItem : programItems) {
+//			programItemMaps.put(programItem.getProgramId() + programItem.getLineseat() + programItem.getMaterialNo(), programItem);
+//		}
+//	}
+//	
+//	
+//	public void destroy() {
+//		programItems = null;
+//		programItemMaps = null;
+//	}
+
 	
-	synchronized public void init() {
-		programItems = programItemMapper.selectByExample(null);
-		
-		for (ProgramItem programItem : programItems) {
-			programItemMaps.put(programItem.getProgramId()+programItem.getLineseat()+programItem.getMaterialNo(), programItem);
-		}
-	}
-		
 	@Override
-	public OperationReport fill(Operation operation) {
+	public OperationReport fill(Operation operation) {		
 		OperationReport operationReport = new OperationReport();
 		//拷贝相同属性
 		BeanUtils.copyProperties(operation, operationReport);
@@ -42,12 +54,24 @@ public class OperationToOperationReportFiller extends EntityFieldFiller<Operatio
 		
 		String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(operation.getTime());
 		operationReport.setTime(time);
+		Line line = lineMapper.selectByPrimaryKey(operation.getLine());
+		if(line != null) {
+			operationReport.setLine(line.getLine());
+		}		
 		//匹配程序表子项目和操作日志
-		String key = operation.getProgramId()+operation.getLineseat()+operation.getMaterialNo();
-		ProgramItem programItem = programItemMaps.get(key);
+//		String key = operation.getProgramId()+operation.getLineseat()+operation.getMaterialNo();
+		List<ProgramItem> programItems;
+		ProgramItemExample programItemExample = new ProgramItemExample();
+		programItemExample.createCriteria()
+			.andProgramIdEqualTo(operation.getProgramId())
+			.andLineseatEqualTo(operation.getLineseat())
+			.andMaterialNoEqualTo(operation.getMaterialNo());
+		programItems = programItemMapper.selectByExample(programItemExample);
+//		ProgramItem programItem = programItemMaps.get(key);
 		
-		if (programItem != null) {
+		if (programItems != null && !programItems.isEmpty()) {
 			//解析料描述和料规格
+			ProgramItem programItem = programItems.get(0);
 			String specitification = programItem.getSpecitification();
 			try {
 				String materialDescription = specitification.substring(0, specitification.indexOf(","));
@@ -65,6 +89,29 @@ public class OperationToOperationReportFiller extends EntityFieldFiller<Operatio
 				operationReport.setMaterialSpecitification(specitification);
 			}	
 		}
+		//解析操作类型
+				switch (operation.getType()) {
+				case 0:
+					operationReport.setOperationType("上料");
+					break;
+				case 1:
+					operationReport.setOperationType("换料");
+					break;
+				case 2:
+					operationReport.setOperationType("核料");
+					break;
+				case 3:
+					operationReport.setOperationType("全检");
+					break;
+				case 4:
+					operationReport.setOperationType("发料");
+					break;
+				case 5:
+					operationReport.setOperationType("首检");
+					break;
+				default:
+					break;
+				}
 		
 		return operationReport;
 	}

@@ -12,7 +12,8 @@ public interface StatusService {
 	 * @param Line
 	 * @return
 	 */
-	public StatusDetailsVO ListStatusDetailsByHour(String Line);
+	public StatusDetailsVO ListStatusDetailsByHour(Integer Line);
+	
 	
 	/**
 	 * 查询每条产线近24小时的操作数据，按产线分类，并进行统计

@@ -9,7 +9,7 @@ import {axiosPost} from "./../../../../../utils/fetchData"
 import {operationReportListUrl} from "./../../../../../config/globalUrl"
 export default {
   name:'operationDetailTable',
-  props:['operationInfos'],
+  props:['item'],
   data: () => ({
     columns: [
       { title:'站位', field:'lineseat',colStyle: {'width': '80px'}},
@@ -31,10 +31,32 @@ export default {
       'table-layout': 'fixed',
       'color':'#666',
       'text-align':'center'
-    }
+    },
+    currentPage:1,
+    pageSize:20
   }),
-  mounted(){
-    this.getList();
+  computed:{
+    operationInfos:function(){
+      let obj = {
+        type:this.item.type,
+        operator:this.item.operator,
+        workOrderNo:this.item.workOrderNo,
+        startTime:this.item.startTime,
+        endTime:this.item.endTime,
+        currentPage:this.currentPage,
+        pageSize:this.pageSize
+      };
+      for(let i = 0;i<this.lines.length;i++){
+        if(this.item.line === this.lines[i].line){
+          obj["line"] = this.lines[i].id;
+          break;
+        }
+      }
+      return obj;
+    },
+    lines: function () {
+      return store.state.lines;
+    },
   },
   watch: {
     query: {
@@ -46,14 +68,19 @@ export default {
   },
   methods:{
     fetchData:function(options){
-      let that = this;
+
       axiosPost(options).then(response => {
         store.commit("setLoading",false);
         if (response.data) {
-          let result = response.data;
-          that.total = result.length;
-          store.commit("setOperationList",result);
-          that.filterData(that.query);
+          if( response.data.list){
+            let result = response.data.list;
+            let page = response.data.page;
+            this.total = page.totallyData;
+            this.currentPage = page.currentPage;
+            this.pageSize = page.pageSize;
+            store.commit("setOperationList",result);
+            this.data = result;
+          }
         }
       }).catch(err => {
         store.commit("setLoading",false);
@@ -66,12 +93,14 @@ export default {
         url:operationReportListUrl,
         data:this.operationInfos
       }
+      options.data["currentPage"] = this.currentPage;
+      options.data["pageSize"] = this.pageSize;
       this.fetchData(options);
     },
     filterData:function(query){
-      let list = store.state.operationList;
-      let dataShow = list.slice(query.offset,query.offset+query.limit);
-      this.data =dataShow;
+      this.pageSize = query.limit;
+      this.currentPage = query.offset / query.limit + 1;
+      this.getList();
     }
   }
 }

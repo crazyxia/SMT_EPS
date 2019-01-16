@@ -3,6 +3,7 @@ package com.jimi.smt.eps_server.service;
 import java.util.List;
 
 import com.jimi.smt.eps_server.entity.MaterialInfo;
+import com.jimi.smt.eps_server.entity.Page;
 
 public interface MaterialService {
 	
@@ -14,6 +15,7 @@ public interface MaterialService {
 	 */
 	public String add(String materialNo, Integer perifdOfValidity);
 	
+	
 	/**
 	 * 修改对应id的物料保质期信息
 	 * @param id
@@ -21,7 +23,8 @@ public interface MaterialService {
 	 * @param perifdOfValidity
 	 * @return
 	 */
-	public String update(Integer id, String materialNo, Integer perifdOfValidity);
+	public String update(Integer id, Integer perifdOfValidity);
+	
 	
 	/**
 	 * 根据id删除物料保质期信息
@@ -29,6 +32,7 @@ public interface MaterialService {
 	 * @return
 	 */
 	public String delete(Integer id);
+	
 	
 	/**
 	 * 根据条件列出物料保质期信息
@@ -40,5 +44,6 @@ public interface MaterialService {
 	 * @param orderBy
 	 * @return
 	 */
-	public List<MaterialInfo> list(Integer id, String materialNo, Integer perifdOfValidity, String orderBy);
+	public List<MaterialInfo> list(Integer id, String materialNo, Integer perifdOfValidity, String orderBy, Page page);
+
 }

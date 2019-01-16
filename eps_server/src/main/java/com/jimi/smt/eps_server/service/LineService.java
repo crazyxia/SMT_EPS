@@ -4,39 +4,54 @@ import java.util.List;
 
 import com.jimi.smt.eps_server.entity.Line;
 
+/**产线服务接口
+ * @package  com.jimi.smt.eps_server.service
+ * @file     LineService.java
+ * @author   HCJ
+ * @date     2018年9月25日 下午4:26:46
+ * @version  V 1.0
+ */
 public interface LineService {
 	
-	/**
-	 * 根据id返回线别
+	/**@author HCJ
+	 * 根据产线id返回产线名称
+	 * @method getLineNameById
 	 * @param id
-	 * @return 
-	 */
-	String getLineById(int id);
-	
-	/**
-	 * 列出所有线别
-	 * @return 
-	 */
-	List<Line> list();
-	
-	/**
-	 * 返回线别数量
-	 * @return 
-	 */
-	long getLineNum();
-	
-	/**
-	 * 返回所有产线的集合
 	 * @return
+	 * @return String
+	 * @date 2018年9月25日 下午4:27:02
 	 */
-	List<String> selectAll();
+	String getLineNameById(int id);
 	
-	/**
-	 * 返回是否有这条产线的结果
+	
+	/**@author HCJ
+	 * 根据产线名称返回产线id
+	 * @method getLineIdByName
 	 * @param line
 	 * @return
+	 * @return Integer
+	 * @date 2018年9月21日 上午10:46:23
 	 */
-	int selectLine(String line);
+	Integer getLineIdByName(String line);
+			
 	
-
+	/**@author HCJ
+	 * 返回线别数量
+	 * @method countLineNum
+	 * @return
+	 * @return long
+	 * @date 2018年9月25日 下午4:27:56
+	 */
+	long countLineNum();
+	
+		
+	/**@author HCJ
+	 * 返回所有产线
+	 * @method selectAll
+	 * @return
+	 * @return List<Line>
+	 * @date 2018年9月25日 下午4:28:31
+	 */
+	List<Line> selectAll();			
+	
 }

@@ -1,18 +1,20 @@
 package com.jimi.smt.eps_server.service.impl;
 
-import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.jimi.smt.eps_server.entity.Page;
 import com.jimi.smt.eps_server.entity.User;
 import com.jimi.smt.eps_server.entity.UserExample;
 import com.jimi.smt.eps_server.entity.UserExample.Criteria;
 import com.jimi.smt.eps_server.entity.filler.UserToUserVOFiller;
 import com.jimi.smt.eps_server.entity.vo.UserVO;
 import com.jimi.smt.eps_server.mapper.UserMapper;
+import com.jimi.smt.eps_server.service.ProgramService;
 import com.jimi.smt.eps_server.service.UserService;
+import com.jimi.smt.eps_server.util.SqlUtil;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -21,6 +23,9 @@ public class UserServiceImpl implements UserService {
 	private UserMapper userMapper;
 	@Autowired
 	private UserToUserVOFiller filler;
+	@Autowired
+	private ProgramService programService;
+	
 	
 	@Override
 	public String add(String id, Integer classType, String name, Integer type, String password) {
@@ -31,8 +36,8 @@ public class UserServiceImpl implements UserService {
 		user.setId(id);
 		user.setName(name);
 		user.setType(type);
-		user.setPassword(password);
-		user.setCreateTime(new Date());
+		user.setPassword("".equals(password) ? null : password);
+		user.setCreateTime(programService.getCurrentTime());
 		user.setClassType(classType);
 		if(userMapper.insertSelective(user) == 1) {
 			return "succeed";
@@ -40,16 +45,17 @@ public class UserServiceImpl implements UserService {
 		return "failed_unknown";
 	}
 
+	
 	@Override
 	public String update(String id, Integer classType, String name, Integer type, String password, Boolean enabled) {
 		if(userMapper.selectByPrimaryKey(id) == null) {
 			return "failed_not_found";
 		}
 		User user = new User();
-		user.setId(id.equals("") ? null : id);
-		user.setName(name.equals("") ? null : name);
+		user.setId("".equals(id) ? null : id);
+		user.setName("".equals(name) ? null : name);
 		user.setType(type);
-		user.setPassword(password);
+		user.setPassword("".equals(password) ? null : password);
 		user.setEnabled(enabled);
 		user.setClassType(classType);
 		if(userMapper.updateByPrimaryKeySelective(user) == 1){
@@ -58,15 +64,16 @@ public class UserServiceImpl implements UserService {
 		return "failed_unknown";
 	}
 
+	
 	@Override
-	public List<UserVO> list(String id, Integer classType, String name, Integer type, String orderBy, Boolean enabled) {
+	public List<UserVO> list(String id, Integer classType, String name, Integer type, String orderBy, Boolean enabled, Page page) {
 		UserExample userExample = new UserExample();
 		Criteria criteria = userExample.createCriteria();
-		if(id != null && !id.equals("")) {
-			criteria.andIdLike(id);
+		if (id != null && !id.equals("")) {
+			criteria.andIdLike("%" + SqlUtil.escapeParameter(id) + "%");
 		}
-		if(name != null && !name.equals("")) {
-			criteria.andNameLike(name);
+		if (name != null && !name.equals("")) {
+			criteria.andNameLike("%" + SqlUtil.escapeParameter(name) + "%");
 		}
 		if(type != null) {
 			criteria.andTypeEqualTo(type);
@@ -78,16 +85,16 @@ public class UserServiceImpl implements UserService {
 			criteria.andClassTypeEqualTo(classType);
 		}
 		userExample.setOrderByClause(orderBy);
+		if(page != null) {
+			page.setTotallyData(userMapper.countByExample(userExample));
+			userExample.setLimitStart(page.getFirstIndex());
+			userExample.setLimitSize(page.getPageSize());
+		}
 		return filler.fill(userMapper.selectByExample(userExample));
 	}
 
+			
 	@Override
-	public User login(String id, String password) {
-		User user = userMapper.selectByPrimaryKey(id);
-		//return filler.fill(user).getTypeName();
-		return user;
-	}
-	
 	public User selectUserById(String id) {	
 		return userMapper.selectByPrimaryKey(id);		
 	}

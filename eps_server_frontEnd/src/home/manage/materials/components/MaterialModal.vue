@@ -12,11 +12,11 @@
           <form class="form" role="form">
             <div class="form-group">
               <label for="materialNo">料号</label>
-              <input type="text" class="form-control" id="materialNo" v-model="modalInfo.materialNo">
+              <input type="text" class="form-control" id="materialNo" v-model.trim="modalInfo.materialNo" :disabled="isDisabled">
             </div>
             <div class="form-group">
               <label for="perifdOfValidity">保质期(天)</label>
-              <input type="text" class="form-control" id="perifdOfValidity" v-model="modalInfo.perifdOfValidity">
+              <input type="text" class="form-control" id="perifdOfValidity" v-model.trim="modalInfo.perifdOfValidity">
             </div>
           </form>  
         </div>
@@ -38,44 +38,44 @@ export default {
   name:'materialModal',
   data () {
     return {
-
+      isDisabled:false
     }
   },
   computed:{
     message:function(){
       let operationType = store.state.materialOperationType;
-      if(operationType == "update"){
+      if(operationType === "update"){
+        this.isDisabled = true;
         return "修改信息";
-      }else if(operationType == "add"){
+      }else if(operationType === "add"){
+        this.isDisabled = false;
         return "添加信息";
       }
     },
     modalInfo:function(){
-      return store.state.material;
+      let material = store.state.material;;
+      let obj = {};
+      obj.id = material.id;
+      obj.materialNo = material.materialNo;
+      obj.perifdOfValidity =material.perifdOfValidity;
+      return obj;
     },
     isAdd:function(){
       return store.state.isAdd;
     },
     isUpdate:function(){
       return store.state.isUpdate;
-    },
-    token:function(){
-      let token = store.state.token;
-      if(token == ""){
-        token = window.localStorage.getItem("token");
-      }
-      return token;
     }
   },
   watch:{
     isAdd:function(val){
-      if(val == true){
+      if(val === true){
         store.commit("setIsAdd",false);
         $('#myModal').modal({backdrop:'static', keyboard: false});
       }
     },
     isUpdate:function(val){
-      if(val == true){
+      if(val === true){
         store.commit("setIsUpdate",false);
         $('#myModal').modal({backdrop:'static', keyboard: false});
       }
@@ -93,7 +93,7 @@ export default {
       axiosPost(options).then(response => {
         if (response.data) {
           let result = response.data.result;
-          if(result == "succeed"){
+          if(result === "succeed"){
             alert("添加成功");
             let infos = {
               materialNo:"",
@@ -116,12 +116,11 @@ export default {
           materialNo:this.modalInfo.materialNo,
           perifdOfValidity:this.modalInfo.perifdOfValidity,
         }
-      }
-      let that = this;
+      };
       axiosPost(options).then(response => {
         if (response.data) {
           let result = response.data.result;
-          if(result == "succeed"){
+          if(result === "succeed"){
             alert("修改成功");
             $('#myModal').modal('hide');
             store.commit("setIsRefresh",true);
@@ -136,9 +135,9 @@ export default {
     save:function(){
       if(materialTip(this.modalInfo)){
         let operationType = store.state.materialOperationType;
-        if(operationType == "add"){
+        if(operationType === "add"){
           this.add();
-        }else if(operationType == "update"){
+        }else if(operationType === "update"){
           this.update();
         }
       }

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.jimi.smt.eps_server.entity.Line;
+import com.jimi.smt.eps_server.entity.LineExample;
 import com.jimi.smt.eps_server.mapper.LineMapper;
 import com.jimi.smt.eps_server.service.LineService;
 
@@ -14,39 +15,41 @@ public class LineServiceImpl implements LineService {
 	
 	@Autowired
 	private LineMapper lineMapper;
-		
-	@Override
-	public List<Line> list() {
-		return lineMapper.selectByExample(null);
-	}
+					
 	
 	@Override
-	public String getLineById(int id) {
-		return lineMapper.selectByPrimaryKey(id+1).getLine();		
+	public String getLineNameById(int id) {
+		Line line = lineMapper.selectByPrimaryKey(id);
+		if(line == null) {
+			return null;
+		}
+		return line.getLine();
+	}
+	
+	
+	@Override
+	public Integer getLineIdByName(String line) {
+		LineExample lineExample = new LineExample();
+		lineExample.createCriteria().andLineEqualTo(line);
+		List<Line> lines = lineMapper.selectByExample(lineExample);
+		if(lines.isEmpty()) {
+			return null;
+		}
+		return lines.get(0).getId();
 	}
 
+	
 	@Override
-	public long getLineNum() {
+	public long countLineNum() {
 		return lineMapper.countByExample(null);
 	}
 
-	@Override
-	public List<String> selectAll() {
-		return lineMapper.selectAll();
-	}
-
-	@Override
-	public int selectLine(String line) {
-		List<String> lines = lineMapper.selectAll();
-		int result = 0;
-		for (int i = 0; i < lines.size(); i++) {
-			if (!lines.get(i).equals("") && lines.get(i).equals(line)) {
-				result = 1;
-				break;
-			}
-		}
-		return result;
-	}
 	
-
+	@Override
+	public List<Line> selectAll() {
+		LineExample lineExample = new LineExample();
+		lineExample.setOrderByClause("id asc");
+		return lineMapper.selectByExample(lineExample);
+	}		
+		
 }

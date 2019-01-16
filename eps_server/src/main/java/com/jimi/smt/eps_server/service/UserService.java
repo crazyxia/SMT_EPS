@@ -2,6 +2,7 @@ package com.jimi.smt.eps_server.service;
 
 import java.util.List;
 
+import com.jimi.smt.eps_server.entity.Page;
 import com.jimi.smt.eps_server.entity.User;
 import com.jimi.smt.eps_server.entity.vo.UserVO;
 
@@ -22,6 +23,7 @@ public interface UserService {
 	 */
 	String add(String id, Integer classType, String name, Integer type, String password);
 	
+	
 	/**
 	 * 修改指定工号的用户信息
 	 * @param id
@@ -34,6 +36,7 @@ public interface UserService {
 	 */
 	String update(String id, Integer classType, String name, Integer type, String password, Boolean enabled);
 
+	
 	/**
 	 * 根据条件列出用户
 	 * 前三个为查询条件，多选为求交集；
@@ -54,22 +57,16 @@ public interface UserService {
 	 * @param enabled
 	 * @return
 	 */
-	List<UserVO> list(String id, Integer classType, String name, Integer type, String orderBy, Boolean enabled);
+	List<UserVO> list(String id, Integer classType, String name, Integer type, String orderBy, Boolean enabled, Page page);
+				
 	
 	/**
 	 * 使用管理员id以及对应的密码进行登录（如果有），
 	 * 只有登录成功后才能使用其他接口，
 	 * 否则调用其他接口时会返回failed_access_denied
 	 * @param id
-	 * @param password
-	 * @return
-	 */
-	User login(String id, String password);
-	
-	/**
-	 * 通过id返回用户对象
-	 * @param id
 	 * @return
 	 */
 	User selectUserById(String id);
+	
 }

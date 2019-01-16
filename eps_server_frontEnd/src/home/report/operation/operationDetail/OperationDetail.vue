@@ -4,22 +4,22 @@
       <span title="返回" @click="returnToOperationReport"><icon name="returnB" scale="4"></icon></span>
       <div class="form-group">
         <label for="line">线号</label>
-        <input type="text" class="form-control" id="line" disabled="disabled" v-model="item.line">
+        <input type="text" class="form-control" id="line" disabled="disabled" v-model.trim="item.line">
       </div>
       <div class="form-group">
         <label for="workOrderNo">工单号</label>
-        <input type="text" class="form-control" id="workOrderNo" v-model="item.workOrderNo" disabled="disabled">
+        <input type="text" class="form-control" id="workOrderNo" v-model.trim="item.workOrderNo" disabled="disabled">
       </div>
       <div class="form-group">
         <label for="operator">操作员</label>
-        <input type="text" class="form-control" id="operator" disabled="disabled" v-model="item.operator">
+        <input type="text" class="form-control" id="operator" disabled="disabled" v-model.trim="item.operator">
       </div>
       <div class="form-group">
         <label for="type">操作类型</label>
-        <input type="text" class="form-control" id="type" disabled="disabled" v-model="item.typeName">
+        <input type="text" class="form-control" id="type" disabled="disabled" v-model.trim="item.operationType">
       </div>
     </form>
-    <OperationDetailTable :operationInfos="operationInfos"></OperationDetailTable>
+    <OperationDetailTable :item="item"></OperationDetailTable>
   </div>
 </template>
 
@@ -28,9 +28,9 @@ import OperationDetailTable from './components/OperationDetailTable'
 import store from './../../../../store'
 export default {
   name:'operationDetail',
-  props:['operationInfos'],
   data () {
     return {
+
     }
   },
   components:{
@@ -43,7 +43,7 @@ export default {
   },
   methods:{
     returnToOperationReport:function(){
-      store.commit("setOperationDetailShow",false);
+      store.commit("setOperationDetailShow",true);
     }
   }
 }
@@ -72,10 +72,10 @@ export default {
         input[id="line"]{
           width:100px;
         }
-        input[id="work_order"]{
-          width:400px;
+        input[id="workOrderNo"]{
+          width:300px;
         }
-      }     
+      }
     }
   }
 </style>

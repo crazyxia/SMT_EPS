@@ -3,24 +3,24 @@
     <form class="form-inline" role="form">
       <div class="form-group">
         <label for="position">仓位</label>
-        <input type="text" class="form-control" id="position" v-model="io.position"> 
+        <input type="text" class="form-control" id="position" v-model.trim="io.position">
       </div>
       <div class="form-group">
         <label for="custom">供应商</label>
-        <input type="text" class="form-control" id="custom" v-model="io.custom">
+        <input type="text" class="form-control" id="custom" v-model.trim="io.custom">
       </div>
       <div class="form-group">
         <label for="operator">操作员</label>
-        <input type="text" class="form-control" id="operator" v-model="io.operator">
+        <input type="text" class="form-control" id="operator" v-model.trim="io.operator">
       </div>
       <div class="form-group">
         <label for="materialNo">料号</label>
-        <input type="text" class="form-control" id="materialNo" v-model="io.materialNo">
+        <input type="text" class="form-control" id="materialNo" v-model.trim="io.materialNo">
       </div>
       <div class="form-group">
         <label for="time">起止时间</label>
-        <input type="date" class="form-control" id="startTime" v-model="sTime">
-        <input type="date" class="form-control" id="endTime" v-model="eTime">
+        <input type="date" class="form-control" id="startTime" v-model.trim="sTime">
+        <input type="date" class="form-control" id="endTime" v-model.trim="eTime">
       </div>
       <div class="btn-group">
         <button type="button" class="btn btn_find" @click="find">查询</button>
@@ -78,5 +78,5 @@ export default {
 </script> 
 
 <style scoped lang="scss">
-@import './../../../../static/css/common.scss'
+@import '@/assets/css/common.scss';
 </style>

@@ -5,7 +5,6 @@
 </template>
 <script>
 import store from './../../../../store'
-import {clientTip} from "./../../../../utils/formValidate"
 import {axiosPost} from "./../../../../utils/fetchData"
 import {clientReportListUrl} from "./../../../../config/globalUrl"
 export default {
@@ -26,10 +25,9 @@ export default {
     HeaderSettings:false,
     fixHeaderAndSetBodyMaxHeight:700,
     data: [],
-    pageSizeOptions:[30],
     total:0,
     tblClass: 'table-bordered',
-    query: {"limit":30, "offset": 0},
+    query: {"limit":20, "offset": 0},
     tblStyle: {
       'padding':'10px 0',
       'word-break': 'break-all',
@@ -38,7 +36,8 @@ export default {
       'text-align':'center'
     },
     page:{},
-    currentPage:0
+    currentPage:1,
+    pageSize:20
   }),
   computed:{
     clientList:function(){
@@ -51,34 +50,39 @@ export default {
   watch: {
     query: {
       handler (query) {
-        if(query.offset != 0){
           this.filterData(query);
-        }
       },
       deep: true
     },
     isFind:function(val){
-      if(val == true){
+      if(val === true){
+        this.currentPage = 1;
+        this.pageSize = 20;
+        this.query.limit = 20;
+        this.query.offset = 0;
         store.commit("setIsFind",false);
         this.getList();
       }
     },
     page:function(val){
-      if(val!={}){
+      if(val!=={} && val !== undefined){
         this.currentPage = this.page.currentPage;
+        this.pageSize = this.page.pageSize;
         this.total = this.page.totallyData;
       }
     }
   },
   methods:{
     fetchData:function(options){
-      let that = this;
       axiosPost(options).then(response => {
         store.commit("setLoading",false);
         if (response.data) {
           let result = response.data;
-          that.page = result.page;
-          that.data = result.list;
+          if(result.page && result.list){
+            this.page = result.page;
+            this.data = result.list;
+            this.$emit('getDownloadInfo',result.page.currentPage,result.page.pageSize,this.clientInfos);
+          }
           store.commit("setLoading",false);
         }
       }).catch(err => {
@@ -91,13 +95,14 @@ export default {
       let options = {
         url:clientReportListUrl,
         data:this.clientInfos
-      }
+      };
       options.data["currentPage"]=this.currentPage;
+      options.data["pageSize"]=this.pageSize;
       this.fetchData(options);
     },
     filterData:function(query){
-      let index = query.offset / query.limit+1;
-      this.currentPage = index;
+      this.pageSize = query.limit;
+      this.currentPage = query.offset / query.limit + 1;
       this.getList();
     }
   }

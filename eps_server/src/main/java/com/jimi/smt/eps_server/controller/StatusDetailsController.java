@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.jimi.smt.eps_server.annotation.Log;
 import com.jimi.smt.eps_server.annotation.Open;
 import com.jimi.smt.eps_server.entity.StatusDetail;
 import com.jimi.smt.eps_server.entity.vo.StatusDetailsVO;
@@ -21,12 +22,15 @@ public class StatusDetailsController {
 	
 	@Autowired
 	StatusService statusService;
+	
+	
 	@Open
 	@ResponseBody
 	@RequestMapping("/getStatusDetails")
-	public StatusDetailsVO ListStatusDetailsByHour(String line) {
+	public StatusDetailsVO ListStatusDetailsByHour(Integer line) {
 		return statusService.ListStatusDetailsByHour(line);
 	}
+	
 	
 	@Open
 	@ResponseBody

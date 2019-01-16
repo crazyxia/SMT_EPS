@@ -21,7 +21,7 @@ export const setInitialTime = function(startTime,endTime) {
 }
 
 
-export const checkTime = function(startTime,endTime){
+export const checkClientTime = function(startTime,endTime){
     //开始和结束时间都有输入时进行判断
     if (startTime != "" && endTime != "") {
         let aa = startTime.split("-");
@@ -34,17 +34,40 @@ export const checkTime = function(startTime,endTime){
         }
         fromDate = parseInt(fromDate);
         toDate = parseInt(toDate);
-        if (fromDate > toDate) {
+        if (fromDate > toDate || fromDate === 0 || toDate === 0) {
             alert("时间输入错误！请重新输入");
             startTime = "";
             endTime = "";
             return false;
-        }else if((toDate - fromDate)>100 || (toDate - fromDate)>8900){
-            alert("时间范围太大，请重新选择时间，时间区间规定在一个月内");
-            return false;
         }
     }
     return true;
+}
+
+export const checkOperationTime = function(startTime,endTime){
+  //开始和结束时间都有输入时进行判断
+  if (startTime != "" && endTime != "") {
+    let aa = startTime.split("-");
+    let bb = endTime.split("-");
+    let fromDate = "";
+    let toDate = "";
+    for(let i = 0; i < aa.length; i++) {
+      fromDate += aa[i];
+      toDate += bb[i];
+    }
+    fromDate = parseInt(fromDate);
+    toDate = parseInt(toDate);
+    if (fromDate > toDate || fromDate === 0 || toDate === 0) {
+      alert("时间输入错误！请重新输入");
+      startTime = "";
+      endTime = "";
+      return false;
+    }else if((toDate - fromDate)>100 || (toDate - fromDate)>8900){
+      alert("时间范围太大，请重新选择时间，时间区间规定在一个月内");
+      return false;
+    }
+  }
+  return true;
 }
 
 export const checkTimeByFind = function(startTime,endTime){
@@ -60,7 +83,7 @@ export const checkTimeByFind = function(startTime,endTime){
         }
         fromDate = parseInt(fromDate);
         toDate = parseInt(toDate);
-        if (fromDate > toDate) {
+        if (fromDate > toDate || fromDate === 0 || toDate === 0) {
             alert("时间输入错误！请重新输入");
             startTime = "";
             endTime = "";

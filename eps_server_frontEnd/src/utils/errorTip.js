@@ -4,7 +4,7 @@ export const errTip = function (code) {
       alert("该工号已存在，请重新填写工号");
       break;
     case "failed_not_found":
-      alert("id不存在");
+      alert("用户不存在");
       break;
     case "failed_not_admin":
       alert("请先成为管理员");
@@ -31,9 +31,16 @@ export const errTip = function (code) {
       alert("只能编辑未开始和正在进行的工单");
       break;
     case "failed_materialNo_exist":
-      aler("物料料号重复");
+      alert("物料料号重复");
+      break;
+    case "fail_get_img":
+      alert("获取图片失败");
+      break;
+    case "failed_already_started":
+      alert("已存在相同的正在进行的工单");
       break;
     default:
+      alert(code);
       break;
   }
 };

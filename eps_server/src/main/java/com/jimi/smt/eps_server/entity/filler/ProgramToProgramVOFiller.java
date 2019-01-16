@@ -3,15 +3,21 @@ package com.jimi.smt.eps_server.entity.filler;
 import java.text.SimpleDateFormat;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.jimi.smt.eps_server.entity.Line;
 import com.jimi.smt.eps_server.entity.Program;
 import com.jimi.smt.eps_server.entity.vo.ProgramVO;
+import com.jimi.smt.eps_server.mapper.LineMapper;
 import com.jimi.smt.eps_server.util.EntityFieldFiller;
 
 @Component
 public class ProgramToProgramVOFiller extends EntityFieldFiller<Program, ProgramVO> {
 
+	@Autowired
+	private LineMapper lineMapper;
+	
 	@Override
 	public ProgramVO fill(Program program) {
 		ProgramVO programVO = new ProgramVO();
@@ -48,6 +54,10 @@ public class ProgramToProgramVOFiller extends EntityFieldFiller<Program, Program
 		default:
 			break;
 		}
+		Line line = lineMapper.selectByPrimaryKey(program.getLine());
+		if(line != null) {
+			programVO.setLineName(line.getLine());
+		}	
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		programVO.setCreateTimeString(sdf.format(programVO.getCreateTime()));
 		return programVO;

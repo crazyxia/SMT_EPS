@@ -1,21 +1,22 @@
 <template>
   <div class="programDetail">
+    <p class="tip">提示：编辑完成之后请记得点击保存</p>
     <form class="form-inline" role="form">
       <span title="返回" @click="returnToProgram"><icon name="returnB" scale="4"></icon></span>
       <div class="form-group">
         <label for="workOrder">工单</label>
-        <input type="text" class="form-control" id="workOrder" v-model="programInfos.workOrder" disabled="disabled">
+        <input type="text" class="form-control" id="workOrder" v-model.trim="programInfos.workOrder" disabled="disabled">
       </div>
       <div class="form-group">
         <label for="boardType">版面</label>
-        <input type="text" class="form-control" id="boardType" v-model="programInfos.boardTypeName" disabled="disabled" >
+        <input type="text" class="form-control" id="boardType" v-model.trim="programInfos.boardTypeName" disabled="disabled" >
       </div>
       <div class="form-group">
         <label for="line">线号</label>
-        <input type="text" class="form-control" id="line" v-model="programInfos.line" disabled="disabled" >
+        <input type="text" class="form-control" id="line" v-model.trim="programInfos.lineName" disabled="disabled" >
       </div>
       <div class="btn-group">
-        <button type="button" class="btn btn_add" @click="addModal">添加</button>
+        <button type="button" class="btn btn_add" @click="addModal">追加</button>
         <button type="button" class="btn btn_conserve" @click="save">保存</button>
       </div>
     </form>
@@ -53,6 +54,9 @@ export default {
       modalInfo:{}
     }
   },
+  created(){
+    store.commit("setIsProgramItemRefresh", false);
+  },
   components:{
     ProgramItemTable,ProgramItemModal
   },
@@ -72,7 +76,7 @@ export default {
   },
   watch:{
     isDelete:function(val){
-      if(val == true){
+      if(val === true){
         store.commit("setIsDelete",false);
         let index = store.state.operationIndex;
         this.programItemList.splice(index,1);
@@ -98,18 +102,17 @@ export default {
       let opera = this.operationItem;
       let item = this.programItemInfos;
       let operationType = store.state.programItemOperationType;
-      if(operationType == "add"){
+      if(operationType === "add"){
         opera.operation = 0;
-      }else if(operationType == "update"){
+      }else if(operationType === "update"){
         opera.operation = 1;
-      }else if(operationType == "delete"){
+      }else if(operationType === "delete"){
         opera.operation = 2;
       }
-      opera.serialNo = item.serialNo;
       opera.targetLineseat = item.lineseat;
       opera.targetMaterialNo = item.materialNo;
       opera.lineseat = this.modalInfo.lineseat;
-      if(this.modalInfo.materialType == "主料"){
+      if(this.modalInfo.materialType === "主料"){
         opera.alternative = false;
       }else{
         opera.alternative = true;
@@ -128,8 +131,11 @@ export default {
       this.setOptionItem();
     },
     save:function(){
-      console.log(this.operations);
-      this.updateProgramItem();
+      if(this.operations.length <= 0){
+        alert("请编辑后再点击保存");
+      }else{
+        this.updateProgramItem();
+      }
     },
     addModal:function(){
       let programItem = {
@@ -139,7 +145,7 @@ export default {
         specitification:"",
         position:"",
         quantity:""
-      }
+      };
       store.commit("setOperationIndex",this.programItemList.length);
       store.commit("setProgramItemOperationType","add");
       store.commit("setProgramItem",programItem);
@@ -161,6 +167,7 @@ export default {
       }
     },
     updateProgramItem:function(){
+      store.commit("setLoading",true);
       let options = {
         url:updateProgramItemUrl,
         data:{
@@ -168,20 +175,23 @@ export default {
         }
       }
       axiosPost(options).then(response => {
+        store.commit("setLoading",false);
         if (response.data) {
           let result = response.data.result;
-          if(result == "succeed"){
+          if(result === "succeed"){
             alert("编辑成功");
             this.operations = [];
             this.resetOperation();
             this.returnToProgram();
           }else{
             errTip(result);
+            this.operations = [];
           }
-          store.commit("setIsRefresh",true);
         }
       }).catch(err => {
+        store.commit("setLoading",false);
         alert("接口请求失败，请检查网络，再联系管理员");
+        this.operations = [];
       });
     },
   }
@@ -189,5 +199,12 @@ export default {
 </script>
 
 <style scoped lang="scss">
-@import './../../../../../static/css/common.scss'
+  .tip{
+    font-size:20px;
+    color:red;
+    border-bottom:1px solid #ddd;
+    margin-bottom:10px;
+    padding-bottom:10px;
+  }
+@import '@/assets/css/common.scss';
 </style>

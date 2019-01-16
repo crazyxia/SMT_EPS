@@ -8,7 +8,7 @@ export const lineStatusData = function(){
   let lineSize = store.state.lineSize;
   if(lineSize > 0){
     let statusDetails =[];
-    for(let i = 0;i<lineSize*3;i++){
+    for(let i = 0;i<24;i++){
       let obj = {
         "line": "0",
         "allsSuc": 0,
