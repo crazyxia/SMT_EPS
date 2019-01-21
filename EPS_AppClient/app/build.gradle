@@ -5,8 +5,8 @@ android {
         config {
             keyAlias 'smt'
             keyPassword 'jimismt'
-            storeFile file('D:/AndroidProj/SMT_EPS/doc/smt_eps_key.jks')
-            storePassword 'jimismt'
+//            storeFile file('D:/AndroidProj/SMT_EPS/doc/smt_eps_key.jks')
+//            storePassword 'jimismt'
         }
     }
     compileSdkVersion 26

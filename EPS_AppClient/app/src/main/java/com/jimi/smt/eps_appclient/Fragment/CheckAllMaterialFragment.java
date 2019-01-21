@@ -187,7 +187,7 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
             // TODO: 2018/12/26
             if (event.getCheckAllTimeOut() == 1) {
                 Log.d(TAG, "onEventMainThread - getCheckAllTimeOut - ");
-                //超时
+                //超时,无论是否作废重传
                 if (inputDialog != null && inputDialog.isShowing()) {
                     inputDialog.cancel();
                     inputDialog.dismiss();
@@ -233,8 +233,35 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
             }
             //未超时
             else {
+                //作废重传
                 if (0 == event.getProgramIdEqual()) {
                     Log.d(TAG, "getProgramIdEqual - " + event.getProgramIdEqual());
+                    if (inputDialog != null && inputDialog.isShowing()) {
+                        inputDialog.cancel();
+                        inputDialog.dismiss();
+                        selectRow = -1;
+                    }
+                    if (resultInfoDialog != null && resultInfoDialog.isShowing()) {
+                        resultInfoDialog.cancel();
+                        resultInfoDialog.dismiss();
+                    }
+                    if (event.getFlCheckAllList() != null && event.getFlCheckAllList().size() > 0) {
+                        flCheckAllList.clear();
+                        flCheckAllList.addAll(event.getFlCheckAllList());
+                        curCheckId = 0;
+                        for (Material.MaterialBean bean : mCheckAllMaterialBeans) {
+                            bean.setProgramId(globalData.getProgramId());
+                            bean.setScanlineseat("");
+                            bean.setScanMaterial("");
+                            bean.setRemark("");
+                            bean.setResult("");
+                        }
+                        //更新显示
+                        materialAdapter.notifyDataSetChanged();
+                        if (!mHidden) {
+                            edt_ScanMaterial.requestFocus();
+                        }
+                    }
                 }
             }
         }

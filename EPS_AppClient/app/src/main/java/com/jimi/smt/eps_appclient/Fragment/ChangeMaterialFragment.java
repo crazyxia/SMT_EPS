@@ -89,10 +89,12 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
         savedInstanceState = intent.getExtras();
         Log.i(TAG, "curOderNum::" + savedInstanceState.getString("orderNum") + " -- curOperatorNUm::" + savedInstanceState.getString("operatorNum"));
         globalData.setOperator(savedInstanceState.getString("operatorNum"));
+        /*
         if (factoryLineActivity.updateDialog != null && factoryLineActivity.updateDialog.isShowing()) {
             factoryLineActivity.updateDialog.cancel();
             factoryLineActivity.updateDialog.dismiss();
         }
+        */
         //判断是否首次全检
         showLoading();
         checkFirstCondition = 0;
@@ -129,15 +131,19 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
             Log.d(TAG, "mHidden - " + mHidden);
             Log.d(TAG, "isUpdateProgram - " + globalData.isUpdateProgram());
             if (!mHidden) {
+                /*
                 if (factoryLineActivity.updateDialog != null && factoryLineActivity.updateDialog.isShowing()) {
                     factoryLineActivity.updateDialog.cancel();
                     factoryLineActivity.updateDialog.dismiss();
                 }
+                */
 //                clearAndSetFocus();
 //                showLoading();
 //                checkFirstCondition = 2;
 //                mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
             }
+
+
         }
     }
 
@@ -147,10 +153,12 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
         Log.i(TAG, "onHiddenChanged-" + hidden);
         this.mHidden = hidden;
         if (!hidden) {
+            /*
             if (factoryLineActivity.updateDialog != null && factoryLineActivity.updateDialog.isShowing()) {
                 factoryLineActivity.updateDialog.cancel();
                 factoryLineActivity.updateDialog.dismiss();
             }
+            */
             clearAndSetFocus();
             //判断是否首次全检
             showLoading();
@@ -416,7 +424,7 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
         globalData.setUpdateType(Constants.CHANGEMATERIAL);
 
         Material.MaterialBean bean = new Material.MaterialBean(globalData.getWork_order(),
-                globalData.getBoard_type(), globalData.getLine(), globalData.getProgramId(), -1, false,"","",-1,
+                globalData.getBoard_type(), globalData.getLine(), globalData.getProgramId(), -1, false, "", "", -1,
                 orgLineSeat, String.valueOf(edt_OrgMaterial.getText()).trim(), String.valueOf(edt_LineSeat.getText()).trim(), String.valueOf(edt_ChgMaterial.getText()).trim(), result, remark);
 
         Operation operation = Operation.getOperation(globalData.getOperator(), Constants.CHANGEMATERIAL, bean);
@@ -441,7 +449,7 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
     }
 
     private void clearAndSetFocus() {
-        Log.i(TAG, " - clearAndSetFocus - " );
+        Log.i(TAG, " - clearAndSetFocus - ");
         edt_LineSeat.setText("");
         edt_OrgMaterial.setText("");
         edt_ChgMaterial.setText("");
