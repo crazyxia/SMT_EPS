@@ -27,9 +27,9 @@ public class Main extends Application {
 
 	private DisplayController displayController;
 
-	private static final String VERSION = "2.3.2";
+	private static final String VERSION = "2.4.0";
 
-	private static final String NAME = "EPS_Display-" + VERSION;
+	private static final String NAME = "SMT-Display_";
 
 	private static final String TYPE = ".jar";
 	// 日志记录

@@ -13,7 +13,7 @@
 	</properties>
 
 	<build>
-
+	<finalName>SMT-Display_2.4.0_201901211635</finalName>
 		<resources>
 			<resource>
 				<directory>src/main/java</directory>
@@ -74,7 +74,7 @@
 			<!-- Maven 自带的中央仓库使用的Id为central 如果其他的仓库声明也是用该Id 就会覆盖中央仓库的配置 -->
 			<id>nexus</id>
 			<name>nexus</name>
-			<url>http://10.10.11.110:8081/repository/maven-releases/</url>
+			<url>http://10.10.11.90:8081/repository/maven-releases/</url>
 		</repository>
 	</repositories>
 
@@ -137,6 +137,12 @@
 			<groupId>org.ini4j</groupId>
 			<artifactId>ini4j</artifactId>
 			<version>0.5.4</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.jimi.bude</groupId>
+			<artifactId>finger</artifactId>
+			<version>1.0.1</version>
 		</dependency>
 
 	</dependencies>

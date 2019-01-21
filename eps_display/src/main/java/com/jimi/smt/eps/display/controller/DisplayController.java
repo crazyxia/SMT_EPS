@@ -1,5 +1,6 @@
 package com.jimi.smt.eps.display.controller;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.rmi.RemoteException;
@@ -17,6 +18,17 @@ import java.util.TimerTask;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.jimi.bude.finger.Finger;
+import com.jimi.bude.finger.config.FingerConfig;
+import com.jimi.bude.finger.inter.CallBackReplyCallBack;
+import com.jimi.bude.finger.inter.ConnectCallBack;
+import com.jimi.bude.finger.inter.ExceptionCallBack;
+import com.jimi.bude.finger.inter.LoginReplyCallBack;
+import com.jimi.bude.finger.inter.UpdateCallBack;
+import com.jimi.bude.finger.pack.CallBackReplyPackage;
+import com.jimi.bude.finger.pack.LoginPackage;
+import com.jimi.bude.finger.pack.LoginReplyPackage;
+import com.jimi.bude.finger.pack.UpdatePackage;
 import com.jimi.smt.eps.display.app.Main;
 import com.jimi.smt.eps_server.constant.BoardResetReson;
 import com.jimi.smt.eps_server.constant.ClientDevice;
@@ -31,10 +43,13 @@ import com.jimi.smt.eps_server.pack.BoardResetPackage;
 import com.jimi.smt.eps_server.pack.BoardResetReplyPackage;
 import com.jimi.smt.eps_server.rmi.CenterRemote;
 import com.jimi.smt.eps.display.util.HttpHelper;
+import com.jimi.smt.eps.display.util.IniReader;
 import com.jimi.smt.eps.display.util.IpHelper;
 
 import cc.darhao.dautils.api.BytesParser;
 import cc.darhao.dautils.api.FieldUtil;
+import cc.darhao.dautils.api.TextFileUtil;
+
 import com.jimi.smt.eps_server.pack.BasePackage;
 import com.jimi.smt.eps.display.util.PackageParser;
 import javafx.application.Platform;
@@ -219,12 +234,9 @@ public class DisplayController implements Initializable {
 
 	private List<String> lines = null;
 	private List<Line> lineList = null;
-	private List<ConfigVO> configVOs = null;
 
 	// http请求返回的结果
 	private String result;
-	// 根据所有全检结果得到
-	private int firstCheckAllResults;
 
 	private List<ProgramItemVisit> programItemVisits;
 	// 操作员
@@ -233,6 +245,9 @@ public class DisplayController implements Initializable {
 	// Config配置项
 	private static final String CHECK_ALL_CYCLE_TIME = "check_all_cycle_time";
 	private static final String CHECK_AFTER_CHANGE_TIME = "check_after_change_time";
+	private static final String CONFIG_FILE = "config.ini";
+	private static final String CONTROL_ID_RECORD_FILE = "controlIdRecord.txt";
+	private static final String VERSION_FILE = "version.txt";
 
 	// 重置请求
 	private static final String RESET_ACTION = "program/reset";
@@ -257,10 +272,20 @@ public class DisplayController implements Initializable {
 	// 查询服务器时间戳请求
 	private static final String GET_TIMESTAMP_ACTION = "program/getTimesTamp";
 	
+	// 包ID
+	static short packageId = 0;
+	// 更新成功
+	private static final int UPDATE_FINGER_SUCCEED = 26;
+	// 包ID默认值
+	private static final int DEFAULT_PACKAGE_ID = 0;
+	// 类型为设备端
+	private static final int FINGER_TYPE = 1;
+
+	private Finger finger;
 
 	
 	public void initialize(URL arg0, ResourceBundle arg1) {
-		initConfig();
+		initVersion();
 		initVersionLb();
 		initlineCb();
 		initDatatTV();
@@ -270,11 +295,8 @@ public class DisplayController implements Initializable {
 		boardTypeChangeListener();
 		// 定时任务：刷新表单
 		timeTask();
-	}
-
-	
-	public void initConfig() {
-		configVOs = JSON.parseArray(sendRequest(GET_CONFIG_ACTION, null), ConfigVO.class);
+		// 设备端初始化
+		initFinger();
 	}
 
 	
@@ -362,16 +384,16 @@ public class DisplayController implements Initializable {
 							} else if (item.toString().equals("4")) {
 								this.setText("◎");
 								this.setTextFill(Color.PURPLE);
-							} else if (CONSTANT_FOR_CHECK_RESULT < item.intValue() && item.intValue() < CONSTANT_FOR_CHECK_ALL_RESULT) {
+							} else if ((CONSTANT_FOR_CHECK_RESULT < item.intValue() || CONSTANT_FOR_CHECK_RESULT.equals(item)) && item.intValue() < CONSTANT_FOR_CHECK_ALL_RESULT) {
 								this.setText(getCountDownTime(item - CONSTANT_FOR_CHECK_RESULT));
-								if (item.intValue() < CONSTANT_FOR_CHECK_RESULT + FACTOR_1) {
+								if ((item.intValue() < CONSTANT_FOR_CHECK_RESULT + FACTOR_1) || item.equals(CONSTANT_FOR_CHECK_RESULT + FACTOR_1)) {
 									this.setTextFill(Color.RED);
 								} else {
 									this.setTextFill(Color.GREEN);
 								}
-							} else if (CONSTANT_FOR_CHECK_ALL_RESULT < item.intValue()) {
+							} else if ((CONSTANT_FOR_CHECK_ALL_RESULT < item.intValue() || item.equals(CONSTANT_FOR_CHECK_ALL_RESULT))) {
 								this.setText(getCountDownTime(item - CONSTANT_FOR_CHECK_ALL_RESULT));
-								if (item.intValue() < CONSTANT_FOR_CHECK_ALL_RESULT + FACTOR_1) {
+								if (item.intValue() < CONSTANT_FOR_CHECK_ALL_RESULT + FACTOR_1 || item.equals(CONSTANT_FOR_CHECK_ALL_RESULT + FACTOR_1)) {
 									this.setTextFill(Color.RED);
 								} else {
 									this.setTextFill(Color.GREEN);
@@ -515,19 +537,35 @@ public class DisplayController implements Initializable {
 									map.put("line", line);
 									map.put("workOrder", workOrder);
 									map.put("boardType", boardTypeNo.toString());
-									String response = sendRequest(SWITCH_ACTION, map);
-									if (response.equals("{\"result\":\"succeed\"}")) {
-										Platform.runLater(new Runnable() {
+									try {
+										httpHelper.requestHttp(SWITCH_ACTION, map, new okhttp3.Callback() {
+
 											@Override
-											public void run() {
-												isUpdate = true;
-												setDisableCb(false);
-												resetBt.setDisable(false);
-												updateText();
+											public void onResponse(Call call, Response response) throws IOException {
+												if (response.body().string().equals("{\"result\":\"succeed\"}")) {
+													Platform.runLater(new Runnable() {
+														@Override
+														public void run() {
+															isUpdate = true;
+															setDisableCb(false);
+															resetBt.setDisable(false);
+															updateText();
+														}
+													});
+												} else {
+													httpFail(SWITCH_ACTION, !IS_NETWORK, line);
+												}
+											}
+
+											@Override
+											public void onFailure(Call call, IOException e) {
+												httpFail(SWITCH_ACTION, IS_NETWORK, line);
+												e.printStackTrace();
 											}
 										});
-									} else {
-										httpFail(SWITCH_ACTION, !IS_NETWORK, line);
+									} catch (IOException e) {
+										httpFail(SWITCH_ACTION, IS_NETWORK, line);
+										e.printStackTrace();
 									}
 								} else {
 									resetProductNbFail(!IS_NETWORK, line);
@@ -536,8 +574,8 @@ public class DisplayController implements Initializable {
 								resetProductNbFail(!IS_NETWORK, line);
 							}
 						} catch (RemoteException e) {
-							logger.error("重置工单的生产数目失败，线号：" + line + "connect失败，网络连接出错");
-							new Alert(AlertType.ERROR, "重置工单生产数目失败，请检查你的网络连接", ButtonType.OK).show();
+							logger.error("重置工单的生产数目失败，线号：" + line + "connect失败，与树莓派的网络连接出错");
+							new Alert(AlertType.ERROR, "重置工单生产数目失败，请检查与树莓派的网络连接", ButtonType.OK).showAndWait();
 						}
 					}
 				}
@@ -560,27 +598,44 @@ public class DisplayController implements Initializable {
 				} else {
 					Optional<ButtonType> optional = new Alert(AlertType.WARNING, "你确定要重置该工单的状态吗？\n这会初始化除发料以外的所有状态", ButtonType.YES, ButtonType.CANCEL).showAndWait();
 					if (optional != null && optional.get().equals(ButtonType.YES)) {
-						Map<String, String> map = new HashMap<>();
-						String line = lineCb.getSelectionModel().getSelectedItem().toString();
-						String workOrder = workOrderCb.getSelectionModel().getSelectedItem().toString();
-						Integer boardTypeNo = getBoardTypeNo(boardType);
-						map.put("line", line);
-						map.put("workOrder", workOrder);
-						map.put("boardType", boardTypeNo.toString());
-						setDisableCb(true);
-						resetBt.setDisable(true);
-						String response = sendRequest(RESET_ACTION, map);
-						if (response != null && response.equals("{\"result\":\"succeed\"}")) {
-							Platform.runLater(new Runnable() {
+						try {
+							Map<String, String> map = new HashMap<>();
+							String line = lineCb.getSelectionModel().getSelectedItem().toString();
+							String workOrder = workOrderCb.getSelectionModel().getSelectedItem().toString();
+							Integer boardTypeNo = getBoardTypeNo(boardType);
+							map.put("line", line);
+							map.put("workOrder", workOrder);
+							map.put("boardType", boardTypeNo.toString());
+							setDisableCb(true);
+							resetBt.setDisable(true);
+							httpHelper.requestHttp(RESET_ACTION, map, new okhttp3.Callback() {
+
 								@Override
-								public void run() {
-									setDisableCb(false);
-									resetBt.setDisable(false);
-									updateText();
+								public void onResponse(Call call, Response response) throws IOException {
+									if (response != null && response.body().string().equals("{\"result\":\"succeed\"}")) {
+										Platform.runLater(new Runnable() {
+											@Override
+											public void run() {
+												setDisableCb(false);
+												resetBt.setDisable(false);
+												updateText();
+											}
+										});
+									} else {
+										httpFail(RESET_ACTION, !IS_NETWORK, null);
+									}
+								}
+
+								@Override
+								public void onFailure(Call call, IOException e) {
+									httpFail(RESET_ACTION, IS_NETWORK, null);
+									e.printStackTrace();
 								}
 							});
-						} else {
-							httpFail(RESET_ACTION, !IS_NETWORK, null);
+
+						} catch (Exception e) {
+							httpFail(RESET_ACTION, IS_NETWORK, null);
+							e.printStackTrace();
 						}
 					}
 				}
@@ -599,6 +654,7 @@ public class DisplayController implements Initializable {
 
 			@Override
 			public void handle(WindowEvent event) {
+				finger.stop();
 				String line = lineCb.getSelectionModel().getSelectedItem() == null ? "" : lineCb.getSelectionModel().getSelectedItem().toString();
 				try {
 					if (!line.equals("") && centerRemote != null) {
@@ -668,9 +724,162 @@ public class DisplayController implements Initializable {
 		});
 	}
 
+
+	/**
+	 * @author HCJ 初始化设备端，开启连接
+	 * @date 2019年1月18日 下午3:02:43
+	 */
+	public void initFinger() {
+		Map<String, String> fingerSetting = IniReader.getItem(CONFIG_FILE, "finger");
+		String remoteIp = fingerSetting.get("remoteIp");
+		Integer port = Integer.parseInt(fingerSetting.get("port"));
+		String armName = fingerSetting.get("armName");
+		String fingerName = fingerSetting.get("fingerName");
+		String downloadPath = System.getProperty("user.dir");
+		String downloadURL = fingerSetting.get("downloadURL");
+		String version = "";
+		try {
+			version = TextFileUtil.readFromFile(VERSION_FILE);
+		} catch (IOException e1) {
+			logger.error("版本文件读写出现错误");
+			e1.printStackTrace();
+		}
+		FingerConfig config = new FingerConfig(fingerName, version, downloadURL, downloadPath);
+		finger = new Finger(remoteIp, port, 20000, config);
+		config.setConnectCallBack(new ConnectCallBack() {
+
+			public void onConnect(Finger session) {
+				LoginPackage login = new LoginPackage();
+				login.setArmName(armName);
+				// 发送前需将ip转化成16进制
+				String ip = BytesParser.parseBytesToHexString(
+						(BytesParser.parseXRadixStringToBytes(IpHelper.getWindowsLocalIp().replace(".", " "), 10)));
+				login.setFingerIp(ip);
+				login.setFingerName(fingerName);
+				login.setType(1);
+				login.setPackageId(0);
+				// 发送登录包
+				session.sendLoginPackage(login);
+			}
+		});
+		config.setLoginReplyCallBack(new LoginReplyCallBack() {
+
+			public void onReplyArrived(LoginReplyPackage r, Finger session) {
+				if (r.getResultCode() != 20) {
+					logger.error("--------------登录失败------------------");
+					try {
+						Thread.sleep(3000);
+					} catch (InterruptedException e) {
+						logger.error("登陆失败时休眠线程出现异常");
+						e.printStackTrace();
+					}
+					LoginPackage login = new LoginPackage();
+					login.setArmName(armName);
+					String ip = BytesParser.parseBytesToHexString(
+							(BytesParser.parseXRadixStringToBytes(IpHelper.getWindowsLocalIp().replace(".", " "), 10)));
+					login.setFingerIp(ip);
+					login.setFingerName(fingerName);
+					login.setType(1);
+					login.setPackageId(genPackageId());
+					// 发送登录包
+					session.sendLoginPackage(login);
+				} else {
+					Platform.runLater(new Runnable() {
+
+						@Override
+						public void run() {
+							new Alert(AlertType.INFORMATION, "登录中转端成功", ButtonType.OK).show();
+							try {
+								File controlIdRecord = new File(CONTROL_ID_RECORD_FILE);
+								if (!controlIdRecord.exists()) {
+									controlIdRecord.createNewFile();
+								}
+								String controlId = TextFileUtil.readFromFile(CONTROL_ID_RECORD_FILE);
+								if (controlId != null && !"".equals(controlId)) {
+									finger.sendCallBackPackage(Integer.parseInt(controlId), DEFAULT_PACKAGE_ID,
+											UPDATE_FINGER_SUCCEED, fingerName, FINGER_TYPE);
+									TextFileUtil.writeToFile(CONTROL_ID_RECORD_FILE, "");
+								}
+							} catch (IOException e) {
+								logger.error("读写controlIdRecord配置文件出错");
+								e.printStackTrace();
+							}
+						}
+					});
+				}
+			}
+		});
+		// 配置接收到更新CallBack回复包后执行的方法
+		config.setUpdateCallBack(new UpdateCallBack() {
+
+			@Override
+			public void onPackageArrvied(UpdatePackage r, Finger session) {
+				logger.info("接收到更新包, " + "信息序列号：" + session.getSerialNo() + "MD5 : " + r.getMd5());
+				try {
+					Integer ControllId = r.getControllId();
+					TextFileUtil.writeToFile("controlIdRecord.txt", ControllId.toString());
+					if (!new File("update.bat").exists()) {
+						Platform.runLater(new Runnable() {
+
+							@Override
+							public void run() {
+								new Alert(AlertType.ERROR, "远程更新时找不到update.bat文件，请联系工程师", ButtonType.OK).show();
+							}
+						});
+					} else {
+						Thread.sleep(5000);
+						finger.stop();
+						Runtime.getRuntime().exec("cmd /k start .\\update.bat");
+						System.exit(0);
+					}
+				} catch (IOException e) {
+					logger.error("版本文件写入出错");
+					e.printStackTrace();
+				} catch (InterruptedException e) {
+					logger.error("更新时线程休眠出错");
+					e.printStackTrace();
+				}
+			}
+		});
+		// 配置接收到CallBack回复包后执行的方法
+		config.setCallBackReplyCallBack(new CallBackReplyCallBack() {
+
+			public void onReplyArrived(CallBackReplyPackage r, Finger session) {
+				logger.info("收到CallBack回复包，设备端名称：" + r.getFingerName());
+			}
+		});
+		// 配置捕获到异常后执行的方法
+		config.setExceptionCallBack(new ExceptionCallBack() {
+
+			@Override
+			public void onCathcException(Exception e, Finger session) {
+				e.printStackTrace();
+				logger.error("与中转端连接过程出现异常 | " + e.getMessage());
+			}
+		});
+		Platform.runLater(new Runnable() {
+
+			@Override
+			public void run() {
+				finger.start();
+			}
+		});
+	}
+
+
+	/**@author HCJ
+	 * 生成packageId
+	 * @date 2019年1月21日 上午11:14:42
+	 */
+	public synchronized static Short genPackageId() {
+		packageId %= 65536;
+		packageId++;
+		return packageId;
+	}
+
 	
 	private void initVersionLb() {
-		versionLb.setText("V" + Main.getVersion() + " © 2018 几米物联技术有限公司  All rights reserved.");
+		versionLb.setText("V" + Main.getVersion() + " © 2019 几米物联技术有限公司  All rights reserved.");
 	}
 
 	
@@ -686,10 +895,10 @@ public class DisplayController implements Initializable {
 			public void run() {
 				if (network) {
 					logger.error("重置工单的生产数目失败，线号：" + line + "connect失败，网络连接出错");
-					new Alert(AlertType.ERROR, "重置工单生产数目失败，请检查你的网络连接", ButtonType.OK).show();
+					new Alert(AlertType.ERROR, "重置工单生产数目失败，请检查你的网络连接", ButtonType.OK).showAndWait();
 				} else {
 					logger.error("重置工单的生产数目失败，服务器原因");
-					new Alert(AlertType.ERROR, "重置工单生产数目失败，服务器原因", ButtonType.OK).show();
+					new Alert(AlertType.ERROR, "重置工单生产数目失败，服务器原因", ButtonType.OK).showAndWait();
 				}
 				setDisableCb(false);
 				resetBt.setDisable(false);
@@ -713,10 +922,10 @@ public class DisplayController implements Initializable {
 				public void run() {
 					if (isNetwork) {
 						logger.error("选定工单失败，switch请求失败，网络连接出错");
-						new Alert(AlertType.ERROR, "选定工单失败，请检查你的网络连接", ButtonType.OK).show();
+						new Alert(AlertType.ERROR, "选定工单失败，请检查你的网络连接", ButtonType.OK).showAndWait();
 					} else {
 						logger.error("选定工单失败，服务器内部错误");
-						new Alert(AlertType.ERROR, "选定工单失败，服务器内部错误", ButtonType.OK).show();
+						new Alert(AlertType.ERROR, "选定工单失败，服务器内部错误", ButtonType.OK).showAndWait();
 					}
 					setDisableCb(false);
 					resetBt.setDisable(false);
@@ -731,10 +940,10 @@ public class DisplayController implements Initializable {
 				public void run() {
 					if (isNetwork) {
 						logger.error("重置工单失败，reset请求失败，网络连接出错");
-						new Alert(AlertType.ERROR, "重置工单失败，请检查你的网络连接", ButtonType.OK).show();
+						new Alert(AlertType.ERROR, "重置工单失败，请检查你的网络连接", ButtonType.OK).showAndWait();
 					} else {
 						logger.error("重置工单失败，服务器内部原因");
-						new Alert(AlertType.ERROR, "重置工单失败，服务器内部错误", ButtonType.OK).show();
+						new Alert(AlertType.ERROR, "重置工单失败，服务器内部错误", ButtonType.OK).showAndWait();
 					}
 					setDisableCb(false);
 					resetBt.setDisable(false);
@@ -748,10 +957,10 @@ public class DisplayController implements Initializable {
 				public void run() {
 					if (isNetwork) {
 						logger.error("查询所有产线名称失败，select_line请求失败，网络连接出错");
-						new Alert(AlertType.ERROR, "查询所有产线名称失败，请检查你的网络连接", ButtonType.OK).show();
+						new Alert(AlertType.ERROR, "查询所有产线名称失败，请检查你的网络连接", ButtonType.OK).showAndWait();
 					} else {
 						logger.error("查询所有产线名称失败，服务器内部原因");
-						new Alert(AlertType.ERROR, "查询所有产线名称失败，服务器内部错误", ButtonType.OK).show();
+						new Alert(AlertType.ERROR, "查询所有产线名称失败，服务器内部错误", ButtonType.OK).showAndWait();
 					}
 					setDisableCb(false);
 					resetBt.setDisable(false);
@@ -765,10 +974,10 @@ public class DisplayController implements Initializable {
 				public void run() {
 					if (isNetwork) {
 						logger.error("查询所有产线失败，select_all请求失败，网络连接出错");
-						new Alert(AlertType.ERROR, "查询所有产线失败，请检查你的网络连接", ButtonType.OK).show();
+						new Alert(AlertType.ERROR, "查询所有产线失败，请检查你的网络连接", ButtonType.OK).showAndWait();
 					} else {
 						logger.error("查询所有产线失败，服务器内部原因");
-						new Alert(AlertType.ERROR, "查询所有产线失败，服务器内部错误", ButtonType.OK).show();
+						new Alert(AlertType.ERROR, "查询所有产线失败，服务器内部错误", ButtonType.OK).showAndWait();
 					}
 					setDisableCb(false);
 					resetBt.setDisable(false);
@@ -782,10 +991,10 @@ public class DisplayController implements Initializable {
 				public void run() {
 					if (isNetwork) {
 						logger.error("查询登录对象失败，select_id请求失败，网络连接出错");
-						new Alert(AlertType.ERROR, "查询登录对象失败，请检查你的网络连接", ButtonType.OK).show();
+						new Alert(AlertType.ERROR, "查询登录对象失败，请检查你的网络连接", ButtonType.OK).showAndWait();
 					} else {
 						logger.error("查询登录对象失败，服务器内部原因");
-						new Alert(AlertType.ERROR, "查询登录对象失败，服务器内部错误", ButtonType.OK).show();
+						new Alert(AlertType.ERROR, "查询登录对象失败，服务器内部错误", ButtonType.OK).showAndWait();
 					}
 					setDisableCb(false);
 					resetBt.setDisable(false);
@@ -799,10 +1008,10 @@ public class DisplayController implements Initializable {
 				public void run() {
 					if (isNetwork) {
 						logger.error("查询工单失败，select_workorder请求失败，网络连接出错");
-						new Alert(AlertType.ERROR, "查询工单失败，请检查你的网络连接", ButtonType.OK).show();
+						new Alert(AlertType.ERROR, "查询工单失败，请检查你的网络连接", ButtonType.OK).showAndWait();
 					} else {
 						logger.error("查询工单失败，服务器内部原因");
-						new Alert(AlertType.ERROR, "查询工单失败，服务器内部错误", ButtonType.OK).show();
+						new Alert(AlertType.ERROR, "查询工单失败，服务器内部错误", ButtonType.OK).showAndWait();
 					}
 					setDisableCb(false);
 					resetBt.setDisable(false);
@@ -816,10 +1025,10 @@ public class DisplayController implements Initializable {
 				public void run() {
 					if (isNetwork) {
 						logger.error("查询版面类型失败，select_boardtype请求失败，网络连接出错");
-						new Alert(AlertType.ERROR, "查询版面类型失败，请检查你的网络连接", ButtonType.OK).show();
+						new Alert(AlertType.ERROR, "查询版面类型失败，请检查你的网络连接", ButtonType.OK).showAndWait();
 					} else {
 						logger.error("查询版面类型失败，服务器内部原因");
-						new Alert(AlertType.ERROR, "查询版面类型失败，服务器内部错误", ButtonType.OK).show();
+						new Alert(AlertType.ERROR, "查询版面类型失败，服务器内部错误", ButtonType.OK).showAndWait();
 					}
 					setDisableCb(false);
 					resetBt.setDisable(false);
@@ -833,10 +1042,10 @@ public class DisplayController implements Initializable {
 				public void run() {
 					if (isNetwork) {
 						logger.error("查询操作员失败，select_operator请求失败，网络连接出错");
-						new Alert(AlertType.ERROR, "查询操作员失败，请检查你的网络连接", ButtonType.OK).show();
+						new Alert(AlertType.ERROR, "查询操作员失败，请检查你的网络连接", ButtonType.OK).showAndWait();
 					} else {
 						logger.error("查询操作员失败，服务器内部原因");
-						new Alert(AlertType.ERROR, "查询操作员失败，服务器内部错误", ButtonType.OK).show();
+						new Alert(AlertType.ERROR, "查询操作员失败，服务器内部错误", ButtonType.OK).showAndWait();
 					}
 					setDisableCb(false);
 					resetBt.setDisable(false);
@@ -850,10 +1059,10 @@ public class DisplayController implements Initializable {
 				public void run() {
 					if (isNetwork) {
 						logger.error("查询工单操作失败，select_itemvisit请求失败，网络连接出错");
-						new Alert(AlertType.ERROR, "查询工单操作失败，请检查你的网络连接", ButtonType.OK).show();
+						new Alert(AlertType.ERROR, "查询工单操作失败，请检查你的网络连接", ButtonType.OK).showAndWait();
 					} else {
 						logger.error("查询工单操作失败，服务器内部原因");
-						new Alert(AlertType.ERROR, "查询工单操作失败，服务器内部错误", ButtonType.OK).show();
+						new Alert(AlertType.ERROR, "查询工单操作失败，服务器内部错误", ButtonType.OK).showAndWait();
 					}
 					setDisableCb(false);
 					resetBt.setDisable(false);
@@ -882,7 +1091,7 @@ public class DisplayController implements Initializable {
 	 * @throws IOException
 	 */
 	private synchronized void updateText() {
-
+		long time = System.currentTimeMillis();
 		String line = lineCb.getSelectionModel().getSelectedItem() == null ? "" : lineCb.getSelectionModel().getSelectedItem().toString();
 		String workOrder = workOrderCb.getSelectionModel().getSelectedItem() == null ? "" : workOrderCb.getSelectionModel().getSelectedItem().toString();
 		String boardType = boardTybeCb.getSelectionModel().getSelectedItem() == null ? "" : boardTybeCb.getSelectionModel().getSelectedItem().toString();
@@ -892,46 +1101,31 @@ public class DisplayController implements Initializable {
 			map.put("line", line);
 			map.put("workOrder", workOrder);
 			map.put("boardType", boardTypeNo.toString());
-			String itemVisits = sendRequest(GET_ITEMVISIT_ACTION, map);
-			if (!itemVisits.equals("[]")) {
-				programItemVisits = JSON.parseArray(itemVisits, ProgramItemVisit.class);
-			} else {
-				httpFail(GET_ITEMVISIT_ACTION, !IS_NETWORK, null);
-			}
 			String response = sendRequest(GET_OPERATOR_ACTION, map);
 			operator = response.equals("") ? "unknown" : response;
-			firstCheckAllResults = 1;
-			int checkAllResults = 1;
-			for (ProgramItemVisit programItemVisit : programItemVisits) {
-				if (!programItemVisit.getFirstCheckAllResult().equals(1)) {
-					firstCheckAllResults = 0;
-					break;
-				}
-			}
-			Date minCheckAllTime = new Date();
-			if (firstCheckAllResults == 1) {
-				for (ProgramItemVisit programItemVisit : programItemVisits) {
-					if (programItemVisit.getCheckAllTime().getTime() < minCheckAllTime.getTime()) {
-						minCheckAllTime = programItemVisit.getCheckAllTime();
+			try {
+				httpHelper.requestHttp(GET_ITEMVISIT_ACTION, map, new okhttp3.Callback() {
+
+					@Override
+					public void onResponse(Call call, Response response) throws IOException {
+						String itemVisits = response.body().string();
+						if (!itemVisits.equals("[]")) {
+							programItemVisits = JSON.parseArray(itemVisits, ProgramItemVisit.class);
+						} else {
+							httpFail(GET_ITEMVISIT_ACTION, !IS_NETWORK, null);
+						}
 					}
-				}
-				for (ProgramItemVisit programItemVisit : programItemVisits) {
-					if (!programItemVisit.getCheckAllResult().equals(1)) {
-						checkAllResults = 0;
-						break;
+
+					@Override
+					public void onFailure(Call call, IOException e) {
+						httpFail(GET_ITEMVISIT_ACTION, IS_NETWORK, null);
+
 					}
-				}
-				for (ProgramItemVisit programItemVisit : programItemVisits) {
-					boolean isInitialState = programItemVisit.getCheckAllResult().equals(2);
-					boolean isCheckTimeout = ((programItemVisit.getCheckAllTime().getTime()) + getConfigValue(CHECK_ALL_CYCLE_TIME) * ONE_SECOND_TO_MILLISECOND) > Long.parseLong(sendRequest(GET_TIMESTAMP_ACTION, null));
-					if (isInitialState && isCheckTimeout) {
-						programItemVisit.setCheckAllResult(5);
-						programItemVisit.setCheckAllTime(minCheckAllTime);
-					} else if (checkAllResults == 1) {
-						programItemVisit.setCheckAllResult(5);
-						programItemVisit.setCheckAllTime(minCheckAllTime);
-					}
-				}
+				});
+
+			} catch (IOException e) {
+				httpFail(GET_ITEMVISIT_ACTION, IS_NETWORK, null);
+				e.printStackTrace();
 			}
 			if (programItemVisits != null && programItemVisits.size() > 0) {
 				ProgramItemVisit programItemVisit = programItemVisits.get(0);
@@ -942,6 +1136,7 @@ public class DisplayController implements Initializable {
 				operatorLb.setText(operator);
 				setTypeAndResult(programItemVisit);
 				tableLsit = FXCollections.observableArrayList(programItemVisitToResultData(programItemVisits));
+				System.out.println("时间" + (System.currentTimeMillis() - time));
 				DataTv.setItems(tableLsit);
 			}
 		}
@@ -971,11 +1166,7 @@ public class DisplayController implements Initializable {
 				break;
 			case 3:
 				typeLb.setText("全  检");
-				if (programItemVisit.getCheckAllResult().equals(5)) {
-					showResult(1);
-				} else {
-					showResult(programItemVisit.getCheckAllResult());
-				}
+				showResult(programItemVisit.getCheckAllResult());
 				break;
 			case 4:
 				typeLb.setText("发  料");
@@ -1037,14 +1228,43 @@ public class DisplayController implements Initializable {
 	}
 
 	
-	/**
+	/**@author HCJ
 	 * 将ProgramItemVisit转化为可被表格识别的ResultData
-	 * 
-	 * @param programItemVisits
-	 * @return
+	 * @date 2019年1月16日 下午4:56:57
 	 */
 	private List<ResultData> programItemVisitToResultData(List<ProgramItemVisit> programItemVisits) {
 		List<ResultData> resultDatas = new ArrayList<>();
+		int firstCheckAllResults = 1;
+		int checkAllResults = 1;
+		for (ProgramItemVisit programItemVisit : programItemVisits) {
+			if (!programItemVisit.getFirstCheckAllResult().equals(1)) {
+				firstCheckAllResults = 0;
+				break;
+			}
+		}
+		// 获取服务器时间戳
+		long currentTimeStamp = Long.parseLong(sendRequest(GET_TIMESTAMP_ACTION, null));
+		Date minCheckAllTime = new Date(currentTimeStamp);
+		if (firstCheckAllResults == 1) {
+			for (ProgramItemVisit programItemVisit : programItemVisits) {
+				if (programItemVisit.getCheckAllTime().getTime() < minCheckAllTime.getTime()) {
+					// 获取最小全检时间
+					minCheckAllTime = programItemVisit.getCheckAllTime();
+				}
+			}
+			for (ProgramItemVisit programItemVisit : programItemVisits) {
+				if (!programItemVisit.getCheckAllResult().equals(1)) {
+					// 全检结果不全都为1时
+					checkAllResults = 0;
+					break;
+				}
+			}
+		}
+		// 获取核料和全检超时时间配置
+		Integer checkAllCycleTime = getConfigValue(CHECK_ALL_CYCLE_TIME);
+		Integer checkAfterChangeTime = getConfigValue(CHECK_AFTER_CHANGE_TIME);
+		// 距离全检超时剩余时间
+		Integer checkAllRestTime = (int) (checkAllCycleTime + (minCheckAllTime.getTime()) / ONE_SECOND_TO_MILLISECOND - (currentTimeStamp) / ONE_SECOND_TO_MILLISECOND);
 		for (ProgramItemVisit programItemVisit : programItemVisits) {
 			ResultData resultData = new ResultData();
 			resultData.setLineseat(programItemVisit.getLineseat());
@@ -1056,21 +1276,34 @@ public class DisplayController implements Initializable {
 			boolean isResultCorrect = (programItemVisit.getCheckResult() != 0 && programItemVisit.getCheckResult() != 3);
 			boolean notYetCheck = programItemVisit.getChangeTime().getTime() > programItemVisit.getCheckTime().getTime();
 			if (hasChangeButNeedCheck && isResultCorrect && notYetCheck) {
-				Integer k = (int) (getConfigValue(CHECK_AFTER_CHANGE_TIME) + (programItemVisit.getChangeTime().getTime()) / ONE_SECOND_TO_MILLISECOND - (Long.parseLong(sendRequest(GET_TIMESTAMP_ACTION, null))) / ONE_SECOND_TO_MILLISECOND);
-				if (0 < k && k < getConfigValue(CHECK_AFTER_CHANGE_TIME)) {
-					resultData.setCheckResult(k + CONSTANT_FOR_CHECK_RESULT);
-				} else {
-					resultData.setCheckResult(programItemVisit.getCheckResult());
+				// 距离核料超时剩余时间
+				Integer checkRestTime = (int) (checkAfterChangeTime + (programItemVisit.getChangeTime().getTime()) / ONE_SECOND_TO_MILLISECOND - currentTimeStamp / ONE_SECOND_TO_MILLISECOND);
+				if (0 < checkRestTime && checkRestTime < checkAfterChangeTime) {
+					resultData.setCheckResult(checkRestTime + CONSTANT_FOR_CHECK_RESULT);
+				} else if (checkRestTime <= 0) {
+					resultData.setCheckResult(CONSTANT_FOR_CHECK_RESULT);
 				}
 			} else {
 				resultData.setCheckResult(programItemVisit.getCheckResult());
 			}
-			if (programItemVisit.getCheckAllResult().equals(5)) {
-				Integer k = (int) (getConfigValue(CHECK_ALL_CYCLE_TIME) + (programItemVisit.getCheckAllTime().getTime()) / ONE_SECOND_TO_MILLISECOND - (Long.parseLong(sendRequest(GET_TIMESTAMP_ACTION, null))) / ONE_SECOND_TO_MILLISECOND);
-				if (0 < k && k < getConfigValue(CHECK_ALL_CYCLE_TIME)) {
-					resultData.setCheckAllResult(k + CONSTANT_FOR_CHECK_ALL_RESULT);
+			// 是否首检完成
+			if (firstCheckAllResults == 1) {
+				boolean isInitialState = programItemVisit.getCheckAllResult().equals(2);
+				boolean isCheckTimeout = ((programItemVisit.getCheckAllTime().getTime()) + checkAllCycleTime * ONE_SECOND_TO_MILLISECOND) > currentTimeStamp;
+				if (isInitialState && isCheckTimeout) {
+					if (0 < checkAllRestTime && checkAllRestTime < checkAllCycleTime) {
+						resultData.setCheckAllResult(checkAllRestTime + CONSTANT_FOR_CHECK_ALL_RESULT);
+					} else if (checkAllRestTime <= 0) {
+						resultData.setCheckAllResult(CONSTANT_FOR_CHECK_ALL_RESULT);
+					}
+				} else if (checkAllResults == 1) {
+					if (0 < checkAllRestTime && checkAllRestTime < checkAllCycleTime) {
+						resultData.setCheckAllResult(checkAllRestTime + CONSTANT_FOR_CHECK_ALL_RESULT);
+					} else if (checkAllRestTime <= 0) {
+						resultData.setCheckAllResult(CONSTANT_FOR_CHECK_ALL_RESULT);
+					}
 				} else {
-					resultData.setCheckAllResult(1);
+					resultData.setCheckAllResult(programItemVisit.getCheckAllResult());
 				}
 			} else {
 				resultData.setCheckAllResult(programItemVisit.getCheckAllResult());
@@ -1264,7 +1497,7 @@ public class DisplayController implements Initializable {
 	private SocketLog createLogByPackage(BasePackage p) {
 		SocketLog log = new SocketLog();
 		FieldUtil.copy(p, log);
-		log.setTime(new Date());
+		log.setTime(new Date(Long.parseLong(sendRequest(GET_TIMESTAMP_ACTION, null))));
 		String data = BytesParser.parseBytesToHexString(PackageParser.serialize(p));
 		log.setData(data);
 		return log;
@@ -1298,6 +1531,7 @@ public class DisplayController implements Initializable {
 	 * @date 2018年10月22日 上午9:49:27
 	 */
 	private Integer getConfigValue(String timeType) {
+		List<ConfigVO> configVOs = JSON.parseArray(sendRequest(GET_CONFIG_ACTION, null), ConfigVO.class);
 		for (ConfigVO configVO : configVOs) {
 			if (configVO.getLineName().equals(lineCb.getSelectionModel().getSelectedItem()) && configVO.getName().equals(timeType)) {
 				return Integer.parseInt(configVO.getValue()) * 60;
@@ -1326,6 +1560,22 @@ public class DisplayController implements Initializable {
 			centerRemote = (CenterRemote) LocateRegistry.getRegistry(remoteIp).lookup("center");
 		} catch (Exception e) {
 			initCenterRemote(remoteIp);
+		}
+	}
+	
+	
+	/**@author HCJ
+	 * 记录当前版本
+	 * @date 2019年1月21日 上午11:24:24
+	 */
+	private void initVersion() {
+		try {
+			String path = System.getProperty("java.class.path");
+			String jarName = path.substring(path.lastIndexOf("\\") + 1, path.lastIndexOf("."));
+			TextFileUtil.writeToFile(VERSION_FILE, jarName);
+		} catch (IOException e) {
+			logger.error("版本文件写入出现错误");
+			e.printStackTrace();
 		}
 	}
 
