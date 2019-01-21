@@ -32,12 +32,15 @@ public class FeedDao extends AbstractDao<Feed, Long> {
         public final static Property Line = new Property(5, String.class, "line", false, "LINE");
         public final static Property OrgLineSeat = new Property(6, String.class, "OrgLineSeat", false, "ORG_LINE_SEAT");
         public final static Property OrgMaterial = new Property(7, String.class, "OrgMaterial", false, "ORG_MATERIAL");
-        public final static Property ScanLineSeat = new Property(8, String.class, "ScanLineSeat", false, "SCAN_LINE_SEAT");
-        public final static Property ScanMaterial = new Property(9, String.class, "ScanMaterial", false, "SCAN_MATERIAL");
-        public final static Property Result = new Property(10, String.class, "Result", false, "RESULT");
-        public final static Property Remark = new Property(11, String.class, "Remark", false, "REMARK");
-        public final static Property SerialNo = new Property(12, int.class, "SerialNo", false, "SERIAL_NO");
-        public final static Property Alternative = new Property(13, boolean.class, "Alternative", false, "ALTERNATIVE");
+        public final static Property Specitification = new Property(8, String.class, "specitification", false, "SPECITIFICATION");
+        public final static Property Position = new Property(9, String.class, "position", false, "POSITION");
+        public final static Property Quantity = new Property(10, int.class, "quantity", false, "QUANTITY");
+        public final static Property ScanLineSeat = new Property(11, String.class, "ScanLineSeat", false, "SCAN_LINE_SEAT");
+        public final static Property ScanMaterial = new Property(12, String.class, "ScanMaterial", false, "SCAN_MATERIAL");
+        public final static Property Result = new Property(13, String.class, "Result", false, "RESULT");
+        public final static Property Remark = new Property(14, String.class, "Remark", false, "REMARK");
+        public final static Property SerialNo = new Property(15, int.class, "SerialNo", false, "SERIAL_NO");
+        public final static Property Alternative = new Property(16, boolean.class, "Alternative", false, "ALTERNATIVE");
     }
 
 
@@ -61,12 +64,15 @@ public class FeedDao extends AbstractDao<Feed, Long> {
                 "\"LINE\" TEXT," + // 5: line
                 "\"ORG_LINE_SEAT\" TEXT," + // 6: OrgLineSeat
                 "\"ORG_MATERIAL\" TEXT," + // 7: OrgMaterial
-                "\"SCAN_LINE_SEAT\" TEXT," + // 8: ScanLineSeat
-                "\"SCAN_MATERIAL\" TEXT," + // 9: ScanMaterial
-                "\"RESULT\" TEXT," + // 10: Result
-                "\"REMARK\" TEXT," + // 11: Remark
-                "\"SERIAL_NO\" INTEGER NOT NULL ," + // 12: SerialNo
-                "\"ALTERNATIVE\" INTEGER NOT NULL );"); // 13: Alternative
+                "\"SPECITIFICATION\" TEXT," + // 8: specitification
+                "\"POSITION\" TEXT," + // 9: position
+                "\"QUANTITY\" INTEGER NOT NULL ," + // 10: quantity
+                "\"SCAN_LINE_SEAT\" TEXT," + // 11: ScanLineSeat
+                "\"SCAN_MATERIAL\" TEXT," + // 12: ScanMaterial
+                "\"RESULT\" TEXT," + // 13: Result
+                "\"REMARK\" TEXT," + // 14: Remark
+                "\"SERIAL_NO\" INTEGER NOT NULL ," + // 15: SerialNo
+                "\"ALTERNATIVE\" INTEGER NOT NULL );"); // 16: Alternative
     }
 
     /** Drops the underlying database table. */
@@ -115,27 +121,38 @@ public class FeedDao extends AbstractDao<Feed, Long> {
             stmt.bindString(8, OrgMaterial);
         }
  
+        String specitification = entity.getSpecitification();
+        if (specitification != null) {
+            stmt.bindString(9, specitification);
+        }
+ 
+        String position = entity.getPosition();
+        if (position != null) {
+            stmt.bindString(10, position);
+        }
+        stmt.bindLong(11, entity.getQuantity());
+ 
         String ScanLineSeat = entity.getScanLineSeat();
         if (ScanLineSeat != null) {
-            stmt.bindString(9, ScanLineSeat);
+            stmt.bindString(12, ScanLineSeat);
         }
  
         String ScanMaterial = entity.getScanMaterial();
         if (ScanMaterial != null) {
-            stmt.bindString(10, ScanMaterial);
+            stmt.bindString(13, ScanMaterial);
         }
  
         String Result = entity.getResult();
         if (Result != null) {
-            stmt.bindString(11, Result);
+            stmt.bindString(14, Result);
         }
  
         String Remark = entity.getRemark();
         if (Remark != null) {
-            stmt.bindString(12, Remark);
+            stmt.bindString(15, Remark);
         }
-        stmt.bindLong(13, entity.getSerialNo());
-        stmt.bindLong(14, entity.getAlternative() ? 1L: 0L);
+        stmt.bindLong(16, entity.getSerialNo());
+        stmt.bindLong(17, entity.getAlternative() ? 1L: 0L);
     }
 
     @Override
@@ -178,27 +195,38 @@ public class FeedDao extends AbstractDao<Feed, Long> {
             stmt.bindString(8, OrgMaterial);
         }
  
+        String specitification = entity.getSpecitification();
+        if (specitification != null) {
+            stmt.bindString(9, specitification);
+        }
+ 
+        String position = entity.getPosition();
+        if (position != null) {
+            stmt.bindString(10, position);
+        }
+        stmt.bindLong(11, entity.getQuantity());
+ 
         String ScanLineSeat = entity.getScanLineSeat();
         if (ScanLineSeat != null) {
-            stmt.bindString(9, ScanLineSeat);
+            stmt.bindString(12, ScanLineSeat);
         }
  
         String ScanMaterial = entity.getScanMaterial();
         if (ScanMaterial != null) {
-            stmt.bindString(10, ScanMaterial);
+            stmt.bindString(13, ScanMaterial);
         }
  
         String Result = entity.getResult();
         if (Result != null) {
-            stmt.bindString(11, Result);
+            stmt.bindString(14, Result);
         }
  
         String Remark = entity.getRemark();
         if (Remark != null) {
-            stmt.bindString(12, Remark);
+            stmt.bindString(15, Remark);
         }
-        stmt.bindLong(13, entity.getSerialNo());
-        stmt.bindLong(14, entity.getAlternative() ? 1L: 0L);
+        stmt.bindLong(16, entity.getSerialNo());
+        stmt.bindLong(17, entity.getAlternative() ? 1L: 0L);
     }
 
     @Override
@@ -217,12 +245,15 @@ public class FeedDao extends AbstractDao<Feed, Long> {
             cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5), // line
             cursor.isNull(offset + 6) ? null : cursor.getString(offset + 6), // OrgLineSeat
             cursor.isNull(offset + 7) ? null : cursor.getString(offset + 7), // OrgMaterial
-            cursor.isNull(offset + 8) ? null : cursor.getString(offset + 8), // ScanLineSeat
-            cursor.isNull(offset + 9) ? null : cursor.getString(offset + 9), // ScanMaterial
-            cursor.isNull(offset + 10) ? null : cursor.getString(offset + 10), // Result
-            cursor.isNull(offset + 11) ? null : cursor.getString(offset + 11), // Remark
-            cursor.getInt(offset + 12), // SerialNo
-            cursor.getShort(offset + 13) != 0 // Alternative
+            cursor.isNull(offset + 8) ? null : cursor.getString(offset + 8), // specitification
+            cursor.isNull(offset + 9) ? null : cursor.getString(offset + 9), // position
+            cursor.getInt(offset + 10), // quantity
+            cursor.isNull(offset + 11) ? null : cursor.getString(offset + 11), // ScanLineSeat
+            cursor.isNull(offset + 12) ? null : cursor.getString(offset + 12), // ScanMaterial
+            cursor.isNull(offset + 13) ? null : cursor.getString(offset + 13), // Result
+            cursor.isNull(offset + 14) ? null : cursor.getString(offset + 14), // Remark
+            cursor.getInt(offset + 15), // SerialNo
+            cursor.getShort(offset + 16) != 0 // Alternative
         );
         return entity;
     }
@@ -237,12 +268,15 @@ public class FeedDao extends AbstractDao<Feed, Long> {
         entity.setLine(cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5));
         entity.setOrgLineSeat(cursor.isNull(offset + 6) ? null : cursor.getString(offset + 6));
         entity.setOrgMaterial(cursor.isNull(offset + 7) ? null : cursor.getString(offset + 7));
-        entity.setScanLineSeat(cursor.isNull(offset + 8) ? null : cursor.getString(offset + 8));
-        entity.setScanMaterial(cursor.isNull(offset + 9) ? null : cursor.getString(offset + 9));
-        entity.setResult(cursor.isNull(offset + 10) ? null : cursor.getString(offset + 10));
-        entity.setRemark(cursor.isNull(offset + 11) ? null : cursor.getString(offset + 11));
-        entity.setSerialNo(cursor.getInt(offset + 12));
-        entity.setAlternative(cursor.getShort(offset + 13) != 0);
+        entity.setSpecitification(cursor.isNull(offset + 8) ? null : cursor.getString(offset + 8));
+        entity.setPosition(cursor.isNull(offset + 9) ? null : cursor.getString(offset + 9));
+        entity.setQuantity(cursor.getInt(offset + 10));
+        entity.setScanLineSeat(cursor.isNull(offset + 11) ? null : cursor.getString(offset + 11));
+        entity.setScanMaterial(cursor.isNull(offset + 12) ? null : cursor.getString(offset + 12));
+        entity.setResult(cursor.isNull(offset + 13) ? null : cursor.getString(offset + 13));
+        entity.setRemark(cursor.isNull(offset + 14) ? null : cursor.getString(offset + 14));
+        entity.setSerialNo(cursor.getInt(offset + 15));
+        entity.setAlternative(cursor.getShort(offset + 16) != 0);
      }
     
     @Override

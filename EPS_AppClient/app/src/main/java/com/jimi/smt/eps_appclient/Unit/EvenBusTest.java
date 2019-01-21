@@ -24,6 +24,8 @@ public class EvenBusTest {
     private int reseted;
     //0 未超时; 1 超时
     private int checkAllTimeOut;
+    //1,表示相同; 0,表示不相同
+    private int programIdEqual;
     private List<Feed> feedList;
     private List<Ware> wareList;
     private List<FLCheckAll> flCheckAllList;
@@ -43,6 +45,14 @@ public class EvenBusTest {
 
     public void setCheckAllTimeOut(int checkAllTimeOut) {
         this.checkAllTimeOut = checkAllTimeOut;
+    }
+
+    public int getProgramIdEqual() {
+        return programIdEqual;
+    }
+
+    public void setProgramIdEqual(int programIdEqual) {
+        this.programIdEqual = programIdEqual;
     }
 
     public int getReseted() {

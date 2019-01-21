@@ -87,10 +87,12 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
             globalData.setOperator(savedInstanceState.getString("operatorNum"));
         }
         //判断是否上料
+        /*
         if (factoryLineActivity.updateDialog != null && factoryLineActivity.updateDialog.isShowing()) {
             factoryLineActivity.updateDialog.cancel();
             factoryLineActivity.updateDialog.dismiss();
         }
+        */
         mHttpUtils = new HttpUtils(this, getContext());
         showLoading();
         checkFistCondition = 1;
@@ -151,7 +153,8 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                 for (int i = 0, len = flCheckAllList.size(); i < len; i++) {
                     flCheckAll = flCheckAllList.get(i);
                     Material.MaterialBean bean = new Material.MaterialBean(flCheckAll.getOrder(), flCheckAll.getBoard_type(), flCheckAll.getLine(),
-                            flCheckAll.getProgramId(), flCheckAll.getSerialNo(), flCheckAll.getAlternative(), flCheckAll.getOrgLineSeat(), flCheckAll.getOrgMaterial(),
+                            flCheckAll.getProgramId(), flCheckAll.getSerialNo(), flCheckAll.getAlternative(), flCheckAll.getSpecitification(),
+                            flCheckAll.getPosition(), flCheckAll.getQuantity(), flCheckAll.getOrgLineSeat(), flCheckAll.getOrgMaterial(),
                             flCheckAll.getScanLineSeat(), flCheckAll.getScanMaterial(), flCheckAll.getResult(), flCheckAll.getRemark());
                     mCheckAllMaterialBeans.add(bean);
 
@@ -172,10 +175,12 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
             Log.d(TAG, "isUpdateProgram - " + globalData.isUpdateProgram());
             //提示首检或上料
             if (!mHidden) {
+                /*
                 if (factoryLineActivity.updateDialog != null && factoryLineActivity.updateDialog.isShowing()) {
                     factoryLineActivity.updateDialog.cancel();
                     factoryLineActivity.updateDialog.dismiss();
                 }
+                */
                 edt_ScanMaterial.requestFocus();
             }
         } else {
@@ -202,7 +207,8 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                     for (int i = 0, len = flCheckAllList.size(); i < len; i++) {
                         flCheckAll = flCheckAllList.get(i);
                         Material.MaterialBean bean = new Material.MaterialBean(flCheckAll.getOrder(), flCheckAll.getBoard_type(), flCheckAll.getLine(),
-                                flCheckAll.getProgramId(), flCheckAll.getSerialNo(), flCheckAll.getAlternative(), flCheckAll.getOrgLineSeat(), flCheckAll.getOrgMaterial(),
+                                flCheckAll.getProgramId(), flCheckAll.getSerialNo(), flCheckAll.getAlternative(), flCheckAll.getSpecitification(),
+                                flCheckAll.getPosition(), flCheckAll.getQuantity(), flCheckAll.getOrgLineSeat(), flCheckAll.getOrgMaterial(),
                                 flCheckAll.getScanLineSeat(), flCheckAll.getScanMaterial(), flCheckAll.getResult(), flCheckAll.getRemark());
                         mCheckAllMaterialBeans.add(bean);
                     }
@@ -215,13 +221,21 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                 Log.d(TAG, "isUpdateProgram - " + globalData.isUpdateProgram());
                 //提示首检或上料
                 if (!mHidden) {
+                    /*
                     if (factoryLineActivity.updateDialog != null && factoryLineActivity.updateDialog.isShowing()) {
                         factoryLineActivity.updateDialog.cancel();
                         factoryLineActivity.updateDialog.dismiss();
                     }
+                    */
                     edt_ScanMaterial.requestFocus();
                 }
 
+            }
+            //未超时
+            else {
+                if (0 == event.getProgramIdEqual()) {
+                    Log.d(TAG, "getProgramIdEqual - " + event.getProgramIdEqual());
+                }
             }
         }
     }
@@ -233,10 +247,12 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
         this.mHidden = hidden;
         if (!mHidden) {
             //判断是否首检或上料
+            /*
             if (factoryLineActivity.updateDialog != null && factoryLineActivity.updateDialog.isShowing()) {
                 factoryLineActivity.updateDialog.cancel();
                 factoryLineActivity.updateDialog.dismiss();
             }
+            */
             clearLineSeatMaterialScan();
             showLoading();
             checkFistCondition = 1;
@@ -356,7 +372,7 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                     bean.setResult("");
                     FLCheckAll flCheckAll = new FLCheckAll(null, bean.getProgramId(), bean.getWorkOrder(), globalData.getOperator(),
                             bean.getBoardType(), bean.getLine(), bean.getSerialNo(), bean.isAlternative(), bean.getLineseat(), bean.getMaterialNo(),
-                            "", "", "", "");
+                            bean.getSpecitification(), bean.getPosition(), bean.getQuantity(), "", "", "", "");
                     flCheckAllList.add(flCheckAll);
                 }
                 //保存到数据库中
@@ -369,7 +385,8 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
             for (int i = 0, len = flCheckAllList.size(); i < len; i++) {
                 flCheckAll = flCheckAllList.get(i);
                 Material.MaterialBean bean = new Material.MaterialBean(flCheckAll.getOrder(), flCheckAll.getBoard_type(), flCheckAll.getLine(),
-                        flCheckAll.getProgramId(), flCheckAll.getSerialNo(), flCheckAll.getAlternative(), flCheckAll.getOrgLineSeat(), flCheckAll.getOrgMaterial(),
+                        flCheckAll.getProgramId(), flCheckAll.getSerialNo(), flCheckAll.getAlternative(), flCheckAll.getSpecitification(),
+                        flCheckAll.getPosition(), flCheckAll.getQuantity(), flCheckAll.getOrgLineSeat(), flCheckAll.getOrgMaterial(),
                         flCheckAll.getScanLineSeat(), flCheckAll.getScanMaterial(), flCheckAll.getResult(), flCheckAll.getRemark());
                 mCheckAllMaterialBeans.add(bean);
 

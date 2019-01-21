@@ -25,17 +25,22 @@ public class FLCheckAll {
     private boolean Alternative;    //是否属于替料
     private String OrgLineSeat;    //当前站位表站位
     private String OrgMaterial;    //当前站位表料号
+    private String specitification; //型号
+    private String position;        //位置
+    private int quantity;           //数量
     private String ScanLineSeat;   //扫描的站位
     private String ScanMaterial;   //扫描的料号
     private String Result;         //结果
     private String Remark;         //失败原因
 
-    @Generated(hash = 436643456)
+
+    @Generated(hash = 1112348966)
     public FLCheckAll(Long flcheck_id, String programId, String order,
-                      String operator, int board_type, String line, int SerialNo,
-                      boolean Alternative, String OrgLineSeat, String OrgMaterial,
-                      String ScanLineSeat, String ScanMaterial, String Result,
-                      String Remark) {
+            String operator, int board_type, String line, int SerialNo,
+            boolean Alternative, String OrgLineSeat, String OrgMaterial,
+            String specitification, String position, int quantity,
+            String ScanLineSeat, String ScanMaterial, String Result,
+            String Remark) {
         this.flcheck_id = flcheck_id;
         this.programId = programId;
         this.order = order;
@@ -46,6 +51,9 @@ public class FLCheckAll {
         this.Alternative = Alternative;
         this.OrgLineSeat = OrgLineSeat;
         this.OrgMaterial = OrgMaterial;
+        this.specitification = specitification;
+        this.position = position;
+        this.quantity = quantity;
         this.ScanLineSeat = ScanLineSeat;
         this.ScanMaterial = ScanMaterial;
         this.Result = Result;
@@ -55,6 +63,7 @@ public class FLCheckAll {
     @Generated(hash = 1299417750)
     public FLCheckAll() {
     }
+    
 
     public Long getFlcheck_id() {
         return this.flcheck_id;
@@ -166,6 +175,30 @@ public class FLCheckAll {
 
     public void setRemark(String Remark) {
         this.Remark = Remark;
+    }
+
+    public String getSpecitification() {
+        return this.specitification;
+    }
+
+    public void setSpecitification(String specitification) {
+        this.specitification = specitification;
+    }
+
+    public String getPosition() {
+        return this.position;
+    }
+
+    public void setPosition(String position) {
+        this.position = position;
+    }
+
+    public int getQuantity() {
+        return this.quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
     }
 
 

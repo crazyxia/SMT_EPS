@@ -416,9 +416,8 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
         globalData.setUpdateType(Constants.CHANGEMATERIAL);
 
         Material.MaterialBean bean = new Material.MaterialBean(globalData.getWork_order(),
-                globalData.getBoard_type(), globalData.getLine(), globalData.getProgramId(), -1, false, orgLineSeat,
-                String.valueOf(edt_OrgMaterial.getText()).trim(), String.valueOf(edt_LineSeat.getText()).trim(),
-                String.valueOf(edt_ChgMaterial.getText()).trim(), result, remark);
+                globalData.getBoard_type(), globalData.getLine(), globalData.getProgramId(), -1, false,"","",-1,
+                orgLineSeat, String.valueOf(edt_OrgMaterial.getText()).trim(), String.valueOf(edt_LineSeat.getText()).trim(), String.valueOf(edt_ChgMaterial.getText()).trim(), result, remark);
 
         Operation operation = Operation.getOperation(globalData.getOperator(), Constants.CHANGEMATERIAL, bean);
 

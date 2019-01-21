@@ -23,6 +23,9 @@ public class Ware {
     private String line;//线号
     private int SerialNo;           //流水号
     private boolean Alternative;    //是否属于替料
+    private String specitification; //型号
+    private String position;        //位置
+    private int quantity;           //数量
     private String OrgLineSeat;    //当前站位表站位
     private String OrgMaterial;    //当前站位表料号
     private String ScanLineSeat;   //扫描的站位
@@ -30,11 +33,14 @@ public class Ware {
     private String Result;         //结果
     private String Remark;         //失败原因
 
-    @Generated(hash = 127136640)
+
+
+    @Generated(hash = 1390987626)
     public Ware(Long ware_id, String programId, String order, String operator,
-                int board_type, String line, int SerialNo, boolean Alternative,
-                String OrgLineSeat, String OrgMaterial, String ScanLineSeat,
-                String ScanMaterial, String Result, String Remark) {
+            int board_type, String line, int SerialNo, boolean Alternative,
+            String specitification, String position, int quantity,
+            String OrgLineSeat, String OrgMaterial, String ScanLineSeat,
+            String ScanMaterial, String Result, String Remark) {
         this.ware_id = ware_id;
         this.programId = programId;
         this.order = order;
@@ -43,6 +49,9 @@ public class Ware {
         this.line = line;
         this.SerialNo = SerialNo;
         this.Alternative = Alternative;
+        this.specitification = specitification;
+        this.position = position;
+        this.quantity = quantity;
         this.OrgLineSeat = OrgLineSeat;
         this.OrgMaterial = OrgMaterial;
         this.ScanLineSeat = ScanLineSeat;
@@ -54,6 +63,8 @@ public class Ware {
     @Generated(hash = 1641007146)
     public Ware() {
     }
+
+
 
     public Long getWare_id() {
         return this.ware_id;
@@ -165,6 +176,30 @@ public class Ware {
 
     public void setRemark(String Remark) {
         this.Remark = Remark;
+    }
+
+    public String getSpecitification() {
+        return this.specitification;
+    }
+
+    public void setSpecitification(String specitification) {
+        this.specitification = specitification;
+    }
+
+    public String getPosition() {
+        return this.position;
+    }
+
+    public void setPosition(String position) {
+        this.position = position;
+    }
+
+    public int getQuantity() {
+        return this.quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
     }
 
 

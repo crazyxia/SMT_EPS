@@ -106,10 +106,14 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
 
         globalData.setOperator(savedInstanceState != null ? savedInstanceState.getString("operatorNum") : null);
 
+/*
+
         if (mActivity.updateDialog != null && mActivity.updateDialog.isShowing()) {
             mActivity.updateDialog.cancel();
             mActivity.updateDialog.dismiss();
         }
+*/
+
 
         checkResetCondition = 2;
         showLoading();
@@ -160,10 +164,14 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
         Log.i(TAG, "onHiddenChanged - " + hidden);
         this.mHidden = hidden;
         if (!hidden) {
+
+            /*
             if (mActivity.updateDialog != null && mActivity.updateDialog.isShowing()) {
                 mActivity.updateDialog.cancel();
                 mActivity.updateDialog.dismiss();
             }
+            */
+
             checkResetCondition = 2;
             showLoading();
             mHttpUtils.isReset(globalData.getProgramId(), Constants.FEEDMATERIAL);
@@ -217,8 +225,9 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                     mFeedMaterialBeans.clear();
                     for (Feed feed : feedList) {
                         Material.MaterialBean bean = new Material.MaterialBean(feed.getOrder(), feed.getBoard_type(), feed.getLine(),
-                                feed.getProgramId(), feed.getSerialNo(), feed.getAlternative(), feed.getOrgLineSeat(), feed.getOrgMaterial(),
-                                feed.getScanLineSeat(), feed.getScanMaterial(), feed.getResult(), feed.getRemark());
+                                feed.getProgramId(), feed.getSerialNo(), feed.getAlternative(), feed.getSpecitification(),feed.getPosition(),
+                                feed.getQuantity(), feed.getOrgLineSeat(), feed.getOrgMaterial(), feed.getScanLineSeat(), feed.getScanMaterial(),
+                                feed.getResult(), feed.getRemark());
                         mFeedMaterialBeans.add(bean);
                         //获取成功上料
                         if ((null != feed.getResult()) && (feed.getResult().equalsIgnoreCase("PASS"))) {
@@ -228,16 +237,20 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                     allCount = mFeedMaterialBeans.size();
                     //更新显示
                     materialAdapter.notifyDataSetChanged();
-                    //重新开始扫描站位
-                    clearLineSeatMaterialScan();
                 }
                 Log.d(TAG, "mHidden - " + mHidden);
                 if (!mHidden) {
                     //更新站位表后是否发料完成
+
+                    /*
                     if (mActivity.updateDialog != null && mActivity.updateDialog.isShowing()) {
                         mActivity.updateDialog.cancel();
                         mActivity.updateDialog.dismiss();
                     }
+                    */
+
+                    //重新开始扫描站位
+                    clearLineSeatMaterialScan();
 
                     // TODO: 2018/9/17
                     dismissFeedLogin();
@@ -249,6 +262,34 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                 }
             }
 
+        }
+        //未更新
+        else {
+            if (0 == event.getProgramIdEqual()){
+                Log.d(TAG, "getProgramIdEqual - " + event.getProgramIdEqual());
+                if (event.getFeedList() != null && event.getFeedList().size() > 0) {
+                    //更新页面
+                    feedList.clear();
+                    feedList.addAll(event.getFeedList());
+                    sucFeedCount = 0;
+                    allCount = mFeedMaterialBeans.size();
+                    for (Material.MaterialBean bean:mFeedMaterialBeans) {
+                        bean.setProgramId(globalData.getProgramId());
+                        bean.setScanlineseat("");
+                        bean.setScanMaterial("");
+                        bean.setRemark("");
+                        bean.setResult("");
+                    }
+                    //更新显示
+                    materialAdapter.notifyDataSetChanged();
+                    if (!mHidden) {
+                        //重新开始扫描站位
+                        clearLineSeatMaterialScan();
+                        // TODO: 2018/9/17
+                        dismissFeedLogin();
+                    }
+                }
+            }
         }
     }
 
@@ -295,8 +336,9 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                 for (Material.MaterialBean bean : mFeedMaterialBeans) {
                     //保存缓存到数据库中
                     Feed feed = new Feed(null, bean.getProgramId(), bean.getWorkOrder(), globalData.getOperator(),
-                            bean.getBoardType(), bean.getLine(), bean.getLineseat(), bean.getMaterialNo(), bean.getScanlineseat(),
-                            bean.getScanMaterial(), bean.getResult(), bean.getRemark(), bean.getSerialNo(), bean.isAlternative());
+                            bean.getBoardType(), bean.getLine(), bean.getLineseat(), bean.getMaterialNo(), bean.getSpecitification(),
+                            bean.getPosition(),bean.getQuantity(),bean.getScanlineseat(), bean.getScanMaterial(), bean.getResult(),
+                            bean.getRemark(), bean.getSerialNo(), bean.isAlternative());
                     feedList.add(feed);
                 }
                 //保存到数据库中
@@ -308,8 +350,9 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
         else {
             for (Feed feed : feedList) {
                 Material.MaterialBean bean = new Material.MaterialBean(feed.getOrder(), feed.getBoard_type(), feed.getLine(),
-                        feed.getProgramId(), feed.getSerialNo(), feed.getAlternative(), feed.getOrgLineSeat(), feed.getOrgMaterial(),
-                        feed.getScanLineSeat(), feed.getScanMaterial(), feed.getResult(), feed.getRemark());
+                        feed.getProgramId(), feed.getSerialNo(), feed.getAlternative(), feed.getSpecitification(),feed.getPosition(),
+                        feed.getQuantity(),feed.getOrgLineSeat(), feed.getOrgMaterial(), feed.getScanLineSeat(), feed.getScanMaterial(),
+                        feed.getResult(), feed.getRemark());
                 mFeedMaterialBeans.add(bean);
                 //获取成功上料
                 if ((null != feed.getResult()) && (feed.getResult().equalsIgnoreCase("PASS"))) {

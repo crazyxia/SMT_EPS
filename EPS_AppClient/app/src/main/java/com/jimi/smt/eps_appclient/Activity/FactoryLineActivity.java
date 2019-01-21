@@ -63,7 +63,7 @@ public class FactoryLineActivity extends FragmentActivity implements View.OnClic
     private static final int EXIT = 139;
     // 定义一个变量，来标识是否退出
     private static boolean isExit = false;
-    public LoadingDialog updateDialog;
+//    public LoadingDialog updateDialog;
     private GlobalFunc globalFunc;
 
     @SuppressLint("HandlerLeak")
@@ -140,18 +140,29 @@ public class FactoryLineActivity extends FragmentActivity implements View.OnClic
             globalData.setUpdateProgram(false);
         } else {
             if (event.getCheckAllTimeOut() == 1) {
-                //判断本地数据是否清空
-                boolean clear = true;
-                List<FLCheckAll> flCheckAlls = new GreenDaoUtil().queryFLCheckRecord(globalData.getOperator(), globalData.getWork_order(),
-                        globalData.getLine(), globalData.getBoard_type());
-                for (FLCheckAll flCheckAll : flCheckAlls) {
-                    if ((null != flCheckAll.getResult()) && ((flCheckAll.getResult().equalsIgnoreCase("PASS")) || (flCheckAll.getResult().equalsIgnoreCase("FAIL")))) {
-                        clear = false;
-                        break;
+                //是否作废
+                if (0 == event.getProgramIdEqual()){
+                    showUpdateDialog("站位表作废并重传！", "站位表作废并重传！");
+                }else {
+                    //判断本地数据是否清空
+                    boolean clear = true;
+                    List<FLCheckAll> flCheckAlls = new GreenDaoUtil().queryFLCheckRecord(globalData.getOperator(), globalData.getWork_order(),
+                            globalData.getLine(), globalData.getBoard_type());
+                    for (FLCheckAll flCheckAll : flCheckAlls) {
+                        if ((null != flCheckAll.getResult()) && ((flCheckAll.getResult().equalsIgnoreCase("PASS")) || (flCheckAll.getResult().equalsIgnoreCase("FAIL")))) {
+                            clear = false;
+                            break;
+                        }
+                    }
+                    if (!clear) {
+                        showUpdateDialog("全检超时!", "全检超时!");
                     }
                 }
-                if (!clear) {
-                    showUpdateDialog("全检超时!", "全检超时!");
+
+            }else {
+                //是否作废
+                if (0 == event.getProgramIdEqual()){
+                    showUpdateDialog("站位表作废并重传！", "站位表作废并重传！");
                 }
             }
         }

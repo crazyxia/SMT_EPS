@@ -37,6 +37,9 @@ public class Material extends BaseMsg {
          * materialNo : K3108410300530
          * scanMaterial : K3108410300530
          * alternative : false
+         * specitification : TVS管; & ;ESD9X5.0ST5G 5V; & ;（ON）; & ;
+         * position : VR804 VR805 T607 T612
+         * quantity : 0
          * serialNo : 1
          * result : PASS
          * remark : fgh
@@ -45,16 +48,22 @@ public class Material extends BaseMsg {
         private String materialNo;
         private String scanMaterial;
         private boolean alternative;
+        private String specitification;
+        private String position;
+        private int quantity;
         private int serialNo;
 
         public MaterialBean(){
             super();
         }
 
-        public MaterialBean(String order, int boardType, String line, String programId, int serialNo, boolean alternative,
-                            String orgLineSeat, String orgMaterial, String scanLineSeat, String scanMaterial, String result, String remark) {
+        public MaterialBean(String order, int boardType, String line, String programId, int serialNo, boolean alternative,String specitification,String position,
+                            int quantity,String orgLineSeat, String orgMaterial, String scanLineSeat, String scanMaterial, String result, String remark) {
             super(programId, line, order, boardType, orgLineSeat, scanLineSeat, result, remark);
             this.alternative = alternative;
+            this.specitification = specitification;
+            this.position = position;
+            this.quantity = quantity;
             this.materialNo = orgMaterial;
             this.scanMaterial = scanMaterial;
             this.serialNo = serialNo;
@@ -93,6 +102,30 @@ public class Material extends BaseMsg {
             this.serialNo = serialNo;
         }
 
+        public String getSpecitification() {
+            return specitification;
+        }
+
+        public void setSpecitification(String specitification) {
+            this.specitification = specitification;
+        }
+
+        public String getPosition() {
+            return position;
+        }
+
+        public void setPosition(String position) {
+            this.position = position;
+        }
+
+        public int getQuantity() {
+            return quantity;
+        }
+
+        public void setQuantity(int quantity) {
+            this.quantity = quantity;
+        }
+
         public MaterialBean copy(MaterialBean bean){
             MaterialBean materialBean = new MaterialBean();
             materialBean.setProgramId(bean.getProgramId());
@@ -107,6 +140,9 @@ public class Material extends BaseMsg {
             materialBean.setRemark(bean.getRemark());
             materialBean.setResult(bean.getResult());
             materialBean.setAlternative(bean.isAlternative());
+            materialBean.setSpecitification(bean.getSpecitification());
+            materialBean.setPosition(bean.getPosition());
+            materialBean.setQuantity(bean.getQuantity());
             return materialBean;
         }
 
@@ -120,7 +156,7 @@ public class Material extends BaseMsg {
 
         @Override
         public int hashCode() {
-            return (super.hashCode() + materialNo + serialNo + alternative).hashCode();
+            return (super.hashCode() + materialNo + serialNo + alternative + specitification + position + quantity).hashCode();
         }
 
         public String getMaterialStr() {
@@ -131,6 +167,9 @@ public class Material extends BaseMsg {
                     + "serialNo : " + getSerialNo() + " \n "
                     + "lineSeat : " + getLineseat() + " \n "
                     + "material : " + getMaterialNo() + " \n "
+                    + "specitification : " + getSpecitification() + " \n "
+                    + "position : " + getPosition() + " \n "
+                    + "quantity : " + getQuantity() + " \n "
                     + "scan lineSeat : " + getScanlineseat() + " \n "
                     + "scan material : " + getScanMaterial() + " \n "
                     + "result : " + getResult() + " \n "

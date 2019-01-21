@@ -265,6 +265,33 @@ public class HttpUtils {
     }
 
     /**
+     * 获取某个工单的料号表,刷新判断更新时使用
+     *
+     * @param programId
+     * @param equal 1,表示相同; 0,表示不相同
+     */
+    public void getMaterials(String programId,int equal) {
+//        Log.d(TAG, "getMaterials - " + globalData.getIp());
+//        Log.d(TAG, "getMaterials - " + materials);
+        OkHttpUtils.post().url(globalData.getIp() + materials)
+                .addParams("programId", programId)
+                .build()
+                .execute(new StringCallback() {
+                    @Override
+                    public void onError(Call call, Exception e, int id) {
+                        Log.d(TAG, "onError - " + e.toString());
+                        mOkHttpInterface.showHttpError(CodeMaterials, new Object[]{programId,equal}, e.toString());
+                    }
+
+                    @Override
+                    public void onResponse(String response, int id) {
+//                        Log.d(TAG, "onResponse - " + response);
+                        mOkHttpInterface.showHttpResponse(CodeMaterials, new Object[]{programId,equal}, response);
+                    }
+                });
+    }
+
+    /**
      * 添加操作日志
      *
      * @param operation

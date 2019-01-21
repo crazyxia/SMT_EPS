@@ -25,6 +25,9 @@ public class Feed {
     private String line;//线号
     private String OrgLineSeat;    //当前站位表站位
     private String OrgMaterial;    //当前站位表料号
+    private String specitification; //型号
+    private String position;        //位置
+    private int quantity;           //数量
     private String ScanLineSeat;   //扫描的站位
     private String ScanMaterial;   //扫描的料号
     private String Result;         //结果
@@ -34,11 +37,13 @@ public class Feed {
     @Transient
     private int state;//工单状态,为1,不写进数据库
 
-    @Generated(hash = 797418797)
+
+    @Generated(hash = 111684577)
     public Feed(Long feed_id, String programId, String order, String operator,
-                int board_type, String line, String OrgLineSeat, String OrgMaterial,
-                String ScanLineSeat, String ScanMaterial, String Result, String Remark,
-                int SerialNo, boolean Alternative) {
+            int board_type, String line, String OrgLineSeat, String OrgMaterial,
+            String specitification, String position, int quantity,
+            String ScanLineSeat, String ScanMaterial, String Result, String Remark,
+            int SerialNo, boolean Alternative) {
         this.feed_id = feed_id;
         this.programId = programId;
         this.order = order;
@@ -47,6 +52,9 @@ public class Feed {
         this.line = line;
         this.OrgLineSeat = OrgLineSeat;
         this.OrgMaterial = OrgMaterial;
+        this.specitification = specitification;
+        this.position = position;
+        this.quantity = quantity;
         this.ScanLineSeat = ScanLineSeat;
         this.ScanMaterial = ScanMaterial;
         this.Result = Result;
@@ -58,6 +66,7 @@ public class Feed {
     @Generated(hash = 1810414124)
     public Feed() {
     }
+
 
     public Long getFeed_id() {
         return this.feed_id;
@@ -169,6 +178,30 @@ public class Feed {
 
     public void setAlternative(boolean Alternative) {
         this.Alternative = Alternative;
+    }
+
+    public String getSpecitification() {
+        return this.specitification;
+    }
+
+    public void setSpecitification(String specitification) {
+        this.specitification = specitification;
+    }
+
+    public String getPosition() {
+        return this.position;
+    }
+
+    public void setPosition(String position) {
+        this.position = position;
+    }
+
+    public int getQuantity() {
+        return this.quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
     }
 
 

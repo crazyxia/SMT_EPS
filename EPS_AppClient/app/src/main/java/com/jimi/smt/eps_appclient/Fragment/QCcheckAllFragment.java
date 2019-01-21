@@ -138,7 +138,8 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                     for (int i = 0, len = qcCheckAllList.size(); i < len; i++) {
                         QcCheckAll qcCheckAll = qcCheckAllList.get(i);
                         Material.MaterialBean bean = new Material.MaterialBean(qcCheckAll.getOrder(), qcCheckAll.getBoard_type(), qcCheckAll.getLine(),
-                                qcCheckAll.getProgramId(), qcCheckAll.getSerialNo(), qcCheckAll.getAlternative(), qcCheckAll.getOrgLineSeat(), qcCheckAll.getOrgMaterial(),
+                                qcCheckAll.getProgramId(), qcCheckAll.getSerialNo(), qcCheckAll.getAlternative(), qcCheckAll.getSpecitification(),
+                                qcCheckAll.getPosition(), qcCheckAll.getQuantity(), qcCheckAll.getOrgLineSeat(), qcCheckAll.getOrgMaterial(),
                                 qcCheckAll.getScanLineSeat(), qcCheckAll.getScanMaterial(), qcCheckAll.getResult(), qcCheckAll.getRemark());
                         mQcCheckALLMaterialBeans.add(bean);
                         if ((null != qcCheckAll.getResult()) && ((qcCheckAll.getResult().equalsIgnoreCase("PASS")) || (qcCheckAll.getResult().equalsIgnoreCase("FAIL")))) {
@@ -186,7 +187,8 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                         for (int i = 0, len = qcCheckAllList.size(); i < len; i++) {
                             QcCheckAll qcCheckAll = qcCheckAllList.get(i);
                             Material.MaterialBean bean = new Material.MaterialBean(qcCheckAll.getOrder(), qcCheckAll.getBoard_type(), qcCheckAll.getLine(),
-                                    qcCheckAll.getProgramId(), qcCheckAll.getSerialNo(), qcCheckAll.getAlternative(), qcCheckAll.getOrgLineSeat(), qcCheckAll.getOrgMaterial(),
+                                    qcCheckAll.getProgramId(), qcCheckAll.getSerialNo(), qcCheckAll.getAlternative(), qcCheckAll.getSpecitification()
+                                    , qcCheckAll.getPosition(), qcCheckAll.getQuantity(), qcCheckAll.getOrgLineSeat(), qcCheckAll.getOrgMaterial(),
                                     qcCheckAll.getScanLineSeat(), qcCheckAll.getScanMaterial(), qcCheckAll.getResult(), qcCheckAll.getRemark());
                             mQcCheckALLMaterialBeans.add(bean);
                         }
@@ -223,11 +225,11 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
             }
             // TODO: 2019/1/15
             materialAdapter.notifyDataSetChanged();
-            for (Material.MaterialBean bean:mQcCheckALLMaterialBeans) {
-                Log.d(TAG,"linseat - "+bean.getLineseat());
-                Log.d(TAG,"material - "+bean.getMaterialNo());
-                Log.d(TAG,"mark - "+bean.getRemark());
-                Log.d(TAG,"result - "+bean.getResult());
+            for (Material.MaterialBean bean : mQcCheckALLMaterialBeans) {
+                Log.d(TAG, "linseat - " + bean.getLineseat());
+                Log.d(TAG, "material - " + bean.getMaterialNo());
+                Log.d(TAG, "mark - " + bean.getRemark());
+                Log.d(TAG, "result - " + bean.getResult());
             }
             clearLineSeatMaterialScan();
             showLoading();
@@ -286,7 +288,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                     bean.setResult("");
                     QcCheckAll qcCheckAll = new QcCheckAll(null, bean.getProgramId(), bean.getWorkOrder(), globalData.getOperator(),
                             bean.getBoardType(), bean.getLine(), bean.getSerialNo(), bean.isAlternative(), bean.getLineseat(), bean.getMaterialNo(),
-                            "", "", "", "");
+                            bean.getSpecitification(), bean.getPosition(), bean.getQuantity(), "", "", "", "");
                     qcCheckAllList.add(qcCheckAll);
                 }
                 boolean cacheResult = new GreenDaoUtil().insertMultiQcCheckMaterial(qcCheckAllList);
@@ -297,7 +299,8 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
             for (int i = 0; i < qcCheckAllList.size(); i++) {
                 QcCheckAll qcCheckAll = qcCheckAllList.get(i);
                 Material.MaterialBean bean = new Material.MaterialBean(qcCheckAll.getOrder(), qcCheckAll.getBoard_type(), qcCheckAll.getLine(), qcCheckAll.getProgramId(),
-                        qcCheckAll.getSerialNo(), qcCheckAll.getAlternative(), qcCheckAll.getOrgLineSeat(), qcCheckAll.getOrgMaterial(), qcCheckAll.getScanLineSeat(),
+                        qcCheckAll.getSerialNo(), qcCheckAll.getAlternative(), qcCheckAll.getSpecitification(),qcCheckAll.getPosition(),qcCheckAll.getQuantity(),
+                        qcCheckAll.getOrgLineSeat(), qcCheckAll.getOrgMaterial(), qcCheckAll.getScanLineSeat(),
                         qcCheckAll.getScanMaterial(), qcCheckAll.getResult(), qcCheckAll.getRemark());
                 mQcCheckALLMaterialBeans.add(bean);
                 if ((null != qcCheckAll.getResult()) && ((qcCheckAll.getResult().equalsIgnoreCase("PASS")) || (qcCheckAll.getResult().equalsIgnoreCase("FAIL")))) {
