@@ -218,7 +218,6 @@ public class LoginController implements Initializable {
 			@Override
 			public void handle(WindowEvent event) {
 				System.exit(0);
-
 			}
 		});
 	}

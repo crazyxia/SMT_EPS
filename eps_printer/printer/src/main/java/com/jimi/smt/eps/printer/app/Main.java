@@ -1,4 +1,4 @@
-﻿package com.jimi.smt.eps.printer.app;
+package com.jimi.smt.eps.printer.app;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -24,10 +24,13 @@ public class Main extends Application {
 
 	private LoginController loginController;
 
-	private static final String VERSION = "1.11.1";
+	private static final String VERSION = "1.11.2";
 
-	private static final String FILE_NAME = "EPS_Printer-" + VERSION + ".jar";
+	private static final String FILE_NAME = "SMT-Printer_";
 
+	private static final String TYPE = ".jar";
+
+	
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		// 确保只有一个实例启动
@@ -99,7 +102,7 @@ public class Main extends Application {
 		BufferedReader b = new BufferedReader(new InputStreamReader(in));
 		int count = 0;
 		while ((line = b.readLine()) != null) {
-			if (line.contains(FILE_NAME)) {
+			if (line.contains(FILE_NAME) && line.contains(TYPE)) {
 				count++;
 				if (count > 1) {
 					return true;
