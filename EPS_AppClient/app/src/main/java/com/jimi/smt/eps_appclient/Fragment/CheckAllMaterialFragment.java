@@ -425,7 +425,7 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                     }
                 }
             }
-            //todo 需要更新全局变量为本地数据库的
+            //需要更新全局变量为本地数据库的,以提供更新依据
             globalData.setMaterialBeans(mCheckAllMaterialBeans);
         }
 

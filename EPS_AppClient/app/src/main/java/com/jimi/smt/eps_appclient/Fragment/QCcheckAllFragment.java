@@ -312,7 +312,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                 }
             }
 
-            //todo 需要更新全局变量为本地数据库的
+            //需要更新全局变量为本地数据库的,以提供更新依据
             globalData.setMaterialBeans(mQcCheckALLMaterialBeans);
         }
 

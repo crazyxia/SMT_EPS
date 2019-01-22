@@ -96,6 +96,7 @@ public class AdminActivity extends Activity implements View.OnClickListener {
                 break;
             case R.id.rl_ware:
                 globalData.setAdminOperType(Constants.ADMIN_WARE_HOUSE);
+                globalData.setWareProgramId(globalData.getProgramId());
                 Intent warehouse = new Intent(getApplicationContext(), WareHouseActivity.class);
                 Bundle warehouseBundle = new Bundle();
                 warehouseBundle.putString("orderNum", curOrderNum);
@@ -105,6 +106,7 @@ public class AdminActivity extends Activity implements View.OnClickListener {
                 break;
             case R.id.rl_factory:
                 globalData.setAdminOperType(Constants.ADMIN_FACTORY);
+                globalData.setFactoryProgramId(globalData.getProgramId());
                 Intent factory = new Intent(getApplicationContext(), FactoryLineActivity.class);
                 Bundle factoryBundle = new Bundle();
                 factoryBundle.putString("orderNum", curOrderNum);
@@ -114,6 +116,7 @@ public class AdminActivity extends Activity implements View.OnClickListener {
                 break;
             case R.id.rl_ipqc:
                 globalData.setAdminOperType(Constants.ADMIN_QC);
+                globalData.setQcProgramId(globalData.getProgramId());
                 Intent qc = new Intent(getApplicationContext(), QCActivity.class);
                 Bundle qcBundle = new Bundle();
                 qcBundle.putString("orderNum", curOrderNum);

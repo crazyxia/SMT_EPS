@@ -335,7 +335,7 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
             if (Constants.isCache) {
                 for (Material.MaterialBean bean : mFeedMaterialBeans) {
                     //保存缓存到数据库中
-                    Feed feed = new Feed(null, bean.getProgramId(), bean.getWorkOrder(), globalData.getOperator(),
+                    Feed feed = new Feed(null, bean.getProgramId(),bean.getWorkOrder(), globalData.getOperator(),
                             bean.getBoardType(), bean.getLine(), bean.getLineseat(), bean.getMaterialNo(), bean.getSpecitification(),
                             bean.getPosition(),bean.getQuantity(),bean.getScanlineseat(), bean.getScanMaterial(), bean.getResult(),
                             bean.getRemark(), bean.getSerialNo(), bean.isAlternative());
@@ -360,7 +360,8 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                 }
             }
 
-            //todo 需要更新全局变量为本地数据库的
+            //需要更新全局变量为本地数据库的,以提供更新依据
+            globalData.setFactoryProgramId(mFeedMaterialBeans.get(0).getProgramId());
             globalData.setMaterialBeans(mFeedMaterialBeans);
         }
         allCount = mFeedMaterialBeans.size();

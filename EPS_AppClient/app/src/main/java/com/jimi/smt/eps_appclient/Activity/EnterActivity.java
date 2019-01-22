@@ -110,8 +110,10 @@ public class EnterActivity extends Activity implements TextView.OnEditorActionLi
 
                 case Constants.WARE_HOUSE:
                     //仓库
+                    Program.ProgramBean wareBean = (Program.ProgramBean) msg.obj;
                     globalData.setUserType(Constants.WARE_HOUSE);
                     globalData.setOperator(curOperatorNum);
+                    globalData.setWareProgramId(wareBean.getId());
                     Toast.makeText(getApplicationContext(), "仓库", Toast.LENGTH_SHORT).show();
                     Intent warehouse = new Intent(getApplicationContext(), WareHouseActivity.class);
                     Bundle warehouseBundle = new Bundle();
@@ -122,8 +124,10 @@ public class EnterActivity extends Activity implements TextView.OnEditorActionLi
                     break;
                 case Constants.FACTORY:
                     //厂线
+                    Program.ProgramBean factoryBean = (Program.ProgramBean) msg.obj;
                     globalData.setUserType(Constants.FACTORY);
                     globalData.setOperator(curOperatorNum);
+                    globalData.setFactoryProgramId(factoryBean.getId());
                     Toast.makeText(getApplicationContext(), "厂线", Toast.LENGTH_SHORT).show();
                     Intent factory = new Intent(getApplicationContext(), FactoryLineActivity.class);
                     Bundle factoryBundle = new Bundle();
@@ -134,8 +138,10 @@ public class EnterActivity extends Activity implements TextView.OnEditorActionLi
                     break;
                 case Constants.QC:
                     //QC
+                    Program.ProgramBean qcBean = (Program.ProgramBean) msg.obj;
                     globalData.setUserType(Constants.QC);
                     globalData.setOperator(curOperatorNum);
+                    globalData.setQcProgramId(qcBean.getId());
                     Toast.makeText(getApplicationContext(), "QC", Toast.LENGTH_SHORT).show();
                     Intent qc = new Intent(getApplicationContext(), QCActivity.class);
                     Bundle qcBundle = new Bundle();
@@ -616,6 +622,7 @@ public class EnterActivity extends Activity implements TextView.OnEditorActionLi
                     List<Material.MaterialBean> materialBeans = material.fromJson(s, Material.class).getData();
                     com.jimi.smt.eps_appclient.Beans.Program.ProgramBean programBean = mProgramBeans.get(curCheckIndex);
                     for (Material.MaterialBean bean : materialBeans) {
+                        bean.setProgramId(programBean.getId());
                         bean.setLine(programBean.getLine());
                         bean.setWorkOrder(programBean.getWorkOrder());
                         bean.setBoardType(programBean.getBoardType());

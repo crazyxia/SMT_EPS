@@ -38,16 +38,6 @@ public class GlobalData extends Application {
         return context;
     }
 
-    private int clearAfterTimeOut = 1;
-
-    public int getClearAfterTimeOut() {
-        return clearAfterTimeOut;
-    }
-
-    public void setClearAfterTimeOut(int clearAfterTimeOut) {
-        this.clearAfterTimeOut = clearAfterTimeOut;
-    }
-
     //连接IP
     private String ip = "";
 
@@ -134,6 +124,36 @@ public class GlobalData extends Application {
 
     public void setProgramId(String programId) {
         this.programId = programId;
+    }
+
+    private String wareProgramId;
+
+    public String getWareProgramId() {
+        return wareProgramId;
+    }
+
+    public void setWareProgramId(String wareProgramId) {
+        this.wareProgramId = wareProgramId;
+    }
+
+    private String factoryProgramId;
+
+    public String getFactoryProgramId() {
+        return factoryProgramId;
+    }
+
+    public void setFactoryProgramId(String factoryProgramId) {
+        this.factoryProgramId = factoryProgramId;
+    }
+
+    private String qcProgramId;
+
+    public String getQcProgramId() {
+        return qcProgramId;
+    }
+
+    public void setQcProgramId(String qcProgramId) {
+        this.qcProgramId = qcProgramId;
     }
 
     //操作线号 301 - 308

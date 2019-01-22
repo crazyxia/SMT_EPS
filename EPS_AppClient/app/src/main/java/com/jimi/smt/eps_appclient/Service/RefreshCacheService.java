@@ -151,10 +151,40 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
      * @return 1, 表示相同; 0,表示不相同
      */
     private int doCheckProgramId(String newProgramId) {
+
+        if ((globalData.getUserType() == Constants.WARE_HOUSE)
+                || (globalData.getUserType() == Constants.ADMIN && globalData.getAdminOperType() == Constants.ADMIN_WARE_HOUSE)) {
+            //仓库
+            if (newProgramId.equals(globalData.getWareProgramId()))
+                return 1;
+            else
+                globalData.setWareProgramId(newProgramId);
+
+        } else if ((globalData.getUserType() == Constants.FACTORY)
+                || (globalData.getUserType() == Constants.ADMIN && globalData.getAdminOperType() == Constants.ADMIN_FACTORY)) {
+            //厂线
+            if (newProgramId.equals(globalData.getFactoryProgramId()))
+                return 1;
+            else
+                globalData.setFactoryProgramId(newProgramId);
+
+        } else if ((globalData.getUserType() == Constants.QC)
+                || (globalData.getUserType() == Constants.ADMIN && globalData.getAdminOperType() == Constants.ADMIN_QC)) {
+            //IPQC
+            if (newProgramId.equals(globalData.getQcProgramId()))
+                return 1;
+            else
+                globalData.setQcProgramId(newProgramId);
+        }
+
+        /*
         if (newProgramId.equals(globalData.getProgramId()))
             return 1;
+        */
+
         //programId不一样
         globalData.setProgramId(newProgramId);
+
         return 0;
     }
 
@@ -197,6 +227,7 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
                             globalData.getLine(), globalData.getBoard_type());
                     //发料
                     if (wares != null && wares.size() > 0) {
+
                         //更新programID
                         for (Ware ware : wares) {
                             ware.setProgramId(globalData.getProgramId());
@@ -223,10 +254,13 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
                             globalData.getLine(), globalData.getBoard_type());
                     //上料
                     if (feeds != null && feeds.size() > 0) {
+                        /*
                         for (Feed feed : feeds) {
                             feed.setProgramId(globalData.getProgramId());
                             GreenDaoUtil.getGreenDaoUtil().updateFeed(feed);
                         }
+
+                        */
                         //先删除更新的对应站位的数据
                         boolean delete = new GreenDaoUtil().deleteFeedBySeat(seats);
                         Log.d(TAG, "上料 删除 - " + delete);
@@ -334,8 +368,8 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
         int userType = globalData.getUserType();
         if (checkAllTimeOut == 1) {
             //超时
-            if ((globalData.getUserType() == Constants.WARE_HOUSE)
-                    || (globalData.getUserType() == Constants.ADMIN && globalData.getAdminOperType() == Constants.ADMIN_WARE_HOUSE)) {
+            if ((userType == Constants.WARE_HOUSE)
+                    || (userType == Constants.ADMIN && globalData.getAdminOperType() == Constants.ADMIN_WARE_HOUSE)) {
                 //仓库
                 if (0 == equal) {
                     //发料纪录
@@ -345,7 +379,7 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
                     if (wares != null && wares.size() > 0) {
                         //更新programID
                         for (Ware ware : wares) {
-                            ware.setProgramId(globalData.getProgramId());
+                            ware.setProgramId(globalData.getWareProgramId());
                             ware.setScanLineSeat("");
                             ware.setScanMaterial("");
                             ware.setRemark("");
@@ -527,7 +561,7 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
                 return false;
             }
             //BOM料号/规格
-            if (!(a.get(i).getSpecitification() .equalsIgnoreCase(b.get(i).getSpecitification()))) {
+            if (!(a.get(i).getSpecitification().equalsIgnoreCase(b.get(i).getSpecitification()))) {
 //                Log.d(TAG, "itemList - " + a.get(i).getSpecitification());
 //                Log.d(TAG, "NewItemList - " + b.get(i).getSpecitification());
                 return false;
@@ -539,7 +573,7 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
                 return false;
             }
             //单板位置
-            if (!(a.get(i).getPosition() .equalsIgnoreCase(b.get(i).getPosition()))) {
+            if (!(a.get(i).getPosition().equalsIgnoreCase(b.get(i).getPosition()))) {
 //                Log.d(TAG, "itemList - " + a.get(i).isAlternative());
 //                Log.d(TAG, "NewItemList - " + b.get(i).isAlternative());
                 return false;
@@ -589,7 +623,7 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
                     Ware ware = new Ware(null, materialItem.getProgramId(), materialItem.getWorkOrder(),
                             globalData.getOperator(), materialItem.getBoardType(), materialItem.getLine(),
                             materialItem.getSerialNo(), materialItem.isAlternative(), materialItem.getSpecitification(),
-                            materialItem.getPosition(),materialItem.getQuantity(),materialItem.getLineseat(),
+                            materialItem.getPosition(), materialItem.getQuantity(), materialItem.getLineseat(),
                             materialItem.getMaterialNo(), materialItem.getScanlineseat(), materialItem.getScanMaterial(),
                             materialItem.getResult(), materialItem.getRemark());
                     wares.add(ware);
@@ -615,7 +649,7 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
 
                     Feed feed = new Feed(null, materialItem.getProgramId(), materialItem.getWorkOrder(), globalData.getOperator(),
                             materialItem.getBoardType(), materialItem.getLine(), materialItem.getLineseat(), materialItem.getMaterialNo(),
-                            materialItem.getSpecitification(),materialItem.getPosition(),materialItem.getQuantity(),
+                            materialItem.getSpecitification(), materialItem.getPosition(), materialItem.getQuantity(),
                             materialItem.getScanlineseat(), materialItem.getScanMaterial(), materialItem.getResult(), materialItem.getRemark(),
                             materialItem.getSerialNo(), materialItem.isAlternative());
                     feeds.add(feed);
@@ -643,7 +677,7 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
                     FLCheckAll flCheckAll = new FLCheckAll(null, materialItem.getProgramId(), materialItem.getWorkOrder(),
                             globalData.getOperator(), materialItem.getBoardType(), materialItem.getLine(), materialItem.getSerialNo(),
                             materialItem.isAlternative(), materialItem.getLineseat(), materialItem.getMaterialNo(),
-                            materialItem.getSpecitification(),materialItem.getPosition(),materialItem.getQuantity(),materialItem.getScanlineseat(),
+                            materialItem.getSpecitification(), materialItem.getPosition(), materialItem.getQuantity(), materialItem.getScanlineseat(),
                             materialItem.getScanMaterial(), materialItem.getResult(), materialItem.getRemark());
                     flCheckAlls.add(flCheckAll);
                 }
@@ -667,7 +701,7 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
                     QcCheckAll qcCheckAll = new QcCheckAll(null, materialItem.getProgramId(), materialItem.getWorkOrder(),
                             globalData.getOperator(), materialItem.getBoardType(), materialItem.getLine(), materialItem.getSerialNo(),
                             materialItem.isAlternative(), materialItem.getLineseat(), materialItem.getMaterialNo(),
-                            materialItem.getSpecitification(),materialItem.getPosition(),materialItem.getQuantity(),materialItem.getScanlineseat(),
+                            materialItem.getSpecitification(), materialItem.getPosition(), materialItem.getQuantity(), materialItem.getScanlineseat(),
                             materialItem.getScanMaterial(), materialItem.getResult(), materialItem.getRemark());
                     qcCheckAlls.add(qcCheckAll);
                 }

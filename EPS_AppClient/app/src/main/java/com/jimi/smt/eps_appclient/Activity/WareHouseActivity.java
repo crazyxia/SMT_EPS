@@ -165,7 +165,7 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
                 for (Material.MaterialBean bean : mWareMaterialBeans) {
                     Ware ware = new Ware(null, bean.getProgramId(), bean.getWorkOrder(), globalData.getOperator(),
                             bean.getBoardType(), bean.getLine(), bean.getSerialNo(), bean.isAlternative(), bean.getSpecitification(),
-                            bean.getPosition(),bean.getQuantity(),bean.getLineseat(), bean.getMaterialNo(), bean.getScanlineseat(),
+                            bean.getPosition(), bean.getQuantity(), bean.getLineseat(), bean.getMaterialNo(), bean.getScanlineseat(),
                             bean.getScanMaterial(), bean.getResult(), bean.getRemark());
                     wareList.add(ware);
                 }
@@ -179,8 +179,8 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
         else {
             for (Ware ware : wareList) {
                 Material.MaterialBean bean = new Material.MaterialBean(ware.getOrder(), ware.getBoard_type(), ware.getLine(),
-                        ware.getProgramId(), ware.getSerialNo(), ware.getAlternative(), ware.getSpecitification(),ware.getPosition(),
-                        ware.getQuantity(),ware.getOrgLineSeat(), ware.getOrgMaterial(), ware.getScanLineSeat(), ware.getScanMaterial(),
+                        ware.getProgramId(), ware.getSerialNo(), ware.getAlternative(), ware.getSpecitification(), ware.getPosition(),
+                        ware.getQuantity(), ware.getOrgLineSeat(), ware.getOrgMaterial(), ware.getScanLineSeat(), ware.getScanMaterial(),
                         ware.getResult(), ware.getRemark());
                 mWareMaterialBeans.add(bean);
 //                Log.d(TAG, "bean - " + bean.getLineseat());
@@ -192,7 +192,8 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
                 }
             }
 
-            //todo 需要更新全局变量为本地数据库的
+            //需要更新全局变量为本地数据库的,以提供更新依据
+            globalData.setWareProgramId(mWareMaterialBeans.get(0).getProgramId());
             globalData.setMaterialBeans(mWareMaterialBeans);
         }
 
@@ -232,7 +233,6 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
     //监听订阅的消息
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEventMainThread(EvenBusTest event) {
-
         //更新
         if (event.getUpdated() == 0) {
             Log.d(TAG, "onEventMainThread - " + event.getUpdated());
@@ -247,7 +247,7 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
                     mWareMaterialBeans.clear();
                     for (Ware ware : wareList) {
                         Material.MaterialBean bean = new Material.MaterialBean(ware.getOrder(), ware.getBoard_type(), ware.getLine(),
-                                ware.getProgramId(), ware.getSerialNo(), ware.getAlternative(),ware.getSpecitification(),ware.getPosition(),ware.getQuantity(),
+                                ware.getProgramId(), ware.getSerialNo(), ware.getAlternative(), ware.getSpecitification(), ware.getPosition(), ware.getQuantity(),
                                 ware.getOrgLineSeat(), ware.getOrgMaterial(), ware.getScanLineSeat(), ware.getScanMaterial(), ware.getResult(), ware.getRemark());
                         mWareMaterialBeans.add(bean);
                         //获取成功发料次数
@@ -267,11 +267,11 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
         }
         //未更新
         else {
-            if (0 == event.getProgramIdEqual()){
+            if (0 == event.getProgramIdEqual()) {
                 showUpdateDialog("提示", "站位表作废并重传！", "站位表作废并重传！");
                 sucIssueCount = 0;
                 //填充数据
-                for (Material.MaterialBean bean:mWareMaterialBeans) {
+                for (Material.MaterialBean bean : mWareMaterialBeans) {
                     bean.setProgramId(globalData.getProgramId());
                     bean.setScanlineseat("");
                     bean.setScanMaterial("");
@@ -289,7 +289,7 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
     }
 
     // TODO: 2018/9/12
-    private void showUpdateDialog(String title,String msg,String toast) {
+    private void showUpdateDialog(String title, String msg, String toast) {
         if (wareResultDialog != null && wareResultDialog.isShowing()) {
             wareResultDialog.cancel();
             wareResultDialog.dismiss();
@@ -640,7 +640,7 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
         } else {
             //添加日志
             Material.MaterialBean bean = new Material.MaterialBean(globalData.getWork_order(), globalData.getBoard_type(), globalData.getLine(), globalData.getProgramId(),
-                    -1, false, "","",-1,"", "", "", "", "FAIL", "不存在该料号的站位!");
+                    -1, false, "", "", -1, "", "", "", "", "FAIL", "不存在该料号的站位!");
             Operation operation = Operation.getOperation(curOperatorNUm, Constants.STORE_ISSUE, bean);
             mHttpUtils.addOperation(operation);
         }
