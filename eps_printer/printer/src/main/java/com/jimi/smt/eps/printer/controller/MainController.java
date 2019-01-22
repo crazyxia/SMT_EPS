@@ -1,6 +1,7 @@
 package com.jimi.smt.eps.printer.controller;
 
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -8,6 +9,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URI;
@@ -860,8 +863,6 @@ public class MainController implements Initializable {
 			stringBuffer.append(materialId);
 		}
 		stringBuffer.append("@");
-		stringBuffer.append(descriptionLb.getText().trim());
-		stringBuffer.append("@");
 		stringBuffer.append(userId);
 		stringBuffer.append("@");
 		stringBuffer.append(supplierLb.getText());
@@ -871,6 +872,8 @@ public class MainController implements Initializable {
 		stringBuffer.append(serialNo++);
 		stringBuffer.append("@");
 		stringBuffer.append(dateTf.getText().trim());
+		stringBuffer.append("@");
+		stringBuffer.append(descriptionLb.getText().trim());
 		stringBuffer.append("@");
 		data = stringBuffer.toString();
 	}
@@ -900,10 +903,10 @@ public class MainController implements Initializable {
 					log.setMaterialNo(datas[0] == null ? "" : datas[0]);
 					log.setQuantity(Integer.valueOf(datas[1]));
 					log.setTimestamp(datas[2] == null ? "" : datas[2]);
-					log.setOperator(datas[4] == null ? "" : datas[4]);
-					log.setCustom(datas[5] == null ? "" : datas[5]);
-					log.setPosition(datas[6] == null ? "" : datas[6]);
-					log.setProductionDate(new SimpleDateFormat("yyyy-MM-dd").parse(datas[8]));
+					log.setOperator(datas[3] == null ? "" : datas[3]);
+					log.setCustom(datas[4] == null ? "" : datas[4]);
+					log.setPosition(datas[5] == null ? "" : datas[5]);
+					log.setProductionDate(new SimpleDateFormat("yyyy-MM-dd").parse(datas[7]));
 					log.setOperationTime(new Date());
 					stockList.add(log);
 				}
@@ -1117,7 +1120,9 @@ public class MainController implements Initializable {
 					System.out.println("1111111111");
 					throw new IOException();
 				}
-				Runtime.getRuntime().exec("printer.exe");
+				if (!isPrinterRunning()) {
+					Runtime.getRuntime().exec("printer.exe");
+				}
 				printerSocket = new Socket();
 				printerSocket.setSoTimeout(1000);
 				printerSocket.connect(new InetSocketAddress(ip, 10101), 3000);
@@ -1578,6 +1583,27 @@ public class MainController implements Initializable {
 		printTaskInfoTfs.add(4, null);
 		printTaskInfoTfs.add(5, null);
 		printTaskInfoTfs.add(6, copyTf);
+	}
+	
+
+	/**@author HCJ
+	 * 判断是否已经有一个打印软件在运行
+	 * @date 2019年1月22日 上午11:36:31
+	 */
+	public static boolean isPrinterRunning() throws IOException {
+		InputStream in = Runtime.getRuntime().exec("tasklist /fi \"imagename eq printer.exe\"").getInputStream();
+		BufferedReader buffer = new BufferedReader(new InputStreamReader(in));
+		String line = null;
+		int count = 0;
+		while ((line = buffer.readLine()) != null) {
+			if (!"".equals(line)) {
+				count++;
+				if (count > 1) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	
