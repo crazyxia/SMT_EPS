@@ -43,6 +43,18 @@ import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
+import com.jimi.bude.finger.Finger;
+import com.jimi.bude.finger.config.FingerConfig;
+import com.jimi.bude.finger.inter.CallBackReplyCallBack;
+import com.jimi.bude.finger.inter.ConnectCallBack;
+import com.jimi.bude.finger.inter.ExceptionCallBack;
+import com.jimi.bude.finger.inter.LoginReplyCallBack;
+import com.jimi.bude.finger.inter.UpdateCallBack;
+import com.jimi.bude.finger.pack.CallBackReplyPackage;
+import com.jimi.bude.finger.pack.LoginPackage;
+import com.jimi.bude.finger.pack.LoginReplyPackage;
+import com.jimi.bude.finger.pack.UpdatePackage;
+import com.jimi.smt.eps.printer.util.IpHelper;
 import com.jimi.smt.eps.printer.app.Main;
 import com.jimi.smt.eps.printer.entity.Material;
 import com.jimi.smt.eps.printer.entity.MaterialFileInfo;
@@ -57,6 +69,7 @@ import com.jimi.smt.eps.printer.util.HttpHelper;
 import com.jimi.smt.eps.printer.util.IniReader;
 import com.jimi.smt.eps.printer.websocket.RemotePrintTaskReceiver;
 
+import cc.darhao.dautils.api.BytesParser;
 import cc.darhao.dautils.api.DateUtil;
 import cc.darhao.dautils.api.ResourcesUtil;
 import cc.darhao.dautils.api.TextFileUtil;
@@ -276,12 +289,27 @@ public class MainController implements Initializable {
 
 	private static final String INSERT_STOCK_ACTION = "stock/insert";
 	
-	private static final String CONFIG_FILE = "/config.ini";
+	// 配置文件
+	private static final String CONFIG_FILE = "config.ini";
+	private static final String CONTROL_ID_RECORD_FILE = "controlIdRecord.txt";
+	private static final String VERSION_FILE = "version.txt";
 	
 	private List<TextField> printTaskInfoTfs = new ArrayList<TextField>();
 
+	// 包ID
+	static short packageId = 0;
+	// 更新成功
+	private static final int UPDATE_FINGER_SUCCEED = 26;
+	// 包ID默认值
+	private static final int DEFAULT_PACKAGE_ID = 0;
+	// 类型为设备端
+	private static final int FINGER_TYPE = 1;
+
+	private Finger finger;
+
 	
 	public void initialize(URL arg0, ResourceBundle arg1) {
+		initVersion();
 		initTableCol();
 		initPrintTaskInfoTfs();
 		initFocusTarget();
@@ -298,6 +326,8 @@ public class MainController implements Initializable {
 		initPrinter();
 		initRemoteSocket();
 		showLogoutAlert();
+		// 设备端初始化
+		initFinger();
 	}
 	
 	
@@ -370,7 +400,7 @@ public class MainController implements Initializable {
 	public void initRemoteSocket() {
 		remoteReceiver = new RemotePrintTaskReceiver();
 		WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-		Map<String, String> map_url = IniReader.getItem(System.getProperty("user.dir") + CONFIG_FILE, "websocketurl");
+		Map<String, String> map_url = IniReader.getItem(System.getProperty("user.dir") + "/" + CONFIG_FILE, "websocketurl");
 		String webSocketURL = map_url.get("websocketurl");
 		String ip = map_url.get("printerIp");
 		// 连接webSocket
@@ -824,6 +854,156 @@ public class MainController implements Initializable {
 		} else {
 			printTaskInfoTfs.set(6, null);
 		}
+	}
+	
+	
+	/**@author HCJ
+	 * 初始化设备端，开启连接
+	 * @date 2019年1月23日 上午8:24:37
+	 */
+	public void initFinger() {
+		Map<String, String> fingerSetting = IniReader.getItem(CONFIG_FILE, "finger");
+		String remoteIp = fingerSetting.get("remoteIp");
+		Integer port = Integer.parseInt(fingerSetting.get("port"));
+		String armName = fingerSetting.get("armName");
+		String fingerName = fingerSetting.get("fingerName");
+		String downloadPath = System.getProperty("user.dir");
+		String downloadURL = fingerSetting.get("downloadURL");
+		String version = "";
+		try {
+			version = TextFileUtil.readFromFile(VERSION_FILE);
+		} catch (IOException e1) {
+			logger.error("版本文件读写出现错误");
+			e1.printStackTrace();
+		}
+		FingerConfig config = new FingerConfig(fingerName, version, downloadURL, downloadPath);
+		finger = new Finger(remoteIp, port, 20000, config);
+		config.setConnectCallBack(new ConnectCallBack() {
+
+			public void onConnect(Finger session) {
+				LoginPackage login = new LoginPackage();
+				login.setArmName(armName);
+				// 发送前需将ip转化成16进制
+				String ip = BytesParser.parseBytesToHexString((BytesParser.parseXRadixStringToBytes(IpHelper.getWindowsLocalIp().replace(".", " "), 10)));
+				login.setFingerIp(ip);
+				login.setFingerName(fingerName);
+				login.setType(1);
+				login.setPackageId(0);
+				// 发送登录包
+				session.sendLoginPackage(login);
+			}
+		});
+		config.setLoginReplyCallBack(new LoginReplyCallBack() {
+
+			public void onReplyArrived(LoginReplyPackage r, Finger session) {
+				if (r.getResultCode() != 20) {
+					logger.error("--------------登录失败------------------");
+					try {
+						Thread.sleep(3000);
+					} catch (InterruptedException e) {
+						logger.error("登陆失败时休眠线程出现异常");
+						e.printStackTrace();
+					}
+					LoginPackage login = new LoginPackage();
+					login.setArmName(armName);
+					String ip = BytesParser.parseBytesToHexString((BytesParser.parseXRadixStringToBytes(IpHelper.getWindowsLocalIp().replace(".", " "), 10)));
+					login.setFingerIp(ip);
+					login.setFingerName(fingerName);
+					login.setType(1);
+					login.setPackageId(genPackageId());
+					// 发送登录包
+					session.sendLoginPackage(login);
+				} else {
+					Platform.runLater(new Runnable() {
+
+						@Override
+						public void run() {
+							new Alert(AlertType.INFORMATION, "登录中转端成功", ButtonType.OK).show();
+							try {
+								File controlIdRecord = new File(CONTROL_ID_RECORD_FILE);
+								if (!controlIdRecord.exists()) {
+									controlIdRecord.createNewFile();
+								}
+								String controlId = TextFileUtil.readFromFile(CONTROL_ID_RECORD_FILE);
+								if (controlId != null && !"".equals(controlId)) {
+									finger.sendCallBackPackage(Integer.parseInt(controlId), DEFAULT_PACKAGE_ID, UPDATE_FINGER_SUCCEED, fingerName, FINGER_TYPE);
+									TextFileUtil.writeToFile(CONTROL_ID_RECORD_FILE, "");
+								}
+							} catch (IOException e) {
+								logger.error("读写controlIdRecord配置文件出错");
+								e.printStackTrace();
+							}
+						}
+					});
+				}
+			}
+		});
+		// 配置接收到更新CallBack回复包后执行的方法
+		config.setUpdateCallBack(new UpdateCallBack() {
+
+			@Override
+			public void onPackageArrvied(UpdatePackage r, Finger session) {
+				logger.info("接收到更新包, " + "信息序列号：" + session.getSerialNo() + "MD5 : " + r.getMd5());
+				try {
+					Integer ControllId = r.getControllId();
+					TextFileUtil.writeToFile("controlIdRecord.txt", ControllId.toString());
+					if (!new File("update.bat").exists()) {
+						Platform.runLater(new Runnable() {
+
+							@Override
+							public void run() {
+								new Alert(AlertType.ERROR, "远程更新时找不到update.bat文件，请联系工程师", ButtonType.OK).show();
+							}
+						});
+					} else {
+						Thread.sleep(5000);
+						finger.stop();
+						Runtime.getRuntime().exec("cmd /k start .\\update.bat");
+						System.exit(0);
+					}
+				} catch (IOException e) {
+					logger.error("版本文件写入出错");
+					e.printStackTrace();
+				} catch (InterruptedException e) {
+					logger.error("更新时线程休眠出错");
+					e.printStackTrace();
+				}
+			}
+		});
+		// 配置接收到CallBack回复包后执行的方法
+		config.setCallBackReplyCallBack(new CallBackReplyCallBack() {
+
+			public void onReplyArrived(CallBackReplyPackage r, Finger session) {
+				logger.info("收到CallBack回复包，设备端名称：" + r.getFingerName());
+			}
+		});
+		// 配置捕获到异常后执行的方法
+		config.setExceptionCallBack(new ExceptionCallBack() {
+
+			@Override
+			public void onCathcException(Exception e, Finger session) {
+				e.printStackTrace();
+				logger.error("与中转端连接过程出现异常 | " + e.getMessage());
+			}
+		});
+		Platform.runLater(new Runnable() {
+
+			@Override
+			public void run() {
+				finger.start();
+			}
+		});
+	}
+
+	
+	/**@author HCJ
+	 * 生成packageId
+	 * @date 2019年1月23日 上午8:25:03
+	 */
+	public synchronized static Short genPackageId() {
+		packageId %= 65536;
+		packageId++;
+		return packageId;
 	}
 
 	
@@ -1585,6 +1765,22 @@ public class MainController implements Initializable {
 		printTaskInfoTfs.add(6, copyTf);
 	}
 	
+	
+	/**@author HCJ
+	 * 记录当前版本
+	 * @date 2019年1月23日 上午8:44:00
+	 */
+	private void initVersion() {
+		try {
+			String path = System.getProperty("java.class.path");
+			String jarName = path.substring(path.lastIndexOf("\\") + 1, path.lastIndexOf("."));
+			TextFileUtil.writeToFile(VERSION_FILE, jarName);
+		} catch (IOException e) {
+			logger.error("版本文件写入出现错误");
+			e.printStackTrace();
+		}
+	}
+	
 
 	/**@author HCJ
 	 * 判断是否已经有一个打印软件在运行
@@ -1611,6 +1807,10 @@ public class MainController implements Initializable {
 		primaryStage.setOnCloseRequest((event) -> {
 			FXMLLoader loader;
 			try {
+				if(printerSocket.isConnected()) {
+					printerSocket.close();
+				}
+				finger.stop();
 				loader = new FXMLLoader(ResourcesUtil.getResourceURL("fxml/login.fxml"));
 				Parent root = loader.load();
 				// 把Stage存入MainController
