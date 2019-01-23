@@ -51,7 +51,7 @@ public class QCActivity extends FragmentActivity implements View.OnClickListener
     private GlobalData globalData;
     private GlobalFunc globalFunc;
     private QCActivityInterface qcActivityInterface;
-    public LoadingDialog updateDialog;
+    //    public LoadingDialog updateDialog;
     private InfoDialog infoDialog;
     private CheckMaterialFragment checkMaterialFragment;
     private QCcheckAllFragment qCcheckAllFragment;
@@ -113,18 +113,28 @@ public class QCActivity extends FragmentActivity implements View.OnClickListener
             globalData.setUpdateProgram(false);
         } else {
             if (event.getCheckAllTimeOut() == 1) {
-                //判断本地数据是否清空
-                boolean clear = true;
-                List<QcCheckAll> qcCheckAlls = new GreenDaoUtil().queryQcCheckRecord(globalData.getOperator(), globalData.getWork_order()
-                        , globalData.getLine(), globalData.getBoard_type());
-                for (QcCheckAll qcCheckAll : qcCheckAlls) {
-                    if ((null != qcCheckAll.getResult()) && ((qcCheckAll.getResult().equalsIgnoreCase("PASS")) || (qcCheckAll.getResult().equalsIgnoreCase("FAIL")))) {
-                        clear = false;
-                        break;
+                //是否作废
+                if (0 == event.getProgramIdEqual()) {
+                    showUpdateDialog("站位表作废并重传！", "站位表作废并重传！");
+                } else {
+                    //判断本地数据是否清空
+                    boolean clear = true;
+                    List<QcCheckAll> qcCheckAlls = new GreenDaoUtil().queryQcCheckRecord(globalData.getOperator(), globalData.getWork_order()
+                            , globalData.getLine(), globalData.getBoard_type());
+                    for (QcCheckAll qcCheckAll : qcCheckAlls) {
+                        if ((null != qcCheckAll.getResult()) && ((qcCheckAll.getResult().equalsIgnoreCase("PASS")) || (qcCheckAll.getResult().equalsIgnoreCase("FAIL")))) {
+                            clear = false;
+                            break;
+                        }
+                    }
+                    if (!clear) {
+                        showUpdateDialog("全检超时!", "全检超时!");
                     }
                 }
-                if (!clear) {
-                    showUpdateDialog("全检超时!", "全检超时!");
+            }else {
+                //是否作废重传
+                if (0 == event.getProgramIdEqual()) {
+                    showUpdateDialog("站位表作废并重传！", "站位表作废并重传！");
                 }
             }
         }
@@ -270,10 +280,10 @@ public class QCActivity extends FragmentActivity implements View.OnClickListener
 
     //IPQC未做首次全检
     public void showInfo(String title, String message, String tip) {
-        if (updateDialog != null && updateDialog.isShowing()) {
+        /*if (updateDialog != null && updateDialog.isShowing()) {
             updateDialog.cancel();
             updateDialog.dismiss();
-        }
+        }*/
         //对话框所有控件id
         int itemResIds[] = new int[]{R.id.dialog_title_view,
                 R.id.dialog_title, R.id.tv_alert_info, R.id.info_trust, R.id.tv_alert_msg};

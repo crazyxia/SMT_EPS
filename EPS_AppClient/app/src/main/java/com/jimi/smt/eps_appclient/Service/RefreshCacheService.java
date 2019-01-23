@@ -151,10 +151,12 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
      * @return 1, 表示相同; 0,表示不相同
      */
     private int doCheckProgramId(String newProgramId) {
+        Log.d(TAG, "doCheckProgramId -  " + newProgramId);
 
         if ((globalData.getUserType() == Constants.WARE_HOUSE)
                 || (globalData.getUserType() == Constants.ADMIN && globalData.getAdminOperType() == Constants.ADMIN_WARE_HOUSE)) {
             //仓库
+            Log.d(TAG, "仓库 -  " + globalData.getWareProgramId());
             if (newProgramId.equals(globalData.getWareProgramId()))
                 return 1;
             else
@@ -163,6 +165,7 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
         } else if ((globalData.getUserType() == Constants.FACTORY)
                 || (globalData.getUserType() == Constants.ADMIN && globalData.getAdminOperType() == Constants.ADMIN_FACTORY)) {
             //厂线
+            Log.d(TAG, "厂线 -  " + globalData.getFactoryProgramId());
             if (newProgramId.equals(globalData.getFactoryProgramId()))
                 return 1;
             else
@@ -171,6 +174,7 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
         } else if ((globalData.getUserType() == Constants.QC)
                 || (globalData.getUserType() == Constants.ADMIN && globalData.getAdminOperType() == Constants.ADMIN_QC)) {
             //IPQC
+            Log.d(TAG, "IPQC -  " + globalData.getQcProgramId());
             if (newProgramId.equals(globalData.getQcProgramId()))
                 return 1;
             else
@@ -197,6 +201,8 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
      * @param equal         1,表示相同; 0,表示不相同
      */
     private void doRefresh(List<Material.MaterialBean> materialBeans, int timeOut, int equal) {
+        Log.d(TAG, "doRefresh - timeOut " + timeOut);
+        Log.d(TAG, "doRefresh - equal " + equal);
         EvenBusTest evenBusTest = new EvenBusTest();
         //当前的料号表
         List<Material.MaterialBean> oldMaterialBeans = globalData.getMaterialBeans();
@@ -213,133 +219,129 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
             //更新全局变量
             globalData.setMaterialBeans(materialBeans);
             //更新本地数据库
-            if (Constants.isCache) {
-                List<Material.MaterialBean> updateBeans = getUpdateMaterials(oldMaterialBeans, materialBeans);
-                List<String> seats = getUpdateSeats(updateBeans);
+            List<Material.MaterialBean> updateBeans = getUpdateMaterials(oldMaterialBeans, materialBeans);
+            List<String> seats = getUpdateSeats(updateBeans);
 
-                Log.d(TAG, "globalData.getUserType - " + globalData.getUserType());
+            Log.d(TAG, "globalData.getUserType - " + globalData.getUserType());
 
 
-                if ((globalData.getUserType() == Constants.WARE_HOUSE)
-                        || (globalData.getUserType() == Constants.ADMIN && globalData.getAdminOperType() == Constants.ADMIN_WARE_HOUSE)) {
-                    //发料纪录
-                    List<Ware> wares = new GreenDaoUtil().queryWareRecord(globalData.getOperator(), globalData.getWork_order(),
-                            globalData.getLine(), globalData.getBoard_type());
-                    //发料
-                    if (wares != null && wares.size() > 0) {
+            if ((globalData.getUserType() == Constants.WARE_HOUSE)
+                    || (globalData.getUserType() == Constants.ADMIN && globalData.getAdminOperType() == Constants.ADMIN_WARE_HOUSE)) {
+                //发料纪录
+                List<Ware> wares = new GreenDaoUtil().queryWareRecord(globalData.getOperator(), globalData.getWork_order(),
+                        globalData.getLine(), globalData.getBoard_type());
+                //发料
+                if (wares != null && wares.size() > 0) {
 
-                        //更新programID
-                        for (Ware ware : wares) {
-                            ware.setProgramId(globalData.getProgramId());
-                            GreenDaoUtil.getGreenDaoUtil().updateWare(ware);
-                        }
-                        //先删除更新的对应站位的数据
-                        boolean delete = new GreenDaoUtil().deleteWareBySeat(seats);
-                        Log.d(TAG, "发料 删除 - " + delete);
-                        //再更新本地数据库
-                        boolean update = new GreenDaoUtil().updateOrInsertWare(getUpdateWares(seats, materialBeans));
-                        Log.d(TAG, "发料 更新本地数据库 - " + update);
-                        //获取本地数据库最新的发料数据
-                        List<Ware> newWares = new GreenDaoUtil().queryWareRecord(globalData.getOperator(), globalData.getWork_order()
-                                , globalData.getLine(), globalData.getBoard_type());
-                        //保存到订阅事件中
-                        evenBusTest.setWareList(newWares);
+                    //更新programID
+                    for (Ware ware : wares) {
+                        ware.setProgramId(globalData.getProgramId());
+                        GreenDaoUtil.getGreenDaoUtil().updateWare(ware);
                     }
-                } else if ((globalData.getUserType() == Constants.FACTORY)
-                        || (globalData.getUserType() == Constants.ADMIN && globalData.getAdminOperType() == Constants.ADMIN_FACTORY)) {
-                    //上料纪录、操作员全检纪录
-                    List<Feed> feeds = new GreenDaoUtil().queryFeedRecord(globalData.getOperator(), globalData.getWork_order(),
-                            globalData.getLine(), globalData.getBoard_type());
-                    List<FLCheckAll> flCheckAlls = new GreenDaoUtil().queryFLCheckRecord(globalData.getOperator(), globalData.getWork_order(),
-                            globalData.getLine(), globalData.getBoard_type());
-                    //上料
-                    if (feeds != null && feeds.size() > 0) {
-                        /*
-                        for (Feed feed : feeds) {
-                            feed.setProgramId(globalData.getProgramId());
-                            GreenDaoUtil.getGreenDaoUtil().updateFeed(feed);
-                        }
-
-                        */
-                        //先删除更新的对应站位的数据
-                        boolean delete = new GreenDaoUtil().deleteFeedBySeat(seats);
-                        Log.d(TAG, "上料 删除 - " + delete);
-                        //再更新本地数据库
-                        boolean update = new GreenDaoUtil().updateOrInsertFeed(getUpdateFeeds(seats, materialBeans));
-                        Log.d(TAG, "上料 更新本地数据库 - " + update);
-                        //获取本地数据库最新的上料数据
-                        List<Feed> newFeeds = new GreenDaoUtil().queryFeedRecord(globalData.getOperator(), globalData.getWork_order()
-                                , globalData.getLine(), globalData.getBoard_type());
-                        //保存到订阅事件中
-                        evenBusTest.setFeedList(newFeeds);
-                    }
-                    //操作员全检
-                    if (flCheckAlls != null && flCheckAlls.size() > 0) {
-                        // TODO: 2018/12/26
-                        if (timeOut == 0) {
-                            //未超时
-                            for (FLCheckAll flCheckAll : flCheckAlls) {
-                                flCheckAll.setProgramId(globalData.getProgramId());
-                                GreenDaoUtil.getGreenDaoUtil().updateFLCheck(flCheckAll);
-                            }
-                        } else if (timeOut == 1) {
-                            //超时
-                            for (FLCheckAll flCheckAll : flCheckAlls) {
-                                flCheckAll.setProgramId(globalData.getProgramId());
-                                flCheckAll.setScanLineSeat("");
-                                flCheckAll.setScanMaterial("");
-                                flCheckAll.setRemark("");
-                                flCheckAll.setResult("");
-                                GreenDaoUtil.getGreenDaoUtil().updateFLCheck(flCheckAll);
-                            }
-                        }
-                        //先删除更新的对应站位的数据
-                        boolean delete = new GreenDaoUtil().deleteFLCheckBySeat(seats);
-                        Log.d(TAG, "操作员全检 删除 - " + delete);
-                        //再更新本地数据库
-                        boolean update = new GreenDaoUtil().updateOrInsertFLCheck(getUpdateFLChecks(seats, materialBeans));
-                        Log.d(TAG, "操作员全检 更新本地数据库 - " + update);
-                        //获取本地数据库最新的操作员全检数据
-                        List<FLCheckAll> newFLCheckAlls = new GreenDaoUtil().queryFLCheckRecord(globalData.getOperator(), globalData.getWork_order()
-                                , globalData.getLine(), globalData.getBoard_type());
-                        //保存到订阅事件中
-                        evenBusTest.setFlCheckAllList(newFLCheckAlls);
-                    }
-                } else if ((globalData.getUserType() == Constants.QC)
-                        || (globalData.getUserType() == Constants.ADMIN && globalData.getAdminOperType() == Constants.ADMIN_QC)) {
-                    //QC全检纪录
-                    List<QcCheckAll> qcCheckAlls = new GreenDaoUtil().queryQcCheckRecord(globalData.getOperator(), globalData.getWork_order()
+                    //先删除更新的对应站位的数据
+                    boolean delete = new GreenDaoUtil().deleteWareBySeat(seats);
+                    Log.d(TAG, "发料 删除 - " + delete);
+                    //再更新本地数据库
+                    boolean update = new GreenDaoUtil().updateOrInsertWare(getUpdateWares(seats, materialBeans));
+                    Log.d(TAG, "发料 更新本地数据库 - " + update);
+                    //获取本地数据库最新的发料数据
+                    List<Ware> newWares = new GreenDaoUtil().queryWareRecord(globalData.getOperator(), globalData.getWork_order()
                             , globalData.getLine(), globalData.getBoard_type());
-                    if (qcCheckAlls != null && qcCheckAlls.size() > 0) {
-                        // TODO: 2018/12/26
-                        if (timeOut == 0) {
-                            for (QcCheckAll qcCheckAll : qcCheckAlls) {
-                                qcCheckAll.setProgramId(globalData.getProgramId());
-                                GreenDaoUtil.getGreenDaoUtil().updateQcCheck(qcCheckAll);
-                            }
-                        } else if (timeOut == 1) {
-                            for (QcCheckAll qcCheckAll : qcCheckAlls) {
-                                qcCheckAll.setProgramId(globalData.getProgramId());
-                                qcCheckAll.setScanLineSeat("");
-                                qcCheckAll.setScanMaterial("");
-                                qcCheckAll.setRemark("");
-                                qcCheckAll.setResult("");
-                                GreenDaoUtil.getGreenDaoUtil().updateQcCheck(qcCheckAll);
-                            }
-                        }
-
-                        //先删除更新的对应站位的数据
-                        boolean delete = new GreenDaoUtil().deleteQcCheckBySeat(seats);
-                        Log.d(TAG, "QC全检纪录 删除 - " + delete);
-                        //再更新本地数据库
-                        boolean update = new GreenDaoUtil().updateOrInsertQcCheck(getUpdateQcChecks(seats, materialBeans));
-                        Log.d(TAG, "QC全检纪录 更新本地数据库 - " + update);
-                        //获取本地数据库最新的QC全检纪录数据
-                        List<QcCheckAll> newQcCheckAlls = new GreenDaoUtil().queryQcCheckRecord(globalData.getOperator(), globalData.getWork_order()
-                                , globalData.getLine(), globalData.getBoard_type());
-                        //保存到订阅事件中
-                        evenBusTest.setQcCheckAllList(newQcCheckAlls);
+                    //保存到订阅事件中
+                    evenBusTest.setWareList(newWares);
+                }
+            } else if ((globalData.getUserType() == Constants.FACTORY)
+                    || (globalData.getUserType() == Constants.ADMIN && globalData.getAdminOperType() == Constants.ADMIN_FACTORY)) {
+                //上料纪录、操作员全检纪录
+                List<Feed> feeds = new GreenDaoUtil().queryFeedRecord(globalData.getOperator(), globalData.getWork_order(),
+                        globalData.getLine(), globalData.getBoard_type());
+                List<FLCheckAll> flCheckAlls = new GreenDaoUtil().queryFLCheckRecord(globalData.getOperator(), globalData.getWork_order(),
+                        globalData.getLine(), globalData.getBoard_type());
+                //上料
+                if (feeds != null && feeds.size() > 0) {
+                    for (Feed feed : feeds) {
+                        feed.setProgramId(globalData.getProgramId());
+                        GreenDaoUtil.getGreenDaoUtil().updateFeed(feed);
                     }
+
+                    //先删除更新的对应站位的数据
+                    boolean delete = new GreenDaoUtil().deleteFeedBySeat(seats);
+                    Log.d(TAG, "上料 删除 - " + delete);
+                    //再更新本地数据库
+                    boolean update = new GreenDaoUtil().updateOrInsertFeed(getUpdateFeeds(seats, materialBeans));
+                    Log.d(TAG, "上料 更新本地数据库 - " + update);
+                    //获取本地数据库最新的上料数据
+                    List<Feed> newFeeds = new GreenDaoUtil().queryFeedRecord(globalData.getOperator(), globalData.getWork_order()
+                            , globalData.getLine(), globalData.getBoard_type());
+                    //保存到订阅事件中
+                    evenBusTest.setFeedList(newFeeds);
+                }
+                //操作员全检
+                if (flCheckAlls != null && flCheckAlls.size() > 0) {
+                    // TODO: 2018/12/26
+                    if (timeOut == 0) {
+                        //未超时
+                        for (FLCheckAll flCheckAll : flCheckAlls) {
+                            flCheckAll.setProgramId(globalData.getProgramId());
+                            GreenDaoUtil.getGreenDaoUtil().updateFLCheck(flCheckAll);
+                        }
+                    } else if (timeOut == 1) {
+                        //超时
+                        for (FLCheckAll flCheckAll : flCheckAlls) {
+                            flCheckAll.setProgramId(globalData.getProgramId());
+                            flCheckAll.setScanLineSeat("");
+                            flCheckAll.setScanMaterial("");
+                            flCheckAll.setRemark("");
+                            flCheckAll.setResult("");
+                            GreenDaoUtil.getGreenDaoUtil().updateFLCheck(flCheckAll);
+                        }
+                    }
+                    //先删除更新的对应站位的数据
+                    boolean delete = new GreenDaoUtil().deleteFLCheckBySeat(seats);
+                    Log.d(TAG, "操作员全检 删除 - " + delete);
+                    //再更新本地数据库
+                    boolean update = new GreenDaoUtil().updateOrInsertFLCheck(getUpdateFLChecks(seats, materialBeans));
+                    Log.d(TAG, "操作员全检 更新本地数据库 - " + update);
+                    //获取本地数据库最新的操作员全检数据
+                    List<FLCheckAll> newFLCheckAlls = new GreenDaoUtil().queryFLCheckRecord(globalData.getOperator(), globalData.getWork_order()
+                            , globalData.getLine(), globalData.getBoard_type());
+                    //保存到订阅事件中
+                    evenBusTest.setFlCheckAllList(newFLCheckAlls);
+                }
+            } else if ((globalData.getUserType() == Constants.QC)
+                    || (globalData.getUserType() == Constants.ADMIN && globalData.getAdminOperType() == Constants.ADMIN_QC)) {
+                //QC全检纪录
+                List<QcCheckAll> qcCheckAlls = new GreenDaoUtil().queryQcCheckRecord(globalData.getOperator(), globalData.getWork_order()
+                        , globalData.getLine(), globalData.getBoard_type());
+                if (qcCheckAlls != null && qcCheckAlls.size() > 0) {
+                    // TODO: 2018/12/26
+                    if (timeOut == 0) {
+                        for (QcCheckAll qcCheckAll : qcCheckAlls) {
+                            qcCheckAll.setProgramId(globalData.getProgramId());
+                            GreenDaoUtil.getGreenDaoUtil().updateQcCheck(qcCheckAll);
+                        }
+                    } else if (timeOut == 1) {
+                        for (QcCheckAll qcCheckAll : qcCheckAlls) {
+                            qcCheckAll.setProgramId(globalData.getProgramId());
+                            qcCheckAll.setScanLineSeat("");
+                            qcCheckAll.setScanMaterial("");
+                            qcCheckAll.setRemark("");
+                            qcCheckAll.setResult("");
+                            GreenDaoUtil.getGreenDaoUtil().updateQcCheck(qcCheckAll);
+                        }
+                    }
+
+                    //先删除更新的对应站位的数据
+                    boolean delete = new GreenDaoUtil().deleteQcCheckBySeat(seats);
+                    Log.d(TAG, "QC全检纪录 删除 - " + delete);
+                    //再更新本地数据库
+                    boolean update = new GreenDaoUtil().updateOrInsertQcCheck(getUpdateQcChecks(seats, materialBeans));
+                    Log.d(TAG, "QC全检纪录 更新本地数据库 - " + update);
+                    //获取本地数据库最新的QC全检纪录数据
+                    List<QcCheckAll> newQcCheckAlls = new GreenDaoUtil().queryQcCheckRecord(globalData.getOperator(), globalData.getWork_order()
+                            , globalData.getLine(), globalData.getBoard_type());
+                    //保存到订阅事件中
+                    evenBusTest.setQcCheckAllList(newQcCheckAlls);
                 }
             }
             globalData.setUpdateProgram(true);
@@ -361,6 +363,8 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
      * @param equal           1,表示相同; 0,表示不相同
      */
     private EvenBusTest doCheckTimeOut(EvenBusTest evenBusTest, int checkAllTimeOut, int equal) {
+        Log.d(TAG, "doCheckTimeOut -  checkAllTimeOut - " + checkAllTimeOut);
+        Log.d(TAG, "doCheckTimeOut -  equal - " + equal);
         //不更新
         evenBusTest.setUpdated(1);
         evenBusTest.setCheckAllTimeOut(checkAllTimeOut);
@@ -447,6 +451,18 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
                     evenBusTest.setQcCheckAllList(qcCheckAlls);
                 }
             }
+            if (0 == equal) {
+                //更新全局料号表
+                List<Material.MaterialBean> materialBeans = globalData.getMaterialBeans();
+                for (Material.MaterialBean bean : materialBeans) {
+                    bean.setProgramId(globalData.getProgramId());
+                    bean.setScanlineseat("");
+                    bean.setScanMaterial("");
+                    bean.setResult("");
+                    bean.setRemark("");
+                }
+            }
+
         } else {
             //不超时,判断 programId是否一样
             if (0 == equal) {
@@ -523,6 +539,16 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
                         //保存到订阅事件中
                         evenBusTest.setQcCheckAllList(qcCheckAlls);
                     }
+                }
+
+                //更新全局料号表
+                List<Material.MaterialBean> materialBeans = globalData.getMaterialBeans();
+                for (Material.MaterialBean bean : materialBeans) {
+                    bean.setProgramId(globalData.getProgramId());
+                    bean.setScanlineseat("");
+                    bean.setScanMaterial("");
+                    bean.setResult("");
+                    bean.setRemark("");
                 }
             }
         }

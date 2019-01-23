@@ -61,6 +61,7 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
     private String curOperatorNUm;//当前操作员
     private GlobalData globalData;
     private List<Material.MaterialBean> mWareMaterialBeans = new ArrayList<>();//料号表
+    private static List<Material.MaterialBean> tempBeans = new ArrayList<>();
     private ListView lv_ware_materials;//所有料号列表
     private EditText et_ware_scan_material;//扫描的料号
     private WareHouseAdapter wareHouseAdapter;
@@ -129,22 +130,20 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
         globalData.setUpdateType(Constants.STORE_ISSUE);
         globalFunc = new GlobalFunc(WareHouseActivity.this);
 
-        if (Constants.isCache) {
-            //查询本地数据库是否存在缓存
-            List<Ware> wares = new GreenDaoUtil().queryWareRecord(globalData.getOperator(), globalData.getWork_order()
-                    , globalData.getLine(), globalData.getBoard_type());
+        //查询本地数据库是否存在缓存
+        List<Ware> wares = new GreenDaoUtil().queryWareRecord(globalData.getOperator(), globalData.getWork_order()
+                , globalData.getLine(), globalData.getBoard_type());
 
-            //数据库存在缓存数据
-            if (wares.size() != 0) {
-                //保存缓存
-                wareList.addAll(wares);
-                isRestoreCache = true;
-            } else {
-                //不存在缓存数据,删除之前的数据
-                boolean result = new GreenDaoUtil().deleteAllWareData();
-                Log.d(TAG, "deleteAllWareData - " + result);
-                isRestoreCache = false;
-            }
+        //数据库存在缓存数据
+        if (wares.size() != 0) {
+            //保存缓存
+            wareList.addAll(wares);
+            isRestoreCache = true;
+        } else {
+            //不存在缓存数据,删除之前的数据
+            boolean result = new GreenDaoUtil().deleteAllWareData();
+            Log.d(TAG, "deleteAllWareData - " + result);
+            isRestoreCache = false;
         }
 
         //初始化页面
@@ -160,19 +159,24 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
         //没有数据库缓存
         if (!isRestoreCache) {
             //填充数据
-            mWareMaterialBeans = globalData.getMaterialBeans();
-            if (Constants.isCache) {
-                for (Material.MaterialBean bean : mWareMaterialBeans) {
-                    Ware ware = new Ware(null, bean.getProgramId(), bean.getWorkOrder(), globalData.getOperator(),
-                            bean.getBoardType(), bean.getLine(), bean.getSerialNo(), bean.isAlternative(), bean.getSpecitification(),
-                            bean.getPosition(), bean.getQuantity(), bean.getLineseat(), bean.getMaterialNo(), bean.getScanlineseat(),
-                            bean.getScanMaterial(), bean.getResult(), bean.getRemark());
-                    wareList.add(ware);
-                }
-                //保存到数据库中
-                boolean cacheResult = new GreenDaoUtil().insertMultiWareMaterial(wareList);
-                Log.d(TAG, "cacheResult - " + cacheResult);
+            tempBeans.addAll(globalData.getMaterialBeans());
+            for (Material.MaterialBean org : tempBeans) {
+                Material.MaterialBean bean = new Material.MaterialBean();
+                bean = bean.copy(org);
+                bean.setScanlineseat("");
+                bean.setScanMaterial("");
+                bean.setRemark("");
+                bean.setResult("");
+                mWareMaterialBeans.add(bean);
+                Ware ware = new Ware(null, bean.getProgramId(), bean.getWorkOrder(), globalData.getOperator(),
+                        bean.getBoardType(), bean.getLine(), bean.getSerialNo(), bean.isAlternative(), bean.getSpecitification(),
+                        bean.getPosition(), bean.getQuantity(), bean.getLineseat(), bean.getMaterialNo(), bean.getScanlineseat(),
+                        bean.getScanMaterial(), bean.getResult(), bean.getRemark());
+                wareList.add(ware);
             }
+            //保存到数据库中
+            boolean cacheResult = new GreenDaoUtil().insertMultiWareMaterial(wareList);
+            Log.d(TAG, "cacheResult - " + cacheResult);
 
         }
         //存在缓存
@@ -236,24 +240,48 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
         //更新
         if (event.getUpdated() == 0) {
             Log.d(TAG, "onEventMainThread - " + event.getUpdated());
-            if (Constants.isCache) {
-                showUpdateDialog("提示", "站位表更新!", "站位表更新!");
+            showUpdateDialog("提示", "站位表更新!", "站位表更新!");
+            if (event.getWareList() != null && event.getWareList().size() > 0) {
+                //更新页面
+                wareList.clear();
+                wareList.addAll(event.getWareList());
+                sucIssueCount = 0;
+                //填充数据
+                mWareMaterialBeans.clear();
+                for (Ware ware : wareList) {
+                    Material.MaterialBean bean = new Material.MaterialBean(ware.getOrder(), ware.getBoard_type(), ware.getLine(),
+                            ware.getProgramId(), ware.getSerialNo(), ware.getAlternative(), ware.getSpecitification(), ware.getPosition(), ware.getQuantity(),
+                            ware.getOrgLineSeat(), ware.getOrgMaterial(), ware.getScanLineSeat(), ware.getScanMaterial(), ware.getResult(), ware.getRemark());
+                    mWareMaterialBeans.add(bean);
+                    //获取成功发料次数
+                    if ((null != ware.getResult()) && (ware.getResult().equalsIgnoreCase("PASS"))) {
+                        sucIssueCount++;
+                    }
+                }
+                allCount = mWareMaterialBeans.size();
+                //更新显示
+                wareHouseAdapter.notifyDataSetChanged();
+                //重新开始扫描料号
+                et_ware_scan_material.requestFocus();
+                et_ware_scan_material.setText("");
+            }
+        }
+        //未更新
+        else {
+            if (0 == event.getProgramIdEqual()) {
+                showUpdateDialog("提示", "站位表作废并重传！", "站位表作废并重传！");
                 if (event.getWareList() != null && event.getWareList().size() > 0) {
                     //更新页面
                     wareList.clear();
                     wareList.addAll(event.getWareList());
                     sucIssueCount = 0;
                     //填充数据
-                    mWareMaterialBeans.clear();
-                    for (Ware ware : wareList) {
-                        Material.MaterialBean bean = new Material.MaterialBean(ware.getOrder(), ware.getBoard_type(), ware.getLine(),
-                                ware.getProgramId(), ware.getSerialNo(), ware.getAlternative(), ware.getSpecitification(), ware.getPosition(), ware.getQuantity(),
-                                ware.getOrgLineSeat(), ware.getOrgMaterial(), ware.getScanLineSeat(), ware.getScanMaterial(), ware.getResult(), ware.getRemark());
-                        mWareMaterialBeans.add(bean);
-                        //获取成功发料次数
-                        if ((null != ware.getResult()) && (ware.getResult().equalsIgnoreCase("PASS"))) {
-                            sucIssueCount++;
-                        }
+                    for (Material.MaterialBean bean : mWareMaterialBeans) {
+                        bean.setProgramId(globalData.getProgramId());
+                        bean.setScanlineseat("");
+                        bean.setScanMaterial("");
+                        bean.setRemark("");
+                        bean.setResult("");
                     }
                     allCount = mWareMaterialBeans.size();
                     //更新显示
@@ -262,28 +290,6 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
                     et_ware_scan_material.requestFocus();
                     et_ware_scan_material.setText("");
                 }
-            }
-
-        }
-        //未更新
-        else {
-            if (0 == event.getProgramIdEqual()) {
-                showUpdateDialog("提示", "站位表作废并重传！", "站位表作废并重传！");
-                sucIssueCount = 0;
-                //填充数据
-                for (Material.MaterialBean bean : mWareMaterialBeans) {
-                    bean.setProgramId(globalData.getProgramId());
-                    bean.setScanlineseat("");
-                    bean.setScanMaterial("");
-                    bean.setRemark("");
-                    bean.setResult("");
-                }
-                allCount = mWareMaterialBeans.size();
-                //更新显示
-                wareHouseAdapter.notifyDataSetChanged();
-                //重新开始扫描料号
-                et_ware_scan_material.requestFocus();
-                et_ware_scan_material.setText("");
             }
         }
     }
@@ -571,13 +577,11 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
             bean.setScanMaterial("");
             bean.setResult("");
             bean.setRemark("");
-            if (Constants.isCache) {
-                Ware ware = wareList.get(i);
-                ware.setScanLineSeat("");
-                ware.setScanMaterial("");
-                ware.setResult("");
-                ware.setRemark("");
-            }
+            Ware ware = wareList.get(i);
+            ware.setScanLineSeat("");
+            ware.setScanMaterial("");
+            ware.setResult("");
+            ware.setRemark("");
             allCount++;
         }
         wareHouseAdapter.notifyDataSetChanged();
@@ -668,22 +672,20 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
 
     //更新本地数据库发料缓存
     private void cacheWareResult(ArrayList<ArrayList<Integer>> integerLists) {
-        if (Constants.isCache) {
-            ArrayList<Integer> lineSeatIndex = new ArrayList<>();
-            for (int m = 0, len = integerLists.size(); m < len; m++) {
-                lineSeatIndex.clear();
-                lineSeatIndex.addAll(integerLists.get(m));
+        ArrayList<Integer> lineSeatIndex = new ArrayList<>();
+        for (int m = 0, len = integerLists.size(); m < len; m++) {
+            lineSeatIndex.clear();
+            lineSeatIndex.addAll(integerLists.get(m));
 
-                for (int n = 0, length = lineSeatIndex.size(); n < length; n++) {
-                    Material.MaterialBean bean = mWareMaterialBeans.get(lineSeatIndex.get(n));
-                    //保存缓存
-                    Ware ware = wareList.get(lineSeatIndex.get(n));
-                    ware.setScanLineSeat(bean.getScanlineseat());
-                    ware.setScanMaterial(bean.getScanMaterial());
-                    ware.setResult(bean.getResult());
-                    ware.setRemark(bean.getRemark());
-                    GreenDaoUtil.getGreenDaoUtil().updateWare(ware);
-                }
+            for (int n = 0, length = lineSeatIndex.size(); n < length; n++) {
+                Material.MaterialBean bean = mWareMaterialBeans.get(lineSeatIndex.get(n));
+                //保存缓存
+                Ware ware = wareList.get(lineSeatIndex.get(n));
+                ware.setScanLineSeat(bean.getScanlineseat());
+                ware.setScanMaterial(bean.getScanMaterial());
+                ware.setResult(bean.getResult());
+                ware.setRemark(bean.getRemark());
+                GreenDaoUtil.getGreenDaoUtil().updateWare(ware);
             }
         }
     }

@@ -56,6 +56,7 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
     private String curLineSeat, curMaterial;
     //当前检料时用到的排位料号表
     private List<Material.MaterialBean> mCheckBeanList = new ArrayList<>();
+    private static List<Material.MaterialBean> tempBeans = new ArrayList<>();
     //核料时检测的料号
     private List<Material.MaterialBean> checkItems = new ArrayList<>();
     //当前检料项
@@ -90,10 +91,13 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
         this.mHidden = hidden;
         Log.d(TAG, "onHiddenChanged - " + hidden);
         if (!hidden) {
+
+            /*
             if (qcActivity.updateDialog != null && qcActivity.updateDialog.isShowing()) {
                 qcActivity.updateDialog.cancel();
                 qcActivity.updateDialog.dismiss();
             }
+            */
 
             clearAndSetFocus();
             showLoading();
@@ -113,10 +117,12 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
 
         globalData.setOperator(savedInstanceState.getString("operatorNum"));
 
+        /*
         if (qcActivity.updateDialog != null && qcActivity.updateDialog.isShowing()) {
             qcActivity.updateDialog.cancel();
             qcActivity.updateDialog.dismiss();
         }
+        */
 
         mHttpUtils = new HttpUtils(this, getContext());
 
@@ -138,10 +144,12 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
             Log.d(TAG, "mHidden - " + mHidden);
             Log.d(TAG, "isUpdateProgram - " + globalData.isUpdateProgram());
             if (!mHidden) {
+                /*
                 if (qcActivity.updateDialog != null && qcActivity.updateDialog.isShowing()) {
                     qcActivity.updateDialog.cancel();
                     qcActivity.updateDialog.dismiss();
                 }
+                */
 //                showLoading();
 //                checkFirstCondition = 1;
 //                mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
@@ -192,7 +200,17 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
         Log.i(TAG, "initData");
         //填充数据
         mCheckBeanList.clear();
-        mCheckBeanList = globalData.getMaterialBeans();
+        tempBeans.addAll(globalData.getMaterialBeans());
+        for (Material.MaterialBean org : tempBeans) {
+            //操作员
+            Material.MaterialBean bean = new Material.MaterialBean();
+            bean= bean.copy(org);
+            bean.setScanlineseat("");
+            bean.setScanMaterial("");
+            bean.setRemark("");
+            bean.setResult("");
+            mCheckBeanList.add(bean);
+        }
         curCheckMaterialId = -1;
     }
 

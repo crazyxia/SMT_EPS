@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import com.jimi.smt.eps_appclient.Func.GlobalFunc;
 import com.jimi.smt.eps_appclient.R;
+import com.jimi.smt.eps_appclient.Service.RefreshCacheService;
 import com.jimi.smt.eps_appclient.Unit.Constants;
 import com.jimi.smt.eps_appclient.Unit.GlobalData;
 import com.jimi.smt.eps_appclient.Views.InfoDialog;
@@ -170,5 +171,10 @@ public class AdminActivity extends Activity implements View.OnClickListener {
 
     }
 
-
+    @Override
+    protected void onDestroy() {
+        //关闭服务
+        stopService(new Intent(this, RefreshCacheService.class));
+        super.onDestroy();
+    }
 }

@@ -57,6 +57,7 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
     private MaterialAdapter materialAdapter;
     //当前检料时用到的排位料号表
     private List<Material.MaterialBean> mCheckAllMaterialBeans = new ArrayList<>();
+    private static List<Material.MaterialBean> tempBeans = new ArrayList<>();
     //操作员全检纪录
     private List<FLCheckAll> flCheckAllList = new ArrayList<>();
     //是否恢复缓存
@@ -114,18 +115,16 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
         globalFunc = new GlobalFunc(getActivity().getApplicationContext());
         Log.d(TAG, "用户类型UserType：" + globalData.getUserType());
         factoryLineActivity = (FactoryLineActivity) getActivity();
-        if (Constants.isCache) {
-            //查询本地数据库是否存在缓存
-            List<FLCheckAll> flCheckAlls = new GreenDaoUtil().queryFLCheckRecord(globalData.getOperator(),
-                    globalData.getWork_order(), globalData.getLine(), globalData.getBoard_type());
-            if (flCheckAlls != null && flCheckAlls.size() > 0) {
-                flCheckAllList.addAll(flCheckAlls);
-                isRestoreCache = true;
-            } else {
-                boolean result = new GreenDaoUtil().deleteAllFLCheck();
-                Log.d(TAG, "deleteAllFLCheck - " + result);
-                isRestoreCache = false;
-            }
+        //查询本地数据库是否存在缓存
+        List<FLCheckAll> flCheckAlls = new GreenDaoUtil().queryFLCheckRecord(globalData.getOperator(),
+                globalData.getWork_order(), globalData.getLine(), globalData.getBoard_type());
+        if (flCheckAlls != null && flCheckAlls.size() > 0) {
+            flCheckAllList.addAll(flCheckAlls);
+            isRestoreCache = true;
+        } else {
+            boolean result = new GreenDaoUtil().deleteAllFLCheck();
+            Log.d(TAG, "deleteAllFLCheck - " + result);
+            isRestoreCache = false;
         }
     }
 
@@ -149,9 +148,8 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                 curCheckId = 0;
                 mCheckAllMaterialBeans.clear();
 
-                FLCheckAll flCheckAll;
                 for (int i = 0, len = flCheckAllList.size(); i < len; i++) {
-                    flCheckAll = flCheckAllList.get(i);
+                    FLCheckAll flCheckAll = flCheckAllList.get(i);
                     Material.MaterialBean bean = new Material.MaterialBean(flCheckAll.getOrder(), flCheckAll.getBoard_type(), flCheckAll.getLine(),
                             flCheckAll.getProgramId(), flCheckAll.getSerialNo(), flCheckAll.getAlternative(), flCheckAll.getSpecitification(),
                             flCheckAll.getPosition(), flCheckAll.getQuantity(), flCheckAll.getOrgLineSeat(), flCheckAll.getOrgMaterial(),
@@ -166,7 +164,6 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                         }
                     }
                 }
-
             }
             //更新显示
             materialAdapter.notifyDataSetChanged();
@@ -389,23 +386,24 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
         mCheckAllMaterialBeans.clear();
         if (!isRestoreCache) {
             //不存在缓存
-            mCheckAllMaterialBeans = globalData.getMaterialBeans();
-            if (Constants.isCache) {
-                for (Material.MaterialBean bean : mCheckAllMaterialBeans) {
-                    //操作员
-                    bean.setScanlineseat("");
-                    bean.setScanMaterial("");
-                    bean.setRemark("");
-                    bean.setResult("");
-                    FLCheckAll flCheckAll = new FLCheckAll(null, bean.getProgramId(), bean.getWorkOrder(), globalData.getOperator(),
-                            bean.getBoardType(), bean.getLine(), bean.getSerialNo(), bean.isAlternative(), bean.getLineseat(), bean.getMaterialNo(),
-                            bean.getSpecitification(), bean.getPosition(), bean.getQuantity(), "", "", "", "");
-                    flCheckAllList.add(flCheckAll);
-                }
-                //保存到数据库中
-                boolean cacheResult = new GreenDaoUtil().insertMultiFLCheckMaterial(flCheckAllList);
-                Log.d(TAG, "insertMultiFLCheckMaterial - " + cacheResult);
+            tempBeans.addAll(globalData.getMaterialBeans());
+            for (Material.MaterialBean org : tempBeans) {
+                //操作员
+                Material.MaterialBean bean = new Material.MaterialBean();
+                bean = bean.copy(org);
+                bean.setScanlineseat("");
+                bean.setScanMaterial("");
+                bean.setRemark("");
+                bean.setResult("");
+                mCheckAllMaterialBeans.add(bean);
+                FLCheckAll flCheckAll = new FLCheckAll(null, bean.getProgramId(), bean.getWorkOrder(), globalData.getOperator(),
+                        bean.getBoardType(), bean.getLine(), bean.getSerialNo(), bean.isAlternative(), bean.getLineseat(), bean.getMaterialNo(),
+                        bean.getSpecitification(), bean.getPosition(), bean.getQuantity(), "", "", "", "");
+                flCheckAllList.add(flCheckAll);
             }
+            //保存到数据库中
+            boolean cacheResult = new GreenDaoUtil().insertMultiFLCheckMaterial(flCheckAllList);
+            Log.d(TAG, "insertMultiFLCheckMaterial - " + cacheResult);
         } else {
             //存在缓存
             FLCheckAll flCheckAll;
@@ -426,6 +424,7 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                 }
             }
             //需要更新全局变量为本地数据库的,以提供更新依据
+            globalData.setFactoryProgramId(mCheckAllMaterialBeans.get(0).getProgramId());
             globalData.setMaterialBeans(mCheckAllMaterialBeans);
         }
 
@@ -573,20 +572,18 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
 
     //更新全检缓存
     private void cacheCheckResult(ArrayList<Integer> integers, Material.MaterialBean materialItem) {
-        if (Constants.isCache) {
-            //保存缓存
-            if (null != integers && integers.size() > 0) {
-                for (int i = 0, len = integers.size(); i < len; i++) {
-                    FLCheckAll flCheckAll = flCheckAllList.get(integers.get(i));
-                    flCheckAll.setScanLineSeat(materialItem.getScanlineseat());
-                    flCheckAll.setScanMaterial(materialItem.getScanMaterial());
-                    flCheckAll.setResult(materialItem.getResult());
-                    flCheckAll.setRemark(materialItem.getRemark());
-                    new GreenDaoUtil().updateFLCheck(flCheckAll);
-                }
+        //保存缓存
+        if (null != integers && integers.size() > 0) {
+            for (int i = 0, len = integers.size(); i < len; i++) {
+                FLCheckAll flCheckAll = flCheckAllList.get(integers.get(i));
+                flCheckAll.setScanLineSeat(materialItem.getScanlineseat());
+                flCheckAll.setScanMaterial(materialItem.getScanMaterial());
+                flCheckAll.setResult(materialItem.getResult());
+                flCheckAll.setRemark(materialItem.getRemark());
+                new GreenDaoUtil().updateFLCheck(flCheckAll);
             }
-
         }
+
     }
 
     //清除刚刚的操作
@@ -718,13 +715,12 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
             materialItem.setScanMaterial("");
             materialItem.setResult("");
             materialItem.setRemark("");
-            if (Constants.isCache) {
-                FLCheckAll flCheckAll = flCheckAllList.get(i);
-                flCheckAll.setScanLineSeat("");
-                flCheckAll.setScanMaterial("");
-                flCheckAll.setResult("");
-                flCheckAll.setRemark("");
-            }
+            FLCheckAll flCheckAll = flCheckAllList.get(i);
+            flCheckAll.setScanLineSeat("");
+            flCheckAll.setScanMaterial("");
+            flCheckAll.setResult("");
+            flCheckAll.setRemark("");
+
         }
         materialAdapter.notifyDataSetChanged();
     }

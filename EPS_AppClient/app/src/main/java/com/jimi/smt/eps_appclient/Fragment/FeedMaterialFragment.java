@@ -77,6 +77,7 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
     private boolean isRestoreCache = false;
     //当前上料时用到的排位料号表
     private List<Material.MaterialBean> mFeedMaterialBeans = new ArrayList<>();
+    private static List<Material.MaterialBean> tempMaterialBeans = new ArrayList<>();
     //扫描的站位在列表中的位置
     private ArrayList<Integer> scanLineIndex = new ArrayList<>();
     //成功上料数
@@ -137,22 +138,20 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
         globalData = (GlobalData) getActivity().getApplication();
         globalFunc = new GlobalFunc(getActivity());
 
-        if (Constants.isCache) {
-            //查询本地数据库是否存在缓存
-            List<Feed> feeds = new GreenDaoUtil().queryFeedRecord(globalData.getOperator(), globalData.getWork_order()
-                    , globalData.getLine(), globalData.getBoard_type());
+        //查询本地数据库是否存在缓存
+        List<Feed> feeds = new GreenDaoUtil().queryFeedRecord(globalData.getOperator(), globalData.getWork_order()
+                , globalData.getLine(), globalData.getBoard_type());
 
-            //数据库存在缓存数据
-            if (feeds.size() != 0) {
-                //保存缓存
-                feedList.addAll(feeds);
-                isRestoreCache = true;
-            } else {
-                //不存在缓存数据,删除之前的数据
-                boolean result = new GreenDaoUtil().deleteAllFeedData();
-                Log.d(TAG, "deleteAllFeedData - " + result);
-                isRestoreCache = false;
-            }
+        //数据库存在缓存数据
+        if (feeds.size() != 0) {
+            //保存缓存
+            feedList.addAll(feeds);
+            isRestoreCache = true;
+        } else {
+            //不存在缓存数据,删除之前的数据
+            boolean result = new GreenDaoUtil().deleteAllFeedData();
+            Log.d(TAG, "deleteAllFeedData - " + result);
+            isRestoreCache = false;
         }
 
     }
@@ -164,14 +163,6 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
         Log.i(TAG, "onHiddenChanged - " + hidden);
         this.mHidden = hidden;
         if (!hidden) {
-
-            /*
-            if (mActivity.updateDialog != null && mActivity.updateDialog.isShowing()) {
-                mActivity.updateDialog.cancel();
-                mActivity.updateDialog.dismiss();
-            }
-            */
-
             checkResetCondition = 2;
             showLoading();
             mHttpUtils.isReset(globalData.getProgramId(), Constants.FEEDMATERIAL);
@@ -210,37 +201,34 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
     //监听订阅的消息
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEventMainThread(EvenBusTest event) {
-//        Log.d(TAG, "onEventMainThread - " + event.getUpdated());
         if (event.getUpdated() == 0) {
             Log.d(TAG, "onEventMainThread - " + event.getUpdated());
             Log.d(TAG, "event.getFeedList() - " + event.getFeedList().size());
-
-            if (Constants.isCache) {
-                if (event.getFeedList() != null && event.getFeedList().size() > 0) {
-                    //更新页面
-                    feedList.clear();
-                    feedList.addAll(event.getFeedList());
-                    sucFeedCount = 0;
-                    //填充数据
-                    mFeedMaterialBeans.clear();
-                    for (Feed feed : feedList) {
-                        Material.MaterialBean bean = new Material.MaterialBean(feed.getOrder(), feed.getBoard_type(), feed.getLine(),
-                                feed.getProgramId(), feed.getSerialNo(), feed.getAlternative(), feed.getSpecitification(),feed.getPosition(),
-                                feed.getQuantity(), feed.getOrgLineSeat(), feed.getOrgMaterial(), feed.getScanLineSeat(), feed.getScanMaterial(),
-                                feed.getResult(), feed.getRemark());
-                        mFeedMaterialBeans.add(bean);
-                        //获取成功上料
-                        if ((null != feed.getResult()) && (feed.getResult().equalsIgnoreCase("PASS"))) {
-                            sucFeedCount++;
-                        }
+            if (event.getFeedList() != null && event.getFeedList().size() > 0) {
+                //更新页面
+                feedList.clear();
+                feedList.addAll(event.getFeedList());
+                sucFeedCount = 0;
+                //填充数据
+                mFeedMaterialBeans.clear();
+                for (Feed feed : feedList) {
+                    Material.MaterialBean bean = new Material.MaterialBean(feed.getOrder(), feed.getBoard_type(), feed.getLine(),
+                            feed.getProgramId(), feed.getSerialNo(), feed.getAlternative(), feed.getSpecitification(), feed.getPosition(),
+                            feed.getQuantity(), feed.getOrgLineSeat(), feed.getOrgMaterial(), feed.getScanLineSeat(), feed.getScanMaterial(),
+                            feed.getResult(), feed.getRemark());
+                    mFeedMaterialBeans.add(bean);
+                    //获取成功上料
+                    if ((null != feed.getResult()) && (feed.getResult().equalsIgnoreCase("PASS"))) {
+                        sucFeedCount++;
                     }
-                    allCount = mFeedMaterialBeans.size();
-                    //更新显示
-                    materialAdapter.notifyDataSetChanged();
                 }
-                Log.d(TAG, "mHidden - " + mHidden);
-                if (!mHidden) {
-                    //更新站位表后是否发料完成
+                allCount = mFeedMaterialBeans.size();
+                //更新显示
+                materialAdapter.notifyDataSetChanged();
+            }
+            Log.d(TAG, "mHidden - " + mHidden);
+            if (!mHidden) {
+                //更新站位表后是否发料完成
 
                     /*
                     if (mActivity.updateDialog != null && mActivity.updateDialog.isShowing()) {
@@ -249,23 +237,21 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                     }
                     */
 
-                    //重新开始扫描站位
-                    clearLineSeatMaterialScan();
+                //重新开始扫描站位
+                clearLineSeatMaterialScan();
 
-                    // TODO: 2018/9/17
-                    dismissFeedLogin();
+                // TODO: 2018/9/17
+                dismissFeedLogin();
 
 //                    checkWareCondition = 2;
 //                    showLoading();
 //                    mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.STORE_ISSUE);
 
-                }
             }
-
         }
         //未更新
         else {
-            if (0 == event.getProgramIdEqual()){
+            if (0 == event.getProgramIdEqual()) {
                 Log.d(TAG, "getProgramIdEqual - " + event.getProgramIdEqual());
                 if (event.getFeedList() != null && event.getFeedList().size() > 0) {
                     //更新页面
@@ -273,7 +259,7 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                     feedList.addAll(event.getFeedList());
                     sucFeedCount = 0;
                     allCount = mFeedMaterialBeans.size();
-                    for (Material.MaterialBean bean:mFeedMaterialBeans) {
+                    for (Material.MaterialBean bean : mFeedMaterialBeans) {
                         bean.setProgramId(globalData.getProgramId());
                         bean.setScanlineseat("");
                         bean.setScanMaterial("");
@@ -331,27 +317,32 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
         mFeedMaterialBeans.clear();
         //没有缓存
         if (!isRestoreCache) {
-            mFeedMaterialBeans = globalData.getMaterialBeans();
-            if (Constants.isCache) {
-                for (Material.MaterialBean bean : mFeedMaterialBeans) {
-                    //保存缓存到数据库中
-                    Feed feed = new Feed(null, bean.getProgramId(),bean.getWorkOrder(), globalData.getOperator(),
-                            bean.getBoardType(), bean.getLine(), bean.getLineseat(), bean.getMaterialNo(), bean.getSpecitification(),
-                            bean.getPosition(),bean.getQuantity(),bean.getScanlineseat(), bean.getScanMaterial(), bean.getResult(),
-                            bean.getRemark(), bean.getSerialNo(), bean.isAlternative());
-                    feedList.add(feed);
-                }
-                //保存到数据库中
-                boolean cacheResult = new GreenDaoUtil().insertMultiFeedMaterial(feedList);
-                Log.d(TAG, "cacheResult - " + cacheResult);
+            tempMaterialBeans.addAll(globalData.getMaterialBeans());
+            for (Material.MaterialBean org : tempMaterialBeans) {
+                //保存缓存到数据库中
+                Material.MaterialBean bean = new Material.MaterialBean();
+                bean = bean.copy(org);
+                bean.setScanlineseat("");
+                bean.setScanMaterial("");
+                bean.setRemark("");
+                bean.setResult("");
+                mFeedMaterialBeans.add(bean);
+                Feed feed = new Feed(null, bean.getProgramId(), bean.getWorkOrder(), globalData.getOperator(),
+                        bean.getBoardType(), bean.getLine(), bean.getLineseat(), bean.getMaterialNo(), bean.getSpecitification(),
+                        bean.getPosition(), bean.getQuantity(), bean.getScanlineseat(), bean.getScanMaterial(), bean.getResult(),
+                        bean.getRemark(), bean.getSerialNo(), bean.isAlternative());
+                feedList.add(feed);
             }
+            //保存到数据库中
+            boolean cacheResult = new GreenDaoUtil().insertMultiFeedMaterial(feedList);
+            Log.d(TAG, "cacheResult - " + cacheResult);
         }
         //存在缓存
         else {
             for (Feed feed : feedList) {
                 Material.MaterialBean bean = new Material.MaterialBean(feed.getOrder(), feed.getBoard_type(), feed.getLine(),
-                        feed.getProgramId(), feed.getSerialNo(), feed.getAlternative(), feed.getSpecitification(),feed.getPosition(),
-                        feed.getQuantity(),feed.getOrgLineSeat(), feed.getOrgMaterial(), feed.getScanLineSeat(), feed.getScanMaterial(),
+                        feed.getProgramId(), feed.getSerialNo(), feed.getAlternative(), feed.getSpecitification(), feed.getPosition(),
+                        feed.getQuantity(), feed.getOrgLineSeat(), feed.getOrgMaterial(), feed.getScanLineSeat(), feed.getScanMaterial(),
                         feed.getResult(), feed.getRemark());
                 mFeedMaterialBeans.add(bean);
                 //获取成功上料
@@ -553,16 +544,14 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
     //更新上料缓存
     private void cacheFeedResult(ArrayList<Integer> lineIndex, Material.MaterialBean materialItem) {
         Log.d(TAG, "cacheFeedResult - " + lineIndex.size());
-        if (Constants.isCache) {
-            //保存缓存
-            for (int i = 0, len = lineIndex.size(); i < len; i++) {
-                Feed feed = feedList.get(lineIndex.get(i));
-                feed.setScanLineSeat(materialItem.getScanlineseat());
-                feed.setScanMaterial(materialItem.getScanMaterial());
-                feed.setResult(materialItem.getResult());
-                feed.setRemark(materialItem.getRemark());
-                new GreenDaoUtil().updateFeed(feed);
-            }
+        //保存缓存
+        for (int i = 0, len = lineIndex.size(); i < len; i++) {
+            Feed feed = feedList.get(lineIndex.get(i));
+            feed.setScanLineSeat(materialItem.getScanlineseat());
+            feed.setScanMaterial(materialItem.getScanMaterial());
+            feed.setResult(materialItem.getResult());
+            feed.setRemark(materialItem.getRemark());
+            new GreenDaoUtil().updateFeed(feed);
         }
     }
 
@@ -583,6 +572,7 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
 
     //清空上料页面结果
     private void clearFeedDisplay() {
+        Log.d(TAG, " - clearFeedDisplay - ");
         sucFeedCount = 0;
         allCount = 0;
         for (int i = 0; i < mFeedMaterialBeans.size(); i++) {
@@ -591,14 +581,11 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
             materialItem.setScanMaterial("");
             materialItem.setResult("");
             materialItem.setRemark("");
-            if (Constants.isCache) {
-                Feed feed = feedList.get(i);
-                feed.setScanLineSeat("");
-                feed.setScanMaterial("");
-                feed.setResult("");
-                feed.setRemark("");
-            }
-
+            Feed feed = feedList.get(i);
+            feed.setScanLineSeat("");
+            feed.setScanMaterial("");
+            feed.setResult("");
+            feed.setRemark("");
             allCount++;
         }
         materialAdapter.notifyDataSetChanged();
@@ -752,9 +739,11 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
     public void showHttpResponse(int code, Object request, String response) {
         dismissLoading();
         Log.d(TAG, "showHttpResponse - " + response);
+        Log.d(TAG, "code - " + code);
         switch (code) {
             case HttpUtils.CodeCheckIsReset:
                 int checkReset = Integer.valueOf(response);
+                Log.d(TAG, "checkReset - " + checkReset);
                 //本地数据是否重置
                 boolean reseted = true;
                 for (Material.MaterialBean materialItem : mFeedMaterialBeans) {
@@ -765,6 +754,7 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                         }
                     }
                 }
+                Log.d(TAG, "reseted - " + reseted);
                 switch (checkResetCondition) {
                     case 2://切换到上料页面时
                         if (checkReset == 1 && !reseted) {
@@ -802,6 +792,8 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
             case HttpUtils.CodeIsAllDone:
                 int checkWareOrFeed = Integer.valueOf(response);
                 int type = (Integer) ((Object[]) request)[1];
+                Log.d(TAG, "checkWareOrFeed - " + checkWareOrFeed);
+                Log.d(TAG, "type - " + type);
                 if (type == 4) {
                     switch (checkWareCondition) {
                         case 0:
@@ -895,16 +887,14 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                 } else if (result.equalsIgnoreCase("succeed")) {
                     //清空上料结果
                     // TODO: 2018/12/17 不止清空上料记录，全检，首检 都要清空 
-                    if (Constants.isCache) {
-                        boolean updateAllFeed = new GreenDaoUtil().updateAllFeed(feedList);
-                        boolean updateFlCheck = new GreenDaoUtil().updateFLCheck(globalData.getWork_order(),
-                                globalData.getLine(), globalData.getBoard_type());
-                        boolean updateQcCheck = new GreenDaoUtil().updateQcCheck(globalData.getWork_order(),
-                                globalData.getLine(), globalData.getBoard_type());
-                        Log.d(TAG, "updateAllFeed - " + updateAllFeed);
-                        Log.d(TAG, "updateFlCheck - " + updateFlCheck);
-                        Log.d(TAG, "updateQcCheck - " + updateQcCheck);
-                    }
+                    boolean updateAllFeed = new GreenDaoUtil().updateAllFeed(feedList);
+                    boolean updateFlCheck = new GreenDaoUtil().updateFLCheck(globalData.getWork_order(),
+                            globalData.getLine(), globalData.getBoard_type());
+                    boolean updateQcCheck = new GreenDaoUtil().updateQcCheck(globalData.getWork_order(),
+                            globalData.getLine(), globalData.getBoard_type());
+                    Log.d(TAG, "updateAllFeed - " + updateAllFeed);
+                    Log.d(TAG, "updateFlCheck - " + updateFlCheck);
+                    Log.d(TAG, "updateQcCheck - " + updateQcCheck);
                     //清空上料页面结果
                     clearFeedDisplay();
                     edt_pwd.setText("");
