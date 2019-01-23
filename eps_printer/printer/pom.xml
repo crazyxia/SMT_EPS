@@ -5,7 +5,7 @@
 
 	<groupId>com.jimi.smt</groupId>
 	<artifactId>EPS_Printer</artifactId>
-	<version>1.11.2</version>
+	<version>1.12.0</version>
 	<packaging>jar</packaging>
 
 	<name>EPS_Printer</name>
@@ -16,7 +16,7 @@
 	</properties>
 
 	<build>
-		<finalName>SMT-Printer_1.11.2_201901221000</finalName>
+		<finalName>SMT-Printer_1.12.0_201901231500</finalName>
 		<resources>
 			<resource>
 				<directory>src/main/java</directory>
@@ -189,6 +189,12 @@
 		    <groupId>commons-io</groupId>
 		    <artifactId>commons-io</artifactId>
 		    <version>2.6</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.jimi.bude</groupId>
+			<artifactId>finger</artifactId>
+			<version>1.0.1</version>
 		</dependency>
 
 	</dependencies>

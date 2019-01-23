@@ -24,7 +24,7 @@ public class Main extends Application {
 
 	private LoginController loginController;
 
-	private static final String VERSION = "1.11.2";
+	private static final String VERSION = "1.12.0";
 
 	private static final String FILE_NAME = "SMT-Printer_";
 
