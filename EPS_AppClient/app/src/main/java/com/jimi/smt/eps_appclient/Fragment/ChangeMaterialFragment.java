@@ -64,6 +64,7 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
 
     //当前换料时用到的排位料号表
     private List<Material.MaterialBean> mChangeMaterialBeans = new ArrayList<>();
+    private static List<Material.MaterialBean> tempBeans = new ArrayList<>();
     //该站位的料号(包括替换料)、和位置
     private ArrayList<String> materialList = new ArrayList<>();
     private ArrayList<Integer> materialIndex = new ArrayList<>();
@@ -145,6 +146,7 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
 
 
         }
+        // TODO: 2019/1/23 需解决作废重传问题
     }
 
     @Override
@@ -251,7 +253,17 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
         curChangeMaterialId = -1;
         //填充数据
         mChangeMaterialBeans.clear();
-        mChangeMaterialBeans = globalData.getMaterialBeans();
+        tempBeans.addAll(globalData.getMaterialBeans());
+        for (Material.MaterialBean org : tempBeans) {
+            //保存缓存到数据库中
+            Material.MaterialBean bean = new Material.MaterialBean();
+            bean = bean.copy(org);
+            bean.setScanlineseat("");
+            bean.setScanMaterial("");
+            bean.setRemark("");
+            bean.setResult("");
+            mChangeMaterialBeans.add(bean);
+        }
     }
 
     @Override

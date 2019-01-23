@@ -119,8 +119,9 @@ public class FactoryLineActivity extends FragmentActivity implements View.OnClic
     public void onEventMainThread(EvenBusTest event) {
         // TODO: 2018/12/26
         if (event.getUpdated() == 0) {
-            Log.d(TAG, "onEventMainThread - " + event.getUpdated());
+            Log.d(TAG, "getUpdated - " + 0);
             if (event.getCheckAllTimeOut() == 1) {
+                Log.d(TAG, "getCheckAllTimeOut - " + 1);
                 //判断本地数据是否清空
                 boolean clear = true;
                 List<FLCheckAll> flCheckAlls = new GreenDaoUtil().queryFLCheckRecord(globalData.getOperator(), globalData.getWork_order(),
@@ -135,11 +136,14 @@ public class FactoryLineActivity extends FragmentActivity implements View.OnClic
                     showUpdateDialog("全检超时!", "全检超时!");
                 }
             } else {
+                Log.d(TAG, "getCheckAllTimeOut - " + 0);
                 showUpdateDialog("站位表更新!", "站位表更新!");
             }
             globalData.setUpdateProgram(false);
         } else {
             if (event.getCheckAllTimeOut() == 1) {
+                Log.d(TAG, "getUpdated - " + 1);
+                Log.d(TAG, "getCheckAllTimeOut - " + 1);
                 //是否作废
                 if (0 == event.getProgramIdEqual()){
                     showUpdateDialog("站位表作废并重传！", "站位表作废并重传！");
@@ -162,6 +166,9 @@ public class FactoryLineActivity extends FragmentActivity implements View.OnClic
             }else {
                 //是否作废
                 if (0 == event.getProgramIdEqual()){
+                    Log.d(TAG, "getUpdated - " + 1);
+                    Log.d(TAG, "getCheckAllTimeOut - " + 1);
+                    Log.d(TAG, "getProgramIdEqual - " + 0);
                     showUpdateDialog("站位表作废并重传！", "站位表作废并重传！");
                 }
             }

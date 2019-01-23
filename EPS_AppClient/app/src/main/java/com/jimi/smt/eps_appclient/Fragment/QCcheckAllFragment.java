@@ -50,6 +50,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
     private MyEditTextDel edt_ScanMaterial;
     private ListView lv_qcCheckAll;
     private List<Material.MaterialBean> mQcCheckALLMaterialBeans = new ArrayList<>();
+    private static List<Material.MaterialBean> tempBeans = new ArrayList<>();
     //IPQC全检纪录
     private List<QcCheckAll> qcCheckAllList = new ArrayList<>();
     //长按时选择的行
@@ -78,18 +79,16 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
         globalData = (GlobalData) getActivity().getApplication();
         mQcActivity = (QCActivity) getActivity();
         globalFunc = new GlobalFunc(mQcActivity.getApplicationContext());
-        if (Constants.isCache) {
-            //查询本地数据库是否存在缓存
-            List<QcCheckAll> qcCheckAlls = new GreenDaoUtil().queryQcCheckRecord(globalData.getOperator(),
-                    globalData.getWork_order(), globalData.getLine(), globalData.getBoard_type());
-            if (qcCheckAlls != null && qcCheckAlls.size() > 0) {
-                qcCheckAllList.addAll(qcCheckAlls);
-                isRestoreCache = true;
-            } else {
-                boolean result = new GreenDaoUtil().deleteAllQcCheck();
-                Log.d(TAG, "deleteAllQcCheck - " + result);
-                isRestoreCache = false;
-            }
+        //查询本地数据库是否存在缓存
+        List<QcCheckAll> qcCheckAlls = new GreenDaoUtil().queryQcCheckRecord(globalData.getOperator(),
+                globalData.getWork_order(), globalData.getLine(), globalData.getBoard_type());
+        if (qcCheckAlls != null && qcCheckAlls.size() > 0) {
+            qcCheckAllList.addAll(qcCheckAlls);
+            isRestoreCache = true;
+        } else {
+            boolean result = new GreenDaoUtil().deleteAllQcCheck();
+            Log.d(TAG, "deleteAllQcCheck - " + result);
+            isRestoreCache = false;
         }
     }
 
@@ -98,10 +97,12 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
         qcCheckAllView = inflater.inflate(R.layout.checkallmaterial_layout, container, false);
         Intent intent = getActivity().getIntent();
         savedInstanceState = intent.getExtras();
+        /*
         if (mQcActivity.updateDialog != null && mQcActivity.updateDialog.isShowing()) {
             mQcActivity.updateDialog.cancel();
             mQcActivity.updateDialog.dismiss();
         }
+        */
 
         mHttpUtils = new HttpUtils(this, getContext());
 
@@ -117,10 +118,60 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
     //监听订阅的消息
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEventMainThread(EvenBusTest event) {
-        if (Constants.isCache) {
-            if (event.getUpdated() == 0) {
-                Log.d(TAG, "onEventMainThread - update - ");
-                //更新或重置
+        if (event.getUpdated() == 0) {
+            Log.d(TAG, "onEventMainThread - update - ");
+            //更新或重置
+            if (inputDialog != null && inputDialog.isShowing()) {
+                inputDialog.cancel();
+                inputDialog.dismiss();
+                selectRow = -1;
+            }
+            if (resultInfoDialog != null && resultInfoDialog.isShowing()) {
+                resultInfoDialog.cancel();
+                resultInfoDialog.dismiss();
+            }
+            if (event.getQcCheckAllList() != null && event.getQcCheckAllList().size() > 0) {
+                qcCheckAllList.clear();
+                qcCheckAllList.addAll(event.getQcCheckAllList());
+                curCheckId = 0;
+                mQcCheckALLMaterialBeans.clear();
+                for (int i = 0, len = qcCheckAllList.size(); i < len; i++) {
+                    QcCheckAll qcCheckAll = qcCheckAllList.get(i);
+                    Material.MaterialBean bean = new Material.MaterialBean(qcCheckAll.getOrder(), qcCheckAll.getBoard_type(), qcCheckAll.getLine(),
+                            qcCheckAll.getProgramId(), qcCheckAll.getSerialNo(), qcCheckAll.getAlternative(), qcCheckAll.getSpecitification(),
+                            qcCheckAll.getPosition(), qcCheckAll.getQuantity(), qcCheckAll.getOrgLineSeat(), qcCheckAll.getOrgMaterial(),
+                            qcCheckAll.getScanLineSeat(), qcCheckAll.getScanMaterial(), qcCheckAll.getResult(), qcCheckAll.getRemark());
+                    mQcCheckALLMaterialBeans.add(bean);
+                    if ((null != qcCheckAll.getResult()) && ((qcCheckAll.getResult().equalsIgnoreCase("PASS")) || (qcCheckAll.getResult().equalsIgnoreCase("FAIL")))) {
+                        if (i == qcCheckAllList.size() - 1) {
+                            curCheckId = i;
+                        } else {
+                            curCheckId = i + 1;
+                        }
+                    }
+                }
+            }
+
+            //更新显示
+            materialAdapter.notifyDataSetChanged();
+//                edt_ScanMaterial.requestFocus();
+            Log.d(TAG, "mHidden - " + mHidden);
+            //提示首检或上料
+            if (!mHidden) {
+                    /*
+                    if (mQcActivity.updateDialog != null && mQcActivity.updateDialog.isShowing()) {
+                        mQcActivity.updateDialog.cancel();
+                        mQcActivity.updateDialog.dismiss();
+                    }
+                    */
+                edt_ScanMaterial.requestFocus();
+            }
+
+        } else {
+            // TODO: 2018/12/26
+            if (event.getCheckAllTimeOut() == 1) {
+                Log.d(TAG, "onEventMainThread - getCheckAllTimeOut - ");
+                //超时
                 if (inputDialog != null && inputDialog.isShowing()) {
                     inputDialog.cancel();
                     inputDialog.dismiss();
@@ -138,38 +189,34 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                     for (int i = 0, len = qcCheckAllList.size(); i < len; i++) {
                         QcCheckAll qcCheckAll = qcCheckAllList.get(i);
                         Material.MaterialBean bean = new Material.MaterialBean(qcCheckAll.getOrder(), qcCheckAll.getBoard_type(), qcCheckAll.getLine(),
-                                qcCheckAll.getProgramId(), qcCheckAll.getSerialNo(), qcCheckAll.getAlternative(), qcCheckAll.getSpecitification(),
-                                qcCheckAll.getPosition(), qcCheckAll.getQuantity(), qcCheckAll.getOrgLineSeat(), qcCheckAll.getOrgMaterial(),
+                                qcCheckAll.getProgramId(), qcCheckAll.getSerialNo(), qcCheckAll.getAlternative(), qcCheckAll.getSpecitification()
+                                , qcCheckAll.getPosition(), qcCheckAll.getQuantity(), qcCheckAll.getOrgLineSeat(), qcCheckAll.getOrgMaterial(),
                                 qcCheckAll.getScanLineSeat(), qcCheckAll.getScanMaterial(), qcCheckAll.getResult(), qcCheckAll.getRemark());
                         mQcCheckALLMaterialBeans.add(bean);
-                        if ((null != qcCheckAll.getResult()) && ((qcCheckAll.getResult().equalsIgnoreCase("PASS")) || (qcCheckAll.getResult().equalsIgnoreCase("FAIL")))) {
-                            if (i == qcCheckAllList.size() - 1) {
-                                curCheckId = i;
-                            } else {
-                                curCheckId = i + 1;
-                            }
-                        }
                     }
                 }
 
                 //更新显示
                 materialAdapter.notifyDataSetChanged();
-//                edt_ScanMaterial.requestFocus();
+//                    edt_ScanMaterial.requestFocus();
                 Log.d(TAG, "mHidden - " + mHidden);
                 //提示首检或上料
                 if (!mHidden) {
-                    if (mQcActivity.updateDialog != null && mQcActivity.updateDialog.isShowing()) {
-                        mQcActivity.updateDialog.cancel();
-                        mQcActivity.updateDialog.dismiss();
-                    }
+                        /*
+                        if (mQcActivity.updateDialog != null && mQcActivity.updateDialog.isShowing()) {
+                            mQcActivity.updateDialog.cancel();
+                            mQcActivity.updateDialog.dismiss();
+                        }
+                        */
                     edt_ScanMaterial.requestFocus();
                 }
 
-            } else {
-                // TODO: 2018/12/26
-                if (event.getCheckAllTimeOut() == 1) {
-                    Log.d(TAG, "onEventMainThread - getCheckAllTimeOut - ");
-                    //超时
+            }
+            //未超时
+            else {
+                //作废重传
+                if (0 == event.getProgramIdEqual()) {
+                    Log.d(TAG, "getProgramIdEqual - " + event.getProgramIdEqual());
                     if (inputDialog != null && inputDialog.isShowing()) {
                         inputDialog.cancel();
                         inputDialog.dismiss();
@@ -183,30 +230,22 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                         qcCheckAllList.clear();
                         qcCheckAllList.addAll(event.getQcCheckAllList());
                         curCheckId = 0;
-                        mQcCheckALLMaterialBeans.clear();
-                        for (int i = 0, len = qcCheckAllList.size(); i < len; i++) {
-                            QcCheckAll qcCheckAll = qcCheckAllList.get(i);
-                            Material.MaterialBean bean = new Material.MaterialBean(qcCheckAll.getOrder(), qcCheckAll.getBoard_type(), qcCheckAll.getLine(),
-                                    qcCheckAll.getProgramId(), qcCheckAll.getSerialNo(), qcCheckAll.getAlternative(), qcCheckAll.getSpecitification()
-                                    , qcCheckAll.getPosition(), qcCheckAll.getQuantity(), qcCheckAll.getOrgLineSeat(), qcCheckAll.getOrgMaterial(),
-                                    qcCheckAll.getScanLineSeat(), qcCheckAll.getScanMaterial(), qcCheckAll.getResult(), qcCheckAll.getRemark());
-                            mQcCheckALLMaterialBeans.add(bean);
+                        for (Material.MaterialBean bean : mQcCheckALLMaterialBeans) {
+                            bean.setProgramId(globalData.getProgramId());
+                            bean.setScanMaterial("");
+                            bean.setScanlineseat("");
+                            bean.setRemark("");
+                            bean.setResult("");
                         }
                     }
 
                     //更新显示
                     materialAdapter.notifyDataSetChanged();
-//                    edt_ScanMaterial.requestFocus();
                     Log.d(TAG, "mHidden - " + mHidden);
                     //提示首检或上料
                     if (!mHidden) {
-                        if (mQcActivity.updateDialog != null && mQcActivity.updateDialog.isShowing()) {
-                            mQcActivity.updateDialog.cancel();
-                            mQcActivity.updateDialog.dismiss();
-                        }
                         edt_ScanMaterial.requestFocus();
                     }
-
                 }
             }
         }
@@ -219,18 +258,14 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
         this.mHidden = hidden;
         if (!hidden) {
             //判断是否上料
+            /*
             if (mQcActivity.updateDialog != null && mQcActivity.updateDialog.isShowing()) {
                 mQcActivity.updateDialog.cancel();
                 mQcActivity.updateDialog.dismiss();
             }
+            */
             // TODO: 2019/1/15
             materialAdapter.notifyDataSetChanged();
-            for (Material.MaterialBean bean : mQcCheckALLMaterialBeans) {
-                Log.d(TAG, "linseat - " + bean.getLineseat());
-                Log.d(TAG, "material - " + bean.getMaterialNo());
-                Log.d(TAG, "mark - " + bean.getRemark());
-                Log.d(TAG, "result - " + bean.getResult());
-            }
             clearLineSeatMaterialScan();
             showLoading();
             checkFeedCondition = 0;
@@ -279,27 +314,28 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
         if (!isRestoreCache) {
             //不存在缓存
             // TODO: 2018/12/25 清空全局变量
-            mQcCheckALLMaterialBeans = globalData.getMaterialBeans();
-            if (Constants.isCache) {
-                for (Material.MaterialBean bean : mQcCheckALLMaterialBeans) {
-                    bean.setScanlineseat("");
-                    bean.setScanMaterial("");
-                    bean.setRemark("");
-                    bean.setResult("");
-                    QcCheckAll qcCheckAll = new QcCheckAll(null, bean.getProgramId(), bean.getWorkOrder(), globalData.getOperator(),
-                            bean.getBoardType(), bean.getLine(), bean.getSerialNo(), bean.isAlternative(), bean.getLineseat(), bean.getMaterialNo(),
-                            bean.getSpecitification(), bean.getPosition(), bean.getQuantity(), "", "", "", "");
-                    qcCheckAllList.add(qcCheckAll);
-                }
-                boolean cacheResult = new GreenDaoUtil().insertMultiQcCheckMaterial(qcCheckAllList);
-                Log.d(TAG, "insertMultiQcCheckMaterial - " + cacheResult);
+            tempBeans.addAll(globalData.getMaterialBeans());
+            for (Material.MaterialBean org : tempBeans) {
+                Material.MaterialBean bean = new Material.MaterialBean();
+                bean = bean.copy(org);
+                bean.setScanlineseat("");
+                bean.setScanMaterial("");
+                bean.setRemark("");
+                bean.setResult("");
+                mQcCheckALLMaterialBeans.add(bean);
+                QcCheckAll qcCheckAll = new QcCheckAll(null, bean.getProgramId(), bean.getWorkOrder(), globalData.getOperator(),
+                        bean.getBoardType(), bean.getLine(), bean.getSerialNo(), bean.isAlternative(), bean.getLineseat(), bean.getMaterialNo(),
+                        bean.getSpecitification(), bean.getPosition(), bean.getQuantity(), "", "", "", "");
+                qcCheckAllList.add(qcCheckAll);
             }
+            boolean cacheResult = new GreenDaoUtil().insertMultiQcCheckMaterial(qcCheckAllList);
+            Log.d(TAG, "insertMultiQcCheckMaterial - " + cacheResult);
         } else {
             //存在缓存
             for (int i = 0; i < qcCheckAllList.size(); i++) {
                 QcCheckAll qcCheckAll = qcCheckAllList.get(i);
                 Material.MaterialBean bean = new Material.MaterialBean(qcCheckAll.getOrder(), qcCheckAll.getBoard_type(), qcCheckAll.getLine(), qcCheckAll.getProgramId(),
-                        qcCheckAll.getSerialNo(), qcCheckAll.getAlternative(), qcCheckAll.getSpecitification(),qcCheckAll.getPosition(),qcCheckAll.getQuantity(),
+                        qcCheckAll.getSerialNo(), qcCheckAll.getAlternative(), qcCheckAll.getSpecitification(), qcCheckAll.getPosition(), qcCheckAll.getQuantity(),
                         qcCheckAll.getOrgLineSeat(), qcCheckAll.getOrgMaterial(), qcCheckAll.getScanLineSeat(),
                         qcCheckAll.getScanMaterial(), qcCheckAll.getResult(), qcCheckAll.getRemark());
                 mQcCheckALLMaterialBeans.add(bean);
@@ -474,19 +510,16 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
 
     //更新全检缓存
     private void cacheCheckResult(ArrayList<Integer> integers, Material.MaterialBean materialItem) {
-        if (Constants.isCache) {
-            //保存缓存
-            if (null != integers && integers.size() > 0) {
-                for (int i = 0, len = integers.size(); i < len; i++) {
-                    QcCheckAll qcCheckAll = qcCheckAllList.get(integers.get(i));
-                    qcCheckAll.setScanLineSeat(materialItem.getScanlineseat());
-                    qcCheckAll.setScanMaterial(materialItem.getScanMaterial());
-                    qcCheckAll.setResult(materialItem.getResult());
-                    qcCheckAll.setRemark(materialItem.getRemark());
-                    new GreenDaoUtil().updateQcCheck(qcCheckAll);
-                }
+        //保存缓存
+        if (null != integers && integers.size() > 0) {
+            for (int i = 0, len = integers.size(); i < len; i++) {
+                QcCheckAll qcCheckAll = qcCheckAllList.get(integers.get(i));
+                qcCheckAll.setScanLineSeat(materialItem.getScanlineseat());
+                qcCheckAll.setScanMaterial(materialItem.getScanMaterial());
+                qcCheckAll.setResult(materialItem.getResult());
+                qcCheckAll.setRemark(materialItem.getRemark());
+                new GreenDaoUtil().updateQcCheck(qcCheckAll);
             }
-
         }
     }
 
@@ -576,8 +609,9 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
 
     private void checkNextMaterial() {
         lv_qcCheckAll.setSelection(curCheckId);
+        Log.i(TAG, "checkNextMaterial:" + curCheckId);
         if (curCheckId < mQcCheckALLMaterialBeans.size() - 1) {
-            curCheckId++;
+            curCheckId += 1;
             clearLineSeatMaterialScan();
         } else {
             showCheckAllMaterialResult(0);
@@ -676,13 +710,11 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
             materialItem.setScanMaterial("");
             materialItem.setResult("");
             materialItem.setRemark("");
-            if (Constants.isCache) {
-                QcCheckAll qcCheckAll = qcCheckAllList.get(i);
-                qcCheckAll.setScanLineSeat("");
-                qcCheckAll.setScanMaterial("");
-                qcCheckAll.setResult("");
-                qcCheckAll.setRemark("");
-            }
+            QcCheckAll qcCheckAll = qcCheckAllList.get(i);
+            qcCheckAll.setScanLineSeat("");
+            qcCheckAll.setScanMaterial("");
+            qcCheckAll.setResult("");
+            qcCheckAll.setRemark("");
         }
         materialAdapter.notifyDataSetChanged();
     }
