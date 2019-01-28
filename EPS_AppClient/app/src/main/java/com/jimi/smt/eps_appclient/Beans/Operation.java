@@ -1,7 +1,5 @@
 package com.jimi.smt.eps_appclient.Beans;
 
-import com.google.gson.Gson;
-
 /**
  * 类名: Operation
  * 创建人: Liang GuoChang
@@ -62,11 +60,6 @@ public class Operation extends BaseMaterial {
 
     public void setOldMaterialNo(String oldMaterialNo) {
         this.oldMaterialNo = oldMaterialNo;
-    }
-
-    public String operationToString() {
-        Gson gson = new Gson();
-        return gson.toJson(this);
     }
 
     /**

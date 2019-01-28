@@ -184,13 +184,6 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
             // TODO: 2018/12/26
             if (event.getCheckAllTimeOut() == 1) {
                 Log.d(TAG, "onEventMainThread - getCheckAllTimeOut - 1");
-                boolean mReset = true;
-                for (Material.MaterialBean materialItem : mCheckAllMaterialBeans) {
-                    if ((null != materialItem.getResult()) && (!materialItem.getResult().equalsIgnoreCase(""))) {
-                        mReset = false;
-                    }
-                }
-                Log.d(TAG, "mReset - " + mReset);
                 //超时,无论是否作废重传
                 if (inputDialog != null && inputDialog.isShowing()) {
                     inputDialog.cancel();
@@ -201,6 +194,14 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                     resultInfoDialog.cancel();
                     resultInfoDialog.dismiss();
                 }
+                showLoading();
+                boolean mReset = true;
+                for (Material.MaterialBean materialItem : mCheckAllMaterialBeans) {
+                    if ((null != materialItem.getResult()) && (!materialItem.getResult().equalsIgnoreCase(""))) {
+                        mReset = false;
+                    }
+                }
+                Log.d(TAG, "mReset - " + mReset);
                 if (!mReset) {
                     if (event.getFlCheckAllList() != null && event.getFlCheckAllList().size() > 0) {
                         flCheckAllList.clear();
@@ -222,6 +223,7 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                     //更新显示
                     materialAdapter.notifyDataSetChanged();
                 }
+                dismissLoading();
 //                edt_ScanMaterial.requestFocus();
                 Log.d(TAG, "mHidden - " + mHidden);
                 Log.d(TAG, "isUpdateProgram - " + globalData.isUpdateProgram());
@@ -393,6 +395,7 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
         //填充数据
         curCheckId = 0;
         mCheckAllMaterialBeans.clear();
+        tempBeans.clear();
         if (!isRestoreCache) {
             //不存在缓存
             tempBeans.addAll(globalData.getMaterialBeans());
@@ -907,6 +910,7 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
         switch (code) {
             case HttpUtils.CodeOperate:
                 //更新visit表
+                // TODO: 2019/1/28 会出现当前操作跳回到上一个的问题 
                 ArrayList<Integer> integers = (ArrayList<Integer>) ((Object[]) request)[0];
                 Material.MaterialBean bean = (Material.MaterialBean) ((Object[]) request)[1];
                 int condition = (int) ((Object[]) request)[2];

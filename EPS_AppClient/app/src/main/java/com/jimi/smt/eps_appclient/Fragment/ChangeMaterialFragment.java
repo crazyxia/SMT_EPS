@@ -253,6 +253,7 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
         curChangeMaterialId = -1;
         //填充数据
         mChangeMaterialBeans.clear();
+        tempBeans.clear();
         tempBeans.addAll(globalData.getMaterialBeans());
         for (Material.MaterialBean org : tempBeans) {
             //保存缓存到数据库中

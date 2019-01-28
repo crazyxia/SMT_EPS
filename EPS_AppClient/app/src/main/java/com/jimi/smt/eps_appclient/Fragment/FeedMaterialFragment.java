@@ -317,6 +317,7 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
         mFeedMaterialBeans.clear();
         //没有缓存
         if (!isRestoreCache) {
+            tempMaterialBeans.clear();
             tempMaterialBeans.addAll(globalData.getMaterialBeans());
             for (Material.MaterialBean org : tempMaterialBeans) {
                 //保存缓存到数据库中

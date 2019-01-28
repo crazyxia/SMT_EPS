@@ -103,6 +103,7 @@ public class HttpUtils {
     public static final int CodeIsChangeSucceed = 13;
     public static final int CodeGetProgramId = 14;
     public static final int CodeIsCheckAllTimeOut = 15;
+    public static final int CodeIsAllDoneSTR = 16;
 
 
     /**
@@ -475,7 +476,7 @@ public class HttpUtils {
      * @param type 0&1&3&4 表示同时查询4个结果
      *             0:上料 1:换料 2:核料 3:全检 4:发料 5:首检
      */
-    public void checkAllDone(String programId, String type) {
+    public void checkAllDoneStr(String programId, String type) {
         Log.d(TAG, "checkAllDone - " + isAllDone);
         Log.d(TAG, "checkAllDone - programId - " + programId);
         Log.d(TAG, "checkAllDone - type - " + type);
@@ -487,13 +488,13 @@ public class HttpUtils {
                     @Override
                     public void onError(Call call, Exception e, int id) {
                         Log.d(TAG, "onError - " + e.toString());
-                        mOkHttpInterface.showHttpError(CodeIsAllDone, new Object[]{programId, type}, e.toString());
+                        mOkHttpInterface.showHttpError(CodeIsAllDoneSTR, new Object[]{programId, type}, e.toString());
                     }
 
                     @Override
                     public void onResponse(String response, int id) {
                         Log.d(TAG, "onResponse - " + response);
-                        mOkHttpInterface.showHttpResponse(CodeIsAllDone, new Object[]{programId, type}, response);
+                        mOkHttpInterface.showHttpResponse(CodeIsAllDoneSTR, new Object[]{programId, type}, response);
                     }
                 });
     }

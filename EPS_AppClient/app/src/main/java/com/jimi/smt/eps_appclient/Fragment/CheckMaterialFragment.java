@@ -200,6 +200,7 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
         Log.i(TAG, "initData");
         //填充数据
         mCheckBeanList.clear();
+        tempBeans.clear();
         tempBeans.addAll(globalData.getMaterialBeans());
         for (Material.MaterialBean org : tempBeans) {
             //操作员

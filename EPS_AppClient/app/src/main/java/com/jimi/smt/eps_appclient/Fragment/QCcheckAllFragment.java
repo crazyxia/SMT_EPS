@@ -321,6 +321,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
         if (!isRestoreCache) {
             //不存在缓存
             // TODO: 2018/12/25 清空全局变量
+            tempBeans.clear();
             tempBeans.addAll(globalData.getMaterialBeans());
             for (Material.MaterialBean org : tempBeans) {
                 Material.MaterialBean bean = new Material.MaterialBean();

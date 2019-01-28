@@ -1,7 +1,5 @@
 package com.jimi.smt.eps_appclient.Beans;
 
-import android.support.annotation.NonNull;
-
 import java.util.List;
 
 /**
@@ -178,7 +176,7 @@ public class Material extends BaseMsg {
         }
 
         @Override
-        public int compareTo(@NonNull MaterialBean materialBean) {
+        public int compareTo(MaterialBean materialBean) {
             return 1;
         }
     }
