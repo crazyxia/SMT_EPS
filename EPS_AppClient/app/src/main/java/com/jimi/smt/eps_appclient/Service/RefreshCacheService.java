@@ -80,7 +80,9 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
                 int boardType = globalData.getBoard_type();
 //                Log.d(TAG, "getRefreshProgram - " + "  line : " + line + "  workOrder: " + workOrder + "  boardType: " + boardType);
 //                mHttpUtils.getProgramId(line, workOrder, boardType);
-                mHttpUtils.isCheckAllTimeOut(line, workOrder, boardType);
+                if ((null != line) && (null != workOrder)){
+                    mHttpUtils.isCheckAllTimeOut(line, workOrder, boardType);
+                }
             }
         }
     });

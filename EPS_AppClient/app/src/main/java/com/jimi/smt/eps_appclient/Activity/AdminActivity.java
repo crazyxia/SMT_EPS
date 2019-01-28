@@ -53,7 +53,7 @@ public class AdminActivity extends Activity implements View.OnClickListener {
             curOrderNum = savedInstanceState.getString("orderNum");
             curOperatorNum = savedInstanceState.getString("operatorNum");
         }
-        globalFunc = new GlobalFunc(getApplicationContext());
+        globalFunc = new GlobalFunc(this);
         globalData = (GlobalData) getApplication();
 
         initView();

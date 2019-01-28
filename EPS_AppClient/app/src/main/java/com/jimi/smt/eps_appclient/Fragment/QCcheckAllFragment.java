@@ -78,7 +78,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
         EventBus.getDefault().register(this);
         globalData = (GlobalData) getActivity().getApplication();
         mQcActivity = (QCActivity) getActivity();
-        globalFunc = new GlobalFunc(mQcActivity.getApplicationContext());
+        globalFunc = new GlobalFunc(mQcActivity);
         //查询本地数据库是否存在缓存
         List<QcCheckAll> qcCheckAlls = new GreenDaoUtil().queryQcCheckRecord(globalData.getOperator(),
                 globalData.getWork_order(), globalData.getLine(), globalData.getBoard_type());
@@ -171,6 +171,13 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
             // TODO: 2018/12/26
             if (event.getCheckAllTimeOut() == 1) {
                 Log.d(TAG, "onEventMainThread - getCheckAllTimeOut - ");
+                boolean mReset = true;
+                for (Material.MaterialBean materialItem : mQcCheckALLMaterialBeans) {
+                    if ((null != materialItem.getResult()) && (!materialItem.getResult().equalsIgnoreCase(""))) {
+                        mReset = false;
+                    }
+                }
+                Log.d(TAG, "mReset - " + mReset);
                 //超时
                 if (inputDialog != null && inputDialog.isShowing()) {
                     inputDialog.cancel();

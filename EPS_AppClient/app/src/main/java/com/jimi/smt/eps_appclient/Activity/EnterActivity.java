@@ -73,6 +73,7 @@ public class EnterActivity extends Activity implements TextView.OnEditorActionLi
 
     private final int SET_ORDER = 8;//设置工单号
     private final int NET_MATERIAL_FALL = 400;//获取料号表失败
+    private final int OPERATOR_NULL = 404;//手动输入操作员，其为空
     private static final int UPDATE_APK = 5;//更新apk
 
     private List<com.jimi.smt.eps_appclient.Beans.Program.ProgramBean> mProgramBeans = new ArrayList<>();//工单号列表
@@ -163,6 +164,11 @@ public class EnterActivity extends Activity implements TextView.OnEditorActionLi
                     break;
                 case UPDATE_APK:
                     et_enter_operator.setText("");
+                    break;
+                case OPERATOR_NULL:
+                    Toast.makeText(getApplicationContext(), "请扫描工号条码", Toast.LENGTH_SHORT).show();
+                    et_enter_operator.setText("");
+                    et_enter_operator.requestFocus();
                     break;
             }
         }
@@ -612,14 +618,14 @@ public class EnterActivity extends Activity implements TextView.OnEditorActionLi
                 break;
 
             case HttpUtils.CodeMaterials://料号表
-                Gson material = new Gson();
+                Gson gson = new Gson();
                 if (resCode == 0) {
-                    BaseMsg baseMsg = material.fromJson(s, BaseMsg.class);
+                    BaseMsg baseMsg = gson.fromJson(s, BaseMsg.class);
                     //不存在该操作员
                     Toast.makeText(getApplicationContext(), baseMsg.getMsg(), Toast.LENGTH_LONG).show();
                     showInfo();
                 } else if (resCode == 1) {
-                    List<Material.MaterialBean> materialBeans = material.fromJson(s, Material.class).getData();
+                    List<Material.MaterialBean> materialBeans = gson.fromJson(s, Material.class).getData();
                     com.jimi.smt.eps_appclient.Beans.Program.ProgramBean programBean = mProgramBeans.get(curCheckIndex);
                     for (Material.MaterialBean bean : materialBeans) {
                         bean.setProgramId(programBean.getId());
@@ -639,14 +645,20 @@ public class EnterActivity extends Activity implements TextView.OnEditorActionLi
 //                    Log.d(TAG, "getRefreshProgram - " + "  line : " + globalData.getLine() + "  workOrder: " + globalData.getWork_order() + "  boardType: " + globalData.getBoard_type());
 
                     //成功获取料号表,操作员在职
-                    Log.d(TAG, "mOperatorBean - " + mOperatorBean.getType());
-                    Message message = Message.obtain();
-                    message.what = mOperatorBean.getType();
-                    message.obj = programBean;
-                    curOrderNum = programBean.getWorkOrder();
-                    curOperatorNum = mOperatorBean.getId();
-                    //发送消息
-                    enterHandler.sendMessage(message);
+                    if (null != mOperatorBean){
+                        Log.d(TAG, "mOperatorBean - " + mOperatorBean.getType());
+                        Message message = Message.obtain();
+                        message.what = mOperatorBean.getType();
+                        message.obj = programBean;
+                        curOrderNum = programBean.getWorkOrder();
+                        curOperatorNum = mOperatorBean.getId();
+                        //发送消息
+                        enterHandler.sendMessage(message);
+                    }else {
+                        Message message = Message.obtain();
+                        message.what = OPERATOR_NULL;
+                        enterHandler.sendMessage(message);
+                    }
 
                 }
                 break;

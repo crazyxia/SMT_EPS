@@ -369,7 +369,6 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
         //回车键
         if (i == EditorInfo.IME_ACTION_SEND ||
                 (keyEvent != null && keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
-            Log.i(TAG, "keyEvent:" + keyEvent.getAction());
             switch (keyEvent.getAction()) {
                 //抬上
                 case KeyEvent.ACTION_UP:

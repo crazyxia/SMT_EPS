@@ -472,6 +472,36 @@ public class HttpUtils {
      * 返回某个工单是否全部完成某项操作的结果
      *
      * @param programId
+     * @param type 0&1&3&4 表示同时查询4个结果
+     *             0:上料 1:换料 2:核料 3:全检 4:发料 5:首检
+     */
+    public void checkAllDone(String programId, String type) {
+        Log.d(TAG, "checkAllDone - " + isAllDone);
+        Log.d(TAG, "checkAllDone - programId - " + programId);
+        Log.d(TAG, "checkAllDone - type - " + type);
+        OkHttpUtils.post().url(globalData.getIp() + isAllDone)
+                .addParams("programId", programId)
+                .addParams("type", String.valueOf(type))
+                .build()
+                .execute(new StringCallback() {
+                    @Override
+                    public void onError(Call call, Exception e, int id) {
+                        Log.d(TAG, "onError - " + e.toString());
+                        mOkHttpInterface.showHttpError(CodeIsAllDone, new Object[]{programId, type}, e.toString());
+                    }
+
+                    @Override
+                    public void onResponse(String response, int id) {
+                        Log.d(TAG, "onResponse - " + response);
+                        mOkHttpInterface.showHttpResponse(CodeIsAllDone, new Object[]{programId, type}, response);
+                    }
+                });
+    }
+
+    /**
+     * 返回某个工单是否全部完成某项操作的结果
+     *
+     * @param programId
      * @param type
      */
     public void checkAllDone(String programId, int type, ArrayList<Integer> integers, Material.MaterialBean bean, int condition) {

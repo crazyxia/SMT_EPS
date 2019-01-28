@@ -112,7 +112,7 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
         //注册订阅
         EventBus.getDefault().register(this);
         globalData = (GlobalData) getActivity().getApplication();
-        globalFunc = new GlobalFunc(getActivity().getApplicationContext());
+        globalFunc = new GlobalFunc(getActivity());
         Log.d(TAG, "用户类型UserType：" + globalData.getUserType());
         factoryLineActivity = (FactoryLineActivity) getActivity();
         //查询本地数据库是否存在缓存
@@ -183,7 +183,14 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
         } else {
             // TODO: 2018/12/26
             if (event.getCheckAllTimeOut() == 1) {
-                Log.d(TAG, "onEventMainThread - getCheckAllTimeOut - ");
+                Log.d(TAG, "onEventMainThread - getCheckAllTimeOut - 1");
+                boolean mReset = true;
+                for (Material.MaterialBean materialItem : mCheckAllMaterialBeans) {
+                    if ((null != materialItem.getResult()) && (!materialItem.getResult().equalsIgnoreCase(""))) {
+                        mReset = false;
+                    }
+                }
+                Log.d(TAG, "mReset - " + mReset);
                 //超时,无论是否作废重传
                 if (inputDialog != null && inputDialog.isShowing()) {
                     inputDialog.cancel();
@@ -194,25 +201,27 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                     resultInfoDialog.cancel();
                     resultInfoDialog.dismiss();
                 }
-                if (event.getFlCheckAllList() != null && event.getFlCheckAllList().size() > 0) {
-                    flCheckAllList.clear();
-                    flCheckAllList.addAll(event.getFlCheckAllList());
-                    curCheckId = 0;
-                    mCheckAllMaterialBeans.clear();
+                if (!mReset) {
+                    if (event.getFlCheckAllList() != null && event.getFlCheckAllList().size() > 0) {
+                        flCheckAllList.clear();
+                        flCheckAllList.addAll(event.getFlCheckAllList());
+                        curCheckId = 0;
+                        mCheckAllMaterialBeans.clear();
 
-                    FLCheckAll flCheckAll;
-                    for (int i = 0, len = flCheckAllList.size(); i < len; i++) {
-                        flCheckAll = flCheckAllList.get(i);
-                        Material.MaterialBean bean = new Material.MaterialBean(flCheckAll.getOrder(), flCheckAll.getBoard_type(), flCheckAll.getLine(),
-                                flCheckAll.getProgramId(), flCheckAll.getSerialNo(), flCheckAll.getAlternative(), flCheckAll.getSpecitification(),
-                                flCheckAll.getPosition(), flCheckAll.getQuantity(), flCheckAll.getOrgLineSeat(), flCheckAll.getOrgMaterial(),
-                                flCheckAll.getScanLineSeat(), flCheckAll.getScanMaterial(), flCheckAll.getResult(), flCheckAll.getRemark());
-                        mCheckAllMaterialBeans.add(bean);
+                        FLCheckAll flCheckAll;
+                        for (int i = 0, len = flCheckAllList.size(); i < len; i++) {
+                            flCheckAll = flCheckAllList.get(i);
+                            Material.MaterialBean bean = new Material.MaterialBean(flCheckAll.getOrder(), flCheckAll.getBoard_type(), flCheckAll.getLine(),
+                                    flCheckAll.getProgramId(), flCheckAll.getSerialNo(), flCheckAll.getAlternative(), flCheckAll.getSpecitification(),
+                                    flCheckAll.getPosition(), flCheckAll.getQuantity(), flCheckAll.getOrgLineSeat(), flCheckAll.getOrgMaterial(),
+                                    flCheckAll.getScanLineSeat(), flCheckAll.getScanMaterial(), flCheckAll.getResult(), flCheckAll.getRemark());
+                            mCheckAllMaterialBeans.add(bean);
+                        }
+
                     }
-
+                    //更新显示
+                    materialAdapter.notifyDataSetChanged();
                 }
-                //更新显示
-                materialAdapter.notifyDataSetChanged();
 //                edt_ScanMaterial.requestFocus();
                 Log.d(TAG, "mHidden - " + mHidden);
                 Log.d(TAG, "isUpdateProgram - " + globalData.isUpdateProgram());
@@ -792,6 +801,8 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                         mReset = false;
                     }
                 }
+                Log.d(TAG, "reset - " + reset);
+                Log.d(TAG, "mReset - " + mReset);
                 switch (checkResetCondition) {
                     case 2://正常扫料号
                         if (reset == 0) {
