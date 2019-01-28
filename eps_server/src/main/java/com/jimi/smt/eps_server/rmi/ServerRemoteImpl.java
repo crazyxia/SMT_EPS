@@ -38,6 +38,7 @@ import com.jimi.smt.eps_server.timer.CheckErrorTimer;
 import cc.darhao.dautils.api.BytesParser;
 import cc.darhao.dautils.api.FieldUtil;
 import com.jimi.smt.eps_server.pack.BasePackage;
+import com.jimi.smt.eps_server.util.OsHelper;
 import com.jimi.smt.eps_server.util.PackageParser;
 
 @Component
@@ -113,11 +114,13 @@ public class ServerRemoteImpl implements ServerRemote {
 			} catch (Exception e) {
 				logger.error("搜索产线 " + lineMap.get(login.getLine()).getLine() + " : " + e.getMessage());
 			}
-			checkErrorTimer = new CheckErrorTimer(lineSize, lineMap, configMapper, programMapper, programItemVisitMapper, connectToCenterRemotes);
+			checkErrorTimer = new CheckErrorTimer(lineSize, lineMap, configMapper, programItemVisitMapper, connectToCenterRemotes);
 		} else {
 			logger.error("无效的树莓派MAC地址");
 		}
-		logger.info(loginPackage.protocol + "package arrived");
+		if(OsHelper.isWindows()) {
+			logger.info(loginPackage.protocol + "package arrived");
+		}
 		return loginReplyPackage;
 	}
 
@@ -162,7 +165,9 @@ public class ServerRemoteImpl implements ServerRemote {
 		boardNumReplyPackage.receiverIp = boardNumPackage.senderIp;
 		insertLogByPackage(boardNumPackage); 
 		insertLogByPackage(boardNumReplyPackage);
-		logger.info(boardNumPackage.protocol + "package arrived");
+		if(OsHelper.isWindows()) {
+			logger.info(boardNumPackage.protocol + "package arrived");
+		}
 		return boardNumReplyPackage;
 	}
 
@@ -176,7 +181,9 @@ public class ServerRemoteImpl implements ServerRemote {
 	@Scheduled(fixedDelay = 3000)
 	public void checkError() {
 		if (checkErrorTimer != null) {
-			logger.info("SMT 系统监听错误中。。。");
+			if(OsHelper.isWindows()) {
+				logger.info("SMT 系统监听错误中。。。");
+			}
 			checkErrorTimer.start();
 		}
 	}

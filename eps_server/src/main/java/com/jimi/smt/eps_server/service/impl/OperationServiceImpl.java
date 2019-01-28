@@ -106,8 +106,6 @@ public class OperationServiceImpl implements OperationService {
 			parameter.setOrderNo("%" + SqlUtil.escapeParameter(orderNo) + "%");
 		}
 		if (page != null) {
-			// 获取总条数
-			page.setTotallyData(operationMapper.countByClientParameter(parameter));
 			// 设置取值位置和条数
 			parameter.setFirstIndex(page.getFirstIndex());
 			parameter.setPageSize(page.getPageSize());
@@ -227,7 +225,6 @@ public class OperationServiceImpl implements OperationService {
 			parameter.setClient("%" + SqlUtil.escapeParameter(client) + "%");
 		}
 		if (page != null) {
-			page.setTotallyData(operationMapper.countByOperationParameter(parameter));
 			parameter.setFirstIndex(page.getFirstIndex());
 			parameter.setPageSize(page.getPageSize());
 		}
@@ -317,7 +314,6 @@ public class OperationServiceImpl implements OperationService {
 		for (Entry<OperationReportSummaryKey, OperationReportSummaryValue> entry : map.entrySet()) {
 			operationReportSummaryKeys.add(entry.getKey());
 		}
-		page.setTotallyData(map.size());
 		List<OperationReportSummary> operationReportSummaries = new ArrayList<OperationReportSummary>();
 		if (operationReportSummaryKeys.size() - page.getFirstIndex() > page.getPageSize()) {
 			for (int i = page.getFirstIndex(); i < operationReportSummaryKeys.size(); i++) {
@@ -398,7 +394,6 @@ public class OperationServiceImpl implements OperationService {
 		// 时间降序
 		stockLogExample.setOrderByClause("operation_time desc");
 		if(page != null) {
-			page.setTotallyData(stockLogMapper.countByExample(stockLogExample));
 			stockLogExample.setLimitStart(page.getFirstIndex());
 			stockLogExample.setLimitSize(page.getPageSize());
 		}

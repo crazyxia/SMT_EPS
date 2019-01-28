@@ -17,7 +17,8 @@ public @interface Role {
 	enum RoleType{
 		PRODUCER("生产管理员"),
 		IPQC("品质管理员"),
-		ENGINEER("工程管理员");
+		ENGINEER("工程管理员"),
+		WAREHOUSE("仓库管理员");
 		private final String text;
         private RoleType(final String text){
             this.text=text;

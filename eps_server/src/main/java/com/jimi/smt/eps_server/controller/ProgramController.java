@@ -1,8 +1,17 @@
 package com.jimi.smt.eps_server.controller;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -165,32 +174,36 @@ public class ProgramController {
 			resultList = programService.upload(programFile, boardType);
 		} catch (IOException e) {
 			return ResultUtil.failed("上传失败，IO错误，请重试，或联系开发者", e);
-		} catch (RuntimeException e) {
-			return ResultUtil.failed("上传失败，解析文件时出错，请检查站位表内容是否为空或者内容填写错误", e);
 		}
 
 		// 结果检查
 		StringBuffer sb = new StringBuffer();
 		boolean isSucceed = true;
 		for (Map<String, Object> result : resultList) {
-			int realParseNum = (int) result.get("real_parse_num");
-			int planParseNum = (int) result.get("plan_parse_num");
-			String actionName = (String) result.get("action_name");
-			if (realParseNum == 0) {
+			int realParseNum = (int) result.get("realParseNum");
+			int planParseNum = (int) result.get("planParseNum");
+			String actionName = (String) result.get("actionName");
+			List<String> errorInfos = (List<String>) result.get("errorInfos");
+			if (errorInfos != null && errorInfos.size() > 0) {
 				isSucceed = false;
-				sb.append("操作失败，请检查表格内是否有空行，若有去掉该行再重试\n");
-			} else if (realParseNum < planParseNum) {
-				isSucceed = false;
-				sb.append(actionName + "完成，共检测到" + planParseNum + "张表，但只解析成功" + realParseNum + "张表，请检查是否有空表或表中是否有空行\n");
+				if (realParseNum == 0) {
+					sb.append("操作失败，请检查是否有空表或表中是否有空行，错误信息如下:\n");
+				} else if (realParseNum < planParseNum) {
+					sb.append(actionName + "完成，共检测到" + planParseNum + "张表，但只解析成功" + realParseNum + "张表，请检查是否有空表或表中是否有空行，错误信息如下:\n");
+				} else {
+					sb.append("请检查表中是否有空行或者内容长度是否过长，错误信息如下:\n");
+				}
+				for (String errorInfo : errorInfos) {
+					sb.append(errorInfo + "\n");
+				}
 			} else {
 				sb.append(actionName + "完成，共解析到" + realParseNum + "张表\n");
 			}
 		}
-		String string = sb.substring(0, sb.length() - 1);
 		if (isSucceed) {
-			return ResultUtil.succeed(string);
+			return ResultUtil.succeed(sb.toString());
 		} else {
-			return ResultUtil.failed(string);
+			return ResultUtil.failed(sb.toString());
 		}
 	}
 
@@ -326,7 +339,7 @@ public class ProgramController {
 	@Open
 	@ResponseBody
 	@RequestMapping("/isAllDone")
-	public int isAllDone(String programId, int type) {
+	public ResultUtil2 isAllDone(String programId, String type) {
 		return programService.isAllDone(programId, type);
 	}
 
@@ -396,5 +409,40 @@ public class ProgramController {
 	@RequestMapping("/isCheckAllTimeOut")
 	public String isCheckAllTimeOut(String line, String workOrder, Integer boardType) {
 		return programService.isCheckAllTimeOut(line, workOrder, boardType);
+	}
+	
+	
+	@Role(RoleType.ENGINEER)
+	@RequestMapping("/download")
+	public void download(HttpServletRequest request, HttpServletResponse response) {
+		String fileName = "标准站位表.xls";
+		String path = request.getSession().getServletContext().getRealPath("WEB-INF") + File.separator + fileName;
+		InputStream in = null;
+		BufferedOutputStream out = null;
+		try {
+			in = new BufferedInputStream(new FileInputStream(new File(path)));
+			fileName = URLEncoder.encode(fileName, "UTF-8");
+			response.addHeader("Content-Disposition", "attachment;filename=" + fileName);
+			response.setContentType("multipart/form-data");
+			out = new BufferedOutputStream(response.getOutputStream());
+			int len = 0;
+			while ((len = in.read()) != -1) {
+				out.write(len);
+				out.flush();
+			}
+		} catch (IOException e) {
+			ResultUtil.failed("下载标准站位表出现IO错误 | " + e.getMessage());
+		} finally {
+			try {
+				if (out != null) {
+					out.close();
+				}
+				if (in != null) {
+					in.close();
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 }

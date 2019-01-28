@@ -14,23 +14,18 @@ import com.jimi.smt.eps_server.entity.Config;
 import com.jimi.smt.eps_server.entity.ConfigExample;
 import com.jimi.smt.eps_server.entity.Line;
 import com.jimi.smt.eps_server.entity.LineOperationResult;
-import com.jimi.smt.eps_server.entity.Program;
-import com.jimi.smt.eps_server.entity.ProgramItemVisit;
-import com.jimi.smt.eps_server.entity.ProgramItemVisitExample;
 import com.jimi.smt.eps_server.entity.bo.CenterControllerErrorCounter;
 import com.jimi.smt.eps_server.mapper.ConfigMapper;
 import com.jimi.smt.eps_server.mapper.ProgramItemVisitMapper;
-import com.jimi.smt.eps_server.mapper.ProgramMapper;
 import com.jimi.smt.eps_server.rmi.CenterRemoteWrapper;
 import com.jimi.smt.eps_server.thread.SendCmdThread;
+import com.jimi.smt.eps_server.util.OsHelper;
 
 public class CheckErrorTimer {
 
 	private static Logger logger = LogManager.getRootLogger();
 
 	private ConfigMapper configMapper;
-
-	private ProgramMapper programMapper;
 
 	private ProgramItemVisitMapper programItemVisitMapper;
 
@@ -65,9 +60,8 @@ public class CheckErrorTimer {
 	private Map<Integer, Line> lineMap;
 
 	
-	public CheckErrorTimer(Long lineSize, Map<Integer, Line> lineMap, ConfigMapper configMapper, ProgramMapper programMapper, ProgramItemVisitMapper programItemVisitMapper, Map<Integer, CenterRemoteWrapper> clientSockets) {
+	public CheckErrorTimer(Long lineSize, Map<Integer, Line> lineMap, ConfigMapper configMapper, ProgramItemVisitMapper programItemVisitMapper, Map<Integer, CenterRemoteWrapper> clientSockets) {
 		this.configMapper = configMapper;
-		this.programMapper = programMapper;
 		this.programItemVisitMapper = programItemVisitMapper;
 		this.lineSize = lineSize;
 		this.clientSockets = clientSockets;
@@ -133,7 +127,9 @@ public class CheckErrorTimer {
 		try {
 			long s = System.currentTimeMillis();
 			List<LineOperationResult> lineOperationResults = programItemVisitMapper.selectLineOperationResult();
-			System.out.println("查询耗时：" + (System.currentTimeMillis() - s) + "ms");
+			if (OsHelper.isWindows()) {
+				System.out.println("查询耗时：" + (System.currentTimeMillis() - s) + "ms");
+			}
 			for (LineOperationResult lineOperationResult : lineOperationResults) {
 				try {
 					// 遍历字段
@@ -144,31 +140,10 @@ public class CheckErrorTimer {
 					updateLineErrorCounter(line, 3, lineOperationResult.getCheckAllResult());
 					updateLineErrorCounter(line, 5, lineOperationResult.getFirstCheckAllResult());
 				} catch (Exception e) {
-
 				}
 			}
-				// 遍历Visit
-				/*for (ProgramItemVisit programItemVisit : programItemVisits) {
-					// 匹配线别
-					for (Program program : programs) {
-						if (program.getId().equals(programItemVisit.getProgramId())) {
-							try {
-								// 遍历字段
-								int line = getIndexByLineId(program.getLine());
-								updateLineErrorCounter(line, 0, programItemVisit.getFeedResult());
-								updateLineErrorCounter(line, 1, programItemVisit.getChangeResult());
-								updateLineErrorCounter(line, 2, programItemVisit.getCheckResult());
-								updateLineErrorCounter(line, 3, programItemVisit.getCheckAllResult());
-								updateLineErrorCounter(line, 5, programItemVisit.getFirstCheckAllResult());
-								break;
-							} catch (Exception e) {
-							}
-						}
-					}
-				}*/
 		} catch (Exception e) {
 			logger.error(e.getMessage());
-			e.printStackTrace();
 		}
 	}
 

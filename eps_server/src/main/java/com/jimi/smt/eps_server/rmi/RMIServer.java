@@ -15,7 +15,7 @@ import javax.rmi.PortableRemoteObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.jimi.smt.eps_server.util.IpHelper;
+import com.jimi.smt.eps_server.util.OsHelper;
 
 /**
  * 开启和关闭RMI服务端
@@ -38,7 +38,7 @@ public class RMIServer {
 	
 	@PostConstruct
 	public void start() throws Exception {
-		System.setProperty("java.rmi.server.hostname", IpHelper.getLinuxLocalIp());
+		System.setProperty("java.rmi.server.hostname", OsHelper.getLinuxLocalIp());
 		InputStream inputStream = null;
 		Properties p = new Properties();
 		try {
@@ -54,7 +54,9 @@ public class RMIServer {
 		ServerRemote serverRemote = (ServerRemote) UnicastRemoteObject.exportObject(serverRemoteImpl, Integer.parseInt(p.getProperty("port")));
 		reg = LocateRegistry.createRegistry(REGISTERED_PORT);
 		reg.rebind("server", serverRemote);
-		System.out.println("RMI服务端开启");
+		if (OsHelper.isWindows()) {
+			System.out.println("RMI服务端开启");
+		}
 	}
 
 	
@@ -74,12 +76,13 @@ public class RMIServer {
 		} catch (RemoteException | NotBoundException e) {
 			try {
 				PortableRemoteObject.unexportObject(reg);
-				System.out.println("RMI服务端关闭");
 			} catch (NoSuchObjectException e1) {
 				e1.printStackTrace();
 			}
 		}
-		System.out.println("RMI服务端关闭");
+		if (OsHelper.isWindows()) {
+			System.out.println("RMI服务端关闭");
+		}
 	}
 
 }

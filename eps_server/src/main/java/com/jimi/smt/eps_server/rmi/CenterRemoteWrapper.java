@@ -21,7 +21,7 @@ import com.jimi.smt.eps_server.mapper.CenterLoginMapper;
 import com.jimi.smt.eps_server.mapper.CenterStateMapper;
 import com.jimi.smt.eps_server.pack.ControlPackage;
 import com.jimi.smt.eps_server.pack.ControlReplyPackage;
-import com.jimi.smt.eps_server.util.IpHelper;
+import com.jimi.smt.eps_server.util.OsHelper;
 
 import cc.darhao.dautils.api.BytesParser;
 import cc.darhao.dautils.api.FieldUtil;
@@ -78,7 +78,7 @@ public class CenterRemoteWrapper {
 		this.line = line;
 		this.socketLogMapper = socketLogMapper;
 		this.centerStateMapper = centerStateMapper;
-		localIp = IpHelper.getLinuxLocalIp();
+		localIp = OsHelper.getLinuxLocalIp();
 		CenterLoginExample example = new CenterLoginExample();
 		example.createCriteria().andLineEqualTo(this.line);
 		List<CenterLogin> logins = centerLoginMapper.selectByExample(example);
@@ -87,7 +87,9 @@ public class CenterRemoteWrapper {
 			remoteIp = logins.get(0).getIp();
 			System.out.println("ip=" + remoteIp);
 			centerRemote = (CenterRemote) LocateRegistry.getRegistry(remoteIp).lookup("center");
-			logger.info("搜索产线,ID为: " + line + " : " + "已找到中控设备：" + remoteIp);
+			if (OsHelper.isWindows()) {
+				logger.info("搜索产线,ID为: " + line + " : " + "已找到中控设备：" + remoteIp);
+			}
 			reset();
 		} else {
 			throw new Exception("没有找到对应线号的中控");
@@ -177,7 +179,9 @@ public class CenterRemoteWrapper {
 		converyPaused = true;
 		sendCmdToAlarm(ClientDevice.SERVER, false);
 		sendCmdToConvery(ClientDevice.SERVER, false);
-		logger.info("ID为 " + line + "的产线报警器、接驳台已重置");
+		if (OsHelper.isWindows()) {
+			logger.info("ID为 " + line + "的产线报警器、接驳台已重置");
+		}
 	}
 
 	

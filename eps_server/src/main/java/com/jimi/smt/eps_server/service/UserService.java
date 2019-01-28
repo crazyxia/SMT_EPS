@@ -21,7 +21,7 @@ public interface UserService {
 	 * @param password
 	 * @return
 	 */
-	String add(String id, Integer classType, String name, Integer type, String password);
+	String add(String id, Integer classType, String name, Integer type, String password, Integer userType);
 	
 	
 	/**
@@ -57,7 +57,7 @@ public interface UserService {
 	 * @param enabled
 	 * @return
 	 */
-	List<UserVO> list(String id, Integer classType, String name, Integer type, String orderBy, Boolean enabled, Page page);
+	List<UserVO> list(String id, Integer classType, String name, Integer type, String orderBy, Boolean enabled, Page page, Integer userType);
 				
 	
 	/**

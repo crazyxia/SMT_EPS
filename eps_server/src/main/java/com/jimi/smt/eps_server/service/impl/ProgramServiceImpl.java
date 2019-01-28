@@ -26,6 +26,7 @@ import com.jimi.smt.eps_server.entity.ProgramItemExample;
 import com.jimi.smt.eps_server.entity.ProgramItemVisit;
 import com.jimi.smt.eps_server.entity.ProgramItemVisitExample;
 import com.jimi.smt.eps_server.entity.bo.EditProgramItemBO;
+import com.jimi.smt.eps_server.entity.bo.OperationResult;
 import com.jimi.smt.eps_server.entity.filler.ProgramItemToProgramItemVOFiller;
 import com.jimi.smt.eps_server.entity.filler.ProgramItemToProgramItemVisitFiller;
 import com.jimi.smt.eps_server.entity.filler.ProgramToProgramVOFiller;
@@ -39,8 +40,10 @@ import com.jimi.smt.eps_server.mapper.ProgramMapper;
 import com.jimi.smt.eps_server.service.LineService;
 import com.jimi.smt.eps_server.service.ProgramService;
 import com.jimi.smt.eps_server.timer.TimeoutTimer;
-import com.jimi.smt.eps_server.util.ExcelSpringHelper;
+import com.jimi.smt.eps_server.util.ExcelGetter;
+import com.jimi.smt.eps_server.util.OsHelper;
 import com.jimi.smt.eps_server.util.ResultUtil;
+import com.jimi.smt.eps_server.util.ResultUtil2;
 import com.jimi.smt.eps_server.util.SqlUtil;
 
 import cc.darhao.dautils.api.FieldUtil;
@@ -69,12 +72,25 @@ public class ProgramServiceImpl implements ProgramService {
 	private TimeoutTimer timeoutTimer;
 	@Autowired
 	private LineService lineService;
+	
+	/**
+	 * THIRTY_TWO_LENGTH : 长度32
+	 */
+	private static final Integer THIRTY_TWO_LENGTH = 32;
+	/**
+	 * ONE_HUNDRED_AND_TWENTY_EIGHT_LENGTH : 长度128
+	 */
+	private static final Integer ONE_HUNDRED_AND_TWENTY_EIGHT_LENGTH = 128;
+	/**
+	 * TWO_HUNDRED_AND_FIFTY_SIX_LENGTH : 长度256
+	 */
+	private static final Integer TWO_HUNDRED_AND_FIFTY_SIX_LENGTH = 256;
 
 	
 	@Override
 	public List<Map<String, Object>> upload(MultipartFile programFile, Integer boardType) throws IOException {
 		// 读文件
-		ExcelSpringHelper helper = ExcelSpringHelper.from(programFile);
+		ExcelGetter getter = ExcelGetter.from(programFile);
 
 		// 初始化结果
 		List<Map<String, Object>> resultList = new ArrayList<Map<String, Object>>();
@@ -83,50 +99,45 @@ public class ProgramServiceImpl implements ProgramService {
 		int offset = 1;
 
 		// 因添加流水号而进行的站位表校验
-		if (helper.getString(0, 0) != null && !"".equals(helper.getString(0, 0))) {
-			throw new RuntimeException("站位表版本错误：请使用带有序列号的站位表");
+		if (getter.getString(0, 0) != null && !"".equals(getter.getString(0, 0))) {
+			getter.getErrorInfos().add("站位表版本错误：请使用带有序列号的站位表");
 		}
 
 		// 校验头部
 		final String header = "SMT FEEDER LIST";
-		if (!header.equals(helper.getString(1, 0 + offset))) {
-			throw new RuntimeException("头部错误：没有找到\"SMT FEEDER LIST\"标题栏");
+		if (!header.equals(getter.getString(1, 0 + offset))) {
+			getter.getErrorInfos().add("头部错误：没有找到\\\"SMT FEEDER LIST\\\"标题栏");
 		}
-		
-		// 校验文件内容是否有效且存在
-		if(isProgramFileContentAvailable(helper) == false) {
-			throw new RuntimeException("站位表部分内容为空或错误：请正确填写");
-		}
-		
+
 		// 分割解析工单和线号
-		String[] workOrders = helper.getString(4, 6 + offset).split("\\+");
-		String[] lines = helper.getString(3, 6 + offset).split("\\+");
-		
+		String[] workOrders = getter.getString(4, 6 + offset).split("\\+");
+		String[] lines = getter.getString(3, 6 + offset).split("\\+");
+
 		// 判断线号是否正确
 		for (String line : lines) {
 			if (lineService.getLineIdByName(line) == null) {
-				throw new RuntimeException("线号错误:请填写正确的线号");
+				getter.getErrorInfos().add("线号错误：请填写正确的线号");
 			}
-		}	
-		
+		}
+
 		// 创建所有工单
 		List<Program> programs = new ArrayList<Program>(workOrders.length * lines.length);
 		for (String line : lines) {
 			for (String workOrder : workOrders) {
 				Program program = new Program();
-				program.setClient(helper.getString(2, 1 + offset));
-				program.setMachineName(helper.getString(2, 4 + offset));
-				program.setVersion(helper.getString(2, 6 + offset));
-				program.setMachineConfig(helper.getString(3, 1 + offset));
-				program.setProgramNo(helper.getString(3, 4 + offset));
+				program.setClient(getter.getString(2, 1 + offset));
+				program.setMachineName(getter.getString(2, 4 + offset));
+				program.setVersion(getter.getString(2, 6 + offset));
+				program.setMachineConfig(getter.getString(3, 1 + offset));
+				program.setProgramNo(getter.getString(3, 4 + offset));
 				program.setLine(lineService.getLineIdByName(line));
-				program.setEffectiveDate(helper.getDate(4, 1 + offset).toString());
-				program.setPcbNo(helper.getString(4, 4 + offset));
-				program.setBom(helper.getString(5, 1 + offset));
-				program.setProgramName(helper.getString(6, 1 + offset));
-				program.setPlanProduct(getPlanProduct(helper.getString(6, 5 + offset)));
-				program.setStructure(Integer.parseInt(helper.getString(6, 8 + offset)));
-				program.setAuditor(helper.getString(7, 4 + offset).substring(3));
+				program.setEffectiveDate(getEffectiveDate(getter.getDate(4, 1 + offset)));
+				program.setPcbNo(getter.getString(4, 4 + offset));
+				program.setBom(getter.getString(5, 1 + offset));
+				program.setProgramName(getter.getString(6, 1 + offset));
+				program.setPlanProduct(getPlanProduct(getter.getString(6, 5 + offset), getter));
+				program.setStructure(getStructure(getter.getString(6, 8 + offset), getter));
+				program.setAuditor(getter.getString(7, 4 + offset).substring(3));
 				program.setFileName(programFile.getOriginalFilename());
 				program.setId(UuidUtil.get32UUID());
 				program.setCreateTime(getCurrentTime());
@@ -139,71 +150,86 @@ public class ProgramServiceImpl implements ProgramService {
 		for (Program program : programs) {
 			// 初始化结果Item
 			Map<String, Object> result = new HashMap<String, Object>();
-			int sum = helper.getBook().getNumberOfSheets();
-			result.put("real_parse_num", sum);
-			result.put("plan_parse_num", sum);
-			result.put("action_name", "上传");
+			int sum = getter.getBook().getNumberOfSheets();
+			result.put("realParseNum", sum);
+			result.put("planParseNum", sum);
+			result.put("actionName", "上传");
 
 			// 覆盖：如果“未开始”的工单列表中存在板面类型、工单号、线号同时一致的工单项目，将被新文件内容覆盖
+			List<Program> programs2 = new ArrayList<>();
 			ProgramExample programExample = new ProgramExample();
-			programExample.createCriteria().andWorkOrderEqualTo(program.getWorkOrder()).andBoardTypeEqualTo(program.getBoardType()).andLineEqualTo(program.getLine()).andStateEqualTo(0);
-			// 如果存在符合条件的工单
-			List<Program> programs2 = programMapper.selectByExample(programExample);
-			if (!programs2.isEmpty()) {
-				programMapper.updateByExampleSelective(program, programExample);
-				ProgramItemExample programItemExample = new ProgramItemExample();
-				programItemExample.createCriteria().andProgramIdEqualTo(programs2.get(0).getId());
-				programItemMapper.deleteByExample(programItemExample);
-				result.put("action_name", "覆盖");
-			} else {
-				programMapper.insertSelective(program); 
+
+			if (getter.getErrorInfos().size() < 1) {
+				// 如果存在符合条件的工单
+				programExample.createCriteria().andWorkOrderEqualTo(program.getWorkOrder()).andBoardTypeEqualTo(program.getBoardType()).andLineEqualTo(program.getLine()).andStateEqualTo(0);
+				programs2 = programMapper.selectByExample(programExample);
 			}
+			addErrorInfo(program, getter);
 
 			// 打印到控制台
-			FieldUtil.print(program);
+			if (OsHelper.isWindows()) {
+				FieldUtil.print(program);
+			}
 
 			// 填充表项
 			for (int i = 0; i < sum; i++) {
-				helper.switchSheet(i);
-				for (int j = 9; j < helper.getBook().getSheetAt(i).getLastRowNum() - 3; j++) {
+				getter.switchSheet(i);
+				for (int j = 9; j < getter.getBook().getSheetAt(i).getLastRowNum() - 5; j++) {
 					ProgramItem programItem = new ProgramItem();
 					// 空表判断
-					if (helper.getString(j, 0 + offset).equals("")) {
-						int temp = (int) result.get("real_parse_num");
-						result.put("real_parse_num", temp--);
+					if (getter.getString(j, 0 + offset).equals("")) {
+						int temp = (int) result.get("realParseNum");
+						result.put("realParseNum", --temp);
 						break;
 					}
 					// 排除手盖
-					String lineseat = helper.getString(j, 0 + offset);
+					String lineseat = getter.getString(j, 0 + offset);
 					if ("手盖".equals(lineseat)) {
 						continue;
 					}
 					programItem.setLineseat(formatLineseat(lineseat));
-					programItem.setMaterialNo(helper.getString(j, 1 + offset));
-					programItem.setAlternative(helper.getBoolean(j, 2 + offset));
-					programItem.setSpecitification(helper.getString(j, 3 + offset));
-					programItem.setPosition(helper.getString(j, 4 + offset));
-					programItem.setQuantity(helper.getInt(j, 5 + offset));
-					programItem.setSerialNo(helper.getInt(j, -1 + offset));
+					programItem.setMaterialNo(getter.getString(j, 1 + offset));
+					programItem.setAlternative(getter.getBoolean(j, 2 + offset));
+					programItem.setSpecitification(getter.getString(j, 3 + offset));
+					programItem.setPosition(getter.getString(j, 4 + offset));
+					programItem.setQuantity(getter.getInt(j, 5 + offset));
+					programItem.setSerialNo(getter.getInt(j, -1 + offset));
 					// 设置programId
 					programItem.setProgramId(program.getId());
 					// 忽略重复项
 					try {
-						// 插入表项
-						programItemMapper.insert(programItem);
-						// 打印到控制台
-						FieldUtil.print(programItem);
+						if (getter.getErrorInfos().size() < 1) {
+							if (!programs2.isEmpty()) {
+								programMapper.updateByExampleSelective(program, programExample);
+								ProgramItemExample programItemExample = new ProgramItemExample();
+								programItemExample.createCriteria().andProgramIdEqualTo(programs2.get(0).getId());
+								programItemMapper.deleteByExample(programItemExample);
+								result.put("actionName", "覆盖");
+							} else {
+								programMapper.insertSelective(program);
+							}
+							// 插入表项
+							programItemMapper.insert(programItem);
+							// 打印到控制台
+							if (OsHelper.isWindows()) {
+								FieldUtil.print(programItem);
+							}
+						}
 					} catch (DuplicateKeyException e) {
 					}
 				}
 			}
+			if (getter.getErrorInfos().size() > 0) {
+				result.put("errorInfos", getter.getErrorInfos());
+			} else {
+				result.put("errorInfos", null);
+			}
 			resultList.add(result);
 		}
-
 		return resultList;
 	}
 
-	
+
 	@Override
 	public List<ProgramVO> list(String programName, String fileName, Integer line, String workOrder, Integer state, String ordBy, Page page) {
 		ProgramExample programExample = new ProgramExample();
@@ -238,11 +264,9 @@ public class ProgramServiceImpl implements ProgramService {
 			programCriteria.andStateEqualTo(state);
 		}
 		
-		if(page != null) {
-			page.setTotallyData(programMapper.countByExample(programExample));
-			programExample.setLimitStart(page.getFirstIndex());			
+		if (page != null) {
+			programExample.setLimitStart(page.getFirstIndex());
 			programExample.setLimitSize(page.getPageSize());
-			
 		}
 		List<Program> programs = programMapper.selectByExample(programExample);
 		List<ProgramVO> programVOs = new ArrayList<>();
@@ -771,7 +795,6 @@ public class ProgramServiceImpl implements ProgramService {
 			}
 			break;
 		default:
-			System.out.println("超出程序范围");
 			return 0;
 		}
 		// 判断是否重置工单:上次操作时间是否存在和结果是否为2
@@ -795,51 +818,28 @@ public class ProgramServiceImpl implements ProgramService {
 
 	
 	@Override
-	public Integer isAllDone(String programId, int type) {
-		int result = 1;
-		ProgramItemVisitExample example = new ProgramItemVisitExample();
-		example.createCriteria().andProgramIdEqualTo(programId);
-		List<ProgramItemVisit> programItemVisits = programItemVisitMapper.selectByExample(example);
-		switch (type) {
-		case 4:
-			for (ProgramItemVisit programItemVisit : programItemVisits) {
-				if (programItemVisit.getStoreIssueResult() != 1) {
-					result = 0;
-					break;
-				}
+	public ResultUtil2 isAllDone(String programId, String type) {
+		ResultUtil2 result = new ResultUtil2();
+		OperationResult operationResult = new OperationResult("", "", "", "", "", "");
+		if (programId != null && !"".equals(programId) && type != null && !"".equals(type)) {
+			ProgramItemVisitExample example = new ProgramItemVisitExample();
+			example.createCriteria().andProgramIdEqualTo(programId);
+			List<ProgramItemVisit> programItemVisits = programItemVisitMapper.selectByExample(example);
+			String[] typeStrings = type.split("&");
+			for (String typeString : typeStrings) {
+				operationResult = getResultByTypeAndItemVisit(programItemVisits, typeString, operationResult);
 			}
-			break;
-		case 0:
-			for (ProgramItemVisit programItemVisit : programItemVisits) {
-				if (programItemVisit.getFeedResult() != 1) {
-					result = 0;
-					break;
-				}
-			}
-			break;
-		case 3:
-			for (ProgramItemVisit programItemVisit : programItemVisits) {
-				if (programItemVisit.getCheckAllResult() != 1) {
-					result = 0;
-					break;
-				}
-			}
-			break;
-		case 5:
-			for (ProgramItemVisit programItemVisit : programItemVisits) {
-				if (programItemVisit.getFirstCheckAllResult() != 1) {
-					result = 0;
-					break;
-				}
-			}
-			break;
-		default:
-			System.out.println("超出程序范围");
-			result = 0;
+			result.setCode(1);
+			result.setMsg("查询成功");
+			result.setData(operationResult);
+		} else {
+			result.setCode(0);
+			result.setMsg("查询失败，参数不存在");
+			result.setData(null);
 		}
 		return result;
 	}
-
+	
 	
 	@Override
 	public Integer isChangeSucceed(String programId, String lineseat) {
@@ -986,91 +986,45 @@ public class ProgramServiceImpl implements ProgramService {
 	 * @return int
 	 * @date 2018年9月19日 下午8:58:52
 	 */
-	private int getPlanProduct(String planProduct) {
+	private int getPlanProduct(String planProduct, ExcelGetter getter) {
 		if (planProduct.contains("k") || planProduct.contains("K")) {
-			String result = planProduct.toLowerCase().substring(0, planProduct.indexOf("k"));
+			String lowerPlanProduct = planProduct.toLowerCase();
+			String result = planProduct.toLowerCase().substring(0, lowerPlanProduct.indexOf("k"));
 			return Integer.parseInt(result) * 1000;
 		} else {
-			return Integer.parseInt(planProduct);
+			if (!"".equals(planProduct) && planProduct.length() > 0 && isNumber(planProduct)) {
+				return Integer.parseInt(planProduct);
+			}
+			getter.getErrorInfos().add("计划生产总数必须为数字");
+			return 0;
 		}
 	}
 	
 	
 	/**@author HCJ
-	 * 根据ExcelSpringHelper获取的文件内容，判断其是否符合要求
-	 * @date 2018年11月27日 下午4:28:55
+	 * 获取从Excel表格读取的联板数
+	 * @date 2019年1月27日 上午10:13:32
 	 */
-	private boolean isProgramFileContentAvailable(ExcelSpringHelper helper) {
-		// 因添加流水号而导致的表格列号偏移量
-		int offset = 1;
-		boolean isProgramFileHeadExist = false;
-		boolean isProgramFileBodyExist = false;
-		boolean isAuditorAvailable = false;
-		boolean isSerialNoAvailable = false;
-		// 判断各个格子的内容是否存在
-		boolean isClientExist = isContentExist(helper.getString(2, 1 + offset));
-		boolean isMachineNameExist = isContentExist(helper.getString(2, 4 + offset));
-		boolean isVersionExist = isContentExist(helper.getString(2, 6 + offset));
-		boolean isMachineConfigExist = isContentExist(helper.getString(3, 1 + offset));
-		boolean isProgramNoExist = isContentExist(helper.getString(3, 4 + offset));
-		boolean isLineExist = isContentExist(helper.getString(3, 6 + offset));
-		boolean isEffectiveDateExist = isContentExist(helper.getString(4, 1 + offset));
-		boolean isPcbNoExist = isContentExist(helper.getString(4, 4 + offset));
-		boolean isWorkOrderExist = isContentExist(helper.getString(4, 6 + offset));
-		boolean isBomExist = isContentExist(helper.getString(5, 1 + offset));
-		boolean isProgramNameExist = isContentExist(helper.getString(6, 1 + offset));
-		boolean isPlanProductExist = isContentExist(helper.getString(6, 5 + offset));
-		boolean isStructureExist = isContentExist(helper.getString(6, 8 + offset));
-		if (isContentExist(helper.getString(7, 4 + offset))) {
-			if (helper.getString(7, 4 + offset).length() > 3) {
-				isAuditorAvailable = true;
-			}
+	private int getStructure(String structure, ExcelGetter getter) {
+		if (!"".equals(structure) && structure.length() > 0 && isNumber(structure)) {
+			return Integer.parseInt(structure);
 		}
-		if (isClientExist && isMachineNameExist && isVersionExist && isMachineConfigExist && isProgramNoExist && isLineExist && isEffectiveDateExist && isPcbNoExist && isWorkOrderExist && isBomExist && isProgramNameExist && isPlanProductExist && isStructureExist && isAuditorAvailable) {
-			isProgramFileHeadExist = true;
-		}
-		int sum = helper.getBook().getNumberOfSheets();
-		int realBodyRowNum = 0;
-		int planBodyRowNum = 0;
-		for (int i = 0; i < sum; i++) {
-			helper.switchSheet(i);
-			// 站位表body中含有序列号的行的数量
-			for (int j = 9; j < helper.getBook().getSheetAt(i).getLastRowNum() - 3; j++) {
-				if (isContentExist(helper.getString(j, -1 + offset)) && isNumber(helper.getString(j, -1 + offset))) {
-					planBodyRowNum++;
-				}
-				isSerialNoAvailable = isContentExist(helper.getString(j, -1 + offset)) && isNumber(helper.getString(j, -1 + offset));
-				boolean isLineseatExist = isContentExist(helper.getString(j, 0 + offset));
-				boolean isMaterialNoExist = isContentExist(helper.getString(j, 1 + offset));
-				boolean isSpecitificationExist = isContentExist(helper.getString(j, 3 + offset));
-				boolean isPositionExist = isContentExist(helper.getString(j, 4 + offset));
-				// 填写有效的站位表body中含有序列号的行的数量
-				if (isLineseatExist && isMaterialNoExist && isSpecitificationExist && isPositionExist && isSerialNoAvailable) {
-					realBodyRowNum++;
-				}
-			}
-		}
-		if (planBodyRowNum == realBodyRowNum) {
-			isProgramFileBodyExist = true;
-		}
-		if (isProgramFileHeadExist && isProgramFileBodyExist) {
-			return true;
-		}
-		return false;
+		getter.getErrorInfos().add("连板数必须为数字");
+		return 0;
 	}
 	
 	
 	/**@author HCJ
-	 * 判断字符串是否为空或者空字符串
-	 * @date 2018年11月28日 上午8:38:43
+	 * 获取从Excel表格读取的时间
+	 * @date 2019年1月27日 上午10:49:53
 	 */
-	private boolean isContentExist(String content) {
-		if (content == null || "".equals(content) || content.length() == 0 || content.trim().isEmpty()) {
-			return false;
+	private String getEffectiveDate(Date effectiveDate) {
+		if (effectiveDate != null) {
+			return effectiveDate.toString();
 		}
-		return true;
+		return getCurrentTime().toString();
 	}
-
+	
 	
 	/**@author HCJ
 	 * 判断字符串是否为数字
@@ -1083,6 +1037,103 @@ public class ProgramServiceImpl implements ProgramService {
 			return false;
 		}
 		return true;
+	}
+
+
+	/**@author HCJ
+	 * 添加错误信息
+	 * @date 2019年1月27日 上午8:40:22
+	 */
+	private void addErrorInfo(Program program, ExcelGetter getter) {
+		addLengthErrorInfo(program.getClient(), getter, THIRTY_TWO_LENGTH);
+		addLengthErrorInfo(program.getAuditor(), getter, THIRTY_TWO_LENGTH);
+		addLengthErrorInfo(program.getMachineName(), getter, THIRTY_TWO_LENGTH);
+		addLengthErrorInfo(program.getFileName(), getter, ONE_HUNDRED_AND_TWENTY_EIGHT_LENGTH);
+		addLengthErrorInfo(program.getVersion(), getter, THIRTY_TWO_LENGTH);
+		addLengthErrorInfo(program.getMachineConfig(), getter, THIRTY_TWO_LENGTH);
+		addLengthErrorInfo(program.getProgramNo(), getter, THIRTY_TWO_LENGTH);
+		addLengthErrorInfo(program.getPcbNo(), getter, THIRTY_TWO_LENGTH);
+		addLengthErrorInfo(program.getBom(), getter, TWO_HUNDRED_AND_FIFTY_SIX_LENGTH);
+		addLengthErrorInfo(program.getProgramName(), getter, ONE_HUNDRED_AND_TWENTY_EIGHT_LENGTH);
+		addLengthErrorInfo(program.getWorkOrder(), getter, ONE_HUNDRED_AND_TWENTY_EIGHT_LENGTH);
+	}
+
+	
+	/**@author HCJ
+	 * 添加长度错误信息
+	 * @date 2019年1月27日 上午8:40:49
+	 */
+	private void addLengthErrorInfo(String content, ExcelGetter getter, Integer length) {
+		if (content.length() > length) {
+			getter.addErrorInfo("文本： " + content + " 的长度不能大于 " + length + " ，请及时修改");
+		}
+	}
+
+
+	/**@author HCJ
+	 * 根据ItemVisit和操作类型设置操作结果的值
+	 * @date 2019年1月27日 上午8:34:11
+	 */
+	private OperationResult getResultByTypeAndItemVisit(List<ProgramItemVisit> programItemVisits, String typeString, OperationResult operationResult) {
+		switch (typeString) {
+		case "0":
+			operationResult.setFeed("1");
+			for (ProgramItemVisit programItemVisit : programItemVisits) {
+				if (programItemVisit.getFeedResult() != 1) {
+					operationResult.setFeed("0");
+					break;
+				}
+			}
+			break;
+		case "1":
+			operationResult.setChange("1");
+			for (ProgramItemVisit programItemVisit : programItemVisits) {
+				if (programItemVisit.getChangeResult() != 1) {
+					operationResult.setChange("0");
+					break;
+				}
+			}
+			break;
+		case "2":
+			operationResult.setCheck("1");
+			for (ProgramItemVisit programItemVisit : programItemVisits) {
+				if (programItemVisit.getCheckResult() != 1) {
+					operationResult.setCheck("0");
+					break;
+				}
+			}
+			break;
+		case "3":
+			operationResult.setCheckAll("1");
+			for (ProgramItemVisit programItemVisit : programItemVisits) {
+				if (programItemVisit.getCheckAllResult() != 1) {
+					operationResult.setCheckAll("0");
+					break;
+				}
+			}
+			break;
+		case "4":
+			operationResult.setStore("1");
+			for (ProgramItemVisit programItemVisit : programItemVisits) {
+				if (programItemVisit.getStoreIssueResult() != 1) {
+					operationResult.setStore("0");
+					break;
+				}
+			}
+			break;
+		case "5":
+			operationResult.setFirstCheckAll("1");
+			for (ProgramItemVisit programItemVisit : programItemVisits) {
+				if (programItemVisit.getFirstCheckAllResult() != 1) {
+					operationResult.setFirstCheckAll("0");
+					break;
+				}
+			}
+			break;
+		default:
+			break;
+		}
+		return operationResult;
 	}
 
 }

@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.jimi.smt.eps_server.annotation.Log;
 import com.jimi.smt.eps_server.annotation.Open;
+import com.jimi.smt.eps_server.annotation.Role;
+import com.jimi.smt.eps_server.annotation.Role.RoleType;
 import com.jimi.smt.eps_server.entity.Page;
 import com.jimi.smt.eps_server.entity.User;
 import com.jimi.smt.eps_server.entity.filler.UserToUserVOFiller;
@@ -40,17 +42,25 @@ public class UserController {
 	private UserToUserVOFiller filler;
 
 	
+	@Role({ RoleType.PRODUCER, RoleType.WAREHOUSE, RoleType.IPQC })
 	@Log
 	@ResponseBody
 	@RequestMapping("/add")
-	public ResultUtil add(String id, Integer classType, String name, Integer type, String password) {
-		if (id == null && type == null) {
+	public ResultUtil add(String id, Integer classType, String name, Integer type, String password, HttpServletRequest request) {
+		if (id == null || type == null) {
 			ResultUtil.failed("参数不足");
 			return ResultUtil.failed();
 		}
-		String result;
+		String result = "";
 		try {
-			result = userService.add(id, classType, name, type, password);
+			String tokenId = request.getParameter(TokenBox.TOKEN_ID_KEY_NAME);
+			if (tokenId != null) {
+				UserVO user = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
+				if (user != null) {
+					Integer userType = user.getType();
+					result = userService.add(id, classType, name, type, password, userType);
+				}
+			}
 		} catch (Exception e) {
 			return ResultUtil.failed("更新失败，请检查数据格式是否正确或者长度是否过长");
 		}
@@ -62,19 +72,28 @@ public class UserController {
 	}
 
 	
+	@Role({ RoleType.PRODUCER, RoleType.WAREHOUSE, RoleType.IPQC })
 	@ResponseBody
 	@RequestMapping("/list")
-	public PageVO<UserVO> list(String id, Integer classType, String name, Integer type, String password, String orderBy, Boolean enabled, Integer currentPage, Integer pageSize) {
+	public PageVO<UserVO> list(String id, Integer classType, String name, Integer type, String password, String orderBy, Boolean enabled, Integer currentPage, Integer pageSize, HttpServletRequest request) {
 		Page page = new Page();
 		page.setCurrentPage(currentPage);
 		page.setPageSize(pageSize);
 		PageVO<UserVO> pageVO = new PageVO<UserVO>();
-		pageVO.setList(userService.list(id, classType, name, type, orderBy, enabled, page));
 		pageVO.setPage(page);
+		String tokenId = request.getParameter(TokenBox.TOKEN_ID_KEY_NAME);
+		if (tokenId != null) {
+			UserVO user = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
+			if (user != null) {
+				Integer userType = user.getType();
+				pageVO.setList(userService.list(id, classType, name, type, orderBy, enabled, page, userType));
+			}
+		}
 		return pageVO;
 	}
 
 	
+	@Role({ RoleType.PRODUCER, RoleType.WAREHOUSE, RoleType.IPQC })
 	@Log
 	@ResponseBody
 	@RequestMapping("/update")

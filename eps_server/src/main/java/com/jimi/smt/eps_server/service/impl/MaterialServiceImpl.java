@@ -93,7 +93,6 @@ public class MaterialServiceImpl implements MaterialService {
 			materialInfoExample.setOrderByClause(orderBy);
 		}
 		if (page != null) {
-			page.setTotallyData(materialInfoMapper.countByExample(materialInfoExample));
 			materialInfoExample.setLimitStart(page.getFirstIndex());
 			materialInfoExample.setLimitSize(page.getPageSize());
 		}

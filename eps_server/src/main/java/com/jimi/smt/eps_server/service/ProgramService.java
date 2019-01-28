@@ -13,6 +13,7 @@ import com.jimi.smt.eps_server.entity.ProgramItemVisit;
 import com.jimi.smt.eps_server.entity.bo.EditProgramItemBO;
 import com.jimi.smt.eps_server.entity.vo.ProgramItemVO;
 import com.jimi.smt.eps_server.entity.vo.ProgramVO;
+import com.jimi.smt.eps_server.util.ResultUtil2;
 
 /**
  * 排位表业务接口
@@ -190,7 +191,7 @@ public interface ProgramService {
 	 * @return Integer
 	 * @date 2018年9月25日 下午4:30:53
 	 */
-	Integer isAllDone(String programId, int type);
+	ResultUtil2 isAllDone(String programId, String type);
 	
 	
 	/**@author HCJ
