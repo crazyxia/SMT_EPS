@@ -1,192 +1,198 @@
 <template>
   <div class="programTable">
-    <datatable v-bind="$data"/>
+    <!--表格-->
+    <el-table
+      :data="tableData"
+      border
+      style="width: 100%">
+      <el-table-column
+        label="站位表"
+        prop="programName"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="workOrder"
+        label="工单"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        label="版面"
+        prop="boardTypeName"
+        width="80"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="createTimeString"
+        width="200"
+        label="上传时间"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        label="状态"
+        width="80"
+        prop="stateName"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="lineName"
+        label="线号"
+        width="50"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        label="操作"
+        align="center">
+        <template slot-scope="scope">
+          <el-button
+            type="primary"
+            size="mini"
+            @click="editState(scope.row)"
+            style="margin-bottom:5px;"
+            :disabled="scope.row.state === 2 || scope.row.state === 3">修改状态
+          </el-button>
+          <el-button
+            type="success"
+            size="mini"
+            @click="editTable(scope.row)"
+            :disabled="scope.row.state === 2 || scope.row.state === 3">修改表格
+          </el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+    <!--分页-->
+    <div class="block">
+      <span class="now">第 {{page.currentPage}} 页</span>
+      <el-pagination
+        :current-page.sync="page.currentPage"
+        :page-size="page.pageSize"
+        @size-change="handleSizeChange"
+        @current-change="find"
+        :page-sizes="[20, 40, 80, 100]"
+        background
+        layout="sizes, prev, pager, next">
+      </el-pagination>
+    </div>
   </div>
 </template>
 <script>
-  import Vue from 'vue'
-  import store from './../../../../store'
+  import Bus from '../../../../utils/bus'
+  import {mapActions, mapGetters} from 'vuex'
   import {axiosPost} from "./../../../../utils/fetchData"
   import {programListUrl} from "./../../../../config/globalUrl"
+  import {setLoading} from "../../../../store/actions";
 
   export default {
     name: 'programTable',
-    props: ['programInfos'],
-    data: () => ({
-      columns: [
-        {title: '站位表', field: 'programName', colStyle: {'width': '180px'}},
-        {title: '工单', field: 'workOrder', colStyle: {'width': '150px'}},
-        {title: '版面', field: 'boardTypeName', colStyle: {'width': '80px'}},
-        {title: '上传时间', field: 'createTimeString', colStyle: {'width': '120px'}},
-        {title: '状态', field: 'stateName', colStyle: {'width': '80px'}},
-        {title: '线号', field: 'lineName', colStyle: {'width': '50px'}},
-        {title: '操作', field: 'operation', tdComp: 'ProgramOperation', colStyle: {'width': '150px'}}
-      ],
-      HeaderSettings: false,
-      fixHeaderAndSetBodyMaxHeight: 650,
-      data: [],
-      total: 0,
-      tblClass: 'table-bordered',
-      query: {"limit": 20, "offset": 0},
-      tblStyle: {
-        'padding': '10px 0',
-        'word-break': 'break-all',
-        'table-layout': 'fixed',
-        'color': '#666',
-        'text-align': 'center'
-      },
-      currentPage: 1,
-      pageSize: 20
-    }),
-    computed: {
-      programList: function () {
-        return store.state.programList;
-      },
-      isUploadFinish: function () {
-        return store.state.isUploadFinish;
-      },
-      isFind: function () {
-        return store.state.isFind;
-      },
-      isRefresh: function () {
-        return store.state.isRefresh;
+    data() {
+      return {
+        //表格信息
+        tableData: [],
+        //分页信息
+        page:{
+          currentPage: 1,
+          pageSize: 20
+        }
       }
     },
-    watch: {
-      query: {
-        handler(query) {
-          this.filterData(query);
-        },
-        deep: true
-      },
-      isUploadFinish: function (val) {
-        if (val === true) {
-          store.commit("setIsUploadFinish", false);
-          this.find();
-        }
-      },
-      isFind: function (val) {
-        if (val === true) {
-          this.currentPage = 1;
-          this.pageSize = 20;
-          this.query.limit = 20;
-          this.query.offset = 0;
-          store.commit("setIsFind", false);
-          this.find();
-        }
-      },
-      isRefresh: function (val) {
-        console.log(store.state.isRefresh);
-        if (val === true) {
-          store.commit("setIsRefresh", false);
-          this.find();
-        }
-      }
+    computed: {
+      ...mapGetters(['programPage','program']),
+    },
+    beforeDestroy() {
+      //取消监听
+      Bus.$off('findProgram');
+      Bus.$off('refreshProgram');
+    },
+    mounted() {
+      this.find();
+      //监听站位表列表查找事件
+      Bus.$on('findProgram', () => {
+        this.page.currentPage = 1;
+        this.page.pageSize = 20;
+        this.setProgramPage(-1);
+        this.find();
+      });
+      //监听站位表列表刷新事件
+      Bus.$on('refreshProgram', () => {
+        this.setProgramPage(-1);
+        this.find();
+      })
     },
     methods: {
+      ...mapActions(['setLoading', 'setProgramInfo', 'setProgramPage']),
       fetchData: function (options) {
         axiosPost(options).then(response => {
-          store.commit("setLoading", false);
-          if (response.data) {
-            if (response.data.list) {
-              let result = response.data.list;
-              let page = response.data.page;
-              this.total = page.totallyData;
-              this.currentPage = page.currentPage;
-              this.pageSize = page.pageSize;
-              store.commit("setProgramList", result);
-              this.data = result;
+          this.setLoading(false);
+          if (response.data.list) {
+            let list = response.data.list;
+            let page = response.data.page;
+            //list有值 || 当前为第1页，list没有值
+            if(list.length > 0 || list.length <= 0 && this.page.currentPage === 1){
+              this.tableData = list;
+            }
+            //最后一页
+            else{
+              if(this.programPage === -1){
+                this.setProgramPage( page.currentPage - 1);
+              }
+              this.$alertInfo('当前是最后一页');
+              this.page.currentPage = this.programPage;
             }
           }
         }).catch(err => {
-          store.commit("setLoading", false);
-          alert("接口请求失败，请检查网络，再联系管理员");
+          this.setLoading(false);
+          this.$alertError("接口请求失败，请检查网络，再联系管理员");
         });
       },
+      //查询
       find: function () {
-        store.commit("setLoading", true);
+        this.setLoading(true);
         let options = {
           url: programListUrl,
-          data: this.programInfos
-        }
+          data: this.program
+        };
         options.data["orderBy"] = 'create_time desc';
-        options.data["currentPage"] = this.currentPage;
-        options.data["pageSize"] = this.pageSize;
+        options.data["currentPage"] = this.page.currentPage;
+        options.data["pageSize"] = this.page.pageSize;
         this.fetchData(options);
       },
-      filterData: function (query) {
-        this.pageSize = query.limit;
-        this.currentPage = query.offset / query.limit + 1;
+      //pageSize改变
+      handleSizeChange: function (pageSize) {
+        this.page.pageSize = pageSize;
+        this.page.currentPage = 1;
+        this.setProgramPage(-1);
         this.find();
+      },
+      //修改状态
+      editState: function (row) {
+        Bus.$emit('editState', row);
+      },
+      //修改表格
+      editTable: function (row) {
+        //存放行信息
+        this.setProgramInfo(row);
+        //设置显示站位表详情
+        this.$emit('setIsShow', false);
       }
     }
   }
-
-  export const ProgramOperation = Vue.component('ProgramOperation', {
-      template: `<div>
-      <button type="button" class="btn" :style="blueStyle"
-        @click.stop.prevent="updateStatus(row)" :disabled="isDisabled" >修改状态</button>
-      <button type="button" class="btn " :style="greenStyle"
-        @click.stop.prevent="updateTable(row)" :disabled="isDisabled" >修改表格</button>
-  </div>`,
-      props: ['row'],
-      computed: {
-        blueStyle: function () {
-          let state = this.row.state;
-          let obj = {
-            fontSize: "14px",
-            color: "#fff",
-            marginRight: "5px"
-          };
-          if (state === 2 || state === 3) {
-            obj["background"] = "#ccc";
-          } else {
-            obj["background"] = "#00acec";
-          }
-          return obj;
-        },
-        greenStyle: function () {
-          let state = this.row.state;
-          let obj = {
-            fontSize: "14px",
-            color: "#fff",
-            marginRight: "5px"
-          };
-          if (state === 2 || state === 3) {
-            obj["background"] = "#ccc";
-          } else {
-            obj["background"] = "#49bf67";
-          }
-          return obj;
-        },
-        isDisabled: function () {
-          let state = this.row.state;
-          if (state === 2 || state === 3) {
-            return true
-          }
-          return false;
-        }
-      },
-      methods:
-        {
-          updateStatus(row) {
-            store.commit("setOldState", "");
-            store.commit("setIsUpdate", true);
-            store.commit("setProgram", row);
-            store.commit("setOldState", row.state);
-            store.commit("setProgramOperationType", "update");
-          }
-          ,
-          updateTable(row) {
-            store.commit("setProgram", row);
-            store.commit("setProgramItemShow", true);
-          }
-        }
-    })
-  ;
 </script>
-<style lang="scss">
-  .-table-body .table tr td {
-    vertical-align: middle;
+<style lang="scss" scoped>
+  .programTable {
+    padding: 24px;
+    border: 1px solid #ebebeb;
+    border-radius: 3px;
+    background: #fff;
+    .block {
+      display: flex;
+      margin-top: 10px;
+      .now {
+        display: inline-block;
+        height: 32px;
+        line-height: 32px;
+        font-size: 14px;
+        color: #606266;
+        margin-right: 10px;
+      }
+    }
   }
 </style>

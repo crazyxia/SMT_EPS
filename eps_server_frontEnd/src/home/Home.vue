@@ -1,23 +1,23 @@
 <template>
   <div class="home">
-    <div class="container-fluid">
-      <div class="row">
-        <component v-bind:is="leftNavComponent" @getNavInfo="NavInfo"></component>
-        <div class="right" :class="className">
-          <RightHeader :imgSrc="imgChange" :navTitle="textChange" @isFold="foldInfo"></RightHeader>
-          <main>
-            <Loading v-if="loading"></Loading>
-            <AccessDenied v-if="denied"></AccessDenied>
-            <component v-bind:is="rightMainComponent"></component>
-          </main>
-        </div>
-      </div>
-    </div>
+    <el-container>
+      <el-aside :width="asideWidth"><component v-bind:is="leftNavComponent" @getNavInfo="NavInfo"></component></el-aside>
+      <el-container>
+        <el-header style="height:50px">
+          <RightHeader :navTitle="textChange" :iconName="iconName" @isFold="fold"></RightHeader>
+        </el-header>
+        <el-main>
+          <Loading v-if="loading"></Loading>
+          <AccessDenied v-if="denied"></AccessDenied>
+          <component v-bind:is="rightMainComponent" style="box-sizing:border-box;width:100%;height:100%;padding:20px;"></component>
+        </el-main>
+      </el-container>
+    </el-container>
   </div>
 </template>
 
 <script>
-  import store from './../store'
+  import {mapGetters,mapActions} from 'vuex';
   import Loading from '../components/Loading.vue'
   import LeftNav from '../components/LeftNav.vue'
   import LeftNavTwo from '../components/LeftNavTwo.vue'
@@ -36,17 +36,17 @@
     name: 'home',
     data() {
       return {
-        imgChange: false,
         textChange: '首页',
-        className: 'col-sm-10',
+        asideWidth:'250px',
         leftNavComponent: 'LeftNav',
-        rightMainComponent: 'Tip'
+        rightMainComponent: 'Tip',
+        iconName:'rightArrow'
       }
     },
     watch: {
-      rightMainComponent: function (newQuestion, oldQuestion) {
-        if (newQuestion != oldQuestion) {
-          store.commit("setLoading", false);
+      rightMainComponent: function (newVal, oldVal) {
+        if (newVal !== oldVal) {
+          this.setLoading(false);
         }
       }
     },
@@ -54,12 +54,9 @@
       this.$options.methods.judgeWidth(this);
     },
     computed: {
-      loading: function () {
-        return store.state.loading;
-      },
-      denied:function () {
-        return store.state.denied;
-      }
+      ...mapGetters([
+        'loading','denied'
+      ]),
     },
     mounted() {
       let that = this;
@@ -84,14 +81,15 @@
       Loading
     },
     methods: {
-      foldInfo: function (index) {
-        if (index == 1) {
-          this.className = 'fold';
-          this.imgChange = true;
+      ...mapActions(['setLoading']),
+      fold: function (index) {
+        if (index === 1) {
+          this.asideWidth = '70px';
+          this.iconName = 'leftArrow';
           this.leftNavComponent = 'LeftNavTwo';
-        } else if (index == 2) {
-          this.className = 'col-sm-10';
-          this.imgChange = false;
+        } else if (index === 2) {
+          this.asideWidth = '250px';
+          this.iconName = 'rightArrow';
           this.leftNavComponent = 'LeftNav';
         }
       },
@@ -104,12 +102,12 @@
       judgeWidth: function (that) {
         let width = window.innerWidth;
         if (width < 1100) {
-          that.className = 'fold';
-          that.imgChange = true;
+          that.asideWidth = '70px';
+          that.iconName = 'leftArrow';
           that.leftNavComponent = 'LeftNavTwo';
         } else {
-          that.className = 'col-sm-10';
-          that.imgChange = false;
+          that.asideWidth = '250px';
+          that.iconName = 'rightArrow';
           that.leftNavComponent = 'LeftNav';
         }
       }
@@ -121,24 +119,20 @@
   .home {
     width: 100%;
     height: 100%;
-    .container-fluid {
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      .row {
-        margin: 0;
-        width: 100%;
-        min-height: 100%;
-        .right {
-          padding: 0;
-          main {
-            width: 100%;
-            min-height: calc(100% - 60px);
-          }
-        }
-        div.fold {
-          width: calc(100% - 70px);
-        }
+    .el-container{
+      width:100%;
+      height:100%;
+      .el-aside{
+        background:#fff;
+        height:100%;
+        box-shadow: 5px 0 5px 0 #ddd;
+      }
+      .el-header{
+        background: #00B7FF;
+      }
+      .el-main{
+        padding:0;
+        position:relative;
       }
     }
   }

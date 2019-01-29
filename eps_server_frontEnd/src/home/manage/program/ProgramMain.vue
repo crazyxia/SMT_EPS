@@ -1,164 +1,203 @@
 <template>
   <div class="program">
-    <div class="programInfo" v-if="isShow">
+    <!--站位表列表-->
+    <div v-if="isShow">
       <p class="tip">提醒：上传站位表时，若“未开始”的项目列表中存在“版面类型”、“工单号”、“线别”三者一致时，将覆盖上一份“未开始”中的项目</p>
-      <form class="form-inline" role="form">
-        <div class="form-group">
-          <label for="programName">站位表</label>
-          <input type="text" class="form-control" id="programName" v-model.trim="programInfos.programName">
-        </div>
-        <div class="form-group">
-          <label for="workOrder">工单</label>
-          <input type="text" class="form-control" id="workOrder" v-model.trim="programInfos.workOrder">
-        </div>
-        <div class="form-group">
-          <label for="state">状态</label>
-          <select class="form-control" id="state" v-model.trim="programInfos.state">
-            <option value="" selected="selected">不限</option>
-            <option value="0">未开始</option>
-            <option value="1">进行中</option>
-            <option value="2">已完成</option>
-            <option value="3">已作废</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="line">线号</label>
-          <select class="form-control" id="line" v-model.trim="programInfos.line">
-            <option value="" selected="selected">不限</option>
-            <option v-for="item in lines" :value="item.id">{{item.line}}</option>
-          </select>
-        </div>
-        <button type="button" class="btn btn_find" @click="find">查询</button>
-      </form>
-      <form class="form-inline" role="form">
-        <div class="form-group">
-          <input type="file" id="inputfile" @change="getfileName()"/>
-        </div>
-        <div class="form-group">
-          <label for="boardType">版面</label>
-          <select class="form-control" id="boardType" v-model.trim="fileInfos.boardType">
-            <option selected="selected" disabled="disabled" style='display: none' value=''></option>
-            <option value="0">默认</option>
-            <option value="1">AB面</option>
-            <option value="2">A面</option>
-            <option value="3">B面</option>
-          </select>
-        </div>
-        <button type="button" class="btn btn_send" @click="upload">上传</button>
-      </form>
-
-      <ProgramTable :programInfos="programInfos"></ProgramTable>
-
+      <el-form :inline="true" :model="programInfo" class="demo-form-inline">
+        <el-form-item label="站位表">
+          <el-input v-model.trim="programInfo.programName" placeholder="站位表"></el-input>
+        </el-form-item>
+        <el-form-item label="工单">
+          <el-input v-model.trim="programInfo.workOrder" placeholder="工单"></el-input>
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-select v-model.trim="programInfo.state" placeholder="状态" value="">
+            <el-option label="不限" selected="selected" value=''></el-option>
+            <el-option label="未开始" value='0'></el-option>
+            <el-option label="进行中" value='1'></el-option>
+            <el-option label="已完成" value='2'></el-option>
+            <el-option label="已作废" value='3'></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="线号">
+          <el-select v-model.trim="programInfo.line" value="">
+            <el-option label="不限" value=""></el-option>
+            <el-option v-for="item in lines" :label="item.line" :value="item.id" :key="item.id"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="find">查询</el-button>
+          <el-button type="primary" @click="download">下载站位表模板</el-button>
+          <el-button type="info" @click="reset">清除条件</el-button>
+        </el-form-item>
+      </el-form>
+      <el-form :inline="true" :model="fileInfo" class="demo-form-inline">
+        <el-form-item label="站位表文件">
+          <input type="file" style="display:none;" id="fileUpload" @change="handleFileChange"/>
+          <el-input id="uploadFile" size="large" @click.native="handleUpload" v-model="fileName"
+                    placeholder="请选择站位表上传"></el-input>
+        </el-form-item>
+        <el-form-item label="版面">
+          <el-select v-model.trim="fileInfo.boardType" placeholder="版面" value="">
+            <el-option label="默认" value='0'></el-option>
+            <el-option label="AB面" value='1'></el-option>
+            <el-option label="A面" value='2'></el-option>
+            <el-option label="B面" value='3'></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="upload">上传</el-button>
+        </el-form-item>
+      </el-form>
+      <!--表格-->
+      <ProgramTable @setIsShow = 'setIsShow'></ProgramTable>
+      <!--修改状态模态框-->
       <ProgramModal></ProgramModal>
     </div>
-    <ProgramItem v-else></ProgramItem>
+    <!--站位表表格详情-->
+    <ProgramItem v-else  @setIsShow = 'setIsShow'></ProgramItem>
   </div>
 </template>
 
 <script>
-  import store from './../../../store'
+  import {mapGetters,mapActions} from 'vuex'
+  import Bus from '../../../utils/bus'
   import ProgramModal from './components/ProgramModal'
   import ProgramTable from './components/ProgramTable'
   import ProgramItem from './programItem/ProgramItemMain'
-  import Vue from 'vue'
   import axios from 'axios'
-  import {axiosPost} from "./../../../utils/fetchData"
-  import {programFileUploadUrl} from './../../../config/globalUrl'
+  import {programFileUploadUrl, programDownloadUrl} from './../../../config/globalUrl'
+  import {downloadFile} from "../../../utils/fetchData";
 
   export default {
     name: 'program',
     data() {
       return {
+        //组件切换
         isShow: true,
-        programInfos: {
+        //表单查询信息
+        programInfo: {
           programName: "",
           workOrder: "",
-          state:"",
+          state: "",
           line: ""
         },
-        fileInfos: {
+        //上传文件信息
+        fileInfo: {
           programFile: "",
           boardType: ""
-        }
+        },
+        //文件名
+        fileName: ''
       }
     },
     created(){
-      store.commit("setIsRefresh", false);
-    },
-    mounted() {
-      store.commit("setProgramItemShow", false);
+      //保存表单查询信息
+      this.setProgram(JSON.parse(JSON.stringify(this.programInfo)));
     },
     components: {
       ProgramTable, ProgramModal, ProgramItem
     },
     computed: {
-      programItemShow: function () {
-        return store.state.programItemShow;
-      },
-      lines: function () {
-        return store.state.lines;
-      }
+      ...mapGetters(['lines', 'token'])
     },
     watch: {
-      programItemShow: function (val) {
-        if (val === true) {
-          this.isShow = false;
-        } else {
-          this.isShow = true;
+      //监听文件名
+      fileName: function (val) {
+        if (val === '') {
+          this.fileInfo.programFile = '';
         }
       }
     },
     methods: {
-      getfileName: function () {
-        let fileName = $('#inputfile').val();
-        let filetype = fileName.substr(fileName.lastIndexOf(".") + 1);
-        if (filetype !== "xls" && filetype !== 'xlsx') {
-          alert("文件格式错误");
-          $('#inputfile')[0].value = "";
-        } else {
-          let programFile = $('#inputfile')[0].files[0];
-          this.fileInfos.programFile = programFile;
-        }
-      },
+      ...mapActions(['setProgram']),
+      //查询
       find: function () {
-        store.commit("setIsFind", true);
+        this.setProgram(JSON.parse(JSON.stringify(this.programInfo)));
+        Bus.$emit('findProgram', true);
       },
+      //上传
       upload: function () {
-        if (this.fileInfos.programFile !== "" && this.fileInfos.boardType !== "") {
-          let param = new FormData();
-          param.append('programFile', this.fileInfos.programFile);
-          param.append('boardType', this.fileInfos.boardType);
-          param.append('#TOKEN#', store.state.token);
-          let config = {
-            headers: {'Content-Type': 'multipart/form-data'}
-          };
-          axios.post(programFileUploadUrl, param, config).then(response => {
-            if (response.data) {
-              let result = response.data.result;
-              alert(result);
-              if (result === "上传完成，共解析到1张表" || result === "覆盖完成，共解析到1张表") {
-                store.commit("setIsUploadFinish", true);
-                $('#inputfile')[0].value = "";
-                this.fileInfos.programFile = "";
-                this.fileInfos.boardType = "";
-              }
-            }
-          });
-        } else {
-          alert("文件格式错误或者版面未选择");
+        //判断
+        if (this.fileInfo.programFile === '') {
+          this.$alertWarning('请选择文件');
+          return;
         }
+        if (this.fileInfo.boardType === '') {
+          this.$alertWarning('请选择版面类型');
+          return;
+        }
+        let fileType = this.fileName.substr(this.fileName.lastIndexOf(".") + 1);
+        if (fileType !== "xls" && fileType !== 'xlsx') {
+          this.$alertWarning("文件格式错误");
+          return;
+        }
+        //上传请求
+        let param = new FormData();
+        param.append('programFile', this.fileInfo.programFile);
+        param.append('boardType', this.fileInfo.boardType);
+        param.append('#TOKEN#', this.token);
+        let config = {
+          headers: {'Content-Type': 'multipart/form-data'}
+        };
+        axios.post(programFileUploadUrl, param, config).then(response => {
+          if (response.data) {
+            let result = response.data.result;
+            if (result === "上传完成，共解析到1张表" || result === "覆盖完成，共解析到1张表") {
+              this.$alertSuccess(result);
+            } else {
+              this.$alertWarning(result);
+            }
+            this.fileInfo.programFile = '';
+            this.fileInfo.boardType = '';
+            this.fileName = '';
+          }
+        });
+      },
+      //重置表单
+      reset: function () {
+        this.programInfo.programName = '';
+        this.programInfo.workOrder = '';
+        this.programInfo.state = '';
+        this.programInfo.line = '';
+      },
+      //文件选择后点击确定事件
+      handleUpload: function () {
+        let file = document.getElementById('fileUpload');
+        file.value = null;
+        file.click();
+      },
+      //文件名改变
+      handleFileChange: function () {
+        let files = document.getElementById('fileUpload');
+        let file = files.files[0];
+        this.fileInfo.programFile = file;
+        this.fileName = file.name;
+      },
+      //下载
+      download: function () {
+        let data = {
+          '#TOKEN#': this.token
+        };
+        downloadFile(programDownloadUrl, data);
+      },
+      //切换显示
+      setIsShow:function(val){
+        this.isShow = val;
       }
     }
   }
 </script>
 
 <style scoped lang="scss">
-  .tip{
-    font-size:20px;
-    color:red;
-    border-bottom:1px solid #ddd;
-    margin-bottom:10px;
-    padding-bottom:10px;
+  .tip {
+    font-size: 15px;
+    color: red;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
   }
-  @import '@/assets/css/common.scss';
+  .program {
+    padding: 20px;
+  }
 </style>

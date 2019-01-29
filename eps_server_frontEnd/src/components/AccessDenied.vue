@@ -17,7 +17,7 @@
     position: absolute;
     display: flex;
     width: 100%;
-    height:calc(100% - 60px);
+    height:100%;
     justify-content: center;
     align-items: center;
     background:rgba(211,211,211,0.2);

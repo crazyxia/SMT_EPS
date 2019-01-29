@@ -1,81 +1,50 @@
 <template>
   <div class="operationDetail">
-    <form class="form-inline" role="form">
-      <span title="返回" @click="returnToOperationReport"><icon name="returnB" scale="4"></icon></span>
-      <div class="form-group">
-        <label for="line">线号</label>
-        <input type="text" class="form-control" id="line" disabled="disabled" v-model.trim="item.line">
-      </div>
-      <div class="form-group">
-        <label for="workOrderNo">工单号</label>
-        <input type="text" class="form-control" id="workOrderNo" v-model.trim="item.workOrderNo" disabled="disabled">
-      </div>
-      <div class="form-group">
-        <label for="operator">操作员</label>
-        <input type="text" class="form-control" id="operator" disabled="disabled" v-model.trim="item.operator">
-      </div>
-      <div class="form-group">
-        <label for="type">操作类型</label>
-        <input type="text" class="form-control" id="type" disabled="disabled" v-model.trim="item.operationType">
-      </div>
-    </form>
-    <OperationDetailTable :item="item"></OperationDetailTable>
+    <el-form :inline="true" :model="detail" class="demo-form-inline">
+      <el-form-item>
+        <span title="返回" style="cursor:pointer" @click="returnTo"><icon name="returnB" scale="4"></icon></span>
+      </el-form-item>
+      <el-form-item label="线号">
+        <el-input v-model.trim="detail.line" :disabled="true"></el-input>
+      </el-form-item>
+      <el-form-item label="工单号">
+        <el-input v-model.trim="detail.workOrderNo" :disabled="true"></el-input>
+      </el-form-item>
+      <el-form-item label="操作员">
+        <el-input v-model.trim="detail.operator" :disabled="true"></el-input>
+      </el-form-item>
+      <el-form-item label="操作类型">
+        <el-input v-model.trim="detail.operationType" :disabled="true"></el-input>
+      </el-form-item>
+    </el-form>
+    <OperationDetailTable :item="detail" :disabled="true"></OperationDetailTable>
   </div>
 </template>
 
 <script>
-import OperationDetailTable from './components/OperationDetailTable'
-import store from './../../../../store'
-export default {
-  name:'operationDetail',
-  data () {
-    return {
+  import {mapGetters} from 'vuex'
+  import OperationDetailTable from './components/OperationDetailTable'
 
-    }
-  },
-  components:{
-   OperationDetailTable
-  },
-  computed:{
-    item:function(){
-      return store.state.operationSummary;
-    }
-  },
-  methods:{
-    returnToOperationReport:function(){
-      store.commit("setOperationDetailShow",true);
+  export default {
+    name: 'operationDetail',
+    data() {
+      return {
+      }
+    },
+    components: {
+      OperationDetailTable
+    },
+    computed:{
+      ...mapGetters(['detail'])
+    },
+    methods: {
+      returnTo: function () {
+        this.$emit('setIsShow',true);
+      }
     }
   }
-}
 
 </script>
 
 <style scoped lang="scss">
-  .operationDetail{
-    .form-inline{
-      width:100%;
-      margin-bottom:10px;
-      span{
-        cursor:pointer;
-        margin-right:25px;
-        margin-bottom:5px;
-      }
-      .form-group{
-        margin-right:20px;
-        label{
-          padding-right:5px;
-        }
-        input.form-control,select.form-control{
-          width:130px;
-          border-radius:15px;
-        }
-        input[id="line"]{
-          width:100px;
-        }
-        input[id="workOrderNo"]{
-          width:300px;
-        }
-      }
-    }
-  }
 </style>

@@ -23,7 +23,7 @@ export default {
 			text-indent:44px;
 			padding:200px 20px 0 20px;
 			margin:0 auto;
-			text-align:left;
+			text-align:center;
 			font-size:22px;
 		}
 	}

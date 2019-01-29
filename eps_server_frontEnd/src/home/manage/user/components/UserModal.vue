@@ -1,232 +1,253 @@
 <template>
-  <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="myModalLabel">
-            {{message}}
-          </h5>
-          <button type="button" class="close" data-dismiss="modal" aria-hidden="true" @click="finishOperation">&times;</button>
-        </div>
-        <div class="modal-body">
-          <form class ="form form-inline" role="form">
-            <div class="form-group">
-              <label for="modalId">工号</label>
-              <input type="text" class="form-control" id="modalId" v-model.trim="modalInfo.id" :disabled="isDisabled">
-            </div>
-            <div class="form-group">
-            <label for="modalName">姓名</label>
-            <input type="text" class="form-control" id="modalName" v-model.trim="modalInfo.name">
-          </div>
-            <div class="form-group">
-              <label for="password">密码</label>
-              <input type="text" class="form-control" id="password" v-model.trim="modalInfo.password">
-            </div>
-            <div class="form-group">
-              <label for="modalType">岗位</label>
-              <select class="form-control" id="modalType" v-model.trim="modalInfo.type">
-                <option selected="selected" disabled="disabled"  style='display: none' value=''></option>
-                <option value="0">仓库操作员</option>
-                <option value="1">厂线操作员</option>
-                <option value="2">IPQC</option>
-                <option value="3">超级管理员</option>
-                <option value="4">生产管理员</option>
-                <option value="5">品质管理员</option>
-                <option value="6">工程管理员</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="modalClassType">班别</label>
-              <select class="form-control" id="modalClassType" v-model.trim="modalInfo.classType">
-                <option selected="selected" disabled="disabled"  style='display: none' value=''></option>
-                <option value="0">白班</option>
-                <option value="1">夜班</option>
-              </select>
-            </div>
-            <div class="form-group" v-if="isDisabled">
-              <label for="modalEnabled">在职</label>
-              <select class="form-control" id="modalEnabled" v-model.trim="modalInfo.enabled">
-                <option selected="selected" disabled="disabled"  style='display: none' value=''></option>
-                <option value="1">是</option>
-                <option value="0">否</option>
-              </select>
-            </div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn_save" @click="save">保存</button>
-        </div>
-      </div>
-    </div>
+  <div>
+    <!--添加-->
+    <el-dialog
+      title="添加人员"
+      @close="close"
+      :close-on-click-modal="isCloseOnModal"
+      :close-on-press-escape="isCloseOnModal"
+      :visible.sync="addDialogVisible"
+      width="400px">
+      <el-form label-width="50px" label-position="right">
+        <el-form-item label="工号">
+          <el-input v-model.trim="userInfo.id" size="large"></el-input>
+        </el-form-item>
+        <el-form-item label="姓名">
+          <el-input v-model.trim="userInfo.name" size="large"></el-input>
+        </el-form-item>
+        <el-form-item label="密码">
+          <el-input v-model.trim="userInfo.password" size="large"></el-input>
+        </el-form-item>
+        <el-form-item label="岗位">
+          <el-select v-model.trim="userInfo.type" value="" style="width:100%">
+            <el-option label="仓库操作员" value='0'></el-option>
+            <el-option label="厂线操作员" value='1'></el-option>
+            <el-option label="IPQC" value='2'></el-option>
+            <el-option label="超级管理员" value='3'></el-option>
+            <el-option label="生产管理员" value='4'></el-option>
+            <el-option label="品质管理员" value='5'></el-option>
+            <el-option label="工程管理员" value='6'></el-option>
+            <el-option label="仓库管理员" value='7'></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="班别">
+          <el-select v-model.trim="userInfo.classType" style="width:100%" value="">
+            <el-option label="白班" value='0'></el-option>
+            <el-option label="夜班" value='1'></el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="addDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="add">确 定</el-button>
+      </span>
+    </el-dialog>
+    <!--修改-->
+    <el-dialog
+      title="修改人员"
+      :close-on-click-modal="isCloseOnModal"
+      :close-on-press-escape="isCloseOnModal"
+      :visible.sync="editDialogVisible"
+      width="400px">
+      <el-form label-width="50px" label-position="right">
+        <el-form-item label="工号">
+          <el-input v-model.trim="editData.id" size="large" :disabled="true"></el-input>
+        </el-form-item>
+        <el-form-item label="姓名">
+          <el-input v-model.trim="editData.name" size="large"></el-input>
+        </el-form-item>
+        <el-form-item label="密码">
+          <el-input v-model.trim="editData.password" size="large"></el-input>
+        </el-form-item>
+        <el-form-item label="岗位">
+          <el-select v-model.trim="editData.type" value="" style="width:100%">
+            <el-option label="仓库操作员" value='0'></el-option>
+            <el-option label="厂线操作员" value='1'></el-option>
+            <el-option label="IPQC" value='2'></el-option>
+            <el-option label="超级管理员" value='3'></el-option>
+            <el-option label="生产管理员" value='4'></el-option>
+            <el-option label="品质管理员" value='5'></el-option>
+            <el-option label="工程管理员" value='6'></el-option>
+            <el-option label="仓库管理员" value='7'></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="班别">
+          <el-select v-model.trim="editData.classType" value="" style="width:100%">
+            <el-option label="白班" value='0'></el-option>
+            <el-option label="夜班" value='1'></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="在职">
+          <el-select v-model.trim="editData.enabled" placeholder="是否在职" style="width:100%" value="">
+            <el-option label="是" value='1'></el-option>
+            <el-option label="否" value='0'></el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="editDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="edit">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import store from './../../../../store'
-import {userTip} from "./../../../../utils/formValidate"
-import {axiosPost} from "./../../../../utils/fetchData"
-import {addUserUrl,updateUserUrl} from "./../../../../config/globalUrl"
-import {errTip} from './../../../../utils/errorTip'
-export default {
-  name:'userModal',
-  data () {
-    return {
-      isDisabled:false
-    }
-  },
-  computed:{
-    message:function(){
-      let operationType = store.state.userOperationType;
-      if(operationType === "update"){
-        this.isDisabled = true;
-        return "修改信息";
-      }else if(operationType === "add"){
-        this.isDisabled = false;
-        return "添加信息";
-      }
-    },
-    modalInfo:function(){
-      let user = store.state.user;
-      let obj = {};
-      obj.id = user.id;
-      obj.name = user.name;
-      obj.type = user.type;
-      obj.classType = user.classType;
-      obj.password = user.password;
-      obj.enabled = user.enabled === true?'1':'0';
-      return obj;
-    },
-    isAdd:function(){
-      return store.state.isAdd;
-    },
-    isUpdate:function(){
-      return store.state.isUpdate;
-    }
-  },
-  watch:{
-    isAdd:function(val){
-      if(val === true){
-        store.commit("setIsAdd",false);
-        $('#myModal').modal({backdrop:'static', keyboard: false});
-      }
-    },
-    isUpdate:function(val){
-      if(val === true){
-        store.commit("setIsUpdate",false);
-        $('#myModal').modal({backdrop:'static', keyboard: false});
-      }
-    }
-  },
-  methods:{
-    add:function(){
-      let options ={
-        url:addUserUrl,
-        data:{
-          id:this.modalInfo.id,
-          name:this.modalInfo.name,
-          type:this.modalInfo.type,
-          classType:this.modalInfo.classType,
-          password:this.modalInfo.password
+  import {mapGetters} from 'vuex'
+  import Bus from '../../../../utils/bus'
+  import {userTip} from "./../../../../utils/formValidate"
+  import {axiosPost} from "./../../../../utils/fetchData"
+  import {addUserUrl, updateUserUrl} from "./../../../../config/globalUrl"
+  import {errTip} from './../../../../utils/errorTip'
+
+  export default {
+    name: 'userModal',
+    data() {
+      return {
+        //点击 (modal || esc) 不退出
+        isCloseOnModal: false,
+        //添加模态框
+        addDialogVisible: false,
+        //修改模态框
+        editDialogVisible: false,
+        //添加信息
+        userInfo: {
+          id: '',
+          name: '',
+          type: '',
+          classType: '',
+          password: '',
+          enabled: '1'
+        },
+        //修改信息
+        editData: {
+          id: '',
+          name: '',
+          type: '',
+          password: '',
+          classType: '',
+          enabled: ''
         }
       }
-      axiosPost(options).then(response => {
-        if (response.data) {
-          let result = response.data.result;
-          if(result === "succeed"){
-            alert("添加成功");
-            let infos = {
-              id:"",
-              name:"",
-              type:"",
-              classType:"",
-              password:""
-            };
-            store.commit("setUser",infos);
-          }else{
-            errTip(result);
-          }
-        }
-      }).catch(err => {
-        alert("error:" + JSON.stringify(err));
+    },
+    beforeDestroy() {
+      //取消监听
+      Bus.$off('addUser');
+      Bus.$off('editUser');
+    },
+    mounted() {
+      //监听添加人员事件
+      Bus.$on('addUser', () => {
+        this.reset();
+        this.addDialogVisible = true;
       });
+      //监听修改人员事件
+      Bus.$on('editUser', (editData) => {
+        this.editData.id = editData.id;
+        this.editData.name = editData.name;
+        this.editData.type = editData.type + '';
+        this.editData.password = editData.password;
+        this.editData.classType = editData.classType + '';
+        this.editData.enabled = editData.enabled === true ? '1' : '0';
+        this.editDialogVisible = true;
+      })
     },
-    update:function(succeedTip){
-      let options ={
-        url:updateUserUrl,
-        data:{
-          id:this.modalInfo.id,
-          name:this.modalInfo.name,
-          type:this.modalInfo.type,
-          classType:this.modalInfo.classType,
-          password:this.modalInfo.password,
-          enabled:this.modalInfo.enabled
+    computed:{
+      ...mapGetters(['loginUser'])
+    },
+    methods: {
+      //添加
+      add: function () {
+        //判断
+        let result = userTip(this.userInfo);
+        if (result !== '') {
+          this.$alertWarning(result);
+          return;
         }
-      };
-      axiosPost(options).then(response => {
-        if (response.data) {
-          let result = response.data.result;
-          if(result === "succeed"){
-            console.log(store.state.isRefresh);
-            store.commit("setIsRefresh",true);
-            console.log(store.state.isRefresh);
-            alert(succeedTip);
-            $('#myModal').modal('hide');
-          }else{
-            errTip(result);
+        //添加请求
+        let options = {
+          url: addUserUrl,
+          data: {
+            id: this.userInfo.id,
+            name: this.userInfo.name,
+            type: this.userInfo.type,
+            classType: this.userInfo.classType,
+            password: this.userInfo.password
           }
+        };
+        axiosPost(options).then(response => {
+          if (response.data) {
+            let result = response.data.result;
+            if (result === "succeed") {
+              this.$alertSuccess("添加成功");
+              this.reset();
+            } else {
+              this.$alertWarning(errTip(result));
+            }
+          }
+        }).catch(err => {
+          this.$alertError("error:" + JSON.stringify(err));
+        });
+      },
+      //修改
+      edit: function () {
+        //判断
+        let result = userTip(this.editData);
+        if (result !== '') {
+          this.$alertWarning(result);
+          return;
         }
-      }).catch(err => {
-        alert("error:" + JSON.stringify(err));
-      });
-    },
-    save:function(){
-      if(userTip(this.modalInfo)){
-        let operationType = store.state.userOperationType;
-        if(operationType === "add"){
-          this.add();
-        }else if(operationType === "update"){
-          this.update("修改成功");
-        }
+        //修改请求
+        let options = {
+          url: updateUserUrl,
+          data: {
+            id: this.editData.id,
+            name: this.editData.name,
+            type: this.editData.type,
+            classType: this.editData.classType,
+            password: this.editData.password,
+            enabled: this.editData.enabled
+          }
+        };
+        axiosPost(options).then(response => {
+          if (response.data) {
+            let result = response.data.result;
+            if (result === "succeed") {
+              this.editDialogVisible = false;
+              //判断是否自我离职
+              if(this.loginUser.id === this.editData.id && this.editData.enabled === "0"){
+                this.$alertInfo('你已离职');
+                this.$router.replace('/login');
+              }else{
+                this.$alertSuccess("修改成功");
+                Bus.$emit('refreshUser', true);
+              }
+            } else {
+              this.$alertWarning(errTip(result));
+            }
+          }
+        }).catch(err => {
+          this.$alertError("error:" + JSON.stringify(err));
+        });
+      },
+      //关闭添加弹窗
+      close: function () {
+        this.addDialogVisible = false;
+        Bus.$emit('refreshUser', true);
+      },
+      //重置
+      reset: function () {
+        this.userInfo.id = '';
+        this.userInfo.name = '';
+        this.userInfo.type = '';
+        this.userInfo.classType = '';
+        this.userInfo.password = '';
+        this.userInfo.enabled = '1';
       }
-    },
-    finishOperation:function(){
-      store.commit("setIsRefresh",true);
     }
   }
-}
 
 </script>
 
 <style scoped lang="scss">
-.modal{
-  .modal-dialog{
-    max-width:300px;
-    min-width:200px;
-    position:absolute;
-    top:50%;
-    left:50%;
-    transform:translate(-50%, -50%);
-    .form-inline{
-      .form-group{
-        width:100%;
-        margin-bottom:10px;
-        label{
-          margin-right:10px;
-        }
-        .form-control{
-          width:204px;
-          border-radius:10px;
-        }
-      }
-    }
-    .btn_save{
-      width:100px;
-      color:#fff;
-      background-color:#00acec;
-    }
-    .btn_save:hover{
-      background-color:#808080;
-    }
-  }
-}
 </style>

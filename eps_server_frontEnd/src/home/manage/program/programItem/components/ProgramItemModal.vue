@@ -1,172 +1,337 @@
 <template>
-  <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"
-       data-backdrop="static">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="myModalLabel">
-            {{message}}
-          </h5>
-          <button type="button" class="close" data-dismiss="modal" aria-hidden="true" @click="resetModal">&times;
-          </button>
-        </div>
-        <div class="modal-body">
-          <form class="form-inline" role="form">
-            <div class="form-group">
-              <label for="serialNo">序列号</label>
-              <input type="text" class="form-control" id="serialNo" v-model.trim="modalInfo.serialNo">
-            </div>
-            <div class="form-group">
-              <label for="lineseat">站位</label>
-              <input type="text" class="form-control" id="lineseat" v-model.trim="modalInfo.lineseat">
-            </div>
-            <div class="form-group">
-              <label for="materialNo">程序料号</label>
-              <input type="text" class="form-control" id="materialNo" v-model.trim="modalInfo.materialNo">
-            </div>
-            <div class="form-group">
-              <label for="quantity">数量</label>
-              <input type="text" class="form-control" id="quantity" v-model.trim="modalInfo.quantity">
-            </div>
-            <div class="form-group">
-              <label for="materialType">料别</label>
-              <select class="form-control" id="materialType" v-model.trim="modalInfo.materialType">
-                <option selected="selected" disabled="disabled" style='display: none' value=''></option>
-                <option>主料</option>
-                <option>替料</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="specitification">BOM料号/规格</label>
-              <textarea v-model.trim="modalInfo.specitification" id="specitification" class="form-control"></textarea>
-            </div>
-            <div class="form-group">
-              <label for="position">单板位置</label>
-              <textarea class="form-control" id="position" v-model.trim="modalInfo.position"></textarea>
-            </div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn_save" @click="save">保存</button>
-        </div>
-      </div>
-    </div>
+  <div>
+    <!--添加-->
+    <el-dialog
+      title="添加信息"
+      :close-on-click-modal="isCloseOnModal"
+      :close-on-press-escape="isCloseOnModal"
+      :visible.sync="addDialogVisible"
+      width="400px">
+      <el-form label-width="120px" label-position="right">
+        <el-form-item label="序列号">
+          <el-input v-model.trim="programItem.serialNo" size="large" ></el-input>
+        </el-form-item>
+        <el-form-item label="站位">
+          <el-input v-model.trim="programItem.lineseat" size="large" ></el-input>
+        </el-form-item>
+        <el-form-item label="程序料号">
+          <el-input v-model.trim="programItem.materialNo" size="large" ></el-input>
+        </el-form-item>
+        <el-form-item label="数量">
+          <el-input v-model.trim="programItem.quantity" size="large" ></el-input>
+        </el-form-item>
+        <el-form-item label="料别">
+          <el-select v-model.trim="programItem.materialType" placeholder="料别" value="" style="width:100%">
+            <el-option label="主料" value='主料'></el-option>
+            <el-option label="替料" value='替料'></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="BOM料号/规格">
+          <el-input type="textarea" v-model.trim="programItem.specitification" size="large" ></el-input>
+        </el-form-item>
+        <el-form-item label="单板位置">
+          <el-input  type="textarea" v-model.trim="programItem.position" size="large" ></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="addDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="add">确 定</el-button>
+      </span>
+    </el-dialog>
+    <!--追加-->
+    <el-dialog
+      title="添加信息"
+      :close-on-click-modal="isCloseOnModal"
+      :close-on-press-escape="isCloseOnModal"
+      :visible.sync="addLastDialogVisible"
+      width="400px">
+      <el-form label-width="120px" label-position="right">
+        <el-form-item label="序列号">
+          <el-input v-model.trim="programItem.serialNo" size="large" ></el-input>
+        </el-form-item>
+        <el-form-item label="站位">
+          <el-input v-model.trim="programItem.lineseat" size="large" ></el-input>
+        </el-form-item>
+        <el-form-item label="程序料号">
+          <el-input v-model.trim="programItem.materialNo" size="large" ></el-input>
+        </el-form-item>
+        <el-form-item label="数量">
+          <el-input v-model.trim="programItem.quantity" size="large" ></el-input>
+        </el-form-item>
+        <el-form-item label="料别">
+          <el-select v-model.trim="programItem.materialType" placeholder="料别" value="" style="width:100%">
+            <el-option label="主料" value='主料'></el-option>
+            <el-option label="替料" value='替料'></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="BOM料号/规格">
+          <el-input type="textarea" v-model.trim="programItem.specitification" size="large" ></el-input>
+        </el-form-item>
+        <el-form-item label="单板位置">
+          <el-input type="textarea" v-model.trim="programItem.position" size="large" ></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="addLastDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="addLast">确 定</el-button>
+      </span>
+    </el-dialog>
+    <!--修改-->
+    <el-dialog
+      title="修改信息"
+      :close-on-click-modal="isCloseOnModal"
+      :close-on-press-escape="isCloseOnModal"
+      :visible.sync="editDialogVisible"
+      width="400px">
+      <el-form label-width="120px" label-position="right">
+        <el-form-item label="序列号">
+          <el-input v-model.trim="editData.serialNo" size="large" ></el-input>
+        </el-form-item>
+        <el-form-item label="站位">
+          <el-input v-model.trim="editData.lineseat" size="large" ></el-input>
+        </el-form-item>
+        <el-form-item label="程序料号">
+          <el-input v-model.trim="editData.materialNo" size="large" ></el-input>
+        </el-form-item>
+        <el-form-item label="数量">
+          <el-input v-model.trim="editData.quantity" size="large" ></el-input>
+        </el-form-item>
+        <el-form-item label="料别">
+          <el-select v-model.trim="editData.materialType" placeholder="料别" value="" style="width:100%">
+            <el-option label="主料" value='主料'></el-option>
+            <el-option label="替料" value='替料'></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="BOM料号/规格">
+          <el-input type="textarea" v-model.trim="editData.specitification" size="large" ></el-input>
+        </el-form-item>
+        <el-form-item label="单板位置">
+          <el-input type="textarea" v-model.trim="editData.position" size="large" ></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="editDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="edit">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-  import store from './../../../../../store'
+  import {mapGetters,mapActions} from 'vuex'
   import {programItemTip} from "./../../../../../utils/formValidate"
-
+  import Bus from '../../../../../utils/bus'
   export default {
     name: 'programItemModal',
     data() {
       return {
-        modalInfo: {
+        addDialogVisible:false,
+        addLastDialogVisible:false,
+        editDialogVisible:false,
+        isCloseOnModal:false,
+        //添加信息
+        programItem: {
           serialNo:"",
           lineseat: "",
           materialType: "",
           materialNo: "",
           specitification: "",
           position: "",
-          quantity: 0
+          quantity:'',
+          index:'',
+          programId:'',
         },
+        //修改信息
         editData: {
-          lineseat: "",
-          materialNo: ""
-        }
-      }
-    },
-    computed: {
-      message: function () {
-        let operationType = store.state.programItemOperationType;
-        if (operationType === "update") {
-          return "修改信息";
-        } else if (operationType === "add") {
-          return "添加信息";
-        }
-      },
-      isAdd: function () {
-        return store.state.isAdd;
-      },
-      isUpdate: function () {
-        return store.state.isUpdate;
-      },
-      programItem: function () {
-        return store.state.programItem;
-      },
-      programItemList: function () {
-        return store.state.programItemList;
-      },
-      operations: function () {
-        return store.state.operations;
-      }
-    },
-    watch: {
-      isAdd: function (val) {
-        if (val === true) {
-          store.commit("setIsAdd", false);
-          let programItem = JSON.parse(JSON.stringify(this.programItem));
-          this.editData.materialNo = programItem.materialNo;
-          this.editData.lineseat = programItem.lineseat;
-          $('#myModal').modal({backdrop: 'static', keyboard: false});
-        }
-      },
-      isUpdate: function (val) {
-        if (val === true) {
-          store.commit("setIsUpdate", false);
-          let programItem = JSON.parse(JSON.stringify(this.programItem));
-          this.modalInfo = programItem;
-          this.editData.materialNo = programItem.materialNo;
-          this.editData.lineseat = programItem.lineseat;
-          $('#myModal').modal({backdrop: 'static', keyboard: false});
-        }
-      }
-    },
-    methods: {
-      save: function () {
-        if (programItemTip(this.modalInfo)) {
-          let index = store.state.operationIndex;
-          let operationType = store.state.programItemOperationType;
-          if(operationType === "add"){
-            for (let i = 0; i < this.programItemList.length; i++) {
-              let item = this.programItemList[i];
-              if (this.modalInfo.lineseat === item.lineseat && this.modalInfo.materialNo === item.materialNo) {
-                alert("一个站位不允许多个相同料号");
-                return;
-              }
-            }
-          }else if(operationType === "update"){
-            if (this.modalInfo.lineseat !== this.editData.lineseat || this.modalInfo.materialNo !== this.editData.materialNo){
-              for (let i = 0; i < this.programItemList.length; i++) {
-                let item = this.programItemList[i];
-                if (this.modalInfo.lineseat === item.lineseat && this.modalInfo.materialNo === item.materialNo) {
-                  alert("一个站位不允许多个相同料号");
-                  return;
-                }
-              }
-            }
-          }
-          if (operationType === "add") {
-            this.programItemList.splice(index + 1, 0, this.modalInfo);
-          } else if (operationType === "update") {
-            this.programItemList.splice(index, 1, this.modalInfo);
-          }
-          store.commit("setProgramItemRefresh", true);
-          $('#myModal').modal('hide');
-          this.$emit("getModalInfo", this.modalInfo);
-          this.resetModal();
-        }
-      },
-      resetModal: function () {
-        this.modalInfo = {
+          serialNo:"",
           lineseat: "",
           materialType: "",
           materialNo: "",
           specitification: "",
           position: "",
-          quantity: 0
+          quantity:'',
+          index:'',
+          programId:''
+        },
+        row:{},
+        programId:''
+      }
+    },
+    beforeDestroy(){
+      //取消监听
+      Bus.$off('addProgramItem');
+      Bus.$off('addLastProgramItem');
+      Bus.$off('editProgramItem');
+    },
+    mounted(){
+      //监听添加事件
+      Bus.$on('addProgramItem',(row) => {
+        this.row = row;
+        this.resetModal();
+        this.addDialogVisible = true;
+      });
+      //监听追加事件
+      Bus.$on('addLastProgramItem',(id) => {
+        this.programId = id;
+        this.resetModal();
+        this.addLastDialogVisible = true;
+      });
+      //监听修改事件
+      Bus.$on('editProgramItem',(row) => {
+        this.row = row;
+        this.initEditData(row);
+        this.editDialogVisible = true;
+      })
+    },
+    computed:{
+      ...mapGetters(['operations','programItemList'])
+    },
+    methods: {
+      ...mapActions(['setOperations','setProgramItemList']),
+      //初始化添加信息
+      resetModal: function () {
+        this.programItem.lineseat = '';
+        this.programItem.materialNo = '';
+        this.programItem.materialType = '';
+        this.programItem.position = '';
+        this.programItem.quantity = '';
+        this.programItem.serialNo = '';
+        this.programItem.specitification = '';
+        this.programItem.index = this.row.index;
+        this.programItem.programId = this.row.programId;
+      },
+      //初始化修改信息
+      initEditData:function(row){
+        this.editData.lineseat = row.lineseat;
+        this.editData.materialNo = row.materialNo;
+        this.editData.materialType = row.materialType;
+        this.editData.position = row.position;
+        this.editData.quantity = row.quantity + '';
+        this.editData.serialNo = row.serialNo + '';
+        this.editData.specitification = row.specitification;
+        this.editData.index = row.index;
+        this.editData.programId = row.programId;
+      },
+      //添加
+      add:function(){
+        let result = programItemTip(this.programItem);
+        //判断
+        if(result !== ''){
+          this.$alertWarning(result);
+          return;
         }
+        for(let i = 0;i<this.programItemList.length;i++){
+          let item = this.programItemList[i];
+          if(this.programItem.lineseat === item.lineseat && this.programItem.materialNo === item.materialNo){
+            this.$alertWarning('一个站位不允许多个相同料号');
+            return;
+          }
+        }
+        //刷新列表
+        for(let i = 0;i<this.programItemList.length;i++){
+          let item = this.programItemList[i];
+          if(this.programItem.index === item.index){
+            this.programItemList.splice(i+1,0,JSON.parse(JSON.stringify(this.programItem)));
+            break;
+          }
+        }
+        for(let i = 0;i<this.programItemList.length;i++){
+          this.programItemList[i].index = i;
+        }
+        //添加到操作列表
+        let obj = {
+          operation:0,
+          targetLineseat:this.row.lineseat,
+          targetMaterialNo:this.row.materialNo,
+          programId:this.programItem.programId,
+          lineseat:this.programItem.lineseat,
+          alternative:this.programItem.materialType === "替料",
+          materialNo:this.programItem.materialNo,
+          specitification:this.programItem.specitification,
+          position:this.programItem.position,
+          serialNo:this.programItem.serialNo,
+          quantity:this.programItem.quantity,
+        };
+        this.operations.push(obj);
+        this.addDialogVisible = false;
+      },
+      //修改
+      edit:function(){
+        let result = programItemTip(this.editData);
+        //判断
+        if(result !== ''){
+          this.$alertWarning(result);
+          return;
+        }
+        for(let i = 0;i<this.programItemList.length;i++){
+          let item = this.programItemList[i];
+          if(item.index !== this.editData.index && this.editData.lineseat === item.lineseat && this.editData.materialNo === item.materialNo){
+            this.$alertWarning('一个站位不允许多个相同料号');
+            return;
+          }
+        }
+        //刷新列表
+        for(let i = 0;i<this.programItemList.length;i++){
+          let item = this.programItemList[i];
+          if(this.editData.index === item.index){
+            this.programItemList.splice(i,1,JSON.parse(JSON.stringify(this.editData)));
+            break;
+          }
+        }
+        //添加到操作列表
+        let obj = {
+          operation:1,
+          targetLineseat:this.row.lineseat,
+          targetMaterialNo:this.row.materialNo,
+          programId:this.editData.programId,
+          lineseat:this.editData.lineseat,
+          alternative:this.editData.materialType === "替料",
+          materialNo:this.editData.materialNo,
+          specitification:this.editData.specitification,
+          position:this.editData.position,
+          serialNo:this.editData.serialNo,
+          quantity:this.editData.quantity
+        };
+        this.operations.push(obj);
+        this.editDialogVisible = false;
+      },
+      //追加
+      addLast:function(){
+        let result = programItemTip(this.programItem);
+        //判断
+        if(result !== ''){
+          this.$alertWarning(result);
+          return;
+        }
+        for(let i = 0;i<this.programItemList.length;i++){
+          let item = this.programItemList[i];
+          if(this.programItem.lineseat === item.lineseat && this.programItem.materialNo === item.materialNo){
+            this.$alertWarning('一个站位不允许多个相同料号');
+            return;
+          }
+        }
+        //刷新列表
+        this.programItemList.splice(this.programItemList.length,0,JSON.parse(JSON.stringify(this.programItem)));
+        for(let i = 0;i<this.programItemList.length;i++){
+          this.programItemList[i].index = i;
+        }
+        //添加到操作列表
+        let obj = {
+          operation:0,
+          targetLineseat:"",
+          targetMaterialNo:"",
+          programId:this.programId,
+          lineseat:this.programItem.lineseat,
+          alternative:this.programItem.materialType === "替料",
+          materialNo:this.programItem.materialNo,
+          specitification:this.programItem.specitification,
+          position:this.programItem.position,
+          serialNo:this.programItem.serialNo,
+          quantity:this.programItem.quantity,
+        };
+        this.operations.push(obj);
+        this.programId = '';
+        this.addLastDialogVisible = false;
       }
     }
   }
@@ -174,37 +339,4 @@
 </script>
 
 <style scoped lang="scss">
-  .modal {
-    .modal-dialog {
-      max-width: 600px;
-      min-width: 600px;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      .form-inline {
-        .form-group {
-          margin: 0 20px 10px 0;
-          label {
-            margin-right: 10px;
-          }
-          .form-control {
-            width: 180px;
-            border-radius: 10px;
-          }
-          textarea.form-control {
-            width: 400px;
-          }
-        }
-      }
-      .btn_save {
-        width: 100px;
-        color: #fff;
-        background-color: #00acec;
-      }
-      .btn_save:hover {
-        background-color: #808080;
-      }
-    }
-  }
 </style>

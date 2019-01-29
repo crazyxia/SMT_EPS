@@ -5,16 +5,15 @@ const utils = require('./utils')
 const config = require('../config')
 const vueLoaderConfig = require('./vue-loader.conf')
 
-function resolve (dir) {
+function resolve(dir) {
   return path.join(__dirname, '..', dir)
 }
-
 
 
 module.exports = {
   context: path.resolve(__dirname, '../'),
   entry: {
-    app: './src/main.js'
+    app: ["babel-polyfill", "./src/main.js"]
   },
   output: {
     path: config.build.assetsRoot,
@@ -40,7 +39,7 @@ module.exports = {
       {
         test: /\.js$/,
         loader: 'babel-loader',
-        include: [resolve('src'), resolve('test'), resolve('node_modules/webpack-dev-server/client'),resolve('/vue2-datatable-component/')]
+        include: [resolve('src'), resolve('test'), resolve('node_modules/webpack-dev-server/client'), resolve('/vue2-datatable-component/')]
       },
       {
         test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
@@ -72,13 +71,13 @@ module.exports = {
       }
     ]
   },
-  plugins:[
+  plugins: [
     new webpack.optimize.CommonsChunkPlugin('common.js'),
     new webpack.ProvidePlugin({
-      jQuery:'jquery',
-      $:'jquery',
-      Popper:['popper.js', 'default']
-    })
+      jQuery: 'jquery',
+      $: 'jquery',
+      Popper: ['popper.js', 'default']
+    }),
   ],
   node: {
     // prevent webpack from injecting useless setImmediate polyfill because Vue

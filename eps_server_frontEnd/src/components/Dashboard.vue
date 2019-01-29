@@ -15,7 +15,7 @@
 </template>
 
 <script>
-  import store from '../store'
+  import {mapGetters} from 'vuex';
   import {getChartsConf} from "../config/ChartsConfig";
 
   export default {
@@ -33,9 +33,7 @@
       };
     },
     computed:{
-      lineSize:function(){
-        return store.state.lineSize
-      }
+      ...mapGetters(['lineSize','lineStatusData'])
     },
     mounted() {
       this.$nextTick(() => {
@@ -84,7 +82,7 @@
         chart.update()
       },
       getLineData: function () {
-        let lineData = store.state.lineStatusData;
+        let lineData = this.lineStatusData;
         this.updatedConfig.name = lineData.line + ' 线分时运行情况:';
         let nowHour = new Date().getHours();
         for (let i = 0; i < this.xAxisCount; i++) {

@@ -1,11 +1,11 @@
 <template>
-  <div class="leftNav col-sm-2">
-    <img src="/eps_system/static/img/logo.svg"/>
+  <div class="leftNav">
+    <img src="../../static/img/logo.svg"/>
     <ul class="lists">
       <li v-for="(list,index) in lists" :key="list.id" @mouseover="overShow(index)" @mouseout="outHide(index)" :class="listStates.isActive[index]?'active':''" class="list">
         <div @click="activeChange(index)">
            <p><icon :name="list.logoSrc[listStates.logoImg[index]]" :scale="iconScale"></icon><span>{{list.text}}</span></p>
-           <icon :name="list.arrowImgSrc[listStates.arrowImg[index]]" class="arrow"></icon>
+           <icon :name="list.arrowImgSrc[listStates.arrowImg[index]]" class="arrow" :scale="2" v-if="list.id !== 2"></icon>
         </div>
         <ul>
           <li v-for="(item,index) in list.childList" :key="item.name" @click="sendItemMessage(list.id,index)" :class="listStates.childActive[list.id][index]?'clickActive':''">
@@ -22,7 +22,7 @@ export default {
   name: 'leftNav',
   data () {
     return {
-      iconScale:3.5,
+      iconScale:3,
       lists:[
         {
           id:0,
@@ -82,7 +82,7 @@ export default {
   methods:{
     overShow:function(index){
         let state = this.listStates.state[index];
-        if(state == 0){
+        if(state === 0){
           this.$set(this.listStates.state,index,1);
           this.$set(this.listStates.logoImg,index,1);
           this.$set(this.listStates.arrowImg,index,1);
@@ -90,16 +90,16 @@ export default {
     },
     outHide:function(index){
         let state = this.listStates.state[index];
-        if(state == 1){
+        if(state === 1){
           this.$set(this.listStates.state,index,0);
           this.$set(this.listStates.logoImg,index,0);
           this.$set(this.listStates.arrowImg,index,0);
         }
     },
     activeChange:function(index){
-      if(index != 2){
+      if(index !== 2){
         let state = this.listStates.state[index];
-        if(state != 2){
+        if(state !== 2){
           this.$set(this.listStates.state,index,2);
           this.$set(this.listStates.logoImg,index,1);
           this.$set(this.listStates.arrowImg,index,2);
@@ -132,17 +132,18 @@ export default {
 <style scoped lang="scss">
   .leftNav{
     padding:0;
-    min-width:100px;
+    width:100%;
     min-height:100%;
-    border-right:1px solid #ccc;
     img{
       display:inline-block;
+      box-sizing:border-box;
       width:100%;
       padding:10px 10px;
     }
     ul.lists{
       width:100%;
       padding-bottom:20px;
+      color:#333;
       li.list{
         cursor:pointer;
         width:100%;
@@ -162,20 +163,19 @@ export default {
             margin:0 !important;
             span{
               padding-left:10px;
-              font-size:20px;
+              font-size:18px;
             }
           }
           svg.arrow{
             margin-top:-1px;
             margin-right:10px;
-            width:20px;
-            height:20px;
           }
         }
         ul{
           display:none;
           width:100%;
           li{
+            box-sizing:border-box;
             width:100%;
             height:40px;
             line-height:40px;

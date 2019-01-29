@@ -21,7 +21,7 @@ export default {
   name: 'leftNav',
   data () {
     return {
-      imgScale:4,
+      imgScale:3.5,
       lists:[
         {
           id:0,
@@ -76,31 +76,31 @@ export default {
   },
   methods:{
     overShow:function(index){
-        var state = this.listStates.state[index];
-        if(state == 0){
+        let state = this.listStates.state[index];
+        if(state === 0){
           this.$set(this.listStates.state,index,1);
           this.$set(this.listStates.logoImg,index,1);
         }
     },
     outHide:function(index){
-        var state = this.listStates.state[index];
-        if(state == 1){
+        let state = this.listStates.state[index];
+        if(state === 1){
           this.$set(this.listStates.state,index,0);
           this.$set(this.listStates.logoImg,index,0);
         }
     },
     activeChange:function(index){
-      if(index != 2){
-        var length = this.listStates.state.length;
-        for(var i = 0;i < length; i++){
-          if(i!=index){
+      if(index !== 2){
+        let length = this.listStates.state.length;
+        for(let i = 0;i < length; i++){
+          if(i !== index){
             this.$set(this.listStates.state,i,0);
             this.$set(this.listStates.logoImg,i,0);
             this.$set(this.listStates.isActive,i,false);
           }
         }
-        var state = this.listStates.state[index];
-        if(state != 2){
+        let state = this.listStates.state[index];
+        if(state !== 2){
           this.$set(this.listStates.state,index,2);
           this.$set(this.listStates.logoImg,index,1);
           this.$set(this.listStates.isActive,index,true);
@@ -114,10 +114,10 @@ export default {
       }
     },
     sendItemMessage:function(id,index){
-      var childActive = this.listStates.childActive;
-      for(var i = 0;i<childActive.length;i++){
-        var item = childActive[i];
-        for(var j = 0;j<item.length;j++){
+      let childActive = this.listStates.childActive;
+      for(let i = 0;i<childActive.length;i++){
+        let item = childActive[i];
+        for(let j = 0;j<item.length;j++){
           this.$set(item,j,false);
         }
       }
@@ -130,9 +130,9 @@ export default {
 
 <style scoped lang="scss">
   .leftNav{
-    width:70px;
-    min-height:100%;
-    border-right:1px solid #ccc;
+    box-sizing:border-box;
+    padding:0 5px;
+    width:100%;
     ul.lists{
       margin-top:60px;
       width:100%;
@@ -153,7 +153,7 @@ export default {
             height:32px;
           }
           span{
-            font-size:16px;
+            font-size:14px;
           }
         }
         ul{
@@ -164,10 +164,10 @@ export default {
           text-align:left;
           margin-top:-60px;
           border:1px solid #ccc;
-          border-left:none;
           padding:10px 0;
           z-index:999;
           background:#fff;
+          border-radius: 0 4px 4px 0;
           li{
             cursor:pointer;
             width:100%;

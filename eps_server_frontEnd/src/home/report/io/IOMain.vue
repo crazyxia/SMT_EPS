@@ -1,82 +1,91 @@
 <template>
   <div class="io">
-    <form class="form-inline" role="form">
-      <div class="form-group">
-        <label for="position">仓位</label>
-        <input type="text" class="form-control" id="position" v-model.trim="io.position">
-      </div>
-      <div class="form-group">
-        <label for="custom">供应商</label>
-        <input type="text" class="form-control" id="custom" v-model.trim="io.custom">
-      </div>
-      <div class="form-group">
-        <label for="operator">操作员</label>
-        <input type="text" class="form-control" id="operator" v-model.trim="io.operator">
-      </div>
-      <div class="form-group">
-        <label for="materialNo">料号</label>
-        <input type="text" class="form-control" id="materialNo" v-model.trim="io.materialNo">
-      </div>
-      <div class="form-group">
-        <label for="time">起止时间</label>
-        <input type="date" class="form-control" id="startTime" v-model.trim="sTime">
-        <input type="date" class="form-control" id="endTime" v-model.trim="eTime">
-      </div>
-      <div class="btn-group">
-        <button type="button" class="btn btn_find" @click="find">查询</button>
-      </div>
-    </form>
-    <IOTable :ioInfos="io"></IOTable>
+    <el-form :inline="true" :model="io" class="demo-form-inline">
+      <el-form-item label="仓位">
+        <el-input v-model.trim="io.position" placeholder="仓位"></el-input>
+      </el-form-item>
+      <el-form-item label="供应商">
+        <el-input v-model.trim="io.custom" placeholder="供应商"></el-input>
+      </el-form-item>
+      <el-form-item label="操作员">
+        <el-input v-model.trim="io.operator" placeholder="操作员"></el-input>
+      </el-form-item>
+      <el-form-item label="料号">
+        <el-input v-model.trim="io.materialNo" placeholder="料号"></el-input>
+      </el-form-item>
+      <el-form-item label="起止时间">
+        <el-date-picker
+          v-model="time"
+          type="daterange"
+          align="right"
+          value-format="yyyy-MM-dd"
+          range-separator="-"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期">
+        </el-date-picker>
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" @click="find">查询</el-button>
+        <el-button type="info" @click="reset">清空条件</el-button>
+      </el-form-item>
+    </el-form>
+    <IOTable></IOTable>
   </div>
 </template>
 
 <script>
-import store from './../../../store' 
-import IOTable from './components/IOTable'
-import {setInitialTime,checkTimeByFind} from "./../../../utils/time"
-export default {
-  name:'io',
-  data () {
-    return {
-      io:{
-        position:"",
-        custom:"",
-        materialNo:"",
-        operator:"",
-        startTime:"",
-        endTime:"",
+  import {mapActions} from 'vuex'
+  import Bus from '../../../utils/bus'
+  import IOTable from './components/IOTable'
+  import {setInitialTime} from "./../../../utils/time"
+
+  export default {
+    name: 'io',
+    data() {
+      return {
+        io: {
+          position: "",
+          custom: "",
+          materialNo: "",
+          operator: "",
+          startTime: "",
+          endTime: "",
+        },
+        time:[],
+      }
+    },
+    components: {
+      IOTable
+    },
+    created() {
+      this.time = setInitialTime();
+      this.io.startTime = this.time[0] +  " 00:00:00";
+      this.io.endTime = this.time[1] +  " 23:59:59";
+      this.setIO(JSON.parse(JSON.stringify(this.io)));
+    },
+    methods: {
+      ...mapActions(['setIO']),
+      find: function () {
+        this.io.startTime = this.time[0] +  " 00:00:00";
+        this.io.endTime = this.time[1] +  " 23:59:59";
+        this.setIO(JSON.parse(JSON.stringify(this.io)));
+        Bus.$emit('findIo',true);
       },
-      sTime:"",
-      eTime:""
-    }
-  },
-  components:{
-    IOTable
-  },
-  mounted(){
-    let timeArr = setInitialTime(this.sTime,this.eTime);
-    this.sTime = timeArr[0];
-    this.eTime = timeArr[1];
-  },
-  watch:{
-    sTime:function(val){
-      this.io.startTime = val + " 00:00:00";
-    },
-    eTime:function(val){
-      this.io.endTime = val + " 23:59:59";
-    },
-  },
-  methods:{
-    find:function(){
-      let isOk = checkTimeByFind(this.io.startTime,this.io.endTime);
-      if(isOk){
-        store.commit("setIsFind",true);
+      reset: function () {
+        this.time = setInitialTime();
+        this.io.startTime = this.time[0] +  " 00:00:00";
+        this.io.endTime = this.time[1] +  " 23:59:59";
+        this.io.materialNo = '';
+        this.io.operator = '';
+        this.io.custom = '';
+        this.io.position = '';
       }
     }
   }
-}
-</script> 
+</script>
 
 <style scoped lang="scss">
-@import '@/assets/css/common.scss';
+  .io {
+    padding: 20px;
+  }
 </style>

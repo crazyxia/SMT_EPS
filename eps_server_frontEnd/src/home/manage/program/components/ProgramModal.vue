@@ -1,163 +1,133 @@
 <template>
-  <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="myModalLabel">
-            {{message}}
-          </h5>
-          <button type="button" class="close" data-dismiss="modal" aria-hidden="true" @click="resetData">&times;</button>
-        </div>
-        <div class="modal-body">
-          <form class="form form-inline" role="form">
-            <div class="form-group">
-              <label for="line">线号</label>
-              <input type="text" class="form-control" id="line" disabled="disabled" v-model.trim="modalInfo.lineName">
-            </div>
-            <div class="form-group">
-              <label for="workOrder">工单</label>
-              <input type="text" class="form-control" id="WorkOrder" disabled="disabled" v-model.trim="modalInfo.workOrder">
-            </div>
-            <div class="form-group">
-              <label for="state">状态</label>
-              <select class="form-control" id="state" v-model.trim="modalInfo.state">
-                <option selected="selected" disabled="disabled"  style='display: none' value=''></option>
-                <option value="0">未开始</option>
-                <option value="1">进行中</option>
-                <option value="2">已完成</option>
-                <option value="3">已作废</option>
-              </select>
-            </div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn_save" @click="save">保存</button>
-        </div>
-      </div>
-    </div>
-  </div>
+  <el-dialog
+    title="修改状态"
+    :close-on-click-modal="isCloseOnModal"
+    :close-on-press-escape="isCloseOnModal"
+    :visible.sync="editDialogVisible"
+    width="400px">
+    <el-form label-width="50px" label-position="right">
+      <el-form-item label="线号">
+        <el-input v-model.trim="editData.lineName" size="large" :disabled="true"></el-input>
+      </el-form-item>
+      <el-form-item label="工单">
+        <el-input v-model.trim="editData.workOrder" size="large" :disabled="true"></el-input>
+      </el-form-item>
+      <el-form-item label="状态">
+        <el-select v-model.trim="editData.state" placeholder="状态" value="" style="width:100%">
+          <el-option label="未开始" value='0'></el-option>
+          <el-option label="进行中" value='1'></el-option>
+          <el-option label="已完成" value='2'></el-option>
+          <el-option label="已作废" value='3'></el-option>
+        </el-select>
+      </el-form-item>
+    </el-form>
+    <span slot="footer" class="dialog-footer">
+        <el-button @click="editDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="edit">确 定</el-button>
+      </span>
+  </el-dialog>
 </template>
 
 <script>
-import store from './../../../../store'
-import {programTip} from "./../../../../utils/formValidate"
-import {axiosPost} from "./../../../../utils/fetchData"
-import {programStartUrl,programfinishUrl,programCancelUrl} from "./../../../../config/globalUrl"
-import {errTip} from './../../../../utils/errorTip'
-export default {
-  name:'programModal',
-  data () {
-    return {
+  import Bus from '../../../../utils/bus'
+  import {programTip} from "./../../../../utils/formValidate"
+  import {axiosPost} from "./../../../../utils/fetchData"
+  import {programStartUrl, programFinishUrl, programCancelUrl} from "./../../../../config/globalUrl"
+  import {errTip} from './../../../../utils/errorTip'
 
-    }
-  },
-  computed:{
-    message:function(){
-      let operationType = store.state.programOperationType;
-      if(operationType === "update"){
-        return "修改信息";
+  export default {
+    name: 'programModal',
+    data() {
+      return {
+        //点击 (modal || esc) 不退出
+        isCloseOnModal: false,
+        //修改模态框
+        editDialogVisible: false,
+        //修改信息
+        editData: {
+          id:'',
+          lineName: '',
+          workOrder: '',
+          state: ''
+        },
+        //初始状态
+        oldState:''
       }
     },
-    modalInfo:function(){
-      return store.state.program;
+    beforeDestroy(){
+      //取消监听
+      Bus.$off('editState');
     },
-    isUpdate:function(){
-      return store.state.isUpdate;
-    }
-  },
-  watch:{
-    isUpdate:function(val){
-      if(val === true){
-        store.commit("setIsUpdate",false);
-        $('#myModal').modal({backdrop:'static', keyboard: false});
-      }
+    mounted(){
+      //监听状态修改事件
+      Bus.$on('editState',(row) => {
+        this.editData.id = row.id;
+        this.editData.lineName = row.lineName;
+        this.editData.workOrder = row.workOrder;
+        this.editData.state = row.state + '';
+        this.oldState = row.state + '';
+        this.editDialogVisible = true;
+      })
     },
-  },
-  methods:{
-    fetchData:function(url){
-      let options = {
-        url:url,
-        data:{
-          id:store.state.program.id
-        }
-      };
-      axiosPost(options).then(response => {
-        if (response.data) {
-          let result = response.data.result;
-          if(result === "succeed"){
-            store.commit("setIsRefresh",true);
-          }else{
-            errTip(result);
-            store.commit("setIsRefresh",true);
+    methods: {
+      fetchData: function (url) {
+        let options = {
+          url: url,
+          data: {
+            id: this.editData.id
           }
+        };
+        axiosPost(options).then(response => {
+          if (response.data) {
+            let result = response.data.result;
+            if (result === "succeed") {
+              this.$alertSuccess("修改成功");
+            } else {
+              this.$alertWarning(errTip(result));
+            }
+            Bus.$emit('refreshProgram',true);
+            this.editDialogVisible = false;
+          }
+        }).catch(err => {
+          this.$alertError("接口请求失败，请检查网络，再联系管理员");
+        });
+      },
+      //编辑
+      edit: function () {
+        let state = this.editData.state;
+        let result = programTip(this.oldState,state);
+        if(result !== ''){
+          this.$alertWarning(result);
+          return;
         }
-      }).catch(err => {
-        alert("接口请求失败，请检查网络，再联系管理员");
-      });
-    },
-    save:function(){
-      let state = this.modalInfo.state;
-      if(programTip(state)){
-        if(state == 1){
-          this.setStart();
-        }else if(state == 2){
-          this.setFinish();
-        }else if(state == 3){
-          this.setCancel();
+        switch (state) {
+          case "1":
+            this.setStart();
+            break;
+          case "2":
+            this.setFinish();
+            break;
+          case "3":
+            this.setCancel();
+            break;
         }
-        $('#myModal').modal('hide');
-      }else{
-        let oldState = store.state.oldState;
-        store.commit("setProgramState",oldState);
-      }
-    },
-    setStart:function(){
-      this.fetchData(programStartUrl);
-    },
-    setFinish:function(){
-      this.fetchData(programfinishUrl);
-    },
-    setCancel:function(){
-      this.fetchData(programCancelUrl);
-    },
-    resetData:function(){
-      store.commit("setIsRefresh",true);
+      },
+      //设置进行中
+      setStart: function () {
+        this.fetchData(programStartUrl);
+      },
+      //设置已完成
+      setFinish: function () {
+        this.fetchData(programFinishUrl);
+      },
+      //设置已作废
+      setCancel: function () {
+        this.fetchData(programCancelUrl);
+      },
     }
   }
-}
 
-</script> 
+</script>
 
 <style scoped lang="scss">
-.modal{
-  .modal-dialog{
-    max-width:350px;
-    min-width:200px;
-    position:absolute;
-    top:50%;
-    left:50%;
-    transform:translate(-50%, -50%);
-    .form-inline{
-      .form-group{
-        width:100%;
-        margin-bottom:10px;
-        label{
-          margin-right:10px;
-        }
-        .form-control{
-          width:254px;
-          border-radius:10px;
-        }
-      }
-    }
-    .btn_save{
-      width:100px;
-      color:#fff;
-      background-color:#00acec;
-    }
-    .btn_save:hover{
-      background-color:#808080;
-    }
-  }
-}
 </style>

@@ -1,121 +1,126 @@
 <template>
   <div class="programItemTable">
-    <datatable v-bind="$data"/>
+    <el-table
+      :data="tableData"
+      border
+      style="width: 100%">
+      <el-table-column
+        label="序列号"
+        prop="serialNo"
+        width="70"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="lineseat"
+        label="站位"
+        width="80"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        label="程序料号"
+        prop="materialNo"
+        width="150"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="quantity"
+        width="50"
+        label="数量"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        label="BOM料号/规格"
+        prop="specitification"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="position"
+        label="单板位置"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        width="60"
+        prop="materialType"
+        label="料别"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        label="操作"
+        align="center">
+        <template slot-scope="scope">
+          <el-button
+            type="primary"
+            size="mini"
+            @click="add(scope.row)"
+            icon="el-icon-plus">
+          </el-button>
+          <el-button
+            type="success"
+            size="mini"
+            @click="edit(scope.row)"
+            icon="el-icon-edit">
+          </el-button>
+          <el-button
+            type="danger"
+            size="mini"
+            @click="deleteRow(scope.row)"
+            icon="el-icon-delete">
+          </el-button>
+        </template>
+      </el-table-column>
+    </el-table>
   </div>
 </template>
 <script>
-  import Vue from 'vue'
-  import store from './../../../../../store'
+  import Bus from '../../../../../utils/bus'
+  import {mapActions,mapGetters} from 'vuex'
   import {axiosPost} from "./../../../../../utils/fetchData"
   import {programItemListUrl} from "./../../../../../config/globalUrl"
 
   export default {
     name: 'programItemTable',
-    data: () => ({
-      columns: [
-        {title:'序列号',field:'serialNo',colStyle: {'width': '50px'}},
-        {title: '站位', field: 'lineseat', colStyle: {'width': '60px'}},
-        {title: '程序料号', field: 'materialNo', colStyle: {'width': '120px'}},
-        {title: '数量', field: 'quantity', colStyle: {'width': '50px'}},
-        {title: 'BOM料号/规格', field: 'specitification', colStyle: {'width': '250px'}},
-        {title: '单板位置', field: 'position', colStyle: {'width': '120px'}},
-        {title: '料别', field: 'materialType', colStyle: {'width': '50px'}},
-        {title: '操作', field: 'operation', tdComp: 'ProgramItemOperation', colStyle: {'width': '100px'}}
-      ],
-      HeaderSettings: false,
-      fixHeaderAndSetBodyMaxHeight: 700,
-      data: [],
-      total: 0,
-      tblClass: 'table-bordered',
-      query: {"limit": 20, "offset": 0},
-      tblStyle: {
-        'padding': '10px 0',
-        'word-break': 'break-all',
-        'table-layout': 'fixed',
-        'color': '#666',
-        'text-align': 'center'
-      },
-    }),
+    props:{
+      id:String
+    },
     mounted() {
       this.getList();
     },
-    computed: {
-      programItemRefresh: function () {
-        return store.state.programItemRefresh;
-      },
-      isProgramItemRefresh: function () {
-        return store.state.isProgramItemRefresh;
-      }
-    },
-    watch: {
-      query: {
-        handler(query) {
-          this.filterData(query);
-        },
-        deep: true
-      },
-      programItemRefresh: function (val) {
-        if (val === true) {
-          store.commit("setProgramItemRefresh", false);
-          this.total = store.state.programItemList.length;
-          let index = store.state.operationIndex + 1;
-          let programItemOperationType = store.state.programItemOperationType;
-          if(this.query.offset % this.query.limit === 0 && this.total % this.query.limit === 0 && programItemOperationType === "delete"){
-            index = index -1;
-          }
-          if (index === this.total && index >= this.query.limit) {
-            let a = (index - this.query.limit) % this.query.limit;
-            let b = parseInt((index - this.query.limit) / this.query.limit);
-            if (a !== 0) {
-              this.query.offset = b * this.query.limit + this.query.limit;
-            } else {
-              this.query.offset = b * this.query.limit;
-            }
-          }
-          this.filterData(this.query);
-        }
-      },
-      isProgramItemRefresh: function (val) {
-        if (val === true) {
-          store.commit("setIsProgramItemRefresh", false);
-          this.getList();
-        }
+    computed:{
+      ...mapGetters(['programItemList','operations']),
+      tableData:function () {
+        return this.programItemList;
       }
     },
     methods: {
+      ...mapActions(['setLoading','setProgramItemList','setOperations']),
       fetchData: function (options) {
         axiosPost(options).then(response => {
-          store.commit("setLoading", false);
+          this.setLoading(false);
           if (response.data) {
             if (response.data) {
               let result = response.data;
-              let list = this.handleArr(result);
-              this.total = list.length;
-              store.commit("setProgramItemList", list);
-              this.filterData(this.query);
+              this.setProgramItemList(this.handleArr(result));
+              this.setOperations([]);
             }
           }
         }).catch(err => {
-          store.commit("setLoading", false);
-          alert("接口请求失败，请检查网络，再联系管理员");
+          this.setLoading(false);
+          this.$alertError("接口请求失败，请检查网络，再联系管理员");
         });
       },
+      //查询
       getList: function () {
-        store.commit("setLoading", true);
+        this.setLoading(true);
         let options = {
           url: programItemListUrl,
           data: {
-            id: store.state.program.id,
+            id: this.id,
             orderBy: 'create_time desc'
           }
-        }
+        };
         this.fetchData(options);
       },
-      filterData: function (query) {
-        let list = store.state.programItemList;
-        let dataShow = list.slice(query.offset, query.offset + query.limit);
-        this.data = dataShow;
-      },
+      //信息处理
       handleArr: function (arr) {
         let result = [];
         for (let i = 0; i < arr.length; i++) {
@@ -124,69 +129,57 @@
           } else {
             arr[i]["materialType"] = "主料";
           }
+          arr[i]["index"] = i;
           result.push(arr[i]);
         }
         return result;
       },
-    }
-  }
-
-  export const ProgramItemOperation = Vue.component('ProgramItemOperation', {
-    template: `<span>
-      <span title="添加" @click.stop.prevent="add(row)" style="padding-right:8px;cursor:pointer">
-        <icon name="add" scale="2.5"></icon>
-      </span>
-      <span title="编辑" @click.stop.prevent="update(row)" style="padding-right:8px;cursor:pointer">
-        <icon name="edit" scale="2.5"></icon>
-      </span>
-      <span title="删除" @click.stop.prevent="deleteRow(row)" style="cursor:pointer">
-        <icon name="delete" scale="2.5"></icon>
-      </span>
-    </span>`,
-    props: ['row'],
-    computed: {
-      programItemList: function () {
-        return store.state.programItemList;
-      }
-    },
-    methods: {
-      add(row) {
-        let index = this.findIndex(row);
-        store.commit("setOperationIndex", index);
-        store.commit("setProgramItem", row);
-        store.commit("setProgramItemOperationType", "add");
-        store.commit("setIsAdd", true);
+      //添加
+      add:function(row){
+        Bus.$emit('addProgramItem',row);
       },
-      update(row) {
-        let index = this.findIndex(row);
-        store.commit("setOperationIndex", index);
-        store.commit("setProgramItem", row);
-        store.commit("setProgramItemOperationType", "update");
-        store.commit("setIsUpdate", true);
+      //修改
+      edit:function(row){
+        Bus.$emit('editProgramItem',row);
       },
-      deleteRow(row) {
-        let index = this.findIndex(row);
-        store.commit("setOperationIndex", index);
-        store.commit("setProgramItem", row);
-        store.commit("setProgramItemOperationType", "delete");
-        store.commit("setIsDelete", true);
-      },
-      findIndex(row) {
-        let programItemList = store.state.programItemList;
-        let len = programItemList.length;
-        let index = programItemList.length - 1;
-        for (let i = 0; i < len; i++) {
-          if (programItemList[i] === row) {
-            index = i;
+      //删除
+      deleteRow:function(row){
+        //刷新
+        for(let i = 0;i<this.programItemList.length;i++){
+          let item = this.programItemList[i];
+          if(item.index === row.index){
+            this.programItemList.splice(i,1);
+            break;
           }
         }
-        return index;
+        for(let i = 0;i<this.programItemList.length;i++){
+          this.programItemList[i].index = i;
+        }
+        //添加到操作列表
+        let obj = {
+          operation:2,
+          targetLineseat:row.lineseat,
+          targetMaterialNo:row.materialNo,
+          programId:row.programId,
+          lineseat:row.lineseat,
+          alternative:row.alternative,
+          materialNo:row.materialNo,
+          specitification:row.specitification,
+          position:row.position,
+          serialNo:row.serialNo,
+          quantity:row.quantity
+        };
+        this.operations.push(obj);
       }
     }
-  });
+  }
 </script>
-<style lang="scss">
-  .-table-body .table tr td {
-    vertical-align: middle;
+
+<style lang="scss" scoped>
+  .programItemTable {
+    padding: 24px;
+    border: 1px solid #ebebeb;
+    border-radius: 3px;
+    background: #fff;
   }
 </style>

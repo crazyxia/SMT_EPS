@@ -1,185 +1,162 @@
 <template>
-  <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="myModalLabel">
-            {{message}}
-          </h5>
-          <button type="button" class="close" data-dismiss="modal" aria-hidden="true" @click="finishOperation">&times;</button>
-        </div>
-        <div class="modal-body">
-          <form class="form" role="form">
-            <div class="form-group">
-              <label for="materialNo">料号</label>
-              <input type="text" class="form-control" id="materialNo" v-model.trim="modalInfo.materialNo" :disabled="isDisabled">
-            </div>
-            <div class="form-group">
-              <label for="perifdOfValidity">保质期(天)</label>
-              <input type="text" class="form-control" id="perifdOfValidity" v-model.trim="modalInfo.perifdOfValidity">
-            </div>
-          </form>  
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn_save" @click="save">保存</button>
-        </div>
-      </div>
-    </div>
+  <div>
+    <el-dialog
+      title="添加物料"
+      :show-close="showClose"
+      @close="close"
+      :close-on-click-modal="isCloseOnModal"
+      :close-on-press-escape="isCloseOnModal"
+      :visible.sync="addDialogVisible"
+      width="400px">
+      <el-form label-width="100px" label-position="right">
+        <el-form-item label="料号">
+          <el-input v-model.trim="materialInfo.materialNo" size="large"></el-input>
+        </el-form-item>
+        <el-form-item label="保质期（天）">
+          <el-input v-model.trim="materialInfo.perifdOfValidity" size="large"></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="addDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="add">确 定</el-button>
+      </span>
+    </el-dialog>
+    <el-dialog
+      title="修改物料"
+      :close-on-click-modal="isCloseOnModal"
+      :close-on-press-escape="isCloseOnModal"
+      :visible.sync="editDialogVisible"
+      width="400px">
+      <el-form label-width="100px" label-position="right">
+        <el-form-item label="料号">
+          <el-input v-model.trim="editData.materialNo" size="large" :disabled="true"></el-input>
+        </el-form-item>
+        <el-form-item label="保质期（天）">
+          <el-input v-model.trim="editData.perifdOfValidity" size="large"></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="editDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="edit">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import store from './../../../../store'
-import {materialTip} from "./../../../../utils/formValidate"
-import {axiosPost} from "./../../../../utils/fetchData"
-import {addMaterialUrl,updateMaterialUrl} from "./../../../../config/globalUrl"
-import {errTip} from './../../../../utils/errorTip'
-export default {
-  name:'materialModal',
-  data () {
-    return {
-      isDisabled:false
-    }
-  },
-  computed:{
-    message:function(){
-      let operationType = store.state.materialOperationType;
-      if(operationType === "update"){
-        this.isDisabled = true;
-        return "修改信息";
-      }else if(operationType === "add"){
-        this.isDisabled = false;
-        return "添加信息";
+  import Bus from '../../../../utils/bus'
+  import {materialTip} from "./../../../../utils/formValidate"
+  import {axiosPost} from "./../../../../utils/fetchData"
+  import {addMaterialUrl, updateMaterialUrl} from "./../../../../config/globalUrl"
+  import {errTip} from './../../../../utils/errorTip'
+
+  export default {
+    name: 'materialModal',
+    data() {
+      return {
+        addDialogVisible: false,
+        editDialogVisible: false,
+        materialInfo: {
+          materialNo: '',
+          perifdOfValidity: ''
+        },
+        editData: {
+          id: '',
+          materialNo: '',
+          perifdOfValidity: ''
+        },
+        isCloseOnModal: false,
+        showClose: true
       }
     },
-    modalInfo:function(){
-      let material = store.state.material;;
-      let obj = {};
-      obj.id = material.id;
-      obj.materialNo = material.materialNo;
-      obj.perifdOfValidity =material.perifdOfValidity;
-      return obj;
+    beforeDestroy() {
+      //取消监听
+      Bus.$off('addMaterial');
+      Bus.$off('editMaterial');
     },
-    isAdd:function(){
-      return store.state.isAdd;
+    mounted() {
+      //监听物料添加事件
+      Bus.$on('addMaterial', () => {
+        this.reset();
+        this.addDialogVisible = true;
+      });
+      //监听物料修改事件
+      Bus.$on('editMaterial', (editData) => {
+        this.editData.id = editData.id;
+        this.editData.materialNo = editData.materialNo;
+        this.editData.perifdOfValidity = editData.perifdOfValidity;
+        this.editDialogVisible = true;
+      })
     },
-    isUpdate:function(){
-      return store.state.isUpdate;
-    }
-  },
-  watch:{
-    isAdd:function(val){
-      if(val === true){
-        store.commit("setIsAdd",false);
-        $('#myModal').modal({backdrop:'static', keyboard: false});
-      }
-    },
-    isUpdate:function(val){
-      if(val === true){
-        store.commit("setIsUpdate",false);
-        $('#myModal').modal({backdrop:'static', keyboard: false});
-      }
-    }
-  },
-  methods:{
-    add:function(){
-      let options ={
-        url:addMaterialUrl,
-        data:{
-          materialNo:this.modalInfo.materialNo,
-          perifdOfValidity:this.modalInfo.perifdOfValidity,
+    methods: {
+      add: function () {
+        let result = materialTip(this.materialInfo);
+        if (result !== '') {
+          this.$alertWarning(result);
+          return;
         }
-      }
-      axiosPost(options).then(response => {
-        if (response.data) {
-          let result = response.data.result;
-          if(result === "succeed"){
-            alert("添加成功");
-            let infos = {
-              materialNo:"",
-              perifdOfValidity:"",
+        let options = {
+          url: addMaterialUrl,
+          data: {
+            materialNo: this.materialInfo.materialNo,
+            perifdOfValidity: this.materialInfo.perifdOfValidity,
+          }
+        };
+        axiosPost(options).then(response => {
+          if (response.data) {
+            let result = response.data.result;
+            if (result === "succeed") {
+              this.$alertSuccess("添加成功");
+              this.reset();
+            } else {
+              this.$alertWarning(errTip(result));
             }
-            store.commit("setMaterial",infos);
-          }else{
-            errTip(result);
           }
+        }).catch(err => {
+          this.$alertError("error:" + JSON.stringify(err));
+        });
+      },
+      edit: function () {
+        let result = materialTip(this.editData);
+        if (result !== '') {
+          this.$alertWarning(result);
+          return;
         }
-      }).catch(err => {
-        alert("error:" + JSON.stringify(err));
-      });
-    },
-    update:function(){
-      let options ={
-        url:updateMaterialUrl,
-        data:{
-          id:this.modalInfo.id,
-          materialNo:this.modalInfo.materialNo,
-          perifdOfValidity:this.modalInfo.perifdOfValidity,
-        }
-      };
-      axiosPost(options).then(response => {
-        if (response.data) {
-          let result = response.data.result;
-          if(result === "succeed"){
-            alert("修改成功");
-            $('#myModal').modal('hide');
-            store.commit("setIsRefresh",true);
-          }else{
-            errTip(result);
+        let options = {
+          url: updateMaterialUrl,
+          data: {
+            id: this.editData.id,
+            materialNo: this.editData.materialNo,
+            perifdOfValidity: this.editData.perifdOfValidity,
           }
-        }
-      }).catch(err => {
-        alert("请求接口失败，请先检查网络，再联系管理员");
-      });
-    },
-    save:function(){
-      if(materialTip(this.modalInfo)){
-        let operationType = store.state.materialOperationType;
-        if(operationType === "add"){
-          this.add();
-        }else if(operationType === "update"){
-          this.update();
-        }
+        };
+        axiosPost(options).then(response => {
+          if (response.data) {
+            let result = response.data.result;
+            if (result === "succeed") {
+              this.$alertSuccess("修改成功");
+              this.editDialogVisible = false;
+              Bus.$emit('refreshMaterial', true);
+            } else {
+              this.$alertWarning(errTip(result));
+            }
+          }
+        }).catch(err => {
+          this.$alertError("请求接口失败，请先检查网络，再联系管理员");
+        });
+      },
+      close: function () {
+        this.addDialogVisible = false;
+        Bus.$emit('refreshMaterial', true);
+      },
+      reset: function () {
+        this.materialInfo.materialNo = '';
+        this.materialInfo.perifdOfValidity = '';
       }
-    },
-    finishOperation:function(){
-      store.commit("setIsRefresh",true);
     }
   }
-}
 
-</script> 
+</script>
 
 <style scoped lang="scss">
-.modal{
-  .modal-dialog{
-    max-width:300px;
-    min-width:200px;
-    position:absolute;
-    top:50%;
-    left:50%;
-    transform:translate(-50%, -50%);
-    .form{
-      .form-group{
-        width:100%;
-        margin-bottom:10px;
-        label{
-          margin-right:10px;
-        }
-        .form-control{
-          width:204px;
-          border-radius:10px;
-        }
-      }
-    }
-    .btn_save{
-      width:100px;
-      color:#fff;
-      background-color:#00acec;
-    }
-    .btn_save:hover{
-      background-color:#808080;
-    }
-  }
-}
 </style>

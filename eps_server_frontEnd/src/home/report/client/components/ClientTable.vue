@@ -1,116 +1,165 @@
 <template>
   <div class="clientTable">
-    <datatable v-bind="$data" />
+    <el-table
+      :data="tableData"
+      border
+      style="width: 100%">
+      <el-table-column
+        label="线号"
+        width="70"
+        prop="line"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="workOrderNo"
+        label="工单号"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        label="槽位"
+        prop="lineseat"
+        width="80"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="materialNo"
+        label="物料编号"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        label="物料描述"
+        prop="materialDescription"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="materialSpecitification"
+        label="物料规格"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        label="操作类型"
+        width="80px"
+        prop="operationType"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        label="操作者"
+        prop="operator"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        label="操作时间"
+        prop="time"
+        width="200"
+        align="center">
+      </el-table-column>
+    </el-table>
+    <div class="block">
+      <span class="now">第 {{currentPage}} 页</span>
+      <el-pagination
+        background
+        :current-page.sync="currentPage"
+        :page-size="pageSize"
+        @size-change="handleSizeChange"
+        @current-change="find"
+        :page-sizes="[20, 40, 80, 100]"
+        layout="sizes, prev, pager, next">
+      </el-pagination>
+    </div>
   </div>
 </template>
 <script>
-import store from './../../../../store'
-import {axiosPost} from "./../../../../utils/fetchData"
-import {clientReportListUrl} from "./../../../../config/globalUrl"
-export default {
-  name:'clientTable',
-  props:['clientInfos'],
-  data: () => ({
-    columns: [
-      { title:'线号', field:'line',colStyle: {'width': '80px'}},
-      { title:'工单号', field:'workOrderNo',colStyle: {'width': '100px'} },
-      { title:'槽位', field:'lineseat',colStyle: {'width': '80px'}},
-      { title:'物料编号', field:'materialNo', colStyle: {'width': '120px'}},
-      { title:'物料描述', field:'materialDescription', colStyle: {'width': '100px'}},
-      { title:'物料规格', field:'materialSpecitification' , colStyle: {'width': '250px'}},
-      { title:'操作类型', field:'operationType',colStyle: {'width': '100px'}},
-      { title:'操作者', field:'operator', colStyle: {'width': '100px'}},
-      { title:'操作时间', field:'time' , colStyle: {'width': '150px'}}
-    ],
-    HeaderSettings:false,
-    fixHeaderAndSetBodyMaxHeight:700,
-    data: [],
-    total:0,
-    tblClass: 'table-bordered',
-    query: {"limit":20, "offset": 0},
-    tblStyle: {
-      'padding':'10px 0',
-      'word-break': 'break-all',
-      'table-layout': 'fixed',
-      'color':'#666',
-      'text-align':'center'
+  import Bus from '../../../../utils/bus'
+  import {mapActions,mapGetters} from 'vuex'
+  import {axiosPost} from "./../../../../utils/fetchData"
+  import {clientReportListUrl} from "./../../../../config/globalUrl"
+
+  export default {
+    name: 'clientTable',
+    data() {
+      return {
+        tableData: [],
+        currentPage: 1,
+        pageSize: 20,
+      }
     },
-    page:{},
-    currentPage:1,
-    pageSize:20
-  }),
-  computed:{
-    clientList:function(){
-      return store.state.clientList;
+    computed:{
+      ...mapGetters(['clientPage','client'])
     },
-    isFind:function(){
-      return store.state.isFind;
-    }
-  },
-  watch: {
-    query: {
-      handler (query) {
-          this.filterData(query);
-      },
-      deep: true
+    beforeDestroy(){
+      //取消监听
+      Bus.$off('findClient');
     },
-    isFind:function(val){
-      if(val === true){
+    mounted(){
+      this.find();
+      //监听查找客户报表事件
+      Bus.$on('findClient',() => {
         this.currentPage = 1;
         this.pageSize = 20;
-        this.query.limit = 20;
-        this.query.offset = 0;
-        store.commit("setIsFind",false);
-        this.getList();
-      }
+        this.setClientPage(-1);
+        this.find();
+      })
     },
-    page:function(val){
-      if(val!=={} && val !== undefined){
-        this.currentPage = this.page.currentPage;
-        this.pageSize = this.page.pageSize;
-        this.total = this.page.totallyData;
-      }
-    }
-  },
-  methods:{
-    fetchData:function(options){
-      axiosPost(options).then(response => {
-        store.commit("setLoading",false);
-        if (response.data) {
-          let result = response.data;
-          if(result.page && result.list){
-            this.page = result.page;
-            this.data = result.list;
-            this.$emit('getDownloadInfo',result.page.currentPage,result.page.pageSize,this.clientInfos);
+    methods: {
+      ...mapActions(['setLoading','setClient','setClientPage']),
+      fetchData: function (options) {
+        axiosPost(options).then(response => {
+          this.setLoading(false);
+          if (response.data.list) {
+            let result = response.data.list;
+            let page = response.data.page;
+            if(result.length>0 || result.length<=0 && this.currentPage === 1){
+              this.tableData = result;
+            }else{
+              if(this.clientPage === -1){
+                this.setClientPage(page.currentPage - 1)
+              }
+              this.currentPage = this.clientPage;
+              this.$alertInfo('当前是最后一页');
+            }
           }
-          store.commit("setLoading",false);
-        }
-      }).catch(err => {
-        store.commit("setLoading",false);
-        alert("网络错误，请先检查网络，再连接联系管理员");
-      });
-    },
-    getList:function(){
-      store.commit("setLoading",true);
-      let options = {
-        url:clientReportListUrl,
-        data:this.clientInfos
-      };
-      options.data["currentPage"]=this.currentPage;
-      options.data["pageSize"]=this.pageSize;
-      this.fetchData(options);
-    },
-    filterData:function(query){
-      this.pageSize = query.limit;
-      this.currentPage = query.offset / query.limit + 1;
-      this.getList();
+        }).catch(err => {
+          this.setLoading(false);
+          this.$alertError("网络错误，请先检查网络，再连接联系管理员");
+        });
+      },
+      find: function () {
+        this.setLoading(true);
+        let options = {
+          url: clientReportListUrl,
+          data: this.client
+        };
+        options.data["currentPage"] = this.currentPage;
+        options.data["pageSize"] = this.pageSize;
+        this.fetchData(options);
+      },
+      handleSizeChange: function (pageSize) {
+        this.pageSize = pageSize;
+        this.currentPage = 1;
+        this.setClientPage(-1);
+        this.find();
+      }
     }
   }
-}
 
 </script>
-<style lang="scss">
-.-table-body .table tr td{
-  vertical-align:middle;
-}
+<style lang="scss" scoped>
+  .clientTable {
+    padding: 24px;
+    border: 1px solid #ebebeb;
+    border-radius: 3px;
+    background: #fff;
+    .block {
+      display: flex;
+      margin-top: 10px;
+      .now {
+        display: inline-block;
+        height: 32px;
+        line-height: 32px;
+        font-size: 14px;
+        color: #606266;
+        margin-right: 10px;
+      }
+    }
+  }
 </style>

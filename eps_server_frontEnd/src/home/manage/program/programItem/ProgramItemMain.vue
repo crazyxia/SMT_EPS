@@ -1,212 +1,104 @@
 <template>
   <div class="programDetail">
     <p class="tip">提示：编辑完成之后请记得点击保存</p>
-    <form class="form-inline" role="form">
-      <span title="返回" @click="returnToProgram"><icon name="returnB" scale="4"></icon></span>
-      <div class="form-group">
-        <label for="workOrder">工单</label>
-        <input type="text" class="form-control" id="workOrder" v-model.trim="programInfos.workOrder" disabled="disabled">
-      </div>
-      <div class="form-group">
-        <label for="boardType">版面</label>
-        <input type="text" class="form-control" id="boardType" v-model.trim="programInfos.boardTypeName" disabled="disabled" >
-      </div>
-      <div class="form-group">
-        <label for="line">线号</label>
-        <input type="text" class="form-control" id="line" v-model.trim="programInfos.lineName" disabled="disabled" >
-      </div>
-      <div class="btn-group">
-        <button type="button" class="btn btn_add" @click="addModal">追加</button>
-        <button type="button" class="btn btn_conserve" @click="save">保存</button>
-      </div>
-    </form>
-    <ProgramItemTable></ProgramItemTable>
-    <ProgramItemModal @getModalInfo="getModalMessage"></ProgramItemModal>
+    <el-form :inline="true" :model="programInfo" class="demo-form-inline">
+      <el-form-item>
+        <span title="返回" @click="returnToProgram"><icon name="returnB" scale="4"></icon></span>
+      </el-form-item>
+      <el-form-item label="工单">
+        <el-input v-model.trim="programInfo.workOrder" placeholder="工单" :disabled="true"></el-input>
+      </el-form-item>
+      <el-form-item label="版面">
+        <el-input v-model.trim="programInfo.boardTypeName" placeholder="版面" :disabled="true"></el-input>
+      </el-form-item>
+      <el-form-item label="线号">
+        <el-input v-model.trim="programInfo.lineName" placeholder="线号" :disabled="true"></el-input>
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" @click="lastAdd">追加</el-button>
+        <el-button type="primary" @click="save">保存</el-button>
+      </el-form-item>
+    </el-form>
+    <!--表格-->
+    <program-item-table :id="programInfo.id"></program-item-table>
+    <!--模态框-->
+    <ProgramItemModal></ProgramItemModal>
   </div>
 </template>
 
 <script>
-import store from './../../../../store'
-import ProgramItemTable from './components/ProgramItemTable'
-import ProgramItemModal from './components/ProgramItemModal'
-import {axiosPost} from "./../../../../utils/fetchData"
-import {updateProgramItemUrl} from "./../../../../config/globalUrl"
-import {errTip} from './../../../../utils/errorTip'
-export default {
-  name:'programDetail',
-  top:"",
-  data () {
-    return {
-      operations:[],
-      operationItem:{
-        serialNo:"",
-        operation:"",
-        targetLineseat:"",
-        targetMaterialNo:"",
-        programId:store.state.program.id,
-        lineseat:"",
-        alternative:"",
-        materialNo:"",
-        specitification:"",
-        position:"",
-        quantity:0
+  import Bus from '../../../../utils/bus'
+  import {mapGetters,mapActions} from 'vuex'
+  import ProgramItemTable from './components/ProgramItemTable'
+  import ProgramItemModal from './components/ProgramItemModal'
+  import {axiosPost} from "./../../../../utils/fetchData"
+  import {updateProgramItemUrl} from "./../../../../config/globalUrl"
+  import {errTip} from './../../../../utils/errorTip'
+
+  export default {
+    name: 'programDetail',
+    data() {
+      return {}
+    },
+    components: {
+      ProgramItemTable, ProgramItemModal
+    },
+    computed: {
+      ...mapGetters(['programInfo','operations'])
+    },
+    methods: {
+      ...mapActions(['setLoading','setOperations']),
+      //返回
+      returnToProgram: function () {
+        this.$emit('setIsShow',true);
       },
-      modalInfo:{}
-    }
-  },
-  created(){
-    store.commit("setIsProgramItemRefresh", false);
-  },
-  components:{
-    ProgramItemTable,ProgramItemModal
-  },
-  computed:{
-    programInfos:function(){
-      return store.state.program;
-    },
-    programItemInfos:function(){
-      return store.state.programItem;
-    },
-    programItemList:function(){
-      return store.state.programItemList;
-    },
-    isDelete:function(){
-      return store.state.isDelete;
-    }
-  },
-  watch:{
-    isDelete:function(val){
-      if(val === true){
-        store.commit("setIsDelete",false);
-        let index = store.state.operationIndex;
-        this.programItemList.splice(index,1);
-        store.commit("setProgramItemRefresh",true);
-        let programItemInfos = this.programItemInfos;
-        this.modalInfo ={
-          serialNo: programItemInfos.serialNo,
-          lineseat: programItemInfos.lineseat,
-          materialType: programItemInfos.materialType,
-          materialNo: programItemInfos.materialNo,
-          specitification: programItemInfos.specitification,
-          position: programItemInfos.position,
-          quantity: programItemInfos.quantity
-        };
-        this.setOptionItem();
-      }
-    }
-  },
-  methods:{
-    returnToProgram:function(){
-      store.commit("setProgramItemShow",false);
-    },
-    setOptionItem:function(){
-      let opera = this.operationItem;
-      let item = this.programItemInfos;
-      let operationType = store.state.programItemOperationType;
-      if(operationType === "add"){
-        opera.operation = 0;
-      }else if(operationType === "update"){
-        opera.operation = 1;
-      }else if(operationType === "delete"){
-        opera.operation = 2;
-      }
-      opera.targetLineseat = item.lineseat;
-      opera.targetMaterialNo = item.materialNo;
-      opera.lineseat = this.modalInfo.lineseat;
-      if(this.modalInfo.materialType === "主料"){
-        opera.alternative = false;
-      }else{
-        opera.alternative = true;
-      }
-      opera.serialNo = this.modalInfo.serialNo;
-      opera.materialNo = this.modalInfo.materialNo;
-      opera.specitification = this.modalInfo.specitification;
-      opera.position = this.modalInfo.position;
-      opera.quantity = this.modalInfo.quantity;
-      this.operations.push(opera);
-      this.modalInfo = {};
-      this.resetOperation();
-      store.commit("setProgramItem",{});
-    },
-    getModalMessage:function(data){
-      this.modalInfo = data;
-      this.setOptionItem();
-    },
-    save:function(){
-      if(this.operations.length <= 0){
-        alert("请编辑后再点击保存");
-      }else{
-        this.updateProgramItem();
-      }
-    },
-    addModal:function(){
-      let programItem = {
-        lineseat:"",
-        alternative:"",
-        materialNo:"",
-        specitification:"",
-        position:"",
-        quantity:""
-      };
-      store.commit("setOperationIndex",this.programItemList.length);
-      store.commit("setProgramItemOperationType","add");
-      store.commit("setProgramItem",programItem);
-      store.commit("setIsAdd",true);
-    },
-    resetOperation:function(){
-      this.operationItem = {
-        serialNo:0,
-        operation:"",
-        targetLineseat:"",
-        targetMaterialNo:"",
-        programId:store.state.program.id,
-        lineseat:"",
-        alternative:"",
-        materialNo:"",
-        specitification:"",
-        position:"",
-        quantity:0
-      }
-    },
-    updateProgramItem:function(){
-      store.commit("setLoading",true);
-      let options = {
-        url:updateProgramItemUrl,
-        data:{
-          operations:JSON.stringify(this.operations)
+      //编辑完成
+      save:function(){
+        //判断
+        if(this.operations.length <= 0){
+          this.$alertWarning('请编辑后再点击保存');
+          return;
         }
-      }
-      axiosPost(options).then(response => {
-        store.commit("setLoading",false);
-        if (response.data) {
-          let result = response.data.result;
-          if(result === "succeed"){
-            alert("编辑成功");
-            this.operations = [];
-            this.resetOperation();
-            this.returnToProgram();
-          }else{
-            errTip(result);
-            this.operations = [];
+        //请求
+        this.setLoading(true);
+        let options = {
+          url:updateProgramItemUrl,
+          data:{
+            operations:JSON.stringify(this.operations)
           }
-        }
-      }).catch(err => {
-        store.commit("setLoading",false);
-        alert("接口请求失败，请检查网络，再联系管理员");
-        this.operations = [];
-      });
-    },
+        };
+        axiosPost(options).then(response => {
+          this.setLoading(false);
+          this.setOperations([]);
+          if (response.data) {
+            let result = response.data.result;
+            if(result === "succeed"){
+              this.$alertSuccess("编辑成功");
+              this.returnToProgram();
+            }else{
+              this.$alertWarning(errTip(result));
+            }
+          }
+        }).catch(err => {
+          this.setLoading(false);
+          this.setOperation([]);
+          this.$alertError("接口请求失败，请检查网络，再联系管理员");
+        });
+      },
+      //追加
+      lastAdd:function () {
+        Bus.$emit('addLastProgramItem',this.programInfo.id);
+      }
+    }
   }
-}
 </script>
 
 <style scoped lang="scss">
-  .tip{
-    font-size:20px;
-    color:red;
-    border-bottom:1px solid #ddd;
-    margin-bottom:10px;
-    padding-bottom:10px;
+  .tip {
+    font-size: 15px;
+    color: red;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
   }
-@import '@/assets/css/common.scss';
 </style>

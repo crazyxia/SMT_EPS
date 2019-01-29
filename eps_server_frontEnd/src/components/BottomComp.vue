@@ -3,7 +3,7 @@
     <div class="comp-wrap" v-for="item in operationGroup">
       <div class="bottom-left-comp">
         <div class="pointer">
-          <span>{{line[mark].line}}线: {{item.name}}</span>
+          <span>{{lines[mark].line}}线: {{item.name}}</span>
         </div>
         <div class="bottom-comp-style" :class="'bottom-comp-' + item.value">
           <canvas :id="'bottom-comp-' + item.value" width="100" height="100"></canvas>
@@ -20,7 +20,7 @@
 </template>
 
 <script>
-  import store from '../store'
+  import {mapGetters} from 'vuex';
   import {getChartsConf} from "../config/ChartsConfig";
 
   export default {
@@ -55,12 +55,7 @@
       }
     },
     computed:{
-      line:function(){
-        return store.state.lines;
-      },
-      lineSize:function(){
-        return store.state.lineSize;
-      }
+      ...mapGetters(['lineSize','lines','lineAllDayData'])
     },
     mounted() {
       /*获取对应canvas*/
@@ -184,7 +179,7 @@
     },
     methods: {
       getUpdatedConf: function (index) {
-        return store.state.lineAllDayData[index];
+          return this.lineAllDayData[index];
       },
       initChart: function (ctx, srcConfig, updatedConfig) {
         return new Promise(resolve => {
@@ -204,7 +199,7 @@
 
 <style scoped>
   .bottom-comp {
-    width: 19.2rem;
+    width:100%;
     height: 3.6rem;
     background: #333333;
     display: flex;

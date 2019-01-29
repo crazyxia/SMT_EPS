@@ -2,39 +2,37 @@
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue'
 
-import 'bootstrap/dist/css/bootstrap.min.css' 
+import ElementUI from 'element-ui';
+import 'element-ui/lib/theme-chalk/index.css';
 
 import App from './App'
 import router from './router'
-import locale from './locale/zh-cn'
 import axios from './config/http'
-/*store*/
-import store from './store'
 import Chart from 'chart.js'
+import store from './store'
 
-/*bootstrap*/import 'bootstrap/dist/js/bootstrap.min.js'
-
-/*vue2-datatable-component*/
-import Datatable from 'vue2-datatable-component'
-Vue.use(Datatable,{locale})
-
-/*svg*/
 import Icon from 'vue-svg-icon/Icon.vue'
-Vue.component('icon', Icon) 
+Vue.component('icon', Icon) ;
 
-/*font-awesome*/
-import 'font-awesome/css/font-awesome.css'
-
-/*jquery*/
 import $ from 'jquery' 
-window.jQuery = $
-Vue.prototype.$axios = axios
+window.jQuery = $;
+
+Vue.use(ElementUI);
+
+import {alertError, alertInfo, alertSuccess,alertWarning} from "./utils/modal";
+Vue.prototype.$alertError = alertError;
+Vue.prototype.$alertInfo = alertInfo;
+Vue.prototype.$alertSuccess = alertSuccess;
+Vue.prototype.$alertWarning = alertWarning;
+
+Vue.prototype.$axios = axios;
 Vue.prototype.Chart = Chart;
-Vue.config.productionTip = false
+Vue.config.productionTip = false;
 new Vue({
   el: '#app',
   router,
+  store,
   components: { App },
   template: '<App/>'
-})
+});
 

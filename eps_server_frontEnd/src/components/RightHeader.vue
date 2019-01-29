@@ -1,46 +1,30 @@
 <template>
   <div class="rightHeader">
     <div>
-      <span @click="fold"><icon :name="img" scale="3"></icon></span>
-      <span>{{message}}</span>
+      <span @click="fold"><icon :name="iconName" scale="2"></icon></span>
+      <span>{{navTitle}}</span>
     </div>
-    <span @click="close" class="return"><icon name="return" scale="4" ></icon></span>
+    <span @click="close" class="return"><icon name="return" scale="3" ></icon></span>
   </div>
 </template>
 
 <script>
 export default {
   name:'rightHeader',
-  props:['imgSrc','navTitle'],
+  props:{
+    iconName:String,
+    navTitle:String
+  },
   data(){
     return {
-      message:"首页",
-      img:"rightArrow",
       foldWidth:1100
-    }
-  },
-  watch:{
-    imgSrc:function(newQuestion, oldQuestion) {
-      if(newQuestion){
-        this.img = "leftArrow";
-      }else{
-        this.img = "rightArrow";
-      }
-    },
-    navTitle:function(newQuestion, oldQuestion){
-      this.message = newQuestion;
     }
   },
   methods:{
     fold:function(){
       let width = window.innerWidth;
       if(width > this.foldWidth){
-        let index = 0;
-        if(this.img == "rightArrow"){
-          index = 1;    // 折叠
-        }else{
-          index = 2;    // 弹出
-        }
+        let index = this.iconName === "rightArrow"?1:2;
         this.$emit("isFold",index);
       }
     },
@@ -53,13 +37,13 @@ export default {
 
 <style scoped lang="scss">
   .rightHeader{
-    background:#188AE2;
+    width:100%;
+    height:100%;
+    background: #00B7FF;
     display:flex;
     flex-wrap:nowrap;
     align-items:center;
     justify-content:space-between;
-    padding:0 20px;
-    height:60px;
     div{
       display:flex;
       flex-wrap:nowrap;
@@ -68,7 +52,7 @@ export default {
         cursor:pointer;
       }
       span:last-child{
-        font-size:20px;
+        font-size:18px;
         color:#fff;
         padding-left:20px;
       }

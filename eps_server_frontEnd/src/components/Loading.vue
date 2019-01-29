@@ -19,7 +19,7 @@
     position: absolute;
     display: flex;
     width: 100%;
-    height:calc(100% - 60px);
+    height:100%;
     justify-content: center;
     align-items: center;
   }

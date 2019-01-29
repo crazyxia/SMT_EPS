@@ -9,7 +9,7 @@
 </template>
 
 <script>
-  import store from './../store'
+  import {mapGetters} from 'vuex';
   import {getChartsConf} from "../config/ChartsConfig";
   export default {
     name: "SideComp",
@@ -17,12 +17,7 @@
       return {}
     },
     computed:{
-      lineSize:function(){
-        return store.state.lineSize
-      },
-      lines:function(){
-        return store.state.lines;
-      }
+      ...mapGetters(['lineSize','lines'])
     },
     mounted() {
       let sideCompCanvas = document.getElementById('side-comp-canvas');

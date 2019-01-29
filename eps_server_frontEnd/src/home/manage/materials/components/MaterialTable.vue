@@ -1,178 +1,174 @@
 <template>
-  <div class="MaterialTable">
-    <datatable v-bind="$data"/>
+  <div class="materialTable">
+    <el-table
+      :data="tableData"
+      border
+      style="width: 100%">
+      <el-table-column
+        label="料号"
+        prop="materialNo"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="perifdOfValidity"
+        label="保质期（天）"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        label="操作"
+        align="center">
+        <template slot-scope="scope">
+          <el-button
+            type="primary"
+            size="mini"
+            @click="edit(scope.row)"
+            icon="el-icon-edit">编辑
+          </el-button>
+          <el-button
+            type="danger"
+            size="mini"
+            @click="deleteRow(scope.row)"
+            icon="el-icon-delete">删除
+          </el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+    <div class="block">
+      <span class="now">第 {{currentPage}} 页</span>
+      <el-pagination
+        background
+        :current-page.sync="currentPage"
+        :page-size="pageSize"
+        @size-change="handleSizeChange"
+        @current-change="find"
+        :page-sizes="[20, 40, 80, 100]"
+        layout="sizes, prev, pager, next">
+      </el-pagination>
+    </div>
   </div>
 </template>
 <script>
-  import Vue from 'vue'
-  import store from './../../../../store'
+  import Bus from '../../../../utils/bus'
+  import {mapActions,mapGetters} from 'vuex'
   import {axiosPost} from "./../../../../utils/fetchData"
   import {errTip} from "./../../../../utils/errorTip"
   import {materialListUrl, deleteMaterialUrl} from "./../../../../config/globalUrl"
-  import {judge} from "../../../../utils/formValidate";
 
   export default {
     name: 'materialTable',
-    props: ['materialInfos'],
-    data: () => ({
-      columns: [
-        {title: '料号', field: 'materialNo', colStyle: {'width': '100px'}},
-        {title: '保质期(天)', field: 'perifdOfValidity', colStyle: {'width': '80px'}},
-        {title: '操作', field: 'operation', tdComp: 'materialOperation', colStyle: {'width': '100px'}}
-      ],
-      HeaderSettings: false,
-      fixHeaderAndSetBodyMaxHeight: 700,
-      data: [],
-      total: 0,
-      tblClass: 'table-bordered',
-      query: {"limit": 20, "offset": 0},
-      tblStyle: {
-        'padding': '10px 0',
-        'word-break': 'break-all',
-        'table-layout': 'fixed',
-        'color': '#666',
-        'text-align': 'center'
-      },
-      currentPage: 1,
-      pageSize: 20
-    }),
-    computed: {
-      materialList: function () {
-        return store.state.materialList;
-      },
-      material: function () {
-        return store.state.material;
-      },
-      isRefresh: function () {
-        return store.state.isRefresh;
-      },
-      isFind: function () {
-        return store.state.isFind;
-      },
-      isDelete: function () {
-        return store.state.isDelete;
+    data() {
+      return {
+        tableData: [],
+        pageSize: 20,
+        currentPage: 1
       }
     },
-    watch: {
-      query: {
-        handler(query) {
-          this.filterData(query);
-        },
-        deep: true
-      },
-      isRefresh: function (val) {
-        if (val === true) {
-          this.resetMaterialInfos();
-          this.find();
-          store.commit("setIsRefresh", false);
-        }
-      },
-      isFind: function (val) {
-        if (val === true) {
-          this.currentPage = 1;
-          this.pageSize = 20;
-          this.query.limit = 20;
-          this.query.offset = 0;
-          store.commit("setIsFind", false);
-          this.find();
-        }
-      },
-      isDelete: function (val) {
-        if (val === true) {
-          store.commit("setIsDelete", false);
-          this.deleteRow();
-        }
-      }
+    computed:{
+      ...mapGetters(['materialPage','material'])
+    },
+    beforeDestroy() {
+      //取消监听
+      Bus.$off('refreshMaterial');
+      Bus.$off('findMaterial');
+    },
+    mounted() {
+      this.find();
+      //监听刷新事件
+      Bus.$on('refreshMaterial', () => {
+        this.setMaterialPage(-1);
+        this.find();
+      });
+      //监听查询事件
+      Bus.$on('findMaterial', () => {
+        this.currentPage = 1;
+        this.pageSize = 20;
+        this.setMaterialPage(-1);
+        this.find();
+      });
     },
     methods: {
+      ...mapActions(['setLoading','setMaterialPage']),
       fetchData: function (options) {
         axiosPost(options).then(response => {
-          store.commit("setLoading", false);
-          if (response.data) {
-            if(response.data.list){
-              let result = response.data.list;
-              let page = response.data.page;
-              this.total = page.totallyData;
-              this.currentPage = page.currentPage;
-              this.pageSize = page.pageSize;
-              store.commit("setMaterialList", result);
-              this.data = result;
+          this.setLoading(false);
+          if (response.data.list) {
+            let result = response.data.list;
+            let page = response.data.page;
+            if(result.length>0 || result.length<=0 && this.currentPage === 1){
+              this.tableData = result;
+            }else{
+              if(this.materialPage === -1){
+                this.setMaterialPage(page.currentPage -1);
+              }
+              this.currentPage = this.materialPage;
+              this.$alertInfo('当前是最后一页');
             }
           }
         }).catch(err => {
-          store.commit("setLoading", false);
-          alert("请求接口失败，请先检查网络，再联系管理员");
+          this.setLoading(false);
+          this.$alertError("请求接口失败，请先检查网络，再联系管理员");
         });
       },
       find: function () {
-        store.commit("setLoading", true);
+        this.setLoading(true);
         let options = {
           url: materialListUrl,
-          data: this.materialInfos
+          data: this.material
         };
         options.data["currentPage"] = this.currentPage;
         options.data["pageSize"] = this.pageSize;
         this.fetchData(options);
       },
-      deleteRow: function () {
+      handleSizeChange: function (pageSize) {
+        this.pageSize = pageSize;
+        this.currentPage = 1;
+        this.setMaterialPage(-1);
+        this.find();
+      },
+      deleteRow: function (row) {
         let options = {
           url: deleteMaterialUrl,
           data: {
-            id: this.material.id
+            id: row.id
           }
         };
         axiosPost(options).then(response => {
           if (response.data) {
             let result = response.data.result;
             if (result === "succeed") {
-              alert("删除成功");
+              this.$alertSuccess("删除成功");
               this.find();
             } else {
-              errTip(result);
+              this.$alertWarning(errTip(result));
             }
           }
         }).catch(err => {
-          alert("请求接口失败，请先检查网络，再联系管理员");
+          this.$alertError("请求接口失败，请先检查网络，再联系管理员");
         });
       },
-      filterData: function (query) {
-        this.pageSize = query.limit;
-        this.currentPage = query.offset / query.limit + 1;
-        this.find();
-      },
-      resetMaterialInfos: function () {
-        this.materialInfos.materialNo = "";
-        this.materialInfos.perifdOfValidity = "";
+      edit: function (row) {
+        Bus.$emit('editMaterial', row);
       }
     }
   }
-
-  export const materialOperation = Vue.component('materialOperation', {
-    template: `<span>
-      <span title="编辑" @click.stop.prevent="update(row)" style="padding-right:8px;cursor:pointer">
-        <icon name="edit" scale="2.5"></icon>
-      </span>
-      <span title="删除" @click.stop.prevent="deleteRow(row)" style="cursor:pointer">
-        <icon name="delete" scale="2.5"></icon>
-      </span>
-    </span>`,
-    props: ['row'],
-    methods: {
-      update(row) {
-        store.commit("setMaterial", row);
-        store.commit("setMaterialOperationType", "update");
-        store.commit("setIsUpdate", true);
-      },
-      deleteRow(row) {
-        store.commit("setMaterial", row);
-        store.commit("setMaterialOperationType", "delete");
-        store.commit("setIsDelete", true);
+</script>
+<style lang="scss" scoped>
+  .materialTable {
+    padding: 24px;
+    border: 1px solid #ebebeb;
+    border-radius: 3px;
+    background: #fff;
+    .block {
+      display: flex;
+      margin-top: 10px;
+      .now {
+        display: inline-block;
+        height: 32px;
+        line-height: 32px;
+        font-size: 14px;
+        color: #606266;
+        margin-right: 10px;
       }
     }
-  });
-</script>
-<style lang="scss">
-  .-table-body .table tr td {
-    vertical-align: middle;
   }
 </style>

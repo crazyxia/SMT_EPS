@@ -11,7 +11,7 @@
 </template>
 
 <script>
-  import store from './../../store'
+  import {mapGetters,mapActions} from 'vuex';
   import Chart from 'chart.js'
   import {axiosPost} from "./../../utils/fetchData";
   import {getAllStatusDetails, getLineData} from "./../../config/globalUrl";
@@ -47,7 +47,7 @@
       }, 6000);
     },
     mounted() {
-      let display = $('.display');
+      let display = document.getElementsByClassName('display');
       if (display.length > 0) {
         this.pixelCalc();
         let that = this;
@@ -55,18 +55,14 @@
           that.pixelCalc()
         }, 200)
       } else {
-        document.getElementsByTagName('html')[0].style.fontSize = 18 + "px";
+        document.getElementsByTagName('html')[0].style.fontSize = 16 + "px";
       }
     },
-    computed: {
-      lines: function () {
-        return store.state.lines;
-      },
-      lineSize: function () {
-        return store.state.lineSize;
-      }
+    computed:{
+      ...mapGetters(['lineSize','lines'])
     },
     methods: {
+      ...mapActions(['setLineData','setAllDayData']),
       pixelCalc: function () {
         document.getElementsByTagName('html')[0].style.fontSize = (window.innerWidth / 1920) * 625 + '%'
       },
@@ -116,7 +112,7 @@
         };
         axiosPost(hourOptions).then(response => {
           if (response.data) {
-            store.commit('setAllDayData', {data: response.data})
+            this.setAllDayData({data: response.data});
           }
         }).catch(err => {
 
@@ -130,7 +126,7 @@
         };
         axiosPost(lineOptions).then(response => {
           if (response.data) {
-            store.commit('setLineData', {data: response.data})
+            this.setLineData({data:response.data});
           }
         }).catch(err => {
 
@@ -142,11 +138,12 @@
 
 <style scoped>
   .display {
-    width: 19.2rem;
+    width:100%;
     background: #333;
   }
 
   .up-container {
+    width:100%;
     display: flex;
   }
 </style>

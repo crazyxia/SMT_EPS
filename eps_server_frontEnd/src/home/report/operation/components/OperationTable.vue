@@ -1,131 +1,143 @@
 <template>
   <div class="operationTable">
-    <datatable v-bind="$data"/>
+    <el-table
+      :data="tableData"
+      border
+      style="width: 100%">
+      <el-table-column
+        label="线号"
+        width="70"
+        prop="line"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        prop="workOrderNo"
+        label="工单号"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        label="操作者"
+        prop="operator"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        label="操作类型"
+        width="80px"
+        prop="operationType"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        label="成功数"
+        prop="passCount"
+        width="100"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        label="失败数"
+        prop="failCount"
+        width="100"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        label="总数"
+        prop="total"
+        width="100"
+        align="center">
+      </el-table-column>
+      <el-table-column
+        label="操作"
+        align="center">
+        <template slot-scope="scope">
+          <el-button
+            type="primary"
+            size="mini"
+            @click="showDetail(scope.row)">详情
+          </el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+    <div class="block">
+      <span class="now">第 {{currentPage}} 页</span>
+      <el-pagination
+        background
+        :current-page.sync="currentPage"
+        :page-size="pageSize"
+        @size-change="handleSizeChange"
+        @current-change="find"
+        :page-sizes="[20, 40, 80, 100]"
+        layout="sizes, prev, pager, next">
+      </el-pagination>
+    </div>
   </div>
 </template>
 <script>
-  import Vue from 'vue'
-  import store from './../../../../store'
+  import Bus from '../../../../utils/bus'
+  import {mapActions, mapGetters} from 'vuex'
   import {axiosPost} from "./../../../../utils/fetchData"
   import {operationReportSummaryListUrl} from "./../../../../config/globalUrl"
 
   export default {
     name: 'operationTable',
-    props: ['operationInfos'],
-    data: () => ({
-      columns: [
-        {title: '线号', field: 'line', colStyle: {'width': '80px'}},
-        {title: '工单号', field: 'workOrderNo', colStyle: {'width': '200px'}},
-        {title: '操作者', field: 'operator', colStyle: {'width': '100px'}},
-        {title: '操作类型', field: 'operationType', colStyle: {'width': '100px'}},
-        {title: '成功数', field: 'passCount', colStyle: {'width': '100px'}},
-        {title: '失败数', field: 'failCount', colStyle: {'width': '100px'}},
-        {title: '总数', field: 'total', colStyle: {'width': '100px'}},
-        {title: '操作', field: 'operation', tdComp: 'operationOperation', colStyle: {'width': '80px'}}
-      ],
-      HeaderSettings: false,
-      fixHeaderAndSetBodyMaxHeight: 700,
-      data: [],
-      total: 0,
-      tblClass: 'table-bordered',
-      query: {"limit": 20, "offset": 0},
-      tblStyle: {
-        'padding': '10px 0',
-        'word-break': 'break-all',
-        'table-layout': 'fixed',
-        'color': '#666',
-        'text-align': 'center'
-      },
-      currentPage: 1,
-      pageSize: 20
-    }),
-    computed: {
-      oprationSummaryList: function () {
-        return store.state.operationSummaryList;
-      },
-      isFind: function () {
-        return store.state.isFind;
-      },
-      isDetail: function () {
-        return store.state.isDetail;
+    data() {
+      return {
+        tableData: [],
+        currentPage: 1,
+        pageSize: 20,
       }
     },
-    watch: {
-      query: {
-        handler(query) {
-          this.filterData(query);
-        },
-        deep: true
-      },
-      isFind: function (val) {
-        if (val === true) {
-          this.currentPage = 1;
-          this.pageSize = 20;
-          this.query.limit = 20;
-          this.query.offset = 0;
-          store.commit("setIsFind", false);
-          this.getList();
-        }
-      },
-      isDetail: function (val) {
-        if (val === true) {
-          store.commit("setIsDetail", false);
-          store.commit("setOperationDetailShow", true);
-        }
-      }
+    computed: {
+      ...mapGetters(['operationPage','operation'])
+    },
+    beforeDestroy() {
+      //取消监听
+      Bus.$off('findOperation');
+    },
+    mounted() {
+      this.find();
+      //监听操作报表查找事件
+      Bus.$on('findOperation', () => {
+        this.currentPage = 1;
+        this.pageSize = 20;
+        this.setOperationPage(-1);
+        this.find();
+      })
     },
     methods: {
+      ...mapActions(['setLoading', 'setOperation', 'setDetail', 'setOperationPage']),
       fetchData: function (options) {
         axiosPost(options).then(response => {
-          store.commit("setLoading", false);
-          if (response.data) {
-            if (response.data.list) {
-              let result = response.data.list;
-              let page = response.data.page;
-              this.total = page.totallyData;
-              this.currentPage = page.currentPage;
-              this.pageSize = page.pageSize;
-              if (this.total > 0) {
-                let list = this.handleData(result, this);
-                store.commit("setOperationSummaryList", list);
-                this.data = list;
-                this.data.map((item, index) => {
-                  if(item.operationType === ""){
-                    item.operationType = "不限";
-                  }
-                });
-                this.$emit('getDownloadInfo', this.currentPage, this.pageSize,this.operationInfos);
-              } else {
-                this.data = result;
-                this.$emit('getDownloadInfo', this.currentPage, this.pageSize, this.operationInfos);
-                return false;
+          this.setLoading(false);
+          if (response.data.list) {
+            let result = response.data.list;
+            let page = response.data.page;
+            if(result.length>0 || result.length<=0 && this.currentPage === 1){
+              this.tableData = this.handleData(result);
+            }else{
+              if (this.operationPage === -1) {
+                this.setOperationPage(page.currentPage - 1);
               }
+              this.currentPage = this.operationPage;
+              this.$alertInfo('当前是最后一页');
             }
           }
         }).catch(err => {
-          store.commit("setLoading", false);
-          alert("网络错误，请先检查网络，再连接联系管理员");
+          this.setLoading(false);
+          this.$alertError("网络错误，请先检查网络，再连接联系管理员");
         });
       },
-      getList: function () {
-        store.commit("setLoading", true);
+      find: function () {
+        this.setLoading(true);
         let options = {
           url: operationReportSummaryListUrl,
-          data: this.operationInfos
-        }
+          data: this.operation
+        };
         options.data["currentPage"] = this.currentPage;
         options.data["pageSize"] = this.pageSize;
         this.fetchData(options);
       },
-      filterData: function (query) {
-        this.pageSize = query.limit;
-        this.currentPage = query.offset / query.limit + 1;
-        this.getList();
-      },
-      handleData: function (arr, that) {
+      handleData: function (arr) {
         for (let i = 0; i < arr.length; i++) {
           let obj = arr[i];
-          obj["total"] = obj.passCount + obj.failCount;
           let type;
           switch (obj.operationType) {
             case "上料":
@@ -147,38 +159,50 @@
               type = 5;
               break;
             default:
+              type = '';
               break;
           }
+          obj["total"] = obj.passCount + obj.failCount;
           obj["type"] = type;
-          obj["startTime"] = this.operationInfos.startTime;
-          obj["endTime"] = this.operationInfos.endTime;
+          obj["startTime"] = this.operation.startTime;
+          obj["endTime"] = this.operation.endTime;
+          if (obj.operationType === "") {
+            obj.operationType = "不限";
+          }
         }
         return arr;
       },
+      showDetail: function (row) {
+        this.setDetail(row);
+        this.$emit('setIsShow', false);
+      },
+      handleSizeChange: function (pageSize) {
+        this.pageSize = pageSize;
+        this.currentPage = 1;
+        this.setOperationPage(-1);
+        this.find();
+      }
     },
-    beforeDestroy() {
-      store.commit("setOperationSummaryList", []);
-    }
   }
+</script>
 
-  export const operationOperation = Vue.component('operationOperation', {
-    template: `<span>
-      <span title="详情" @click.stop.prevent="detail(row)" style="cursor:pointer">
-        <icon name="detail" scale="2.5"></icon>
-      </span>
-    </span>`,
-    props: ['row'],
-    methods: {
-      detail(row) {
-        store.commit("setOperationSummary", row);
-        store.commit("setIsDetail", true);
+<style lang="scss" scoped>
+  .operationTable {
+    padding: 24px;
+    border: 1px solid #ebebeb;
+    border-radius: 3px;
+    background: #fff;
+    .block {
+      display: flex;
+      margin-top: 10px;
+      .now {
+        display: inline-block;
+        height: 32px;
+        line-height: 32px;
+        font-size: 14px;
+        color: #606266;
+        margin-right: 10px;
       }
     }
-  });
-
-</script>
-<style lang="scss">
-  .-table-body .table tr td {
-    vertical-align: middle;
   }
 </style>
