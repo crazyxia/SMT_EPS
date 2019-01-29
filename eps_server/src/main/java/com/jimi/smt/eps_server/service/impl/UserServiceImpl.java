@@ -11,10 +11,12 @@ import com.jimi.smt.eps_server.entity.User;
 import com.jimi.smt.eps_server.entity.UserExample;
 import com.jimi.smt.eps_server.entity.UserExample.Criteria;
 import com.jimi.smt.eps_server.entity.filler.UserToUserVOFiller;
+import com.jimi.smt.eps_server.entity.vo.PageVO;
 import com.jimi.smt.eps_server.entity.vo.UserVO;
 import com.jimi.smt.eps_server.mapper.UserMapper;
 import com.jimi.smt.eps_server.service.ProgramService;
 import com.jimi.smt.eps_server.service.UserService;
+import com.jimi.smt.eps_server.util.ResultUtil;
 import com.jimi.smt.eps_server.util.SqlUtil;
 
 @Service
@@ -36,43 +38,43 @@ public class UserServiceImpl implements UserService {
 	 */
 	private static final int LINE_OPERATOR = 1;
 	/**
-	 * IPQC : IPQC
+	 * IPQC_OPERATOR : IPQC操作员
 	 */
-	private static final int IPQC = 2;
+	private static final int IPQC_OPERATOR = 2;
 	/**
-	 * PRODUCER : 生产管理员
+	 * PRODUCER_ADMINISTRATOR : 生产管理员
 	 */
-	private static final int PRODUCER = 4;
+	private static final int PRODUCER_ADMINISTRATOR = 4;
 	/**
-	 * QC : 品质管理员
+	 * QC_ADMINISTRATOR : 品质管理员
 	 */
-	private static final int QC = 5;
+	private static final int QC_ADMINISTRATOR = 5;
 	/**
 	 * WAREHOUSE_ADMINISTRATOR : 仓库管理员
 	 */
-	private static final int WAREHOUSE = 7;
+	private static final int WAREHOUSE_ADMINISTRATOR = 7;
 	
 	
 	@Override
 	public String add(String id, Integer classType, String name, Integer type, String password, Integer userType) {
-		if(userMapper.selectByPrimaryKey(id) != null) {
+		if (userMapper.selectByPrimaryKey(id) != null) {
 			return "failed_id_exist";
 		}
 		User user = new User();
 		user.setId(id);
 		user.setName(name);
 		switch (userType) {
-		case PRODUCER:
+		case PRODUCER_ADMINISTRATOR:
 			if (type != LINE_OPERATOR) {
 				return "failed_wrong_type";
 			}
 			break;
-		case QC:
-			if (type != IPQC) {
+		case QC_ADMINISTRATOR:
+			if (type != IPQC_OPERATOR) {
 				return "failed_wrong_type";
 			}
 			break;
-		case WAREHOUSE:
+		case WAREHOUSE_ADMINISTRATOR:
 			if (type != WAREHOUSE_OPERATOR) {
 				return "failed_wrong_type";
 			}
@@ -84,7 +86,7 @@ public class UserServiceImpl implements UserService {
 		user.setPassword("".equals(password) ? null : password);
 		user.setCreateTime(programService.getCurrentTime());
 		user.setClassType(classType);
-		if(userMapper.insertSelective(user) == 1) {
+		if (userMapper.insertSelective(user) == 1) {
 			return "succeed";
 		}
 		return "failed_unknown";
@@ -92,18 +94,37 @@ public class UserServiceImpl implements UserService {
 
 	
 	@Override
-	public String update(String id, Integer classType, String name, Integer type, String password, Boolean enabled) {
-		if(userMapper.selectByPrimaryKey(id) == null) {
+	public String update(String id, Integer classType, String name, Integer type, String password, Boolean enabled, Integer userType) {
+		if (userMapper.selectByPrimaryKey(id) == null) {
 			return "failed_not_found";
 		}
 		User user = new User();
 		user.setId("".equals(id) ? null : id);
 		user.setName("".equals(name) ? null : name);
+		switch (userType) {
+		case PRODUCER_ADMINISTRATOR:
+			if (type != LINE_OPERATOR) {
+				return "failed_wrong_type";
+			}
+			break;
+		case QC_ADMINISTRATOR:
+			if (type != IPQC_OPERATOR) {
+				return "failed_wrong_type";
+			}
+			break;
+		case WAREHOUSE_ADMINISTRATOR:
+			if (type != WAREHOUSE_OPERATOR) {
+				return "failed_wrong_type";
+			}
+			break;
+		default:
+			break;
+		}
 		user.setType(type);
 		user.setPassword("".equals(password) ? null : password);
 		user.setEnabled(enabled);
 		user.setClassType(classType);
-		if(userMapper.updateByPrimaryKeySelective(user) == 1){
+		if (userMapper.updateByPrimaryKeySelective(user) == 1) {
 			return "succeed";
 		}
 		return "failed_unknown";
@@ -111,8 +132,14 @@ public class UserServiceImpl implements UserService {
 
 
 	@Override
-	public List<UserVO> list(String id, Integer classType, String name, Integer type, String orderBy, Boolean enabled, Page page, Integer userType) {
+	public ResultUtil list(String id, Integer classType, String name, Integer type, String orderBy, Boolean enabled, Integer currentPage, Integer pageSize, Integer userType) {
 		UserExample userExample = new UserExample();
+		Page page = new Page();
+		page.setCurrentPage(currentPage);
+		page.setPageSize(pageSize);
+		PageVO<UserVO> pageVO = new PageVO<UserVO>();
+		pageVO.setPage(page);
+		ResultUtil resultUtil = new ResultUtil(null, null);
 		List<UserVO> userVOs = new ArrayList<>();
 		Criteria criteria = userExample.createCriteria();
 		if (id != null && !id.equals("")) {
@@ -122,37 +149,24 @@ public class UserServiceImpl implements UserService {
 			criteria.andNameLike("%" + SqlUtil.escapeParameter(name) + "%");
 		}
 		if (type != null) {
-			switch (userType) {
-			case PRODUCER:
-				if (type != LINE_OPERATOR) {
-					return userVOs;
-				}
-				break;
-			case QC:
-				if (type != IPQC) {
-					return userVOs;
-				}
-				break;
-			case WAREHOUSE:
-				if (type != WAREHOUSE_OPERATOR) {
-					return userVOs;
-				}
-				break;
-			default:
-				break;
+			if ((userType.equals(PRODUCER_ADMINISTRATOR) && type != LINE_OPERATOR) || (userType.equals(QC_ADMINISTRATOR) && type != IPQC_OPERATOR) || (userType.equals(WAREHOUSE_ADMINISTRATOR) && type != WAREHOUSE_OPERATOR)) {
+				pageVO.setList(userVOs);
+				resultUtil.setData(pageVO);
+				resultUtil.setResult("400");
+				return resultUtil;
 			}
 			criteria.andTypeEqualTo(type);
 		} else {
 			switch (userType) {
-			case PRODUCER:
+			case PRODUCER_ADMINISTRATOR:
 				type = LINE_OPERATOR;
 				criteria.andTypeEqualTo(type);
 				break;
-			case QC:
-				type = IPQC;
+			case QC_ADMINISTRATOR:
+				type = IPQC_OPERATOR;
 				criteria.andTypeEqualTo(type);
 				break;
-			case WAREHOUSE:
+			case WAREHOUSE_ADMINISTRATOR:
 				type = WAREHOUSE_OPERATOR;
 				criteria.andTypeEqualTo(type);
 				break;
@@ -174,13 +188,13 @@ public class UserServiceImpl implements UserService {
 		List<User> users = userMapper.selectByExample(userExample);
 		Integer requireType = null;
 		switch (userType) {
-		case PRODUCER:
+		case PRODUCER_ADMINISTRATOR:
 			requireType = LINE_OPERATOR;
 			break;
-		case QC:
-			requireType = IPQC;
+		case QC_ADMINISTRATOR:
+			requireType = IPQC_OPERATOR;
 			break;
-		case WAREHOUSE:
+		case WAREHOUSE_ADMINISTRATOR:
 			requireType = WAREHOUSE_OPERATOR;
 			break;
 		default:
@@ -189,16 +203,22 @@ public class UserServiceImpl implements UserService {
 		if (requireType != null) {
 			for (User user : users) {
 				if (user.getType() != type) {
-					return userVOs;
+					pageVO.setList(userVOs);
+					resultUtil.setData(pageVO);
+					resultUtil.setResult("400");
+					return resultUtil;
 				}
 			}
 		}
-		return filler.fill(users);
+		pageVO.setList(filler.fill(users));
+		resultUtil.setData(pageVO);
+		resultUtil.setResult("401");
+		return resultUtil;
 	}
 
 			
 	@Override
-	public User selectUserById(String id) {	
-		return userMapper.selectByPrimaryKey(id);		
+	public User selectUserById(String id) {
+		return userMapper.selectByPrimaryKey(id);
 	}
 }

@@ -16,6 +16,10 @@ public class StockLogController {
 	private StockLogService stockLogService;
 
 	
+	/**@author HCJ
+	 * 增加仓库出入库记录
+	 * @date 2019年1月29日 下午5:36:52
+	 */
 	@Log
 	@Open
 	@RequestMapping("/insert")

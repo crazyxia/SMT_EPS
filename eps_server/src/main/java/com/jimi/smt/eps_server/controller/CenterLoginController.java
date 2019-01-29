@@ -21,6 +21,11 @@ public class CenterLoginController {
 	private CenterLoginService centerLoginService;
 
 	
+	/**@author HCJ
+	 * 根据产线id查询中控对象
+	 * @param id 产线id
+	 * @date 2019年1月29日 上午10:03:09
+	 */
 	@Open
 	@ResponseBody
 	@RequestMapping("/selectById")

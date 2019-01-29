@@ -24,6 +24,10 @@ public class PrinterController {
 	private PrinterService printerService;
 
 	
+	/**@author HCJ
+	 * 远程打印
+	 * @date 2019年1月29日 下午5:34:30
+	 */
 	@Log
 	@Open
 	@ResponseBody

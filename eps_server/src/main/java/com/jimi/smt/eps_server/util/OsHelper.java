@@ -1,5 +1,6 @@
 package com.jimi.smt.eps_server.util;
 
+import java.io.File;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -59,5 +60,27 @@ public class OsHelper {
 	 */
 	public static boolean isWindows() {
 		return System.getProperty("os.name").toLowerCase().indexOf("windows") >= 0;
+	}
+	
+	
+	public static boolean isProductionEnvironment() {
+		File[] roots = File.listRoots();
+        for (int i=0; i < roots.length; i++) {
+            if(new File(roots[i].toString() + "PRODUCTION_ENVIRONMENT_FLAG").exists()) {
+            	return true;
+            }
+        }
+        return false;
+	}
+
+
+	public static boolean isTestEnvironment() {
+		File[] roots = File.listRoots();
+        for (int i=0; i < roots.length; i++) {
+            if(new File(roots[i].toString() + "TEST_ENVIRONMENT_FLAG").exists()) {
+            	return true;
+            }
+        }
+        return false;
 	}
 }

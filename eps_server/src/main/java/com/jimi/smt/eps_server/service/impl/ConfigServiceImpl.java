@@ -23,12 +23,11 @@ public class ConfigServiceImpl implements ConfigService {
 	
 	@Override
 	public synchronized List<ConfigVO> list() {
-		configToConfigVOFiller.init();
 		List<Config> configs = configMappler.selectByExample(null);
 		List<ConfigVO> configVOs = new ArrayList<>();
 		for (Config config : configs) {
 			configVOs.add(configToConfigVOFiller.fill(config));
-		}		
+		}
 		return configVOs;
 	}
 

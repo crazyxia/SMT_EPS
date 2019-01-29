@@ -27,6 +27,10 @@ public class ConfigController {
 	private ConfigService configService;
 
 	
+	/**@author HCJ
+	 * 设置报警配置项
+	 * @date 2019年1月29日 下午5:26:14
+	 */
 	@Log
 	@ResponseBody
 	@RequestMapping("/set")
@@ -43,6 +47,10 @@ public class ConfigController {
 	}
 
 	
+	/**@author HCJ
+	 * 列举所有配置项
+	 * @date 2019年1月29日 下午5:26:41
+	 */
 	@Open
 	@ResponseBody
 	@RequestMapping("/list")

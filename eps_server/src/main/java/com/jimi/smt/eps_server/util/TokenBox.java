@@ -55,7 +55,9 @@ public class TokenBox {
 			});
 			timeoutThread.start();
 		}
-		System.out.println("TokenBox is Running Now...");
+		if (!OsHelper.isProductionEnvironment()) {
+			System.out.println("TokenBox is Running Now...");
+		}
 	}
 
 	
@@ -66,7 +68,9 @@ public class TokenBox {
 		if (timeoutThread != null) {
 			timeoutThread.interrupt();
 		}
-		System.out.println("TokenBox was Stopped.");
+		if (!OsHelper.isProductionEnvironment()) {
+			System.out.println("TokenBox was Stopped.");
+		}
 	}
 
 	

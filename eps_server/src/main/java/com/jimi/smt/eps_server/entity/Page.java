@@ -2,13 +2,11 @@ package com.jimi.smt.eps_server.entity;
 
 public class Page {
 
-	private Integer firstIndex;
 	private Integer currentPage;
 	private Integer pageSize;
 
 	public Integer getFirstIndex() {
-		firstIndex = ((this.getCurrentPage() - 1) * this.getPageSize());
-		return firstIndex;
+		return ((this.getCurrentPage() - 1) * this.getPageSize());
 	}
 
 	public Integer getCurrentPage() {

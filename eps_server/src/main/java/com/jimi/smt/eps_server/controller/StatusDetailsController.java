@@ -21,6 +21,10 @@ public class StatusDetailsController {
 	StatusService statusService;
 	
 	
+	/**@author HCJ
+	 * 根据产线查询每个小时的操作情况
+	 * @date 2019年1月29日 下午5:37:21
+	 */
 	@Open
 	@ResponseBody
 	@RequestMapping("/getStatusDetails")
@@ -29,6 +33,10 @@ public class StatusDetailsController {
 	}
 	
 	
+	/**@author HCJ
+	 * 实时监控每条产线一天内的操作情况
+	 * @date 2019年1月29日 下午5:37:48
+	 */
 	@Open
 	@ResponseBody
 	@RequestMapping("/getStatusDetailsByDay")

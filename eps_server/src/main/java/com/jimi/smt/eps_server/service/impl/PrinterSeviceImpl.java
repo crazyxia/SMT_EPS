@@ -14,7 +14,7 @@ import com.jimi.smt.eps_server.util.ResultUtil2;
 public class PrinterSeviceImpl implements PrinterService{
 	
 	// 等待反馈的时间
-	private static final int TIME_OUT = 60000;
+	private static final int TIME_OUT = 10000;
 	
 	
 	@Override

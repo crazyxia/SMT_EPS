@@ -38,8 +38,11 @@ public class OperationController {
 	@Autowired
 	private OperationService operationService;
 
-	
-	// 分页查询客户报表
+
+	/**@author HCJ
+	 * 查询客户报表
+	 * @date 2019年1月29日 下午5:31:01
+	 */
 	@Log
 	@Role(RoleType.IPQC)
 	@ResponseBody
@@ -59,6 +62,10 @@ public class OperationController {
 	}
 
 	
+	/**@author HCJ
+	 * 下载客户报表
+	 * @date 2019年1月29日 下午5:31:19
+	 */
 	@Role(RoleType.IPQC)
 	@RequestMapping("/downloadClientReport")
 	public ResponseEntity<byte[]> downloadClientReport(String client, String programNo, Integer line, String orderNo, String workOrderNo, String startTime, String endTime, Integer currentPage, Integer pageSize) {
@@ -78,6 +85,10 @@ public class OperationController {
 	}
 
 	
+	/**@author HCJ
+	 * 查询操作报表详情
+	 * @date 2019年1月29日 下午5:31:39
+	 */
 	@Log
 	@Role(RoleType.IPQC)
 	@ResponseBody
@@ -97,6 +108,10 @@ public class OperationController {
 	}
 
 	
+	/**@author HCJ
+	 * 查询操作报表
+	 * @date 2019年1月29日 下午5:31:55
+	 */
 	@Log
 	@Role(RoleType.IPQC)
 	@ResponseBody
@@ -116,6 +131,10 @@ public class OperationController {
 	}
 
 	
+	/**@author HCJ
+	 * 下载操作报表
+	 * @date 2019年1月29日 下午5:32:09
+	 */
 	@Role(RoleType.IPQC)
 	@RequestMapping("/downloadOperationReport")
 	public ResponseEntity<byte[]> downloadOperationReport(Integer line, String workOrderNo, String startTime, String endTime, Integer type, Integer currentPage, Integer pageSize) {
@@ -135,6 +154,10 @@ public class OperationController {
 	}
 
 	
+	/**@author HCJ
+	 * 查询仓库出入库记录
+	 * @date 2019年1月29日 下午5:32:24
+	 */
 	@Log
 	@Role(RoleType.IPQC)
 	@ResponseBody
@@ -154,6 +177,11 @@ public class OperationController {
 	}
 
 	
+	/**@author HCJ
+	 * 查询实时显示报表
+	 * @param line 产线id
+	 * @date 2019年1月29日 下午5:32:59
+	 */
 	@Log
 	@Open
 	@ResponseBody
@@ -168,6 +196,10 @@ public class OperationController {
 	}
 
 	
+	/**@author HCJ
+	 * 添加操作记录
+	 * @date 2019年1月29日 下午5:33:53
+	 */
 	@Log
 	@Open
 	@ResponseBody

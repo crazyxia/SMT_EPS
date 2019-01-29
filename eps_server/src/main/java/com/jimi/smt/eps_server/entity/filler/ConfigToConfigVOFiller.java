@@ -17,22 +17,18 @@ public class ConfigToConfigVOFiller extends EntityFieldFiller<Config, ConfigVO>{
 
 	@Autowired
 	private LineMapper lineMapper;
-	
-	private List<Line> lines;
-	
-	synchronized public void init() {
-		lines = lineMapper.selectByExample(null);
-	}
+
 	
 	@Override
 	public ConfigVO fill(Config config) {
+		List<Line> lines = lineMapper.selectByExample(null);
 		ConfigVO configVO = new ConfigVO();
 		BeanUtils.copyProperties(config, configVO);
 		for (Line line : lines) {
 			if (line.getId().equals(configVO.getLine())) {
 				configVO.setLineName(line.getLine());
 			}
-		}				
+		}
 		return configVO;
 	}
 }

@@ -1,19 +1,18 @@
 package com.jimi.smt.eps_server.controller;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URLEncoder;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -51,6 +50,10 @@ public class ProgramController {
 	private LineService lineService;
 
 	
+	/**@author HCJ
+	 * 查询站位表
+	 * @date 2019年1月29日 下午5:39:43
+	 */
 	@Role({ RoleType.ENGINEER, RoleType.PRODUCER })
 	@ResponseBody
 	@RequestMapping("/list")
@@ -65,6 +68,10 @@ public class ProgramController {
 	}
 
 	
+	/**@author HCJ
+	 * 开始工单
+	 * @date 2019年1月29日 下午5:39:55
+	 */
 	@Log
 	@Role(RoleType.PRODUCER)
 	@ResponseBody
@@ -82,6 +89,10 @@ public class ProgramController {
 	}
 
 	
+	/**@author HCJ
+	 * 完成工单
+	 * @date 2019年1月29日 下午5:40:09
+	 */
 	@Log
 	@Role(RoleType.PRODUCER)
 	@ResponseBody
@@ -98,6 +109,10 @@ public class ProgramController {
 	}
 
 	
+	/**@author HCJ
+	 * 作废工单
+	 * @date 2019年1月29日 下午5:40:19
+	 */
 	@Log
 	@Role(RoleType.ENGINEER)
 	@ResponseBody
@@ -114,6 +129,10 @@ public class ProgramController {
 	}
 
 	
+	/**@author HCJ
+	 * 查询对应站位表的详情
+	 * @date 2019年1月29日 下午5:40:31
+	 */
 	@Role(RoleType.ENGINEER)
 	@ResponseBody
 	@RequestMapping("/listItem")
@@ -126,6 +145,10 @@ public class ProgramController {
 	}
 
 	
+	/**@author HCJ
+	 * 更新站位表详情
+	 * @date 2019年1月29日 下午5:41:01
+	 */
 	@Log
 	@Role(RoleType.ENGINEER)
 	@ResponseBody
@@ -152,6 +175,10 @@ public class ProgramController {
 	}
 
 	
+	/**@author HCJ
+	 * 上传站位表
+	 * @date 2019年1月29日 下午5:41:34
+	 */
 	@Log
 	@Role(RoleType.ENGINEER)
 	@ResponseBody
@@ -208,6 +235,10 @@ public class ProgramController {
 	}
 
 	
+	/**@author HCJ
+	 * Display切换工单时更新数据库记录
+	 * @date 2019年1月29日 下午5:42:11
+	 */
 	@Log
 	@Open
 	@ResponseBody
@@ -222,6 +253,10 @@ public class ProgramController {
 	}
 
 	
+	/**@author HCJ
+	 * 更新操作记录
+	 * @date 2019年1月29日 下午5:42:43
+	 */
 	@Log
 	@Open
 	@ResponseBody
@@ -238,6 +273,10 @@ public class ProgramController {
 	}
 
 	
+	/**@author HCJ
+	 * 重置工单操作记录
+	 * @date 2019年1月29日 下午5:42:57
+	 */
 	@Log
 	@Open
 	@ResponseBody
@@ -252,6 +291,10 @@ public class ProgramController {
 	}
 
 	
+	/**@author HCJ
+	 * 根据产线名称查询所有进行中工单
+	 * @date 2019年1月29日 下午5:43:17
+	 */
 	@Open
 	@ResponseBody
 	@RequestMapping("/selectWorkingProgram")
@@ -275,6 +318,10 @@ public class ProgramController {
 	}
 
 	
+	/**@author HCJ
+	 * 根据站位表id查询站位表详情
+	 * @date 2019年1月29日 下午5:43:43
+	 */
 	@Open
 	@ResponseBody
 	@RequestMapping("/selectProgramItem")
@@ -293,6 +340,10 @@ public class ProgramController {
 	}
 
 	
+	/**@author HCJ
+	 * 更新操作记录
+	 * @date 2019年1月29日 下午5:44:03
+	 */
 	@Log
 	@Open
 	@ResponseBody
@@ -311,6 +362,10 @@ public class ProgramController {
 	}
 
 	
+	/**@author HCJ
+	 * 首检完成后重置全检时间和全检结果
+	 * @date 2019年1月29日 下午5:44:49
+	 */
 	@Log
 	@Open
 	@ResponseBody
@@ -328,6 +383,10 @@ public class ProgramController {
 	}
 
 	
+	/**@author HCJ
+	 * 判断工单是否重置了
+	 * @date 2019年1月29日 下午5:45:04
+	 */
 	@Open
 	@ResponseBody
 	@RequestMapping("/checkIsReset")
@@ -336,6 +395,10 @@ public class ProgramController {
 	}
 
 	
+	/**@author HCJ
+	 * 判断某个工单是否全部完成某项操作
+	 * @date 2019年1月29日 下午5:45:15
+	 */
 	@Open
 	@ResponseBody
 	@RequestMapping("/isAllDone")
@@ -344,6 +407,10 @@ public class ProgramController {
 	}
 
 	
+	/**@author HCJ
+	 * 核料时判断某个站位是否换料成功
+	 * @date 2019年1月29日 下午5:45:45
+	 */
 	@Open
 	@ResponseBody
 	@RequestMapping("/isChangeSucceed")
@@ -352,6 +419,10 @@ public class ProgramController {
 	}
 
 	
+	/**@author HCJ
+	 * 返回产线所有进行中的工单的值
+	 * @date 2019年1月29日 下午5:46:01
+	 */
 	@Open
 	@ResponseBody
 	@RequestMapping("/selectWorkingOrder")
@@ -360,6 +431,10 @@ public class ProgramController {
 	}
 
 	
+	/**@author HCJ
+	 * 返回产线所有进行中工单版面类型的值
+	 * @date 2019年1月29日 下午5:46:41
+	 */
 	@Open
 	@ResponseBody
 	@RequestMapping("/selectWorkingBoardType")
@@ -368,6 +443,10 @@ public class ProgramController {
 	}
 
 	
+	/**@author HCJ
+	 * 返回站位表每个站位的操作结果
+	 * @date 2019年1月29日 下午5:46:51
+	 */
 	@Open
 	@ResponseBody
 	@RequestMapping("/selectItemVisitByProgram")
@@ -376,6 +455,10 @@ public class ProgramController {
 	}
 
 	
+	/**@author HCJ
+	 * 返回最新操作时的操作人员
+	 * @date 2019年1月29日 下午5:47:26
+	 */
 	@Open
 	@ResponseBody
 	@RequestMapping("/selectLastOperatorByProgram")
@@ -384,6 +467,10 @@ public class ProgramController {
 	}
 	
 	
+	/**@author HCJ
+	 * 返回工单id
+	 * @date 2019年1月29日 下午5:48:03
+	 */
 	@Open
 	@ResponseBody
 	@RequestMapping("/getProgramId")
@@ -396,6 +483,10 @@ public class ProgramController {
 	}
 	
 	
+	/**@author HCJ
+	 * 返回当前时间戳
+	 * @date 2019年1月29日 下午5:48:12
+	 */
 	@Open
 	@ResponseBody
 	@RequestMapping("/getTimesTamp")
@@ -404,6 +495,10 @@ public class ProgramController {
 	}
 	
 	
+	/**@author HCJ
+	 * 判断当前工单全检操作是否超时
+	 * @date 2019年1月29日 下午5:48:42
+	 */
 	@Open
 	@ResponseBody
 	@RequestMapping("/isCheckAllTimeOut")
@@ -412,10 +507,40 @@ public class ProgramController {
 	}
 	
 	
+	/**@author HCJ
+	 * 下载标准站位表
+	 * @date 2019年1月29日 上午11:46:49
+	 */
 	@Role(RoleType.ENGINEER)
 	@RequestMapping("/download")
-	public void download(HttpServletRequest request, HttpServletResponse response) {
+	public ResponseEntity<byte[]> download(HttpServletRequest request) {
 		String fileName = "标准站位表.xls";
+		String path = request.getSession().getServletContext().getRealPath("WEB-INF") + File.separator + fileName;
+		byte[] body = null;
+		InputStream in = null;
+		try {
+			in = new FileInputStream(new File(path));
+			body = new byte[in.available()];
+			in.read(body);
+			fileName = new String(fileName.getBytes("gbk"), "iso8859-1");
+			HttpHeaders headers = new HttpHeaders();
+			headers.add("Content-Disposition", "attachment;filename=" + fileName);
+			HttpStatus statusCode = HttpStatus.OK;
+			ResponseEntity<byte[]> response = new ResponseEntity<byte[]>(body, headers, statusCode);
+			return response;
+		} catch (IOException e) {
+			ResultUtil.failed("下载标准站位表出现IO错误 | " + e.getMessage());
+		} finally {
+			try {
+				if (in != null) {
+					in.close();
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return null;
+		/*String fileName = "标准站位表.xls";
 		String path = request.getSession().getServletContext().getRealPath("WEB-INF") + File.separator + fileName;
 		InputStream in = null;
 		BufferedOutputStream out = null;
@@ -443,6 +568,6 @@ public class ProgramController {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		}
+		}*/
 	}
 }

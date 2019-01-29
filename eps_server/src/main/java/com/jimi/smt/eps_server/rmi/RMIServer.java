@@ -54,7 +54,7 @@ public class RMIServer {
 		ServerRemote serverRemote = (ServerRemote) UnicastRemoteObject.exportObject(serverRemoteImpl, Integer.parseInt(p.getProperty("port")));
 		reg = LocateRegistry.createRegistry(REGISTERED_PORT);
 		reg.rebind("server", serverRemote);
-		if (OsHelper.isWindows()) {
+		if (!OsHelper.isProductionEnvironment()) {
 			System.out.println("RMI服务端开启");
 		}
 	}
@@ -80,7 +80,7 @@ public class RMIServer {
 				e1.printStackTrace();
 			}
 		}
-		if (OsHelper.isWindows()) {
+		if (!OsHelper.isProductionEnvironment()) {
 			System.out.println("RMI服务端关闭");
 		}
 	}

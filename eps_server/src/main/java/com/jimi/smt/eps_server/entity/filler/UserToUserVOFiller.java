@@ -38,6 +38,9 @@ public class UserToUserVOFiller extends EntityFieldFiller<User, UserVO> {
 		case 6:
 			userVO.setTypeName("工程管理员");
 			break;
+		case 7:
+			userVO.setTypeName("仓库管理员");
+			break;
 		default:
 			break;
 		}

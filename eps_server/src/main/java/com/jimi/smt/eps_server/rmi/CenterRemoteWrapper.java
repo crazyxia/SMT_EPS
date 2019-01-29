@@ -87,7 +87,7 @@ public class CenterRemoteWrapper {
 			remoteIp = logins.get(0).getIp();
 			System.out.println("ip=" + remoteIp);
 			centerRemote = (CenterRemote) LocateRegistry.getRegistry(remoteIp).lookup("center");
-			if (OsHelper.isWindows()) {
+			if (!OsHelper.isProductionEnvironment()) {
 				logger.info("搜索产线,ID为: " + line + " : " + "已找到中控设备：" + remoteIp);
 			}
 			reset();
@@ -179,7 +179,7 @@ public class CenterRemoteWrapper {
 		converyPaused = true;
 		sendCmdToAlarm(ClientDevice.SERVER, false);
 		sendCmdToConvery(ClientDevice.SERVER, false);
-		if (OsHelper.isWindows()) {
+		if (!OsHelper.isProductionEnvironment()) {
 			logger.info("ID为 " + line + "的产线报警器、接驳台已重置");
 		}
 	}

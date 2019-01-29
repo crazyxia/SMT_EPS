@@ -24,6 +24,10 @@ public class LineController {
 	private LineService lineService;
 
 	
+	/**@author HCJ
+	 * 查询所有Line对象
+	 * @date 2019年1月29日 下午5:27:32
+	 */
 	@Open
 	@ResponseBody
 	@RequestMapping("/selectAll")
@@ -32,6 +36,10 @@ public class LineController {
 	}
 	
 	
+	/**@author HCJ
+	 * 查询所有产线名称的集合
+	 * @date 2019年1月29日 下午5:28:11
+	 */
 	@Open
 	@ResponseBody
 	@RequestMapping("/selectLine")

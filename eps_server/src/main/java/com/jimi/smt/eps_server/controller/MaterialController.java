@@ -22,6 +22,10 @@ public class MaterialController {
 	private MaterialService materialService;
 		
 	
+	/**@author HCJ
+	 * 添加物料有效期
+	 * @date 2019年1月29日 下午5:28:49
+	 */
 	@Role(RoleType.IPQC)
 	@Log
 	@ResponseBody
@@ -40,6 +44,10 @@ public class MaterialController {
 	}
 	
 	
+	/**@author HCJ
+	 * 更新物料有效期
+	 * @date 2019年1月29日 下午5:29:07
+	 */
 	@Role(RoleType.IPQC)
 	@Log
 	@ResponseBody
@@ -58,6 +66,10 @@ public class MaterialController {
 	}
 	
 	
+	/**@author HCJ
+	 * 将某项物料有效期状态设为不可用
+	 * @date 2019年1月29日 下午5:29:20
+	 */
 	@Role(RoleType.IPQC)
 	@Log
 	@ResponseBody
@@ -76,6 +88,10 @@ public class MaterialController {
 	}
 	
 	
+	/**@author HCJ
+	 * 查询所有物料有效期的集合
+	 * @date 2019年1月29日 下午5:30:10
+	 */
 	@Role(RoleType.IPQC)
 	@Log
 	@ResponseBody

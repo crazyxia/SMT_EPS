@@ -14,10 +14,8 @@ import com.jimi.smt.eps_server.annotation.Log;
 import com.jimi.smt.eps_server.annotation.Open;
 import com.jimi.smt.eps_server.annotation.Role;
 import com.jimi.smt.eps_server.annotation.Role.RoleType;
-import com.jimi.smt.eps_server.entity.Page;
 import com.jimi.smt.eps_server.entity.User;
 import com.jimi.smt.eps_server.entity.filler.UserToUserVOFiller;
-import com.jimi.smt.eps_server.entity.vo.PageVO;
 import com.jimi.smt.eps_server.entity.vo.UserVO;
 import com.jimi.smt.eps_server.service.UserService;
 import com.jimi.smt.eps_server.util.ResultUtil;
@@ -36,12 +34,18 @@ public class UserController {
 
 	public static final String SESSION_KEY_LOGIN_USER = "loginUser";
 	
+	private static final Integer SUPER_ADMINISTRATOR_TYPE = 3;
+	
 	@Autowired
 	private UserService userService;
 	@Autowired
 	private UserToUserVOFiller filler;
 
 	
+	/**@author HCJ
+	 * 增加用户
+	 * @date 2019年1月29日 下午5:35:21
+	 */
 	@Role({ RoleType.PRODUCER, RoleType.WAREHOUSE, RoleType.IPQC })
 	@Log
 	@ResponseBody
@@ -72,40 +76,49 @@ public class UserController {
 	}
 
 	
+	/**@author HCJ
+	 * 查询用户
+	 * @date 2019年1月29日 下午5:35:37
+	 */
 	@Role({ RoleType.PRODUCER, RoleType.WAREHOUSE, RoleType.IPQC })
 	@ResponseBody
 	@RequestMapping("/list")
-	public PageVO<UserVO> list(String id, Integer classType, String name, Integer type, String password, String orderBy, Boolean enabled, Integer currentPage, Integer pageSize, HttpServletRequest request) {
-		Page page = new Page();
-		page.setCurrentPage(currentPage);
-		page.setPageSize(pageSize);
-		PageVO<UserVO> pageVO = new PageVO<UserVO>();
-		pageVO.setPage(page);
+	public ResultUtil list(String id, Integer classType, String name, Integer type, String password, String orderBy, Boolean enabled, Integer currentPage, Integer pageSize, HttpServletRequest request) {
 		String tokenId = request.getParameter(TokenBox.TOKEN_ID_KEY_NAME);
 		if (tokenId != null) {
 			UserVO user = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
 			if (user != null) {
 				Integer userType = user.getType();
-				pageVO.setList(userService.list(id, classType, name, type, orderBy, enabled, page, userType));
+				return userService.list(id, classType, name, type, orderBy, enabled, currentPage, pageSize, userType);
 			}
 		}
-		return pageVO;
+		return null;
 	}
 
 	
+	/**@author HCJ
+	 * 更新用户信息
+	 * @date 2019年1月29日 下午5:35:49
+	 */
 	@Role({ RoleType.PRODUCER, RoleType.WAREHOUSE, RoleType.IPQC })
 	@Log
 	@ResponseBody
 	@RequestMapping("/update")
-	public ResultUtil update(String id, Integer classType, String name, Integer type, String password,
-			Boolean enabled) {
+	public ResultUtil update(String id, Integer classType, String name, Integer type, String password, Boolean enabled, HttpServletRequest request) {
 		if (id == null) {
 			ResultUtil.failed("参数不足");
 			return ResultUtil.failed();
 		}
-		String result;
+		String result = "";
 		try {
-			result = userService.update(id, classType, name, type, password, enabled);
+			String tokenId = request.getParameter(TokenBox.TOKEN_ID_KEY_NAME);
+			if (tokenId != null) {
+				UserVO user = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
+				if (user != null) {
+					Integer userType = user.getType();
+					result = userService.update(id, classType, name, type, password, enabled, userType);
+				}
+			}
 		} catch (Exception e) {
 			return ResultUtil.failed("更新失败，请检查数据格式是否正确或者长度是否过长");
 		}
@@ -117,6 +130,10 @@ public class UserController {
 	}
 
 	
+	/**@author HCJ
+	 * 登录
+	 * @date 2019年1月29日 下午5:36:03
+	 */
 	@Open
 	@ResponseBody
 	@RequestMapping("/login")
@@ -241,37 +258,41 @@ public class UserController {
 	}
 	
 	
+	/**@author HCJ
+	 * 更新密码
+	 * @date 2019年1月29日 下午5:36:33
+	 */
 	@Log
 	@Open
 	@ResponseBody
 	@RequestMapping("/updatePassword")
 	public ResultUtil2 updatePassword(String id, String oldPassword, String newPassword) {
 		if (id == null || oldPassword == null || newPassword == null) {
-			return new ResultUtil2(400,"参数不足");
+			return new ResultUtil2(400, "参数不足");
 		}
-		if("".equals(id) || "".equals(oldPassword) || "".equals(newPassword)) {
-			return new ResultUtil2(400,"参数不能为空");
+		if ("".equals(id) || "".equals(oldPassword) || "".equals(newPassword)) {
+			return new ResultUtil2(400, "参数不能为空");
 		}
 		User user = userService.selectUserById(id);
 		if (user == null) {
-			return new ResultUtil2(412,"账号不存在");
+			return new ResultUtil2(412, "账号不存在");
 		}
 		if (user.getEnabled() == false) {
-			return new ResultUtil2(412,"工人已离职");
+			return new ResultUtil2(412, "工人已离职");
 		}
-		if(!oldPassword.equals(user.getPassword())) {
-			return new ResultUtil2(412,"旧密码错误");
+		if (!oldPassword.equals(user.getPassword())) {
+			return new ResultUtil2(412, "旧密码错误");
 		}
 		String result;
 		try {
-			result = userService.update(id, null, null, null, newPassword, null);
+			result = userService.update(id, null, null, null, newPassword, null, SUPER_ADMINISTRATOR_TYPE);
 		} catch (Exception e) {
-			return new ResultUtil2(500,"修改失败,请检查所传参数");
+			return new ResultUtil2(500, "修改失败,请检查所传参数");
 		}
-		if("succeed".equals(result)) {
-			return new ResultUtil2(200,"操作成功");
-		}else {
-			return new ResultUtil2(500,"修改失败");
+		if ("succeed".equals(result)) {
+			return new ResultUtil2(200, "操作成功");
+		} else {
+			return new ResultUtil2(500, "修改失败");
 		}
 	}
 }

@@ -40,7 +40,7 @@ import com.jimi.smt.eps_server.mapper.ProgramMapper;
 import com.jimi.smt.eps_server.service.LineService;
 import com.jimi.smt.eps_server.service.ProgramService;
 import com.jimi.smt.eps_server.timer.TimeoutTimer;
-import com.jimi.smt.eps_server.util.ExcelGetter;
+import com.jimi.smt.eps_server.util.ExcelPopularGetter;
 import com.jimi.smt.eps_server.util.OsHelper;
 import com.jimi.smt.eps_server.util.ResultUtil;
 import com.jimi.smt.eps_server.util.ResultUtil2;
@@ -74,23 +74,23 @@ public class ProgramServiceImpl implements ProgramService {
 	private LineService lineService;
 	
 	/**
-	 * THIRTY_TWO_LENGTH : 长度32
+	 * THIRTY_TWO_LENGTH : 字段长度为32
 	 */
-	private static final Integer THIRTY_TWO_LENGTH = 32;
+	private static final Integer FIELD_LENGTH = 32;
 	/**
-	 * ONE_HUNDRED_AND_TWENTY_EIGHT_LENGTH : 长度128
+	 * ONE_HUNDRED_AND_TWENTY_EIGHT_LENGTH : 程序名和工单长度为128
 	 */
-	private static final Integer ONE_HUNDRED_AND_TWENTY_EIGHT_LENGTH = 128;
+	private static final Integer PROGRAMNAME_AND_WORKORDER_LENGTH = 128;
 	/**
-	 * TWO_HUNDRED_AND_FIFTY_SIX_LENGTH : 长度256
+	 * TWO_HUNDRED_AND_FIFTY_SIX_LENGTH : Bom长度为256
 	 */
-	private static final Integer TWO_HUNDRED_AND_FIFTY_SIX_LENGTH = 256;
+	private static final Integer BOM_LENGTH = 256;
 
 	
 	@Override
 	public List<Map<String, Object>> upload(MultipartFile programFile, Integer boardType) throws IOException {
 		// 读文件
-		ExcelGetter getter = ExcelGetter.from(programFile);
+		ExcelPopularGetter getter = ExcelPopularGetter.from(programFile);
 
 		// 初始化结果
 		List<Map<String, Object>> resultList = new ArrayList<Map<String, Object>>();
@@ -167,7 +167,7 @@ public class ProgramServiceImpl implements ProgramService {
 			addErrorInfo(program, getter);
 
 			// 打印到控制台
-			if (OsHelper.isWindows()) {
+			if (!OsHelper.isProductionEnvironment()) {
 				FieldUtil.print(program);
 			}
 
@@ -986,7 +986,7 @@ public class ProgramServiceImpl implements ProgramService {
 	 * @return int
 	 * @date 2018年9月19日 下午8:58:52
 	 */
-	private int getPlanProduct(String planProduct, ExcelGetter getter) {
+	private int getPlanProduct(String planProduct, ExcelPopularGetter getter) {
 		if (planProduct.contains("k") || planProduct.contains("K")) {
 			String lowerPlanProduct = planProduct.toLowerCase();
 			String result = planProduct.toLowerCase().substring(0, lowerPlanProduct.indexOf("k"));
@@ -1005,7 +1005,7 @@ public class ProgramServiceImpl implements ProgramService {
 	 * 获取从Excel表格读取的联板数
 	 * @date 2019年1月27日 上午10:13:32
 	 */
-	private int getStructure(String structure, ExcelGetter getter) {
+	private int getStructure(String structure, ExcelPopularGetter getter) {
 		if (!"".equals(structure) && structure.length() > 0 && isNumber(structure)) {
 			return Integer.parseInt(structure);
 		}
@@ -1044,18 +1044,18 @@ public class ProgramServiceImpl implements ProgramService {
 	 * 添加错误信息
 	 * @date 2019年1月27日 上午8:40:22
 	 */
-	private void addErrorInfo(Program program, ExcelGetter getter) {
-		addLengthErrorInfo(program.getClient(), getter, THIRTY_TWO_LENGTH);
-		addLengthErrorInfo(program.getAuditor(), getter, THIRTY_TWO_LENGTH);
-		addLengthErrorInfo(program.getMachineName(), getter, THIRTY_TWO_LENGTH);
-		addLengthErrorInfo(program.getFileName(), getter, ONE_HUNDRED_AND_TWENTY_EIGHT_LENGTH);
-		addLengthErrorInfo(program.getVersion(), getter, THIRTY_TWO_LENGTH);
-		addLengthErrorInfo(program.getMachineConfig(), getter, THIRTY_TWO_LENGTH);
-		addLengthErrorInfo(program.getProgramNo(), getter, THIRTY_TWO_LENGTH);
-		addLengthErrorInfo(program.getPcbNo(), getter, THIRTY_TWO_LENGTH);
-		addLengthErrorInfo(program.getBom(), getter, TWO_HUNDRED_AND_FIFTY_SIX_LENGTH);
-		addLengthErrorInfo(program.getProgramName(), getter, ONE_HUNDRED_AND_TWENTY_EIGHT_LENGTH);
-		addLengthErrorInfo(program.getWorkOrder(), getter, ONE_HUNDRED_AND_TWENTY_EIGHT_LENGTH);
+	private void addErrorInfo(Program program, ExcelPopularGetter getter) {
+		addLengthErrorInfo(program.getClient(), getter, FIELD_LENGTH);
+		addLengthErrorInfo(program.getAuditor(), getter, FIELD_LENGTH);
+		addLengthErrorInfo(program.getMachineName(), getter, FIELD_LENGTH);
+		addLengthErrorInfo(program.getFileName(), getter, PROGRAMNAME_AND_WORKORDER_LENGTH);
+		addLengthErrorInfo(program.getVersion(), getter, FIELD_LENGTH);
+		addLengthErrorInfo(program.getMachineConfig(), getter, FIELD_LENGTH);
+		addLengthErrorInfo(program.getProgramNo(), getter, FIELD_LENGTH);
+		addLengthErrorInfo(program.getPcbNo(), getter, FIELD_LENGTH);
+		addLengthErrorInfo(program.getBom(), getter, BOM_LENGTH);
+		addLengthErrorInfo(program.getProgramName(), getter, PROGRAMNAME_AND_WORKORDER_LENGTH);
+		addLengthErrorInfo(program.getWorkOrder(), getter, PROGRAMNAME_AND_WORKORDER_LENGTH);
 	}
 
 	
@@ -1063,7 +1063,7 @@ public class ProgramServiceImpl implements ProgramService {
 	 * 添加长度错误信息
 	 * @date 2019年1月27日 上午8:40:49
 	 */
-	private void addLengthErrorInfo(String content, ExcelGetter getter, Integer length) {
+	private void addLengthErrorInfo(String content, ExcelPopularGetter getter, Integer length) {
 		if (content.length() > length) {
 			getter.addErrorInfo("文本： " + content + " 的长度不能大于 " + length + " ，请及时修改");
 		}

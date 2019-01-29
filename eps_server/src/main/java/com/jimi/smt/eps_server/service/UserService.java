@@ -1,10 +1,7 @@
 package com.jimi.smt.eps_server.service;
 
-import java.util.List;
-
-import com.jimi.smt.eps_server.entity.Page;
 import com.jimi.smt.eps_server.entity.User;
-import com.jimi.smt.eps_server.entity.vo.UserVO;
+import com.jimi.smt.eps_server.util.ResultUtil;
 
 /**
  * 用户业务层
@@ -34,7 +31,7 @@ public interface UserService {
 	 * @param enabled
 	 * @return
 	 */
-	String update(String id, Integer classType, String name, Integer type, String password, Boolean enabled);
+	String update(String id, Integer classType, String name, Integer type, String password, Boolean enabled, Integer userType);
 
 	
 	/**
@@ -57,7 +54,7 @@ public interface UserService {
 	 * @param enabled
 	 * @return
 	 */
-	List<UserVO> list(String id, Integer classType, String name, Integer type, String orderBy, Boolean enabled, Page page, Integer userType);
+	ResultUtil list(String id, Integer classType, String name, Integer type, String orderBy, Boolean enabled, Integer currentPage, Integer pageSize, Integer userType);
 				
 	
 	/**

@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -12,84 +11,57 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.web.multipart.MultipartFile;
 
-public class ExcelGetter extends ExcelHelper {
+/**获取Excel表格单元格信息
+ * @author   HCJ
+ * @date     2019年1月29日 上午11:54:21
+ */
+public class ExcelPopularGetter extends ExcelHelper {
 
 	private List<String> errorInfos = new ArrayList<>();
+
 	/**
-	 * NUM_TWO : 数字2
+	 * CLIENT_AND_MACHINENAME_AND_VERSION_ROW : 客户、机器名和版本所在的行
 	 */
-	private static final int NUM_TWO = 2;
+	private static final int CLIENT_AND_MACHINENAME_AND_VERSION_ROW = 2;
 	/**
-	 * NUM_THREE : 数字3
+	 * MACHINECONFIG_AND_PROGRAMNO_AND_LINE_ROW : 机器配置、程序表编号和产线所在的行
 	 */
-	private static final int NUM_THREE = 3;
+	private static final int MACHINECONFIG_AND_PROGRAMNO_AND_LINE_ROW = 3;
 	/**
-	 * NUM_FOUR : 数字4
+	 * EFFECTIVEDATE_AND_PCBNO_AND_WORKDERORDER_ROW : 生效日期、pcbno和工单所在的行
 	 */
-	private static final int NUM_FOUR = 4;
+	private static final int EFFECTIVEDATE_AND_PCBNO_AND_WORKDERORDER_ROW = 4;
 	/**
-	 * NUM_SIX : 数字6
+	 * PLAN_PRODUCT_NUM : 计划生产数量和联板数所在的行列值
 	 */
-	private static final int NUM_SIX = 6;
+	private static final int PLANPRODUCT_AND_STRUCTURE_NUM = 6;
 	/**
-	 * NUM_NINE : 数字9
+	 * STRUCTURE_COL_NUM : 联板数所在的列
 	 */
-	private static final int NUM_NINE = 9;
+	private static final int STRUCTURE_COL_NUM = 9;
 
 
 	/**
 	 * 传入一个excel表格，构造Helper
 	 */
-	public static ExcelGetter from(MultipartFile file) throws IOException {
-		return new ExcelGetter(file);
+	public static ExcelPopularGetter from(MultipartFile file) throws IOException {
+		return new ExcelPopularGetter(file);
 	}
 
 
-	/**
-	 * 获取一个值
+	/**@author HCJ
+	 * 获取错误信息集合
+	 * @date 2019年1月29日 上午11:01:46
 	 */
-	public String getString(int rowNum, int colNum) {
-		return (String) get(rowNum, colNum, RequireType.STRING);
-	}
-
-
-	/**
-	 * 获取一个值
-	 */
-	public Integer getInt(int rowNum, int colNum) {
-		return (Integer) get(rowNum, colNum, RequireType.INT);
-	}
-
-
-	/**
-	 * 获取一个值
-	 */
-	public Date getDate(int rowNum, int colNum) {
-		return (Date) get(rowNum, colNum, RequireType.DATE);
-	}
-
-
-	/**
-	 * 获取一个值
-	 */
-	public Double getDouble(int rowNum, int colNum) {
-		return (Double) get(rowNum, colNum, RequireType.DOUBLE);
-	}
-
-
-	/**
-	 * 获取一个值
-	 */
-	public Boolean getBoolean(int rowNum, int colNum) {
-		return (Boolean) get(rowNum, colNum, RequireType.BOOLEAN);
-	}
-
-
 	public List<String> getErrorInfos() {
 		return errorInfos;
 	}
 
 
+	/**@author HCJ
+	 * 添加错误信息
+	 * @date 2019年1月29日 上午11:02:03
+	 */
 	public void addErrorInfo(String errorInfo) {
 		errorInfos.add(errorInfo);
 	}
@@ -113,7 +85,7 @@ public class ExcelGetter extends ExcelHelper {
 				case INT:
 					return cell.getBooleanCellValue() ? 1 : 0;
 				case DATE:
-					logger.error("无法把坐标为(" + currentSheetNum + "," + (rowNum + 1) + "," + (colNum + 1) + ")的布尔值转成日期");
+					logger.error("无法把表格 " + sheetName + " 第 " + (rowNum + 1) + " 行,第 " + (colNum + 1) + " 列的数值转成日期，请选择正确的单元格格式并且输入正确的数值");
 					errorInfos.add("无法把表格 " + sheetName + " 第 " + (rowNum + 1) + " 行,第 " + (colNum + 1) + " 列的数值转成日期，请选择正确的单元格格式并且输入正确的数值");
 					return null;
 				case DOUBLE:
@@ -151,11 +123,11 @@ public class ExcelGetter extends ExcelHelper {
 				case BOOLEAN:
 					return false;
 				case STRING:
-					if (rowNum == NUM_SIX && colNum == NUM_SIX) {
-						errorInfos.add("无法获取表格 " + sheetName + " 第 " + (rowNum + 1) + " 行,第 5 列的值，该单元格可能为空");
-					} else if ((rowNum == NUM_SIX && colNum == NUM_NINE)) {
-						errorInfos.add("无法获取表格 " + sheetName + " 第 " + (rowNum + 1) + " 行,第 7 列的值，该单元格可能为空");
-					} else if (rowNum == NUM_TWO || rowNum == NUM_THREE || rowNum == NUM_FOUR) {
+					if (rowNum == PLANPRODUCT_AND_STRUCTURE_NUM && colNum == PLANPRODUCT_AND_STRUCTURE_NUM) {
+						errorInfos.add("无法获取表格 " + sheetName + " 计划生产总数的值，该单元格可能为空");
+					} else if ((rowNum == PLANPRODUCT_AND_STRUCTURE_NUM && colNum == STRUCTURE_COL_NUM)) {
+						errorInfos.add("无法获取表格 " + sheetName + " 连板的值，该单元格可能为空");
+					} else if (rowNum == CLIENT_AND_MACHINENAME_AND_VERSION_ROW || rowNum == MACHINECONFIG_AND_PROGRAMNO_AND_LINE_ROW || rowNum == EFFECTIVEDATE_AND_PCBNO_AND_WORKDERORDER_ROW) {
 						errorInfos.add("无法获取表格 " + sheetName + " 第 " + (rowNum + 1) + " 行,第 " + colNum + " 列的值，该单元格可能为空");
 					} else {
 						errorInfos.add("无法获取表格 " + sheetName + " 第 " + (rowNum + 1) + " 行,第 " + (colNum + 1) + " 列的值，该单元格可能为空");
@@ -164,8 +136,8 @@ public class ExcelGetter extends ExcelHelper {
 				case INT:
 					return 0;
 				case DATE:
-					logger.error("无法把坐标为(" + currentSheetNum + "," + (rowNum + 1) + "," + (colNum + 1) + ")的布尔值转成日期");
-					errorInfos.add("请在表格 " + sheetName + " 第 " + (rowNum + 1) + " 行,第 " + (colNum + 1) + " 输入正确的日期格式，如 2019/1/13");
+					logger.error("请在表格 " + sheetName + " 第 " + (rowNum + 1) + " 行,第 " + (colNum + 1) + " 列输入正确的日期格式，如 2019/1/13");
+					errorInfos.add("请在表格 " + sheetName + " 第 " + (rowNum + 1) + " 行,第 " + (colNum + 1) + " 列输入正确的日期格式，如 2019/1/13");
 					return null;
 				case DOUBLE:
 					return 0.0d;
@@ -180,12 +152,12 @@ public class ExcelGetter extends ExcelHelper {
 			}
 			return null;
 		} catch (NumberFormatException e) {
-			logger.error("无法把表格 " + sheetName + "第 " + (rowNum + 1) + "行,第" + (colNum + 1) + "列的数值转成字符串");
+			logger.error("无法把表格 " + sheetName + " 第 " + (rowNum + 1) + " 行,第 " + (colNum + 1) + " 列的数值转成文本形式，请输入数字");
 			errorInfos.add("无法把表格 " + sheetName + " 第 " + (rowNum + 1) + " 行,第 " + (colNum + 1) + " 列的数值转成文本形式，请输入数字");
 			return null;
 		} catch (ParseException e) {
-			logger.error("无法把表格 " + sheetName + "第 " + (rowNum + 1) + "行,第" + (colNum + 1) + "列的字符串转成日期");
-			errorInfos.add("请在表格 " + sheetName + " 第 " + (rowNum + 1) + " 行,第 " + (colNum + 1) + " 输入正确的日期格式，如 2019/1/13");
+			logger.error("请在表格 " + sheetName + " 第 " + (rowNum + 1) + " 行,第 " + (colNum + 1) + " 列输入正确的日期格式，如 2019/1/13");
+			errorInfos.add("请在表格 " + sheetName + " 第 " + (rowNum + 1) + " 行,第 " + (colNum + 1) + " 列输入正确的日期格式，如 2019/1/13");
 			return null;
 		}
 	}
@@ -194,7 +166,7 @@ public class ExcelGetter extends ExcelHelper {
 	/**
 	 * 根据文件格式创建workbook
 	 */
-	private ExcelGetter(MultipartFile file) throws IOException {
+	private ExcelPopularGetter(MultipartFile file) throws IOException {
 		// 判断格式
 		if (file.getOriginalFilename().endsWith(".xlsx")) {
 			workbook = new XSSFWorkbook(file.getInputStream());

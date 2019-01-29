@@ -1,4 +1,4 @@
-package com.jimi.smt.eps_server.timer;
+package com.jimi.smt.eps_server.task;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -21,7 +21,11 @@ import com.jimi.smt.eps_server.rmi.CenterRemoteWrapper;
 import com.jimi.smt.eps_server.thread.SendCmdThread;
 import com.jimi.smt.eps_server.util.OsHelper;
 
-public class CheckErrorTimer {
+/**产线错误操作检测任务类
+ * @author   HCJ
+ * @date     2019年1月29日 下午5:20:13
+ */
+public class CheckErrorTask {
 
 	private static Logger logger = LogManager.getRootLogger();
 
@@ -60,7 +64,7 @@ public class CheckErrorTimer {
 	private Map<Integer, Line> lineMap;
 
 	
-	public CheckErrorTimer(Long lineSize, Map<Integer, Line> lineMap, ConfigMapper configMapper, ProgramItemVisitMapper programItemVisitMapper, Map<Integer, CenterRemoteWrapper> clientSockets) {
+	public CheckErrorTask(Long lineSize, Map<Integer, Line> lineMap, ConfigMapper configMapper, ProgramItemVisitMapper programItemVisitMapper, Map<Integer, CenterRemoteWrapper> clientSockets) {
 		this.configMapper = configMapper;
 		this.programItemVisitMapper = programItemVisitMapper;
 		this.lineSize = lineSize;
@@ -69,6 +73,10 @@ public class CheckErrorTimer {
 	}
 
 	
+	/**@author HCJ
+	 * 开始错误检测
+	 * @date 2019年1月29日 下午5:23:23
+	 */
 	public void start() {
 		try {
 			// 初始化“线别-报警设备错误统计”实体
@@ -127,7 +135,7 @@ public class CheckErrorTimer {
 		try {
 			long s = System.currentTimeMillis();
 			List<LineOperationResult> lineOperationResults = programItemVisitMapper.selectLineOperationResult();
-			if (OsHelper.isWindows()) {
+			if (!OsHelper.isProductionEnvironment()) {
 				System.out.println("查询耗时：" + (System.currentTimeMillis() - s) + "ms");
 			}
 			for (LineOperationResult lineOperationResult : lineOperationResults) {

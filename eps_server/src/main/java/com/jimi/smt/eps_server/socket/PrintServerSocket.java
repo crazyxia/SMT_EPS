@@ -13,6 +13,7 @@ import javax.websocket.server.ServerEndpoint;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.jimi.smt.eps_server.entity.PrinterInfo;
+import com.jimi.smt.eps_server.exception.PrinterSocketException;
 
 /**
  * 打印机服务端socket
@@ -38,7 +39,7 @@ public class PrintServerSocket {
 		try {
 			session.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new PrinterSocketException(e.getMessage());
 		}
 		clients.remove(printerIP);
 	}
@@ -53,7 +54,7 @@ public class PrintServerSocket {
 				results.put(jsonObject.getString("id"), result);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new PrinterSocketException(e.getMessage());
 		}
 	}
 
@@ -63,7 +64,7 @@ public class PrintServerSocket {
 		try {
 			session.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new PrinterSocketException(e.getMessage());
 		}
 		clients.remove(printerIP);
 		error.printStackTrace();

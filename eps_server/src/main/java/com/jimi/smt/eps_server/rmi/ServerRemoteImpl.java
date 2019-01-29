@@ -33,7 +33,7 @@ import com.jimi.smt.eps_server.pack.BoardNumPackage;
 import com.jimi.smt.eps_server.pack.BoardNumReplyPackage;
 import com.jimi.smt.eps_server.pack.LoginPackage;
 import com.jimi.smt.eps_server.pack.LoginReplyPackage;
-import com.jimi.smt.eps_server.timer.CheckErrorTimer;
+import com.jimi.smt.eps_server.task.CheckErrorTask;
 
 import cc.darhao.dautils.api.BytesParser;
 import cc.darhao.dautils.api.FieldUtil;
@@ -79,16 +79,16 @@ public class ServerRemoteImpl implements ServerRemote {
 	private long lineSize;
 
 	/**
-	 * checkErrorTimer : 错误检测定时器
+	 * checkErrorTimer : 错误检测任务类
 	 */
-	private CheckErrorTimer checkErrorTimer;
+	private CheckErrorTask checkErrorTask;
 	
 	// spring注入bean需要使用的构造器
 	public ServerRemoteImpl() throws RemoteException{}
 
 	
 	/** <p>Title: login</p>
-	 * <p>Description: 接收登录包，开启错误检测线程</p> 
+	 * <p>Description: 接收登录包，开始错误检测任务</p> 
 	 */
 	@Override
 	public LoginReplyPackage login(LoginPackage loginPackage){
@@ -114,11 +114,11 @@ public class ServerRemoteImpl implements ServerRemote {
 			} catch (Exception e) {
 				logger.error("搜索产线 " + lineMap.get(login.getLine()).getLine() + " : " + e.getMessage());
 			}
-			checkErrorTimer = new CheckErrorTimer(lineSize, lineMap, configMapper, programItemVisitMapper, connectToCenterRemotes);
+			checkErrorTask = new CheckErrorTask(lineSize, lineMap, configMapper, programItemVisitMapper, connectToCenterRemotes);
 		} else {
 			logger.error("无效的树莓派MAC地址");
 		}
-		if(OsHelper.isWindows()) {
+		if(!OsHelper.isProductionEnvironment()) {
 			logger.info(loginPackage.protocol + "package arrived");
 		}
 		return loginReplyPackage;
@@ -165,7 +165,7 @@ public class ServerRemoteImpl implements ServerRemote {
 		boardNumReplyPackage.receiverIp = boardNumPackage.senderIp;
 		insertLogByPackage(boardNumPackage); 
 		insertLogByPackage(boardNumReplyPackage);
-		if(OsHelper.isWindows()) {
+		if(!OsHelper.isProductionEnvironment()) {
 			logger.info(boardNumPackage.protocol + "package arrived");
 		}
 		return boardNumReplyPackage;
@@ -173,18 +173,18 @@ public class ServerRemoteImpl implements ServerRemote {
 
 	
 	/**
-	 * @author HCJ 每隔3秒检查是否有错误项目
+	 * @author HCJ 每隔5秒检查是否有错误项目
 	 * @method checkError
 	 * @return void
 	 * @date 2018年9月26日 上午8:52:33
 	 */
-	@Scheduled(fixedDelay = 3000)
+	@Scheduled(fixedDelay = 5000)
 	public void checkError() {
-		if (checkErrorTimer != null) {
-			if(OsHelper.isWindows()) {
+		if (checkErrorTask != null) {
+			if(!OsHelper.isProductionEnvironment()) {
 				logger.info("SMT 系统监听错误中。。。");
 			}
-			checkErrorTimer.start();
+			checkErrorTask.start();
 		}
 	}
 
