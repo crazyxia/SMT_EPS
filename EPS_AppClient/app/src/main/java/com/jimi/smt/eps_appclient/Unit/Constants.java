@@ -54,7 +54,7 @@ public class Constants {
     //测试 10.10.11.186:8080/eps_server
 //    public static final String urlBase = "http://10.10.11.186:8080/eps_server";
     //城杰
-    static final String urlBase = "http://10.10.11.90:8080/eps_server";
+    static final String urlBase = "http://10.10.11.124:8080/eps_server";
     //四楼
 //    public static final String urlBase = "http://192.168.2.110:8080/eps_server";
     //培鹏

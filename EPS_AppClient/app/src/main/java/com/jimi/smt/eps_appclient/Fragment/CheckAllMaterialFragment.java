@@ -14,8 +14,10 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
 import com.jimi.smt.eps_appclient.Activity.FactoryLineActivity;
 import com.jimi.smt.eps_appclient.Adapter.MaterialAdapter;
+import com.jimi.smt.eps_appclient.Beans.IsAllDoneInfo;
 import com.jimi.smt.eps_appclient.Beans.Material;
 import com.jimi.smt.eps_appclient.Beans.Operation;
 import com.jimi.smt.eps_appclient.Dao.FLCheckAll;
@@ -72,7 +74,8 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
     private boolean mHidden = false;
     private FactoryLineActivity factoryLineActivity;
     private HttpUtils mHttpUtils;
-    private int checkFistCondition = -1;
+    //    private int checkFistCondition = -1;
+    private int checkAllDoneStrCondition = -1;
     private int checkResetCondition = -1;
     private String longClickInput = "";
 
@@ -96,8 +99,10 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
         */
         mHttpUtils = new HttpUtils(this, getContext());
         showLoading();
-        checkFistCondition = 1;
-        mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
+//        checkFistCondition = 1;
+        checkAllDoneStrCondition = 1;
+//        mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
+        mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FIRST_CHECK_ALL));
 
         initViews(savedInstanceState);
         initData();//初始化数据
@@ -290,8 +295,10 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
             */
             clearLineSeatMaterialScan();
             showLoading();
-            checkFistCondition = 1;
-            mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
+//            checkFistCondition = 1;
+            checkAllDoneStrCondition = 1;
+            mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FIRST_CHECK_ALL));
+//            mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
         }
     }
 
@@ -371,8 +378,10 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                                     longClickInput = scanValue;
                                     //检测是否首次全检
                                     showLoading();
-                                    checkFistCondition = 3;
-                                    mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
+//                                    checkFistCondition = 3;
+                                    checkAllDoneStrCondition = 3;
+                                    mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FIRST_CHECK_ALL));
+//                                    mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
                                     break;
                             }
                         } else {
@@ -467,8 +476,10 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
 
                                 //检测是否首次全检
                                 showLoading();
-                                checkFistCondition = 2;
-                                mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
+//                                checkFistCondition = 2;
+                                checkAllDoneStrCondition = 2;
+                                mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FIRST_CHECK_ALL));
+//                                mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
 
                                 break;
                         }
@@ -754,7 +765,7 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
         Log.d(TAG, "showHttpResponse - " + s);
         dismissLoading();
         switch (code) {
-
+            /*
             case HttpUtils.CodeIsAllDone:
                 int checkFirst = Integer.valueOf(s);
                 switch (checkFistCondition) {
@@ -792,6 +803,57 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                             mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
                         }
                         break;
+                }
+                break;
+                */
+
+            // TODO: 2019/2/12
+            case HttpUtils.CodeIsAllDoneSTR://查询某一项或某几项操作是否完成
+                int allDoneCode;
+                Gson allDoneGson = new Gson();
+                IsAllDoneInfo isAllDoneInfo = allDoneGson.fromJson(s, IsAllDoneInfo.class);
+                allDoneCode = isAllDoneInfo.getCode();
+                if (allDoneCode == 1) {
+                    IsAllDoneInfo.AllDoneInfoBean allDoneInfoBean = isAllDoneInfo.getData();
+                    int isFirstCheck = Integer.valueOf(allDoneInfoBean.getFirstCheckAll());
+                    Log.d(TAG, "checkAllDoneStrCondition - " + checkAllDoneStrCondition);
+                    Log.d(TAG, "isFirstCheck - " + isFirstCheck);
+                    switch (checkAllDoneStrCondition) {
+                        case 1:
+                            if (isFirstCheck == 0) {
+                                //未首检
+                                showInfo();
+                                checkResetCondition = 4;
+                                mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
+                            }
+                            break;
+
+                        case 2://正常扫料号
+                            if (isFirstCheck == 1) {
+                                //已首检，检测是否重置
+                                checkResetCondition = 2;
+                                mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
+                            } else {
+                                //未首检
+                                showInfo();
+                                checkResetCondition = 4;
+                                mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
+                            }
+                            break;
+
+                        case 3://长按扫料号
+                            if (isFirstCheck == 1) {
+                                //已首检，检测是否重置
+                                checkResetCondition = 3;
+                                mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
+                            } else {
+                                //未首检
+                                showInfo();
+                                checkResetCondition = 4;
+                                mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
+                            }
+                            break;
+                    }
                 }
                 break;
 

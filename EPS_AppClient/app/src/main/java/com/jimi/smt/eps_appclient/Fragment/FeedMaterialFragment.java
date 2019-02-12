@@ -20,8 +20,10 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.jimi.smt.eps_appclient.Activity.FactoryLineActivity;
 import com.jimi.smt.eps_appclient.Adapter.MaterialAdapter;
+import com.jimi.smt.eps_appclient.Beans.IsAllDoneInfo;
 import com.jimi.smt.eps_appclient.Beans.Material;
 import com.jimi.smt.eps_appclient.Beans.Operation;
 import com.jimi.smt.eps_appclient.Dao.Feed;
@@ -90,7 +92,7 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
     private transient LoadingDialog loadingDialog;
     private HttpUtils mHttpUtils;
     private int checkResetCondition = -1;
-    private int checkWareCondition = -1;
+    private int checkAllDoneStrCondition = -1;
     private boolean mHidden = false;
     private MyEditTextDel edt_pwd;
     private AlertDialog feedLoginDialog;
@@ -243,9 +245,11 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                 // TODO: 2018/9/17
                 dismissFeedLogin();
 
-//                    checkWareCondition = 2;
-//                    showLoading();
-//                    mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.STORE_ISSUE);
+                /*
+                checkAllDoneStrCondition = 2;
+                showLoading();
+                mHttpUtils.checkAllDoneStr(globalData.getProgramId(),String.valueOf(Constants.STORE_ISSUE));
+                */
 
             }
         }
@@ -389,9 +393,9 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                                 scanValue = globalFunc.getLineSeat(scanValue);
                                 edt_LineSeat.setText(scanValue);
 
-                                checkWareCondition = 3;
+                                checkAllDoneStrCondition = 3;
                                 showLoading();
-                                mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.STORE_ISSUE);
+                                mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.STORE_ISSUE));
 
                                 break;
 
@@ -759,14 +763,14 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                     case 2://切换到上料页面时
                         if (checkReset == 1 && !reseted) {
                             //重置，判断发料
-                            checkWareCondition = 0;
+                            checkAllDoneStrCondition = 0;
                             showLoading();
-                            mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.STORE_ISSUE);
+                            mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.STORE_ISSUE));
                         } else {
-                            //判断发料
-                            checkWareCondition = 1;
+                            //判断发料与上料
+                            checkAllDoneStrCondition = 1;
                             showLoading();
-                            mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.STORE_ISSUE);
+                            mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FEEDMATERIAL) + "&" + String.valueOf(Constants.STORE_ISSUE));
                         }
                         break;
 
@@ -789,7 +793,8 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
 
                 break;
 
-            case HttpUtils.CodeIsAllDone:
+            /*
+            case HttpUtils.CodeIsAllDone://查询某一项或某几项操作是否完成
                 int checkWareOrFeed = Integer.valueOf(response);
                 int type = (Integer) ((Object[]) request)[1];
                 Log.d(TAG, "checkWareOrFeed - " + checkWareOrFeed);
@@ -823,11 +828,11 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                             // TODO: 2018/9/17  
                             if (checkWareOrFeed == 0) {
                                 dismissFeedLogin();
-                                /*
+                                *//*
                                 String titleMsg[] = new String[]{"站位表更新!", "仓库未完成发料!"};
                                 int msgStyle[] = new int[]{22, Color.argb(255, 219, 201, 36)};
                                 showInfo(titleMsg, msgStyle, false, 2);
-                                */
+                                *//*
                             }
                             break;
 
@@ -850,6 +855,65 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                     }
                 }
 
+                break;
+                */
+
+
+            // TODO: 2019/2/12  
+            case HttpUtils.CodeIsAllDoneSTR://查询某一项或某几项操作是否完成
+                int allDoneCode;
+                Gson allDoneGson = new Gson();
+                IsAllDoneInfo isAllDoneInfo = allDoneGson.fromJson(response, IsAllDoneInfo.class);
+                allDoneCode = isAllDoneInfo.getCode();
+                if (allDoneCode == 1) {
+                    IsAllDoneInfo.AllDoneInfoBean allDoneInfoBean = isAllDoneInfo.getData();
+                    int isWare = Integer.valueOf(allDoneInfoBean.getStore());
+                    switch (checkAllDoneStrCondition) {
+                        case 0://只查发料
+                            if (isWare == 0) {
+                                String titleMsgs[] = new String[]{"提示", "仓库未完成发料!"};
+                                int msgStyleStr[] = new int[]{22, Color.argb(255, 219, 201, 36)};
+                                showInfo(titleMsgs, msgStyleStr, false, 2);
+                                clearFeedDisplay();
+                                clearLineSeatMaterialScan();
+                            } else {
+                                clearFeedDisplay();
+                                clearLineSeatMaterialScan();
+                            }
+                            break;
+                        case 1://查发料与上料
+                            int isFeed = Integer.valueOf(allDoneInfoBean.getFeed());
+                            if (isWare == 0) {
+                                String titleMsgStr[] = new String[]{"提示", "仓库未完成发料!"};
+                                int msgStyles[] = new int[]{22, Color.argb(255, 219, 201, 36)};
+                                showInfo(titleMsgStr, msgStyles, false, 2);
+                            } else if (isFeed == 1) {
+                                showFeedLoginWin();
+                            }
+                            break;
+                        case 2:
+                            if (isWare == 0) {
+                                dismissFeedLogin();
+                                /*
+                                String titleMsg[] = new String[]{"站位表更新!", "仓库未完成发料!"};
+                                int msgStyle[] = new int[]{22, Color.argb(255, 219, 201, 36)};
+                                showInfo(titleMsg, msgStyle, false, 2);
+                                */
+                            }
+                            break;
+                        case 3://扫站位时查发料
+                            if (isWare == 0) {
+                                String titleMsgStr[] = new String[]{"提示", "仓库未完成发料!"};
+                                int msgStyles[] = new int[]{22, Color.argb(255, 219, 201, 36)};
+                                showInfo(titleMsgStr, msgStyles, false, 2);
+                            } else if (isWare == 1) {
+                                checkResetCondition = 3;
+                                showLoading();
+                                mHttpUtils.isReset(globalData.getProgramId(), Constants.FEEDMATERIAL);
+                            }
+                            break;
+                    }
+                }
                 break;
 
             case HttpUtils.CodeAddOperate:

@@ -11,6 +11,8 @@ package com.jimi.smt.eps_appclient.Beans;
 
 public class IsAllDoneInfo extends BaseMsg{
     /**
+     * code : 1
+     * msg : 查询成功
      * data : {"store":"1","feed":"1","change":"0","check":"","checkAll":"0","firstCheckAll":""}
      */
 

@@ -65,8 +65,9 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
     private InputDialog inputDialog;
     private boolean mHidden;
     private HttpUtils mHttpUtils;
-    private int checkFeedCondition = -1;
-    private int checkFirstCondition = -1;
+    private int checkAllDoneStrCondition = -1;
+//    private int checkFeedCondition = -1;
+//    private int checkFirstCondition = -1;
     private int checkResetCondition = -1;
     private String dialogScanValue;
     private LoadingDialog loadingDialog;
@@ -1010,7 +1011,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
     @Override
     public void showHttpError(int code, Object request, String s) {
         dismissLoading();
-        Log.d(TAG, "showHttpResponse - " + s);
+        Log.d(TAG, "showHttpError - " + s);
         globalFunc.showInfo("警告", "请检查网络连接是否正常!", "请连接网络!");
         switch (code) {
             case HttpUtils.CodeOperate:
@@ -1025,6 +1026,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                     if (null != integers && integers.size() > 0) {
                         curCheckId -= integers.size();
                     }
+                    Log.d(TAG, "curCheckId - " + curCheckId);
                 }
                 clearLineSeatMaterialScan();
                 break;

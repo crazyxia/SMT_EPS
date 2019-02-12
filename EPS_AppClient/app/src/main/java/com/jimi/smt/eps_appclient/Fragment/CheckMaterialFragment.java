@@ -16,7 +16,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
+import com.google.gson.Gson;
 import com.jimi.smt.eps_appclient.Activity.QCActivity;
+import com.jimi.smt.eps_appclient.Beans.IsAllDoneInfo;
 import com.jimi.smt.eps_appclient.Beans.Material;
 import com.jimi.smt.eps_appclient.Beans.Operation;
 import com.jimi.smt.eps_appclient.Func.GlobalFunc;
@@ -65,7 +67,9 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
     private QCActivity qcActivity;
     private boolean mHidden = false;
     private HttpUtils mHttpUtils;
-    private int checkFirstCondition = -1;
+//    private int checkFirstCondition = -1;
+    private int checkAllDoneStrCondition = -1;
+
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -101,8 +105,10 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
 
             clearAndSetFocus();
             showLoading();
-            checkFirstCondition = 2;
-            mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
+//            checkFirstCondition = 2;
+            checkAllDoneStrCondition = 2;
+            mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FIRST_CHECK_ALL));
+//            mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
         }
     }
 
@@ -127,8 +133,11 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
         mHttpUtils = new HttpUtils(this, getContext());
 
         showLoading();
-        checkFirstCondition = 2;
-        mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
+//        checkFirstCondition = 2;
+//        mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
+
+        checkAllDoneStrCondition = 2;
+        mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FIRST_CHECK_ALL));
 
         initViews(savedInstanceState);
         initData();//初始化数据
@@ -242,8 +251,10 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
 
                                 //判断是否首检
                                 showLoading();
-                                checkFirstCondition = 0;
-                                mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
+//                                checkFirstCondition = 0;
+                                checkAllDoneStrCondition = 0;
+                                mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FIRST_CHECK_ALL));
+//                                mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
                                 break;
 
                             case R.id.edt_check_material:
@@ -388,6 +399,7 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
         Log.d(TAG, "showHttpResponse - " + s);
         switch (code) {
 
+            /*
             case HttpUtils.CodeIsAllDone:
                 int checkFirst = Integer.valueOf(s);
                 switch (checkFirstCondition) {
@@ -405,11 +417,11 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
                         break;
 
                     case 1:
-                        /*
+                        *//*
                         if (checkFirst == 0) {
                             qcActivity.showInfo("提示", "站位表更新!", "IPQC未做首次全检");
                         }
-                        */
+                        *//*
                         break;
 
                     case 2:
@@ -419,6 +431,45 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
                         }
                         break;
 
+                }
+                break;
+                */
+
+            // TODO: 2019/2/12
+            case HttpUtils.CodeIsAllDoneSTR://查询某一项或某几项操作是否完成
+                int allDoneCode;
+                Gson allDoneGson = new Gson();
+                IsAllDoneInfo isAllDoneInfo = allDoneGson.fromJson(s, IsAllDoneInfo.class);
+                allDoneCode = isAllDoneInfo.getCode();
+                if (allDoneCode == 1) {
+                    IsAllDoneInfo.AllDoneInfoBean allDoneInfoBean = isAllDoneInfo.getData();
+                    int isFirstCheck = Integer.valueOf(allDoneInfoBean.getFirstCheckAll());
+                    Log.d(TAG, "checkAllDoneStrCondition - " + checkAllDoneStrCondition);
+                    Log.d(TAG, "isFirstCheck - " + isFirstCheck);
+                    switch (checkAllDoneStrCondition) {
+                        case 0:
+                            if (isFirstCheck == 1) {
+                                if (!TextUtils.isEmpty(edt_LineSeat.getText())) {
+                                    doCheck(edt_LineSeat.getText().toString().trim());
+                                } else {
+                                    edt_LineSeat.setText("");
+                                }
+                            } else {
+                                edt_LineSeat.setText("");
+                                qcActivity.showInfo("提示", "IPQC未做首次全检", "");
+                            }
+                            break;
+
+                        case 1:
+                            break;
+
+                        case 2:
+                            if (isFirstCheck == 0) {
+                                edt_LineSeat.setText("");
+                                qcActivity.showInfo("提示", "IPQC未做首次全检", "");
+                            }
+                            break;
+                    }
                 }
                 break;
 

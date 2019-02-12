@@ -15,7 +15,9 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
 import com.jimi.smt.eps_appclient.Activity.FactoryLineActivity;
+import com.jimi.smt.eps_appclient.Beans.IsAllDoneInfo;
 import com.jimi.smt.eps_appclient.Beans.Material;
 import com.jimi.smt.eps_appclient.Beans.Operation;
 import com.jimi.smt.eps_appclient.Beans.ProgramItemVisit;
@@ -77,7 +79,7 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
 
     private boolean mHidden = false;
     private HttpUtils mHttpUtils;
-    private int checkFirstCondition = -1;
+    private int checkAllDoneStrCondition = -1;
 
 
     @Nullable
@@ -98,8 +100,8 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
         */
         //判断是否首次全检
         showLoading();
-        checkFirstCondition = 0;
-        mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
+        checkAllDoneStrCondition = 0;
+        mHttpUtils.checkAllDoneStr(globalData.getProgramId(),String.valueOf(Constants.FIRST_CHECK_ALL));
 
         initData();
         initViews(savedInstanceState);
@@ -164,8 +166,9 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
             clearAndSetFocus();
             //判断是否首次全检
             showLoading();
-            checkFirstCondition = 0;
-            mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
+            checkAllDoneStrCondition = 0;
+            mHttpUtils.checkAllDoneStr(globalData.getProgramId(),String.valueOf(Constants.FIRST_CHECK_ALL));
+
         }
     }
 
@@ -294,8 +297,8 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
 
                                 //判断是否做了首次全检
                                 showLoading();
-                                checkFirstCondition = 1;
-                                mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
+                                checkAllDoneStrCondition = 1;
+                                mHttpUtils.checkAllDoneStr(globalData.getProgramId(),String.valueOf(Constants.FIRST_CHECK_ALL));
                                 break;
 
                             case R.id.edt_change_OrgMaterial://站位正确后才进入这里
@@ -508,6 +511,7 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
         Log.d(TAG, "showHttpResponse - " + response);
         dismissLoading();
         switch (code) {
+            /*
             case HttpUtils.CodeIsAllDone:
                 int checkFirst = Integer.valueOf(response);
                 switch (checkFirstCondition) {
@@ -525,17 +529,46 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
                         }
                         break;
                     case 2://站位表更新
-                        /*
+                        *//*
                         if (checkFirst == 0) {
                             showInfo("站位表更新!", "IPQC未做首次全检");
                         }
-                        */
+                        *//*
                         break;
+                }
+                break;
+                */
+
+            // TODO: 2019/2/12
+            case HttpUtils.CodeIsAllDoneSTR://查询某一项或某几项操作是否完成
+                int allDoneCode;
+                Gson allDoneGson = new Gson();
+                IsAllDoneInfo isAllDoneInfo = allDoneGson.fromJson(response, IsAllDoneInfo.class);
+                allDoneCode = isAllDoneInfo.getCode();
+                if (allDoneCode == 1) {
+                    IsAllDoneInfo.AllDoneInfoBean allDoneInfoBean = isAllDoneInfo.getData();
+                    int isFirstCheck = Integer.valueOf(allDoneInfoBean.getFirstCheckAll());
+                    switch (checkAllDoneStrCondition){
+                        case 0://进入页面
+                            if (isFirstCheck == 0) {
+                                showInfo("IPQC未做首次全检", "");
+                            }
+                            break;
+                        case 1://扫描时
+                            if (isFirstCheck == 1) {//已首次全检
+                                beginChange(edt_LineSeat.getText().toString().trim());
+                            } else {//未首次全检
+                                edt_LineSeat.setText("");
+                                showInfo("IPQC未做首次全检", "");
+                            }
+                            break;
+                    }
                 }
                 break;
 
             case HttpUtils.CodeAddOperate://操作日志
                 break;
+
             case HttpUtils.CodeAddVisit://visit表
                 //更新visit表成功,则可继续换料,否则提醒重新换料
                 int resCode = -1;
