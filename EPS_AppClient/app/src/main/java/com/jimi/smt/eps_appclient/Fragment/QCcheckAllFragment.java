@@ -14,8 +14,10 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
 import com.jimi.smt.eps_appclient.Activity.QCActivity;
 import com.jimi.smt.eps_appclient.Adapter.MaterialAdapter;
+import com.jimi.smt.eps_appclient.Beans.IsAllDoneInfo;
 import com.jimi.smt.eps_appclient.Beans.Material;
 import com.jimi.smt.eps_appclient.Beans.Operation;
 import com.jimi.smt.eps_appclient.Beans.ProgramItemVisit;
@@ -66,7 +68,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
     private boolean mHidden;
     private HttpUtils mHttpUtils;
     private int checkAllDoneStrCondition = -1;
-//    private int checkFeedCondition = -1;
+    //    private int checkFeedCondition = -1;
 //    private int checkFirstCondition = -1;
     private int checkResetCondition = -1;
     private String dialogScanValue;
@@ -108,8 +110,10 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
         mHttpUtils = new HttpUtils(this, getContext());
 
         showLoading();
-        checkFeedCondition = 0;
-        mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FEEDMATERIAL);
+//        checkFeedCondition = 0;
+        checkAllDoneStrCondition = 0;
+        mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FEEDMATERIAL) + "&" + String.valueOf(Constants.FIRST_CHECK_ALL));
+//        mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FEEDMATERIAL);
 
         initView(savedInstanceState);
         initData();
@@ -189,23 +193,26 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                     resultInfoDialog.cancel();
                     resultInfoDialog.dismiss();
                 }
-                if (event.getQcCheckAllList() != null && event.getQcCheckAllList().size() > 0) {
-                    qcCheckAllList.clear();
-                    qcCheckAllList.addAll(event.getQcCheckAllList());
-                    curCheckId = 0;
-                    mQcCheckALLMaterialBeans.clear();
-                    for (int i = 0, len = qcCheckAllList.size(); i < len; i++) {
-                        QcCheckAll qcCheckAll = qcCheckAllList.get(i);
-                        Material.MaterialBean bean = new Material.MaterialBean(qcCheckAll.getOrder(), qcCheckAll.getBoard_type(), qcCheckAll.getLine(),
-                                qcCheckAll.getProgramId(), qcCheckAll.getSerialNo(), qcCheckAll.getAlternative(), qcCheckAll.getSpecitification()
-                                , qcCheckAll.getPosition(), qcCheckAll.getQuantity(), qcCheckAll.getOrgLineSeat(), qcCheckAll.getOrgMaterial(),
-                                qcCheckAll.getScanLineSeat(), qcCheckAll.getScanMaterial(), qcCheckAll.getResult(), qcCheckAll.getRemark());
-                        mQcCheckALLMaterialBeans.add(bean);
+                if (!mReset) {
+                    if (event.getQcCheckAllList() != null && event.getQcCheckAllList().size() > 0) {
+                        qcCheckAllList.clear();
+                        qcCheckAllList.addAll(event.getQcCheckAllList());
+                        curCheckId = 0;
+                        mQcCheckALLMaterialBeans.clear();
+                        for (int i = 0, len = qcCheckAllList.size(); i < len; i++) {
+                            QcCheckAll qcCheckAll = qcCheckAllList.get(i);
+                            Material.MaterialBean bean = new Material.MaterialBean(qcCheckAll.getOrder(), qcCheckAll.getBoard_type(), qcCheckAll.getLine(),
+                                    qcCheckAll.getProgramId(), qcCheckAll.getSerialNo(), qcCheckAll.getAlternative(), qcCheckAll.getSpecitification()
+                                    , qcCheckAll.getPosition(), qcCheckAll.getQuantity(), qcCheckAll.getOrgLineSeat(), qcCheckAll.getOrgMaterial(),
+                                    qcCheckAll.getScanLineSeat(), qcCheckAll.getScanMaterial(), qcCheckAll.getResult(), qcCheckAll.getRemark());
+                            mQcCheckALLMaterialBeans.add(bean);
+                        }
                     }
+
+                    //更新显示
+                    materialAdapter.notifyDataSetChanged();
                 }
 
-                //更新显示
-                materialAdapter.notifyDataSetChanged();
 //                    edt_ScanMaterial.requestFocus();
                 Log.d(TAG, "mHidden - " + mHidden);
                 //提示首检或上料
@@ -276,8 +283,10 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
             materialAdapter.notifyDataSetChanged();
             clearLineSeatMaterialScan();
             showLoading();
-            checkFeedCondition = 0;
-            mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FEEDMATERIAL);
+//            checkFeedCondition = 0;
+            checkAllDoneStrCondition = 0;
+            mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FEEDMATERIAL) + "&" + String.valueOf(Constants.FIRST_CHECK_ALL));
+//            mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FEEDMATERIAL);
         }
     }
 
@@ -399,8 +408,10 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                                     v.setText(dialogScanValue);
 
                                     showLoading();
-                                    checkFeedCondition = 3;
-                                    mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FEEDMATERIAL);
+//                                    checkFeedCondition = 3;
+                                    checkAllDoneStrCondition = 2;
+                                    mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FEEDMATERIAL) + "&" + String.valueOf(Constants.FIRST_CHECK_ALL));
+//                                    mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FEEDMATERIAL);
 
                                     break;
                             }
@@ -438,8 +449,10 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                                 textView.setText(scanValue);
 
                                 showLoading();
-                                checkFeedCondition = 2;
-                                mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FEEDMATERIAL);
+//                                checkFeedCondition = 2;
+                                checkAllDoneStrCondition = 1;
+                                mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FEEDMATERIAL) + "&" + String.valueOf(Constants.FIRST_CHECK_ALL));
+//                                mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FEEDMATERIAL);
 
                                 break;
                         }
@@ -548,8 +561,10 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
 
     //更新显示日志
     private void updateVisitLog(ArrayList<Integer> integers, Material.MaterialBean materialItem, int condition) {
-        checkFirstCondition = 4;
-        mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL, integers, materialItem, condition);
+//        checkFirstCondition = 4;
+        checkAllDoneStrCondition = 4;
+        mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FIRST_CHECK_ALL), integers, materialItem, condition);
+//        mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL, integers, materialItem, condition);
     }
 
     private void checkMultiItem(ArrayList<Integer> integers, String mScanValue, int condition) {
@@ -669,8 +684,10 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                 case R.id.info_trust:
                     //获取全检结果
                     showLoading();
-                    checkFirstCondition = 0;
-                    mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
+//                    checkFirstCondition = 0;
+                    checkAllDoneStrCondition = 3;
+                    mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FIRST_CHECK_ALL));
+//                    mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
                     // TODO: 2018/12/28
                     dialog.dismiss();
                     if (result) {
@@ -740,6 +757,9 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
 //        dismissLoading();
         Log.d(TAG, "showHttpResponse - " + "  code:" + code + "  s:" + s);
         switch (code) {
+
+/*
+
             case HttpUtils.CodeIsAllDone:
                 Log.d(TAG, "CodeIsAllDone - " + HttpUtils.CodeIsAllDone);
                 int checkFeedOrFirst = Integer.valueOf(s);
@@ -747,6 +767,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                 Log.d(TAG, "checkFeedOrFirst - " + checkFeedOrFirst);
                 Log.d(TAG, "type - " + type);
                 if (type == 0) {//feed
+
                     Log.d(TAG, "checkFeedCondition - " + checkFeedCondition);
                     switch (checkFeedCondition) {
                         case 0://切换到该页面
@@ -853,7 +874,125 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                     }
 
                 }
+                break;
+*/
 
+
+            // TODO: 2019/2/12
+            case HttpUtils.CodeIsAllDoneSTR://查询某一项或某几项操作是否完成
+                int allDoneCode;
+                Gson allDoneGson = new Gson();
+                IsAllDoneInfo isAllDoneInfo = allDoneGson.fromJson(s, IsAllDoneInfo.class);
+                allDoneCode = isAllDoneInfo.getCode();
+                if (allDoneCode == 1) {
+                    IsAllDoneInfo.AllDoneInfoBean allDoneInfoBean = isAllDoneInfo.getData();
+                    Log.d(TAG, "checkAllDoneStrCondition - " + checkAllDoneStrCondition);
+                    int isFeed = -1;
+                    int isFirstCheck = -1;
+                    switch (checkAllDoneStrCondition) {
+
+                        case 0:
+                            isFeed = Integer.valueOf(allDoneInfoBean.getFeed());
+                            isFirstCheck = Integer.valueOf(allDoneInfoBean.getFirstCheckAll());
+                            if (isFeed == 1) {
+                                dismissLoading();
+                                if (isFirstCheck == 0) {
+                                    showInfo("将进行首次全检", "", 3);
+                                }
+                            } else if (isFeed == 0) {
+                                edt_ScanMaterial.setText("");
+                                showInfo("操作员未完成上料!", "", 2);
+                                //检测是否重置,但不操作
+                                checkResetCondition = 1;
+                                if (isFirstCheck == 1) {
+                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
+                                } else if (isFirstCheck == 0) {
+                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
+                                }
+                            }
+                            break;
+
+                        case 1:
+                            isFeed = Integer.valueOf(allDoneInfoBean.getFeed());
+                            isFirstCheck = Integer.valueOf(allDoneInfoBean.getFirstCheckAll());
+                            if (isFeed == 1) {
+                                //完成上料,检测是否重置,同时操作
+                                checkResetCondition = 2;
+                                if (isFirstCheck == 1) {
+                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
+                                } else if (isFirstCheck == 0) {
+                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
+                                }
+                            } else if (isFeed == 0) {
+                                //未完成上料
+                                edt_ScanMaterial.setText("");
+                                showInfo("操作员未完成上料!", "", 2);
+                                //检测是否重置,但不操作
+                                checkResetCondition = 1;
+                                if (isFirstCheck == 1) {
+                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
+                                } else if (isFirstCheck == 0) {
+                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
+                                }
+                            }
+                            break;
+
+                        case 2:
+                            isFeed = Integer.valueOf(allDoneInfoBean.getFeed());
+                            isFirstCheck = Integer.valueOf(allDoneInfoBean.getFirstCheckAll());
+                            if (isFeed == 1) {
+                                //完成上料,检测是否重置,同时操作
+                                checkResetCondition = 3;
+                                if (isFirstCheck == 1) {
+                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
+                                } else if (isFirstCheck == 0) {
+                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
+                                }
+                            } else if (isFeed == 0) {
+                                //未完成上料
+                                edt_ScanMaterial.setText("");
+                                showInfo("操作员未完成上料!", "", 2);
+                                //检测是否重置,但不操作
+                                checkResetCondition = 1;
+                                if (isFirstCheck == 1) {
+                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
+                                } else if (isFirstCheck == 0) {
+                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
+                                }
+                            }
+                            break;
+
+                        case 3:
+                            dismissLoading();
+                            isFirstCheck = Integer.valueOf(allDoneInfoBean.getFirstCheckAll());
+                            if (isFirstCheck == 0) {
+                                showInfo("将进行首次全检", "", 3);
+                            }
+                            break;
+
+                        case 4:
+                            dismissLoading();
+                            isFirstCheck = Integer.valueOf(allDoneInfoBean.getFirstCheckAll());
+                            ArrayList<Integer> integers = (ArrayList<Integer>) ((Object[]) request)[2];
+                            Material.MaterialBean bean = (Material.MaterialBean) ((Object[]) request)[3];
+                            int condition = (int) ((Object[]) request)[4];
+                            if (isFirstCheck == 1) {
+                                Operation operation = Operation.getOperation(globalData.getOperator(), Constants.CHECKALLMATERIAL, bean);
+                                globalData.setUpdateType(Constants.CHECKALLMATERIAL);
+                                mHttpUtils.operate(integers, bean, Constants.CHECKALLMATERIAL, condition);
+                                mHttpUtils.addOperation(operation);
+                            } else if (isFirstCheck == 0) {
+                                Operation operation = Operation.getOperation(globalData.getOperator(), Constants.FIRST_CHECK_ALL, bean);
+                                globalData.setUpdateType(Constants.FIRST_CHECK_ALL);
+                                ProgramItemVisit visit = ProgramItemVisit.getProgramItemVisit(Constants.FIRST_CHECK_ALL, bean);
+                                mHttpUtils.updateVisit(bean, visit, condition, integers);
+                                mHttpUtils.addOperation(operation);
+                            }
+                            break;
+                    }
+                    Log.d(TAG, "isFeed - " + isFeed);
+                    Log.d(TAG, "isFirstCheck - " + isFirstCheck);
+                }
                 break;
 
             case HttpUtils.CodeCheckIsReset:
@@ -869,6 +1008,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                 Log.d(TAG, "reseted - " + reseted);
                 Log.d(TAG, "checkResetCondition - " + checkResetCondition);
                 switch (checkResetCondition) {
+
                     case 1:
                         dismissLoading();
                         if (reset == 1 && !reseted) {
@@ -876,6 +1016,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                             Log.d(TAG, "isResteted - 重置了");
                         }
                         break;
+
                     case 2:
                         if (reset == 1 && !reseted) {
                             dismissLoading();
@@ -891,6 +1032,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                             }
                         }
                         break;
+
                     case 3:
                         if (reset == 1 && !reseted) {
                             dismissLoading();
@@ -900,6 +1042,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                             beginOperate(selectRow, dialogScanValue, 3);
                         }
                         break;
+
                 }
 
                 break;
@@ -1023,9 +1166,11 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                 clearDisplay(integers);
                 if (condition == 2) {
                     //正常的全检操作,回退
+                    /*
                     if (null != integers && integers.size() > 0) {
                         curCheckId -= integers.size();
                     }
+                    */
                     Log.d(TAG, "curCheckId - " + curCheckId);
                 }
                 clearLineSeatMaterialScan();
@@ -1039,9 +1184,11 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                 clearDisplay(arrayList);
                 if (con == 2) {
                     //正常的全检操作,回退
+                    /*
                     if (null != arrayList && arrayList.size() > 0) {
                         curCheckId -= arrayList.size();
                     }
+                    */
                 }
                 clearLineSeatMaterialScan();
                 break;

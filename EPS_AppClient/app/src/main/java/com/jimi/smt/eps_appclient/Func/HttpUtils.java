@@ -528,6 +528,37 @@ public class HttpUtils {
     }
 
     /**
+     * 返回某个工单是否全部完成某项操作的结果
+     *
+     * @param programId
+     * @param type 0&1&3&4 表示同时查询4个结果
+     *             0:上料 1:换料 2:核料 3:全检 4:发料 5:首检
+     */
+    public void checkAllDoneStr(String programId, String type,ArrayList<Integer> integers, Material.MaterialBean bean, int condition) {
+        Log.d(TAG, "checkAllDone - " + isAllDone);
+        Log.d(TAG, "checkAllDone - programId - " + programId);
+        Log.d(TAG, "checkAllDone - type - " + type);
+        OkHttpUtils.post().url(globalData.getIp() + isAllDone)
+                .addParams("programId", programId)
+                .addParams("type", String.valueOf(type))
+                .build()
+                .execute(new StringCallback() {
+                    @Override
+                    public void onError(Call call, Exception e, int id) {
+                        Log.d(TAG, "onError - " + e.toString());
+                        mOkHttpInterface.showHttpError(CodeIsAllDoneSTR, new Object[]{programId, type, integers, bean, condition}, e.toString());
+                    }
+
+                    @Override
+                    public void onResponse(String response, int id) {
+                        Log.d(TAG, "onResponse - " + response);
+                        mOkHttpInterface.showHttpResponse(CodeIsAllDoneSTR, new Object[]{programId, type, integers, bean, condition}, response);
+                    }
+                });
+    }
+
+
+    /**
      * 返回所有线号
      */
     public void getLines() {
