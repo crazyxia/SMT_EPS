@@ -63,6 +63,7 @@ import com.jimi.smt.eps.printer.entity.PrintTaskInfo;
 import com.jimi.smt.eps.printer.entity.RemotePrintTaskResult;
 import com.jimi.smt.eps.printer.entity.Rule;
 import com.jimi.smt.eps.printer.entity.StockLog;
+import com.jimi.smt.eps.printer.entity.User;
 import com.jimi.smt.eps.printer.printtool.PrintFileJsonReader;
 import com.jimi.smt.eps.printer.util.ExcelHelper;
 import com.jimi.smt.eps.printer.util.HttpHelper;
@@ -287,7 +288,10 @@ public class MainController implements Initializable {
 	private Runnable remotePrintRunnable = null;
 	private Session session = null;
 
+	// 保存打印记录
 	private static final String INSERT_STOCK_ACTION = "stock/insert";
+	// 查看用户信息
+	private static final String GET_USER_ACTION = "/user/select";
 	
 	// 配置文件
 	private static final String CONFIG_FILE = "config.ini";
@@ -307,7 +311,19 @@ public class MainController implements Initializable {
 
 	private Finger finger;
 
-	
+	// 仓库操作员
+	private static final Integer WAREHOUSE_OPERATOR = 0;
+	// 超级管理员
+	private static final Integer SUPER_ADMINISTRATOR = 3;
+	// 仓库管理员
+	private static final Integer WAREHOUSE_ADMINISTRATOR = 7;
+
+	/**
+	 * requestErrorAlert : 请求错误提示窗口
+	 */
+	private Alert requestErrorAlert = new Alert(AlertType.ERROR);
+
+
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		initVersion();
 		initTableCol();
@@ -327,10 +343,10 @@ public class MainController implements Initializable {
 		initRemoteSocket();
 		showLogoutAlert();
 		// 设备端初始化
-		initFinger();
+		/*initFinger();*/
 	}
-	
-	
+
+
 	/**
 	 * 提示打印结束后退出账号
 	 */
@@ -392,8 +408,8 @@ public class MainController implements Initializable {
 			}
 		});
 	}
-	
-	
+
+
 	/**
 	 * 初始化远程打印
 	 */
@@ -548,13 +564,12 @@ public class MainController implements Initializable {
 					}
 				}
 			} catch (IOException e) {
-
 				e.printStackTrace();
 			}
 		}
 	}
 
-	
+
 	public void onPrintBtClick() {
 		// 信息完整性校验
 		String quantity = quantityTf.getText();
@@ -594,7 +609,7 @@ public class MainController implements Initializable {
 		}
 	}
 
-	
+
 	public void onConfigBtClick() {
 		showConfigWindow();
 		// 之前是否开启远程打印
@@ -627,7 +642,7 @@ public class MainController implements Initializable {
 		}
 	}
 
-	
+
 	public void onIgnoreClick() {
 		if (ignoreCb.isSelected()) {
 			nameTf.setDisable(false);
@@ -645,7 +660,7 @@ public class MainController implements Initializable {
 		}
 	}
 
-	
+
 	/**
 	 * 远程调用打印
 	 * 
@@ -715,7 +730,7 @@ public class MainController implements Initializable {
 		return result;
 	}
 
-	
+
 	/**
 	 * 打印任务
 	 * 
@@ -725,6 +740,21 @@ public class MainController implements Initializable {
 	 * @param info 远程打印信息,仅当为远程打印时有效
 	 */
 	public void print(String materialId, boolean isRemote, PrintTaskInfo info) throws Exception {
+		Map<String, String> map = new HashMap<>();
+		map.put("id", loginIdLb.getText());
+		String result = sendRequest(GET_USER_ACTION, map);
+		if (result != null && !"".equals(result)) {
+			User user = JSON.parseObject(result, User.class);
+			if (!user.getType().equals(WAREHOUSE_OPERATOR) && !user.getType().equals(SUPER_ADMINISTRATOR) && !user.getType().equals(WAREHOUSE_ADMINISTRATOR)) {
+				new Alert(AlertType.ERROR, "权限不足", ButtonType.OK).show();
+				return;
+			}
+		} else if ("".equals(result)) {
+			new Alert(AlertType.ERROR, "权限不足", ButtonType.OK).show();
+			return;
+		} else {
+			return;
+		}
 		codeResult = true;
 		if (!isRemote) {
 			userId = loginIdLb.getText();
@@ -753,15 +783,13 @@ public class MainController implements Initializable {
 		commitDataBase();
 	}
 
-	
+
 	/**
 	 * 打印子任务,此方法会被print调用若干次,次数为份数
 	 * 
 	 * @para materialId 料盘时间戳,可空,如果为空,表示采用当前时间。否则采用给定值
-	 * @param isRemote
-	 *            是否是远程打印
-	 * @param info
-	 *            远程打印信息,仅当为远程打印时有效
+	 * @param isRemote 是否是远程打印
+	 * @param info 远程打印信息,仅当为远程打印时有效
 	 * @throws Exception
 	 */
 	public void subPrint(String materialId, boolean isRemote, PrintTaskInfo info) throws Exception {
@@ -784,7 +812,7 @@ public class MainController implements Initializable {
 		}
 	}
 
-	
+
 	/**
 	 * @author HCJ 显示规则管理窗口
 	 * @date 2018年10月29日 下午3:35:01
@@ -793,7 +821,7 @@ public class MainController implements Initializable {
 		showManageRuleWindow();
 	}
 	
-	
+
 	public void onQuantityCbClick() {
 		if (quantityCb.isSelected()) {
 			printTaskInfoTfs.set(0, quantityTf);
@@ -802,7 +830,7 @@ public class MainController implements Initializable {
 		}
 	}
 
-	
+
 	public void onSeatNoCbClick() {
 		if (seatNoCb.isSelected()) {
 			printTaskInfoTfs.set(1, seatNoTf);
@@ -811,7 +839,7 @@ public class MainController implements Initializable {
 		}
 	}
 
-	
+
 	public void onDescriptionCbClick() {
 		if (descriptionCb.isSelected()) {
 			printTaskInfoTfs.set(2, descriptionTf);
@@ -820,7 +848,7 @@ public class MainController implements Initializable {
 		}
 	}
 
-	
+
 	public void onNameCbClick() {
 		if (nameCb.isSelected()) {
 			printTaskInfoTfs.set(3, nameTf);
@@ -829,7 +857,7 @@ public class MainController implements Initializable {
 		}
 	}
 
-	
+
 	public void onRemarkCbClick() {
 		if (remarkCb.isSelected()) {
 			printTaskInfoTfs.set(4, remarkTf);
@@ -838,7 +866,7 @@ public class MainController implements Initializable {
 		}
 	}
 
-	
+
 	public void onDateCbClick() {
 		if (dateCb.isSelected()) {
 			printTaskInfoTfs.set(5, dateTf);
@@ -847,7 +875,7 @@ public class MainController implements Initializable {
 		}
 	}
 
-	
+
 	public void onCopyCbClick() {
 		if (copyCb.isSelected()) {
 			printTaskInfoTfs.set(6, copyTf);
@@ -855,8 +883,8 @@ public class MainController implements Initializable {
 			printTaskInfoTfs.set(6, null);
 		}
 	}
-	
-	
+
+
 	/**@author HCJ
 	 * 初始化设备端，开启连接
 	 * @date 2019年1月23日 上午8:24:37
@@ -995,7 +1023,7 @@ public class MainController implements Initializable {
 		});
 	}
 
-	
+
 	/**@author HCJ
 	 * 生成packageId
 	 * @date 2019年1月23日 上午8:25:03
@@ -1006,7 +1034,179 @@ public class MainController implements Initializable {
 		return packageId;
 	}
 
+
+	/**@author HCJ
+	 * 判断是否已经有一个打印软件在运行
+	 * @date 2019年1月22日 上午11:36:31
+	 */
+	public static boolean isPrinterRunning() throws IOException {
+		InputStream in = Runtime.getRuntime().exec("tasklist /fi \"imagename eq printer.exe\"").getInputStream();
+		BufferedReader buffer = new BufferedReader(new InputStreamReader(in));
+		String line = null;
+		int count = 0;
+		while ((line = buffer.readLine()) != null) {
+			if (!"".equals(line)) {
+				count++;
+				if (count > 1) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+
+	public void initCloseEvent(Stage primaryStage) {
+		primaryStage.setOnCloseRequest((event) -> {
+			FXMLLoader loader;
+			try {
+				if(printerSocket.isConnected()) {
+					printerSocket.close();
+				}
+				/*finger.stop();*/
+				loader = new FXMLLoader(ResourcesUtil.getResourceURL("fxml/login.fxml"));
+				Parent root = loader.load();
+				// 把Stage存入MainController
+				LoginController loginController = loader.getController();
+				Stage stage = new Stage();
+				loginController.setPrimaryStage(stage);
+				// 显示
+				stage.setResizable(false);
+				stage.setTitle("防错料系统 - 条码打印器 " + Main.getVersion());
+				stage.setScene(new Scene(root));
+				stage.show();
+				if(selectedSheet != null && !selectedSheet.equals("")) {
+					properties.setProperty(CONFIG_KEY_SHEET_NAME, selectedSheet);
+				}
+				try {
+					properties.store(new FileOutputStream(new File(CONFIG_FILE_NAME)), null);
+				} catch (IOException e) {
+					e.printStackTrace();
+					error("保存配置文件时出现IO错误");
+				}
+				// 清空料号表下拉框
+				if (suppliers != null && suppliers.size() > 0) {
+					suppliers.clear();
+				}
+				// 清空当前料号表
+				if (materials != null && materials.size() > 0) {
+					materials.clear();
+				}
+				// 清空供应商和料号表之间的映射关系
+				if (supplierAndMaterialsMap != null && supplierAndMaterialsMap.size() > 0) {
+					supplierAndMaterialsMap.clear();
+				}
+				if(remotePrintThread != null && remotePrintThread.isAlive()) {
+					remotePrintThread.interrupt();
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+				logger.error("开启登录界面失败");
+			}
 	
+		});
+	}
+
+
+	/**
+	 * @author HCJ 设置当前规则
+	 * @date 2018年10月31日 下午5:05:36
+	 */
+	public void setCurrentRule() {
+		if (ManageRuleController.currentRule != null && ManageRuleController.currentRule.getName() != null) {
+			currentRuleLb.setText("当前料号规则：" + ManageRuleController.currentRule.getName());
+		} else {
+			currentRuleLb.setText("当前料号规则：默认规则");
+		}
+	}
+
+
+	public Stage getPrimaryStage() {
+		return primaryStage;
+	}
+
+
+	public void setPrimaryStage(Stage primaryStage) {
+		this.primaryStage = primaryStage;
+	}
+
+
+	public Socket getPrinterSocket() {
+		return printerSocket;
+	}
+
+
+	public String getUserId() {
+		return userId;
+	}
+
+
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
+
+
+	/**
+	 * 二维码内的数据<br>
+	 * 格式：料号@数量@时间戳@工号
+	 */
+	public static String getData() {
+		return data;
+	}
+
+
+	public void setLoginIdLbText(String loginUserId) {
+		loginIdLb.setText(loginUserId);
+	}
+
+
+	public String[] removeSpace(String[] array) {
+		List<String> tmp = new ArrayList<String>();
+		for (String str : array) {
+			if (str != null && str.length() != 0) {
+				tmp.add(str);
+			}
+		}
+		return tmp.toArray(new String[0]);
+	}
+
+
+	class MaterialPropertiesTfChangeListener implements ChangeListener<String> {
+	
+		private String materialPropertyName;
+	
+		public MaterialPropertiesTfChangeListener(String materialPropertyName) {
+			this.materialPropertyName = materialPropertyName;
+		}
+	
+		@Override
+		public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+			switch (materialPropertyName) {
+			case "name":
+				nameLb.setText(nameTf.getText());
+				break;
+			case "description":
+				descriptionLb.setText(descriptionTf.getText());
+				break;
+			case "seat":
+				seatLb.setText(seatNoTf.getText());
+				break;
+			case "quantity":
+				quantityLb.setText(quantityTf.getText());
+				break;
+			case "remark":
+				remarkLb.setText(remarkTf.getText());
+				break;
+			case "date":
+				dateLb.setText(dateTf.getText());
+			default:
+				break;
+			}
+		}
+	
+	}
+
+
 	/**
 	 * 调用打印机
 	 */
@@ -1025,7 +1225,7 @@ public class MainController implements Initializable {
 		}
 	}
 
-	
+
 	/**
 	 * 生成数据
 	 * 
@@ -1043,8 +1243,6 @@ public class MainController implements Initializable {
 			stringBuffer.append(materialId);
 		}
 		stringBuffer.append("@");
-		stringBuffer.append(descriptionLb.getText().trim());
-		stringBuffer.append("@");
 		stringBuffer.append(userId);
 		stringBuffer.append("@");
 		stringBuffer.append(supplierLb.getText());
@@ -1055,25 +1253,27 @@ public class MainController implements Initializable {
 		stringBuffer.append("@");
 		stringBuffer.append(dateTf.getText().trim());
 		stringBuffer.append("@");
+		stringBuffer.append(descriptionLb.getText().trim());
+		stringBuffer.append("@");
 		data = stringBuffer.toString();
 	}
 
-	
+
 	/**
-	 * 尝试提交入库记录，若失败将会记录到文件，将在下次调用时一并提交
+	 * 提交入库记录
 	 */
 	private void commitDataBase() {
 		// 插入数据库
 		new Thread(() -> {
-			File file = new File("stock_log_backup.dat");
+			/*File file = new File("stock_log_backup.dat");*/
 			try {
 				// 从硬盘读取备份文件拼接到队列
-				if (file.exists()) {
+				/*if (file.exists()) {
 					String[] datas = TextFileUtil.readFromFile("stock_log_backup.dat").split("\\|");
 					for (String string : datas) {
 						stockLogList.add(string);
 					}
-				}
+				}*/
 				// 插入库
 				System.out.println(stockLogList);
 				List<StockLog> stockList = new ArrayList<>();
@@ -1083,22 +1283,22 @@ public class MainController implements Initializable {
 					log.setMaterialNo(datas[0] == null ? "" : datas[0]);
 					log.setQuantity(Integer.valueOf(datas[1]));
 					log.setTimestamp(datas[2] == null ? "" : datas[2]);
-					log.setOperator(datas[4] == null ? "" : datas[4]);
-					log.setCustom(datas[5] == null ? "" : datas[5]);
-					log.setPosition(datas[6] == null ? "" : datas[6]);
-					log.setProductionDate(new SimpleDateFormat("yyyy-MM-dd").parse(datas[8]));
+					log.setOperator(datas[3] == null ? "" : datas[3]);
+					log.setCustom(datas[4] == null ? "" : datas[4]);
+					log.setPosition(datas[5] == null ? "" : datas[5]);
+					log.setProductionDate(new SimpleDateFormat("yyyy-MM-dd").parse(datas[7]));
 					log.setOperationTime(new Date());
 					stockList.add(log);
 				}
 				// 提交并双清
 				Map<String, String> map = new HashMap<>();
 				map.put("stockList", JSON.toJSONString(stockList));
-				httpHelper.requestHttp(INSERT_STOCK_ACTION, map);
+				sendRequest(INSERT_STOCK_ACTION, map);
 				stockLogList.clear();
-				file.delete();
+				/*file.delete();*/
 			} catch (Exception e) {
 				// 队列记录备份硬盘文件并清除队列
-				if (!file.exists()) {
+				/*if (!file.exists()) {
 					try {
 						file.createNewFile();
 					} catch (IOException e1) {
@@ -1112,16 +1312,16 @@ public class MainController implements Initializable {
 				}
 				sb.deleteCharAt(sb.length() - 1);
 				try {
-					TextFileUtil.writeToFile("stock_log_backup.dat", sb.toString());
+					TextFileUtil.writeToFile("stock_log_backup.dat", sb.toString());*/
 					stockLogList.clear();
-				} catch (IOException e1) {
+				/*} catch (IOException e1) {
 					e1.printStackTrace();
-				}
+				}*/
 			}
 		}).start();
 	}
 
-	
+
 	private void createCode() {
 		Map<EncodeHintType, Object> hints = new HashMap<EncodeHintType, Object>();
 		hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
@@ -1143,7 +1343,7 @@ public class MainController implements Initializable {
 
 	}
 
-	
+
 	private void createImage() {
 		// 拷贝到大图层
 		materialNoLb1.setText(materialNoLb.getText());
@@ -1179,7 +1379,7 @@ public class MainController implements Initializable {
 		}
 	}
 
-	
+
 	/**
 	 * 加载表选择器数据
 	 */
@@ -1196,7 +1396,7 @@ public class MainController implements Initializable {
 		}
 	}
 
-	
+
 	/**
 	 * 加载表数据
 	 */
@@ -1218,38 +1418,38 @@ public class MainController implements Initializable {
 		scanMaterialNoTf.requestFocus();
 	}
 
-	
+
 	private void initDataFromConfig() {
 		// 检查e.cfg存在与否,不存在则重新创建
-				if (!new File("e.cfg").exists()) {
-					try {
-						// 默认设置，左边距:0,顶边距:-5,分辨率:190,远程打印:0
-						TextFileUtil.writeToFile("e.cfg", "0,-5,190,0");
-					} catch (IOException e1) {
-						logger.error("e.cfg文件创建失败");
-					}
-				}
-				properties = new Properties();
-				try {
-					properties.load(new FileInputStream(new File(CONFIG_FILE_NAME)));
-				} catch (FileNotFoundException | NullPointerException e) {
-					try {
-						new File(CONFIG_FILE_NAME).createNewFile();
-					} catch (IOException e1) {
-						e1.printStackTrace();
-						error("创建配置文件时出现IO错误");
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
-					error("读取配置文件时出现IO错误");
-				}
-				selectedSheet = properties.getProperty(CONFIG_KEY_SHEET_NAME);
-				// 初始化时间
-				dateLb.setText(DateUtil.yyyyMMdd(new Date()));
-				dateTf.setText(DateUtil.yyyyMMdd(new Date()));
+		if (!new File("e.cfg").exists()) {
+			try {
+				// 默认设置，左边距:0,顶边距:-5,分辨率:190,远程打印:0
+				TextFileUtil.writeToFile("e.cfg", "0,-5,190,0");
+			} catch (IOException e1) {
+				logger.error("e.cfg文件创建失败");
+			}
+		}
+		properties = new Properties();
+		try {
+			properties.load(new FileInputStream(new File(CONFIG_FILE_NAME)));
+		} catch (FileNotFoundException | NullPointerException e) {
+			try {
+				new File(CONFIG_FILE_NAME).createNewFile();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+				error("创建配置文件时出现IO错误");
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			error("读取配置文件时出现IO错误");
+		}
+		selectedSheet = properties.getProperty(CONFIG_KEY_SHEET_NAME);
+		// 初始化时间
+		dateLb.setText(DateUtil.yyyyMMdd(new Date()));
+		dateTf.setText(DateUtil.yyyyMMdd(new Date()));
 	}
 
-	
+
 	private void initHotKey() {
 		// 初始化打印热键
 		parentAp.setOnKeyPressed(new EventHandler<KeyEvent>() {
@@ -1291,7 +1491,7 @@ public class MainController implements Initializable {
 //		quantityTf.textProperty().addListener(listener);
 	}
 
-	
+
 	private void initPrinter() {
 		new Thread(() -> {
 			// 初始化打印机
@@ -1314,8 +1514,8 @@ public class MainController implements Initializable {
 			}
 		}).start();
 	}
-	
-	
+
+
 	private void initChangePwdBt() {
 		changePwdBt.setOnAction((event) -> {
 
@@ -1342,7 +1542,7 @@ public class MainController implements Initializable {
 		});
 	}
 
-	
+
 	@SuppressWarnings("unchecked")
 	private void initTableCol() {
 		// 初始化表格列表
@@ -1354,33 +1554,33 @@ public class MainController implements Initializable {
 		remarkCol.setCellValueFactory(new PropertyValueFactory<>("remark"));
 	}
 
-	
+
 	private void initTableSelectorCbListener() {
 		// 初始化下拉框监听器
-				tableSelectCb.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
+		tableSelectCb.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
 
-					@Override
-					public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-						if (newValue.intValue() > -1) {
-							// 切换到指定sheet
-							String name = tableSelectCb.getItems().get(newValue.intValue()).toString();
-							materials = supplierAndMaterialsMap.get(name);
-							if (materials != null) {
-								loadTableData(materials);
-								selectedSheet = name;
-							} else {
-								loadTableData(null);
-							}
-							// 设置料号为空
-							materialNoTf.setText("");
-							scanMaterialNoTf.requestFocus();
-							supplierLb.setText(name);
-						}
+			@Override
+			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+				if (newValue.intValue() > -1) {
+					// 切换到指定sheet
+					String name = tableSelectCb.getItems().get(newValue.intValue()).toString();
+					materials = supplierAndMaterialsMap.get(name);
+					if (materials != null) {
+						loadTableData(materials);
+						selectedSheet = name;
+					} else {
+						loadTableData(null);
 					}
-				});
+					// 设置料号为空
+					materialNoTf.setText("");
+					scanMaterialNoTf.requestFocus();
+					supplierLb.setText(name);
+				}
+			}
+		});
 	}
 
-	
+
 	private void initMaterialNoTfListener() {
 		// 初始化物料编号文本域监听器
 		materialNoTf.textProperty().addListener(new ChangeListener<String>() {
@@ -1449,7 +1649,7 @@ public class MainController implements Initializable {
 		});
 	}
 
-	
+
 	private void initMaterialPropertiesTfsListener() {
 		nameTf.textProperty().addListener(new MaterialPropertiesTfChangeListener("name"));
 		descriptionTf.textProperty().addListener(new MaterialPropertiesTfChangeListener("description"));
@@ -1459,7 +1659,7 @@ public class MainController implements Initializable {
 		dateTf.textProperty().addListener(new MaterialPropertiesTfChangeListener("date"));
 	}
 
-	
+
 	/**
 	 * 显示正常状态
 	 * 
@@ -1470,8 +1670,8 @@ public class MainController implements Initializable {
 		stateLb.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, null, null)));
 		stateLb.setText(DateUtil.HHmmss(new Date()) + " - " + message);
 	}
-	
-	
+
+
 	/**
 	 * 显示正常状态,应用于非主线程中控制控件
 	 * 
@@ -1485,7 +1685,7 @@ public class MainController implements Initializable {
 		});
 	}
 
-	
+
 	/**
 	 * 显示错误状态，并记录日志
 	 * 
@@ -1497,8 +1697,8 @@ public class MainController implements Initializable {
 		stateLb.setText(DateUtil.HHmmss(new Date()) + " - " + message);
 		logger.error(message);
 	}
-	
-	
+
+
 	/**
 	 * 显示错误状态,并记录日志,应用于非主线程中控制控件
 	 * 
@@ -1513,43 +1713,7 @@ public class MainController implements Initializable {
 		});
 	}
 
-	
-	class MaterialPropertiesTfChangeListener implements ChangeListener<String> {
 
-		private String materialPropertyName;
-
-		public MaterialPropertiesTfChangeListener(String materialPropertyName) {
-			this.materialPropertyName = materialPropertyName;
-		}
-
-		@Override
-		public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-			switch (materialPropertyName) {
-			case "name":
-				nameLb.setText(nameTf.getText());
-				break;
-			case "description":
-				descriptionLb.setText(descriptionTf.getText());
-				break;
-			case "seat":
-				seatLb.setText(seatNoTf.getText());
-				break;
-			case "quantity":
-				quantityLb.setText(quantityTf.getText());
-				break;
-			case "remark":
-				remarkLb.setText(remarkTf.getText());
-				break;
-			case "date":
-				dateLb.setText(dateTf.getText());
-			default:
-				break;
-			}
-		}
-
-	}
-
-	
 	private void showConfigWindow() {
 		try {
 			FXMLLoader loader = new FXMLLoader(ResourcesUtil.getResourceURL("fxml/config.fxml"));
@@ -1569,7 +1733,7 @@ public class MainController implements Initializable {
 
 	}
 
-	
+
 	/**
 	 * @author HCJ 打开规则管理窗口
 	 * @date 2018年10月29日 下午3:35:51
@@ -1593,7 +1757,7 @@ public class MainController implements Initializable {
 		}
 	}
 
-	
+
 	private void resetControllers() {
 		nameTf.setDisable(true);
 		descriptionTf.setDisable(true);
@@ -1619,7 +1783,7 @@ public class MainController implements Initializable {
 		printBt.setDisable(true);
 	}
 
-	
+
 	/**
 	 * 日期类型校验
 	 * 
@@ -1639,7 +1803,7 @@ public class MainController implements Initializable {
 
 	}
 
-	
+
 	/**
 	 * @author HCJ 扫描料号监听器
 	 * @date 2018年10月31日 下午5:04:46
@@ -1684,8 +1848,8 @@ public class MainController implements Initializable {
 			}
 		});
 	}
-	
-	
+
+
 	/**
 	 * @author HCJ 根据料号规则解析得到料号
 	 * @date 2018年10月31日 下午5:05:10
@@ -1712,8 +1876,8 @@ public class MainController implements Initializable {
 		}
 		return null;
 	}
-	
-	
+
+
 	/**@author HCJ
 	 * 根据当前焦点所在的TextField设置点击Enter键后的下一个焦点或者直接打印
 	 * @date 2018年11月29日 上午11:19:56
@@ -1738,7 +1902,7 @@ public class MainController implements Initializable {
 		}
 	}
 
-	
+
 	/**@author HCJ
 	 * 设置初始勾选的CheckBox
 	 * @date 2018年11月29日 上午11:18:18
@@ -1749,8 +1913,8 @@ public class MainController implements Initializable {
 		onQuantityCbClick();
 		onCopyCbClick();
 	}
-	
-	
+
+
 	/**@author HCJ
 	 * 设置初始的TextField集合
 	 * @date 2018年11月29日 上午11:16:55
@@ -1764,8 +1928,8 @@ public class MainController implements Initializable {
 		printTaskInfoTfs.add(5, null);
 		printTaskInfoTfs.add(6, copyTf);
 	}
-	
-	
+
+
 	/**@author HCJ
 	 * 记录当前版本
 	 * @date 2019年1月23日 上午8:44:00
@@ -1780,141 +1944,59 @@ public class MainController implements Initializable {
 			e.printStackTrace();
 		}
 	}
-	
+
 
 	/**@author HCJ
-	 * 判断是否已经有一个打印软件在运行
-	 * @date 2019年1月22日 上午11:36:31
+	 * 发送http请求
+	 * @param action http请求类型
+	 * @param args 存储参数的Map，key为名称，value为值
+	 * @date 2019年4月1日 下午2:29:07
 	 */
-	public static boolean isPrinterRunning() throws IOException {
-		InputStream in = Runtime.getRuntime().exec("tasklist /fi \"imagename eq printer.exe\"").getInputStream();
-		BufferedReader buffer = new BufferedReader(new InputStreamReader(in));
-		String line = null;
-		int count = 0;
-		while ((line = buffer.readLine()) != null) {
-			if (!"".equals(line)) {
-				count++;
-				if (count > 1) {
-					return true;
-				}
-			}
+	private String sendRequest(String action, Map<String, String> args) {
+		try {
+			return httpHelper.requestHttp(action, args);
+		} catch (IOException e) {
+			httpFail(action);
+			e.printStackTrace();
 		}
-		return false;
-	}
-	
-	
-	public void initCloseEvent(Stage primaryStage) {
-		primaryStage.setOnCloseRequest((event) -> {
-			FXMLLoader loader;
-			try {
-				if(printerSocket.isConnected()) {
-					printerSocket.close();
-				}
-				finger.stop();
-				loader = new FXMLLoader(ResourcesUtil.getResourceURL("fxml/login.fxml"));
-				Parent root = loader.load();
-				// 把Stage存入MainController
-				LoginController loginController = loader.getController();
-				Stage stage = new Stage();
-				loginController.setPrimaryStage(stage);
-				// 显示
-				stage.setResizable(false);
-				stage.setTitle("防错料系统 - 条码打印器 " + Main.getVersion());
-				stage.setScene(new Scene(root));
-				stage.show();
-				if(selectedSheet != null && !selectedSheet.equals("")) {
-					properties.setProperty(CONFIG_KEY_SHEET_NAME, selectedSheet);
-				}
-				try {
-					properties.store(new FileOutputStream(new File(CONFIG_FILE_NAME)), null);
-				} catch (IOException e) {
-					e.printStackTrace();
-					error("保存配置文件时出现IO错误");
-				}
-				// 清空料号表下拉框
-				if (suppliers != null && suppliers.size() > 0) {
-					suppliers.clear();
-				}
-				// 清空当前料号表
-				if (materials != null && materials.size() > 0) {
-					materials.clear();
-				}
-				// 清空供应商和料号表之间的映射关系
-				if (supplierAndMaterialsMap != null && supplierAndMaterialsMap.size() > 0) {
-					supplierAndMaterialsMap.clear();
-				}
-				if(remotePrintThread != null && remotePrintThread.isAlive()) {
-					remotePrintThread.interrupt();
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-				logger.error("开启登录界面失败");
-			}
-
-		});
+		return null;
 	}
 
 
-	/**
-	 * @author HCJ 设置当前规则
-	 * @date 2018年10月31日 下午5:05:36
+	/**@author HCJ
+	 * 发送http请求失败
+	 * @param action http请求类型
+	 * @date 2019年4月1日 下午2:28:27
 	 */
-	public void setCurrentRule() {
-		if (ManageRuleController.currentRule != null && ManageRuleController.currentRule.getName() != null) {
-			currentRuleLb.setText("当前料号规则：" + ManageRuleController.currentRule.getName());
-		} else {
-			currentRuleLb.setText("当前料号规则：默认规则");
+	private void httpFail(String action) {
+
+		if (action.equals(INSERT_STOCK_ACTION)) {
+			Platform.runLater(new Runnable() {
+				@Override
+				public void run() {
+
+					if (!requestErrorAlert.isShowing()) {
+						logger.error("保存打印记录失败，insert请求失败，网络连接出错");
+						requestErrorAlert.setContentText("保存打印记录失败，请检查你的网络连接");
+						requestErrorAlert.showAndWait();
+					}
+				}
+			});
+			return;
 		}
-	}
-
-	
-	public Stage getPrimaryStage() {
-		return primaryStage;
-	}
-
-	
-	public void setPrimaryStage(Stage primaryStage) {
-		this.primaryStage = primaryStage;
-	}
-
-	
-	public Socket getPrinterSocket() {
-		return printerSocket;
-	}
-
-	
-	public String getUserId() {
-		return userId;
-	}
-
-	
-	public void setUserId(String userId) {
-		this.userId = userId;
-	}
-
-	
-	/**
-	 * 二维码内的数据<br>
-	 * 格式：料号@数量@时间戳@工号
-	 */
-	public static String getData() {
-		return data;
-	}
-	
-	
-	public void setLoginIdLbText(String loginUserId) {
-		loginIdLb.setText(loginUserId);
-	}
-
-	
-	public String[] removeSpace(String[] array) {
-		List<String> tmp = new ArrayList<String>();
-		for (String str : array) {
-			if (str != null && str.length() != 0) {
-				tmp.add(str);
-			}
+		if (action.equals(GET_USER_ACTION)) {
+			Platform.runLater(new Runnable() {
+				@Override
+				public void run() {
+					if (!requestErrorAlert.isShowing()) {
+						logger.error("获取用户信息失败，select请求失败，网络连接出错");
+						requestErrorAlert.setContentText("获取用户信息失败，请检查你的网络连接");
+						requestErrorAlert.showAndWait();
+					}
+				}
+			});
 		}
-		return tmp.toArray(new String[0]);
+
 	}
 
 }
