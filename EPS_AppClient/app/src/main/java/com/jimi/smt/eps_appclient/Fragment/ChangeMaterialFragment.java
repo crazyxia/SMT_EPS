@@ -57,7 +57,7 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
     private MyEditTextDel edt_LineSeat;
     private MyEditTextDel edt_OrgMaterial;
     private MyEditTextDel edt_ChgMaterial;
-    private TextView tv_Result, tv_Remark, tv_lastInfo;
+    private TextView tv_Result, tv_Remark, seat_tv, org_material_tv, chang_material_tv/*tv_lastInfo*/;
 
     //当前的站位，线上料号，更换料号
     private String curLineSeat, curOrgMaterial, curChgMaterial;
@@ -101,7 +101,7 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
         //判断是否首次全检
         showLoading();
         checkAllDoneStrCondition = 0;
-        mHttpUtils.checkAllDoneStr(globalData.getProgramId(),String.valueOf(Constants.FIRST_CHECK_ALL));
+        mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FIRST_CHECK_ALL));
 
         initData();
         initViews(savedInstanceState);
@@ -167,7 +167,7 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
             //判断是否首次全检
             showLoading();
             checkAllDoneStrCondition = 0;
-            mHttpUtils.checkAllDoneStr(globalData.getProgramId(),String.valueOf(Constants.FIRST_CHECK_ALL));
+            mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FIRST_CHECK_ALL));
 
         }
     }
@@ -193,7 +193,10 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
         edt_OrgMaterial = vChangeMaterialFragment.findViewById(R.id.edt_change_OrgMaterial);
         edt_ChgMaterial = vChangeMaterialFragment.findViewById(R.id.edt_change_ChgMaterial);
         tv_Result = vChangeMaterialFragment.findViewById(R.id.tv_Result);
-        tv_lastInfo = vChangeMaterialFragment.findViewById(R.id.tv_LastInfo);
+//        tv_lastInfo = vChangeMaterialFragment.findViewById(R.id.tv_LastInfo);
+        seat_tv = vChangeMaterialFragment.findViewById(R.id.seat_tv);
+        org_material_tv = vChangeMaterialFragment.findViewById(R.id.org_material_tv);
+        chang_material_tv = vChangeMaterialFragment.findViewById(R.id.chang_material_tv);
         tv_Remark = vChangeMaterialFragment.findViewById(R.id.tv_Remark);
 
         tv_change_order.setText(bundle.getString("orderNum"));
@@ -298,7 +301,7 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
                                 //判断是否做了首次全检
                                 showLoading();
                                 checkAllDoneStrCondition = 1;
-                                mHttpUtils.checkAllDoneStr(globalData.getProgramId(),String.valueOf(Constants.FIRST_CHECK_ALL));
+                                mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FIRST_CHECK_ALL));
                                 break;
 
                             case R.id.edt_change_OrgMaterial://站位正确后才进入这里
@@ -432,9 +435,14 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
         }
         tv_Result.setText(result);
         tv_Remark.setText(remark);
+        /*
         tv_lastInfo.setText("扫描结果: 站位:" + curLineSeat
                 + "\r\n原始料号:" + curOrgMaterial
                 + "\r\n替换料号:" + curChgMaterial);
+        */
+        seat_tv.setText("扫描结果: 站位:" + curLineSeat);
+        org_material_tv.setText("原始料号:" + curOrgMaterial);
+        chang_material_tv.setText("替换料号:" + curChgMaterial);
 
         globalData.setOperType(Constants.CHANGEMATERIAL);
         globalData.setUpdateType(Constants.CHANGEMATERIAL);
@@ -548,7 +556,7 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
                 if (allDoneCode == 1) {
                     IsAllDoneInfo.AllDoneInfoBean allDoneInfoBean = isAllDoneInfo.getData();
                     int isFirstCheck = Integer.valueOf(allDoneInfoBean.getFirstCheckAll());
-                    switch (checkAllDoneStrCondition){
+                    switch (checkAllDoneStrCondition) {
                         case 0://进入页面
                             if (isFirstCheck == 0) {
                                 showInfo("IPQC未做首次全检", "");
@@ -589,7 +597,12 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
     @Override
     public void showHttpError(int code, Object request, String s) {
         dismissLoading();
-        showInfo("网络连接异常!", "请检查网络");
+        switch (code) {
+            case HttpUtils.CodeAddVisit:
+                globalFunc.showInfo("操作失败", "请重新操作!", "请重新操作!");
+                clearAndSetFocus();
+                break;
+        }
     }
 
     private void showLoading() {

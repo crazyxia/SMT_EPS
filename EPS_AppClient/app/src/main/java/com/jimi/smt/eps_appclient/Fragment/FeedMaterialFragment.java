@@ -395,7 +395,7 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
 
                                 checkAllDoneStrCondition = 3;
                                 showLoading();
-                                mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.STORE_ISSUE));
+                                mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FEEDMATERIAL) + "&" + String.valueOf(Constants.STORE_ISSUE));
 
                                 break;
 
@@ -868,6 +868,7 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                 if (allDoneCode == 1) {
                     IsAllDoneInfo.AllDoneInfoBean allDoneInfoBean = isAllDoneInfo.getData();
                     int isWare = Integer.valueOf(allDoneInfoBean.getStore());
+                    int isFeed = -1;
                     switch (checkAllDoneStrCondition) {
                         case 0://只查发料
                             if (isWare == 0) {
@@ -882,7 +883,7 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                             }
                             break;
                         case 1://查发料与上料
-                            int isFeed = Integer.valueOf(allDoneInfoBean.getFeed());
+                            isFeed = Integer.valueOf(allDoneInfoBean.getFeed());
                             if (isWare == 0) {
                                 String titleMsgStr[] = new String[]{"提示", "仓库未完成发料!"};
                                 int msgStyles[] = new int[]{22, Color.argb(255, 219, 201, 36)};
@@ -901,18 +902,26 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                                 */
                             }
                             break;
-                        case 3://扫站位时查发料
+                        case 3://扫站位时查发料、上料
+                            isFeed = Integer.valueOf(allDoneInfoBean.getFeed());
                             if (isWare == 0) {
                                 String titleMsgStr[] = new String[]{"提示", "仓库未完成发料!"};
                                 int msgStyles[] = new int[]{22, Color.argb(255, 219, 201, 36)};
                                 showInfo(titleMsgStr, msgStyles, false, 2);
                             } else if (isWare == 1) {
-                                checkResetCondition = 3;
-                                showLoading();
-                                mHttpUtils.isReset(globalData.getProgramId(), Constants.FEEDMATERIAL);
+                                if (isFeed == 0){
+                                    checkResetCondition = 3;
+                                    showLoading();
+                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.FEEDMATERIAL);
+                                }else if (isFeed == 1){
+                                    //已完成上料，清空本地数据，提示再次上料
+                                    showFeedLoginWin();
+                                }
                             }
                             break;
                     }
+                    Log.d(TAG, "isFeed - " + isFeed);
+                    Log.d(TAG, "isWare - " + isWare);
                 }
                 break;
 
@@ -972,12 +981,13 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
     public void showHttpError(int code, Object request, String s) {
         dismissLoading();
         Log.d(TAG, "showHttpError - " + s);
-        globalFunc.showInfo("警告", "请检查网络连接是否正常!", "请连接网络!");
+//        globalFunc.showInfo("警告", "请检查网络连接是否正常!", "请连接网络!");
         switch (code) {
             case HttpUtils.CodeAddOperate://添加操作日志
                 break;
             case HttpUtils.CodeAddVisit://更新visit表
                 //更新失败,网络访问失败
+                globalFunc.showInfo("操作失败", "请重新操作!", "请重新操作!");
                 clearDisplay(scanLineIndex);
                 break;
         }

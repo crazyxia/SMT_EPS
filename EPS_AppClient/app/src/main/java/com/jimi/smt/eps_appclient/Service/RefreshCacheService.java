@@ -752,6 +752,8 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
     public void onDestroy() {
         Log.d(TAG, "onDestroy");
         stopSelf();
+        // TODO: 2019/2/14
+        mThread.interrupt();
         super.onDestroy();
     }
 }

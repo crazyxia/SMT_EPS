@@ -967,12 +967,13 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
     @Override
     public void showHttpError(int code, Object request, String s) {
         Log.d(TAG, "showHttpResponse - " + s);
+        Log.d(TAG, "showHttpResponse - code - " + code);
         dismissLoading();
-        globalFunc.showInfo("警告", "请检查网络连接是否正常!", "请连接网络!");
+//        globalFunc.showInfo("警告", "请检查网络连接是否正常!", "请连接网络!");
         switch (code) {
             case HttpUtils.CodeOperate:
                 //更新visit表
-                // TODO: 2019/1/28 会出现当前操作跳回到上一个的问题 
+                globalFunc.showInfo("操作失败", "请重新操作!", "请重新操作!");
                 ArrayList<Integer> integers = (ArrayList<Integer>) ((Object[]) request)[0];
                 Material.MaterialBean bean = (Material.MaterialBean) ((Object[]) request)[1];
                 int condition = (int) ((Object[]) request)[2];
@@ -980,8 +981,15 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                 clearDisplay(integers);
                 if (condition == 2) {
                     //正常的全检操作,回退
+                    /*
                     if ((null != integers && integers.size() > 0) && (curCheckId > 0)) {
                         curCheckId -= integers.size();
+                    }
+                    */
+                    if (curCheckId <= 0) {
+                        lv_CheckAllMaterial.setSelection(0);
+                    } else {
+                        lv_CheckAllMaterial.setSelection(curCheckId - 1);
                     }
                 }
                 clearLineSeatMaterialScan();

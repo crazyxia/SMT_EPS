@@ -1155,7 +1155,8 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
     public void showHttpError(int code, Object request, String s) {
         dismissLoading();
         Log.d(TAG, "showHttpError - " + s);
-        globalFunc.showInfo("警告", "请检查网络连接是否正常!", "请连接网络!");
+        Log.d(TAG, "showHttpError - code - " + code);
+//        globalFunc.showInfo("警告", "请检查网络连接是否正常!", "请连接网络!");
         switch (code) {
             case HttpUtils.CodeOperate:
                 Log.d(TAG, "CodeOperate - " + HttpUtils.CodeOperate);
@@ -1178,6 +1179,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
 
             case HttpUtils.CodeAddVisit:
                 Log.d(TAG, "CodeAddVisit - " + HttpUtils.CodeAddVisit);
+                globalFunc.showInfo("操作失败", "请重新操作!", "请重新操作!");
                 int con = (int) ((Object[]) request)[2];
                 ArrayList<Integer> arrayList = (ArrayList<Integer>) ((Object[]) request)[3];
                 //清除刚刚的操作
@@ -1189,6 +1191,12 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                         curCheckId -= arrayList.size();
                     }
                     */
+                    if (curCheckId <= 0) {
+                        lv_qcCheckAll.setSelection(0);
+                    } else {
+                        lv_qcCheckAll.setSelection(curCheckId - 1);
+                    }
+
                 }
                 clearLineSeatMaterialScan();
                 break;

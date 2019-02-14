@@ -53,7 +53,7 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
     //操作员　站位　料号
     private MyEditTextDel edt_LineSeat;
     private MyEditTextDel edt_Material;
-    private TextView tv_Result, tv_Remark, tv_LastInfo;
+    private TextView tv_Result, tv_Remark, tv_seat,tv_check_material/*tv_LastInfo*/;
     //当前扫描的站位,料号
     private String curLineSeat, curMaterial;
     //当前检料时用到的排位料号表
@@ -176,7 +176,9 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
         edt_Material = vCheckMaterialFragment.findViewById(R.id.edt_check_material);
         tv_Result = vCheckMaterialFragment.findViewById(R.id.tv_Result);
         tv_Remark = vCheckMaterialFragment.findViewById(R.id.tv_Remark);
-        tv_LastInfo = vCheckMaterialFragment.findViewById(R.id.tv_LastInfo);
+//        tv_LastInfo = vCheckMaterialFragment.findViewById(R.id.tv_LastInfo);
+        tv_seat = vCheckMaterialFragment.findViewById(R.id.tv_seat);
+        tv_check_material = vCheckMaterialFragment.findViewById(R.id.tv_check_material);
 
         tv_check_order.setText(bundle.getString("orderNum"));
         edt_Operation.setText(bundle.getString("operatorNum"));
@@ -336,7 +338,9 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
         }
         tv_Remark.setText(strRemark);
         tv_Result.setText(result);
-        tv_LastInfo.setText("扫描结果\r\n站位:" + curLineSeat + "\r\n" + "料号:" + curMaterial);
+//        tv_LastInfo.setText("扫描结果\r\n站位:" + curLineSeat + "\r\n" + "料号:" + curMaterial);
+        tv_seat.setText("扫描结果:站位:" + curLineSeat);
+        tv_check_material.setText("料号:" + curMaterial);
 
         if (logType == 1) {
             //添加显示日志
@@ -357,7 +361,9 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
         tv_Remark.setTextColor(Color.argb(255, 182, 171, 17));
         tv_Result.setText("WARN");
         tv_Result.setBackgroundColor(Color.YELLOW);
-        tv_LastInfo.setText("扫描结果\r\n站位:" + lineSeat + "\r\n" + "料号:");
+//        tv_LastInfo.setText("扫描结果\r\n站位:" + lineSeat + "\r\n" + "料号:");
+        tv_seat.setText("扫描结果:站位:" + lineSeat);
+        tv_check_material.setText("料号:");
     }
 
     //重新检下一个料
@@ -511,7 +517,12 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
     @Override
     public void showHttpError(int code, Object request, String s) {
         dismissLoading();
-        globalFunc.showInfo("警告", "请检查网络连接是否正常!", "请连接网络!");
+        switch (code){
+            case HttpUtils.CodeAddVisit:
+                globalFunc.showInfo("操作失败", "请重新操作!", "请重新操作!");
+                clearAndSetFocus();
+                break;
+        }
     }
 
 
