@@ -971,7 +971,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                             break;
 
                         case 4:
-                            dismissLoading();
+//                            dismissLoading();
                             isFirstCheck = Integer.valueOf(allDoneInfoBean.getFirstCheckAll());
                             ArrayList<Integer> integers = (ArrayList<Integer>) ((Object[]) request)[2];
                             Material.MaterialBean bean = (Material.MaterialBean) ((Object[]) request)[3];
@@ -1064,12 +1064,14 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                     JSONObject jsonObject = new JSONObject(s);
                     resCode = jsonObject.getInt("code");
                 } catch (JSONException e) {
+                    // TODO: 2019/2/15 清除显示，消除加载，提示
                     e.printStackTrace();
                     Log.d(TAG, "showHttpResponse - " + e.toString());
                 }
                 Log.d(TAG, "resCode - " + resCode);
                 Material.MaterialBean materialBean = (Material.MaterialBean) ((Object[]) request)[0];
                 int con = (int) ((Object[]) request)[2];
+                Log.d(TAG, "con - " + con);
                 ArrayList<Integer> arrayList = (ArrayList<Integer>) ((Object[]) request)[3];
                 if (resCode == 1) {
                     //更新本地缓存
@@ -1090,6 +1092,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                     //清除刚刚的操作
                     clearDisplay(arrayList);
                     if (con == 2) {
+                        // TODO: 2019/2/15  要回退？
                         //正常的全检操作,回退
                         if (null != arrayList && arrayList.size() > 0) {
                             curCheckId -= arrayList.size();
@@ -1097,6 +1100,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                     }
                     clearLineSeatMaterialScan();
                 }
+                dismissLoading();
                 break;
 
             case HttpUtils.CodeOperate:
@@ -1114,6 +1118,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                 ArrayList<Integer> integers = (ArrayList<Integer>) ((Object[]) request)[0];
                 Material.MaterialBean bean = (Material.MaterialBean) ((Object[]) request)[1];
                 int condition = (int) ((Object[]) request)[2];
+                Log.d(TAG, "condition - " + condition);
                 if ((result.equalsIgnoreCase("succeed"))) {
                     //更新本地缓存
                     cacheCheckResult(integers, bean);
@@ -1134,6 +1139,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                     //清除刚刚的操作
                     clearDisplay(integers);
                     if (condition == 2) {
+                        // TODO: 2019/2/15  要回退？
                         //正常的全检操作,回退
                         if ((null != integers && integers.size() > 0) && (curCheckId > 0)) {
                             curCheckId -= integers.size();
@@ -1141,6 +1147,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                     }
                     clearLineSeatMaterialScan();
                 }
+                dismissLoading();
                 break;
         }
     }
@@ -1160,6 +1167,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
         switch (code) {
             case HttpUtils.CodeOperate:
                 Log.d(TAG, "CodeOperate - " + HttpUtils.CodeOperate);
+                globalFunc.showInfo("操作失败", "请重新操作!", "请重新操作!");
                 //更新visit表
                 ArrayList<Integer> integers = (ArrayList<Integer>) ((Object[]) request)[0];
                 int condition = (int) ((Object[]) request)[2];

@@ -70,6 +70,7 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
     private int sucIssueCount = 0;//成功发料个数
     private int allCount = 0;//总数
     private GlobalFunc globalFunc;
+    private LoadingDialog loadingDialog;
 
     //上料本地数据表
     private List<Ware> wareList = new ArrayList<>();
@@ -354,7 +355,7 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
             //先判断是否联网
             if (globalFunc.isNetWorkConnected()) {
                 Log.d(TAG, "onEditorAction::" + v.getText());
-                Log.d(TAG, "event.getAction()::" + event.getAction());
+//                Log.d(TAG, "event.getAction()::" + event.getAction());
 
                 if (!TextUtils.isEmpty(v.getText().toString().trim())) {
                     //扫描的内容
@@ -408,6 +409,7 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
                     }
 
                     //写日志
+                    showLoading();
                     setOperateLog(arrayLists, scanMaterial);
                 }
             } else {
@@ -622,6 +624,7 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
                             }
 
                         } else {
+                            curSelectIndex = lineSeatIndex.get(0);
                             bean.setRemark("发料成功");
                             //赋值
                             operate = bean;
@@ -629,16 +632,19 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
 
                     }
 
-                    //添加日志
-                    Log.d(TAG, "operate " + operate.getMaterialStr());
-                    Operation operation = Operation.getOperation(curOperatorNUm, Constants.STORE_ISSUE, operate);
-                    mHttpUtils.addOperation(operation);
+                    Log.d(TAG, "curSelectIndex - " + curSelectIndex);
+
                     //更新visit表
                     com.jimi.smt.eps_appclient.Beans.ProgramItemVisit itemVisit = com.jimi.smt.eps_appclient.Beans.ProgramItemVisit.getProgramItemVisit(Constants.STORE_ISSUE, operate);
                     mHttpUtils.updateVisit(operate, itemVisit, m);
+                    //添加日志
+//                    Log.d(TAG, "operate " + operate.getMaterialStr());
+                    Operation operation = Operation.getOperation(curOperatorNUm, Constants.STORE_ISSUE, operate);
+                    mHttpUtils.addOperation(operation);
                 }
             } else {
                 //弹出站位
+                dismissLoading();
                 showInfo("料号:" + scanMaterial, lineSeatAl, wareSeatList, 1);
             }
         } else {
@@ -729,8 +735,10 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
         }
         switch (code) {
             case HttpUtils.CodeAddOperate://添加操作日志
+                dismissLoading();
                 break;
             case HttpUtils.CodeAddVisit://更新visit表
+                dismissLoading();
                 if ((Integer) (((Object[]) request)[2]) == (wareCount - 1)) {
                     if (resCode == 1) {
                         //更新成功,显示并写本地数据
@@ -738,8 +746,10 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
                         //保存本地数据库缓存
                         cacheWareResult(arrayLists);
                         //刷新数据
-                        wareHouseAdapter.notifyDataSetChanged();
                         lv_ware_materials.setSelection(curSelectIndex);
+                        wareHouseAdapter.notifyDataSetChanged();
+
+                        Log.d(TAG, "curSelectIndex - " + curSelectIndex);
                     } else if (resCode == 0) {
                         //更新失败,提示重扫
                         globalFunc.showInfo("提示", "发料失败!", "请重新发料");
@@ -752,6 +762,7 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
 
     @Override
     public void showHttpError(int code, Object request, String s) {
+        dismissLoading();
         globalFunc.showInfo("警告", "请检查网络连接是否正常!", "请连接网络!");
         switch (code) {
             case HttpUtils.CodeAddOperate://添加操作日志
@@ -762,4 +773,20 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
                 break;
         }
     }
+
+    private void showLoading() {
+        dismissLoading();
+        loadingDialog = new LoadingDialog(this, "正在加载...");
+        loadingDialog.setCanceledOnTouchOutside(false);
+        loadingDialog.show();
+    }
+
+    private void dismissLoading() {
+        //取消弹出窗
+        if (loadingDialog != null && loadingDialog.isShowing()) {
+            loadingDialog.cancel();
+            loadingDialog.dismiss();
+        }
+    }
+
 }
