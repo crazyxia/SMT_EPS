@@ -1,8 +1,9 @@
 <template>
-  <div class="operationTable">
+  <div class="operationTable" v-loading="loading">
     <el-table
       :data="tableData"
       border
+      max-height="700"
       style="width: 100%">
       <el-table-column
         label="线号"
@@ -63,7 +64,7 @@
         :current-page.sync="currentPage"
         :page-size="pageSize"
         @size-change="handleSizeChange"
-        @current-change="find"
+        @current-change="handlePageChange"
         :page-sizes="[20, 40, 80, 100]"
         layout="sizes, prev, pager, next">
       </el-pagination>
@@ -75,6 +76,8 @@
   import {mapActions, mapGetters} from 'vuex'
   import {axiosPost} from "./../../../../utils/fetchData"
   import {operationReportSummaryListUrl} from "./../../../../config/globalUrl"
+  import {downloadFile} from "../../../../utils/fetchData";
+  import {downloadOperationReportUrl} from "../../../../config/globalUrl";
 
   export default {
     name: 'operationTable',
@@ -83,16 +86,22 @@
         tableData: [],
         currentPage: 1,
         pageSize: 20,
+        loading:false
       }
     },
     computed: {
-      ...mapGetters(['operationPage','operation'])
+      ...mapGetters(['operationPage','operation','token','pageInfo'])
     },
     beforeDestroy() {
       //取消监听
       Bus.$off('findOperation');
+      Bus.$off('downloadOperation');
     },
     mounted() {
+      if(this.pageInfo.hasOwnProperty('currentPage')){
+        this.currentPage = this.pageInfo.currentPage;
+        this.pageSize = this.pageInfo.pageSize;
+      }
       this.find();
       //监听操作报表查找事件
       Bus.$on('findOperation', () => {
@@ -100,13 +109,16 @@
         this.pageSize = 20;
         this.setOperationPage(-1);
         this.find();
+      });
+      //监听下载报表事件
+      Bus.$on('downloadOperation',() => {
+        this.download();
       })
     },
     methods: {
-      ...mapActions(['setLoading', 'setOperation', 'setDetail', 'setOperationPage']),
+      ...mapActions(['setOperation', 'setDetail', 'setOperationPage','setPageInfo']),
       fetchData: function (options) {
         axiosPost(options).then(response => {
-          this.setLoading(false);
           if (response.data.list) {
             let result = response.data.list;
             let page = response.data.page;
@@ -120,16 +132,17 @@
               this.$alertInfo('当前是最后一页');
             }
           }
+          this.loading = false;
         }).catch(err => {
-          this.setLoading(false);
+          this.loading = false;
           this.$alertError("网络错误，请先检查网络，再连接联系管理员");
         });
       },
       find: function () {
-        this.setLoading(true);
+        this.loading = true;
         let options = {
           url: operationReportSummaryListUrl,
-          data: this.operation
+          data: JSON.parse(JSON.stringify(this.operation))
         };
         options.data["currentPage"] = this.currentPage;
         options.data["pageSize"] = this.pageSize;
@@ -173,6 +186,10 @@
         return arr;
       },
       showDetail: function (row) {
+        this.setPageInfo({
+          currentPage:this.currentPage,
+          pageSize:this.pageSize
+        });
         this.setDetail(row);
         this.$emit('setIsShow', false);
       },
@@ -181,7 +198,22 @@
         this.currentPage = 1;
         this.setOperationPage(-1);
         this.find();
-      }
+      },
+      handlePageChange:function(currentPage){
+        if(this.operationPage !== -1 && currentPage > this.operationPage){
+          this.currentPage = this.operationPage;
+          this.$alertInfo("当前是最后一页");
+          return;
+        }
+        this.find();
+      },
+      download: function () {
+         let data = JSON.parse(JSON.stringify(this.operation));
+         data["pageSize"] = this.pageSize;
+         data["currentPage"] = this.currentPage;
+         data["#TOKEN#"] = this.token;
+         downloadFile(downloadOperationReportUrl,data);
+      },
     },
   }
 </script>

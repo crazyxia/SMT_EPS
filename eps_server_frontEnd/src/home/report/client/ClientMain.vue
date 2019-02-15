@@ -21,11 +21,13 @@
       </el-form-item>
       <el-form-item label="起止时间">
         <el-date-picker
+          :clearable="isClear"
           v-model="time"
-          type="daterange"
+          type="datetimerange"
           align="right"
-          value-format="yyyy-MM-dd"
+          value-format="yyyy-MM-dd HH:mm:ss"
           range-separator="-"
+          :default-time="['00:00:00','23:59:59']"
           start-placeholder="开始日期"
           end-placeholder="结束日期">
         </el-date-picker>
@@ -44,9 +46,7 @@
   import Bus from '../../../utils/bus'
   import {mapGetters,mapActions} from 'vuex'
   import ClientTable from './components/ClientTable'
-  import {downloadFile} from "../../../utils/fetchData";
   import {setInitialTime} from "./../../../utils/time"
-  import {downloadClientReportUrl} from './../../../config/globalUrl'
 
   export default {
     name: 'client',
@@ -62,14 +62,25 @@
           endTime: ""
         },
         time:[],
-        currentPage: 1,
-        pageSize: 20
+        isClear:false
+      }
+    },
+    watch:{
+      time: {
+        handler(value) {
+          if(value !== null){
+            this.clientInfo.startTime = value[0];
+            this.clientInfo.endTime = value[1];
+          }
+        },
+        deep: true
       }
     },
     created() {
-      this.time = setInitialTime();
-      this.clientInfo.startTime = this.time[0] +  " 00:00:00";
-      this.clientInfo.endTime = this.time[1] +  " 23:59:59";
+      let time = setInitialTime();
+      this.clientInfo.startTime = time[0] +  " 00:00:00";
+      this.clientInfo.endTime = time[1] +  " 23:59:59";
+      this.time = [this.clientInfo.startTime,this.clientInfo.endTime];
       this.setClient(JSON.parse(JSON.stringify(this.clientInfo)));
     },
     components: {
@@ -81,25 +92,25 @@
     methods: {
       ...mapActions(['setClient']),
       find: function () {
-        this.clientInfo.startTime = this.time[0] +  " 00:00:00";
-        this.clientInfo.endTime = this.time[1] +  " 23:59:59";
+        if(this.time === null){
+          this.$alertWarning("开始日期和结束日期不能为空");
+          return;
+        }
+        this.clientInfo.startTime = this.time[0];
+        this.clientInfo.endTime = this.time[1];
         this.setClient(JSON.parse(JSON.stringify(this.clientInfo)));
         Bus.$emit('findClient',true);
       },
       download: function () {
-        this.clientInfo["currentPage"] = this.client.currentPage;
-        this.clientInfo["pageSize"] = this.client.pageSize;
+        if(this.time === null){
+          this.$alertWarning("开始日期和结束日期不能为空");
+          return;
+        }
         if(JSON.stringify(this.clientInfo) !== JSON.stringify(this.client)){
           this.$alertWarning("查询条件已更改，请查询后再下载");
           return;
         }
-        this.clientInfo.startTime = this.time[0] +  " 00:00:00";
-        this.clientInfo.endTime = this.time[1] +  " 23:59:59";
-        let data = this.clientInfo;
-        data["pageSize"] = this.pageSize;
-        data["currentPage"] = this.currentPage;
-        data["#TOKEN#"] = this.token;
-        downloadFile(downloadClientReportUrl,data);
+        Bus.$emit('downloadClient',true);
       },
       reset:function(){
         this.clientInfo.client = '';
@@ -107,9 +118,10 @@
         this.clientInfo.line = '';
         this.clientInfo.orderNo = '';
         this.clientInfo.workOrderNo = '';
-        this.time = setInitialTime();
-        this.clientInfo.startTime = this.time[0] +  " 00:00:00";
-        this.clientInfo.endTime = this.time[1] +  " 23:59:59";
+        let time = setInitialTime();
+        this.clientInfo.startTime = time[0] +  " 00:00:00";
+        this.clientInfo.endTime = time[1] +  " 23:59:59";
+        this.time = [this.clientInfo.startTime,this.clientInfo.endTime];
       }
     }
 

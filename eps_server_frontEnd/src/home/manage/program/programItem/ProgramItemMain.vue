@@ -3,7 +3,7 @@
     <p class="tip">提示：编辑完成之后请记得点击保存</p>
     <el-form :inline="true" :model="programInfo" class="demo-form-inline">
       <el-form-item>
-        <span title="返回" @click="returnToProgram"><icon name="returnB" scale="4"></icon></span>
+        <span title="返回" @click="returnToProgram" style="cursor:pointer"><icon name="returnB" scale="4"></icon></span>
       </el-form-item>
       <el-form-item label="工单">
         <el-input v-model.trim="programInfo.workOrder" placeholder="工单" :disabled="true"></el-input>

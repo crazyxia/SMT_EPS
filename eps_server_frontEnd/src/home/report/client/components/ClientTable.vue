@@ -1,8 +1,9 @@
 <template>
-  <div class="clientTable">
+  <div class="clientTable" v-loading="loading">
     <el-table
       :data="tableData"
       border
+      max-height="700"
       style="width: 100%">
       <el-table-column
         label="线号"
@@ -61,7 +62,7 @@
         :current-page.sync="currentPage"
         :page-size="pageSize"
         @size-change="handleSizeChange"
-        @current-change="find"
+        @current-change="handlePageChange"
         :page-sizes="[20, 40, 80, 100]"
         layout="sizes, prev, pager, next">
       </el-pagination>
@@ -73,22 +74,26 @@
   import {mapActions,mapGetters} from 'vuex'
   import {axiosPost} from "./../../../../utils/fetchData"
   import {clientReportListUrl} from "./../../../../config/globalUrl"
+  import {downloadFile} from "../../../../utils/fetchData";
+  import {downloadClientReportUrl} from "../../../../config/globalUrl";
 
   export default {
     name: 'clientTable',
     data() {
       return {
+        loading:false,
         tableData: [],
         currentPage: 1,
         pageSize: 20,
       }
     },
     computed:{
-      ...mapGetters(['clientPage','client'])
+      ...mapGetters(['clientPage','token','client'])
     },
     beforeDestroy(){
       //取消监听
       Bus.$off('findClient');
+      Bus.$off('downloadClient');
     },
     mounted(){
       this.find();
@@ -98,13 +103,16 @@
         this.pageSize = 20;
         this.setClientPage(-1);
         this.find();
+      });
+      //监听报表下载事件
+      Bus.$on('downloadClient',() => {
+        this.download();
       })
     },
     methods: {
-      ...mapActions(['setLoading','setClient','setClientPage']),
+      ...mapActions(['setClientPage']),
       fetchData: function (options) {
         axiosPost(options).then(response => {
-          this.setLoading(false);
           if (response.data.list) {
             let result = response.data.list;
             let page = response.data.page;
@@ -118,16 +126,17 @@
               this.$alertInfo('当前是最后一页');
             }
           }
+          this.loading = false;
         }).catch(err => {
-          this.setLoading(false);
+          this.loading = false;
           this.$alertError("网络错误，请先检查网络，再连接联系管理员");
         });
       },
       find: function () {
-        this.setLoading(true);
+        this.loading = true;
         let options = {
           url: clientReportListUrl,
-          data: this.client
+          data: JSON.parse(JSON.stringify(this.client))
         };
         options.data["currentPage"] = this.currentPage;
         options.data["pageSize"] = this.pageSize;
@@ -138,6 +147,21 @@
         this.currentPage = 1;
         this.setClientPage(-1);
         this.find();
+      },
+      handlePageChange:function(currentPage){
+        if(this.clientPage !== -1 && currentPage > this.clientPage){
+          this.currentPage = this.clientPage;
+          this.$alertInfo("当前是最后一页");
+          return;
+        }
+        this.find();
+      },
+      download: function () {
+        let data = JSON.parse(JSON.stringify(this.client));
+        data["#TOKEN#"] = this.token;
+        data["currentPage"] = this.currentPage;
+        data["pageSize"] = this.pageSize;
+        downloadFile(downloadClientReportUrl,data);
       }
     }
   }

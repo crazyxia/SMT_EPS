@@ -1,7 +1,8 @@
 <template>
-  <div class="materialTable">
+  <div class="materialTable" v-loading="loading">
     <el-table
       :data="tableData"
+      max-height="700"
       border
       style="width: 100%">
       <el-table-column
@@ -40,7 +41,7 @@
         :current-page.sync="currentPage"
         :page-size="pageSize"
         @size-change="handleSizeChange"
-        @current-change="find"
+        @current-change="handlePageChange"
         :page-sizes="[20, 40, 80, 100]"
         layout="sizes, prev, pager, next">
       </el-pagination>
@@ -60,7 +61,8 @@
       return {
         tableData: [],
         pageSize: 20,
-        currentPage: 1
+        currentPage: 1,
+        loading:false
       }
     },
     computed:{
@@ -87,10 +89,9 @@
       });
     },
     methods: {
-      ...mapActions(['setLoading','setMaterialPage']),
+      ...mapActions(['setMaterialPage']),
       fetchData: function (options) {
         axiosPost(options).then(response => {
-          this.setLoading(false);
           if (response.data.list) {
             let result = response.data.list;
             let page = response.data.page;
@@ -104,16 +105,17 @@
               this.$alertInfo('当前是最后一页');
             }
           }
+          this.loading = false;
         }).catch(err => {
-          this.setLoading(false);
+          this.loading = false;
           this.$alertError("请求接口失败，请先检查网络，再联系管理员");
         });
       },
       find: function () {
-        this.setLoading(true);
+        this.loading = true;
         let options = {
           url: materialListUrl,
-          data: this.material
+          data:JSON.parse(JSON.stringify(this.material))
         };
         options.data["currentPage"] = this.currentPage;
         options.data["pageSize"] = this.pageSize;
@@ -123,6 +125,14 @@
         this.pageSize = pageSize;
         this.currentPage = 1;
         this.setMaterialPage(-1);
+        this.find();
+      },
+      handlePageChange:function(currentPage){
+        if(this.materialPage !== -1 && currentPage > this.materialPage){
+          this.currentPage = this.materialPage;
+          this.$alertInfo("当前是最后一页");
+          return;
+        }
         this.find();
       },
       deleteRow: function (row) {

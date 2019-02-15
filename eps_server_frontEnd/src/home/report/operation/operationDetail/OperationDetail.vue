@@ -17,7 +17,7 @@
         <el-input v-model.trim="detail.operationType" :disabled="true"></el-input>
       </el-form-item>
     </el-form>
-    <OperationDetailTable :item="detail" :disabled="true"></OperationDetailTable>
+    <OperationDetailTable :item="detail"></OperationDetailTable>
   </div>
 </template>
 

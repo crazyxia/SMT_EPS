@@ -15,11 +15,13 @@
       </el-form-item>
       <el-form-item label="起止时间">
         <el-date-picker
+          :clearable="isClear"
           v-model="time"
-          type="daterange"
+          type="datetimerange"
           align="right"
-          value-format="yyyy-MM-dd"
+          value-format="yyyy-MM-dd HH:mm:ss"
           range-separator="-"
+          :default-time="['00:00:00','23:59:59']"
           start-placeholder="开始日期"
           end-placeholder="结束日期">
         </el-date-picker>
@@ -52,29 +54,47 @@
           endTime: "",
         },
         time:[],
+        isClear:false
       }
     },
     components: {
       IOTable
     },
     created() {
-      this.time = setInitialTime();
-      this.io.startTime = this.time[0] +  " 00:00:00";
-      this.io.endTime = this.time[1] +  " 23:59:59";
+      let time = setInitialTime();
+      this.io.startTime = time[0] +  " 00:00:00";
+      this.io.endTime = time[1] +  " 23:59:59";
+      this.time = [this.io.startTime,this.io.endTime];
       this.setIO(JSON.parse(JSON.stringify(this.io)));
+    },
+    watch:{
+      time: {
+        handler(value) {
+          if(value !== null){
+            this.io.startTime = value[0];
+            this.io.endTime = value[1];
+          }
+        },
+        deep: true
+      }
     },
     methods: {
       ...mapActions(['setIO']),
       find: function () {
-        this.io.startTime = this.time[0] +  " 00:00:00";
-        this.io.endTime = this.time[1] +  " 23:59:59";
+        if(this.time === null){
+          this.$alertWarning("开始日期和结束日期不能为空");
+          return;
+        }
+        this.io.startTime = this.time[0];
+        this.io.endTime = this.time[1];
         this.setIO(JSON.parse(JSON.stringify(this.io)));
         Bus.$emit('findIo',true);
       },
       reset: function () {
-        this.time = setInitialTime();
-        this.io.startTime = this.time[0] +  " 00:00:00";
-        this.io.endTime = this.time[1] +  " 23:59:59";
+        let time = setInitialTime();
+        this.io.startTime = time[0] +  " 00:00:00";
+        this.io.endTime = time[1] +  " 23:59:59";
+        this.time = [this.io.startTime,this.io.endTime];
         this.io.materialNo = '';
         this.io.operator = '';
         this.io.custom = '';

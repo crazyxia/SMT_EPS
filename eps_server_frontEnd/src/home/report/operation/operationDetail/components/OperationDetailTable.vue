@@ -1,7 +1,8 @@
 <template>
-  <div class="operationDetailTable">
+  <div class="operationDetailTable" v-loading="loading">
     <el-table
       :data="tableData"
+      max-height="700"
       border
       style="width: 100%">
       <el-table-column
@@ -41,10 +42,11 @@
     <div class="block">
       <span class="now">第 {{currentPage}} 页</span>
       <el-pagination
+        background
         :current-page.sync="currentPage"
         :page-size="pageSize"
         @size-change="handleSizeChange"
-        @current-change="find"
+        @current-change="handlePageChange"
         :page-sizes="[20, 40, 80, 100]"
         layout="sizes, prev, pager, next">
       </el-pagination>
@@ -63,10 +65,12 @@
       return {
         tableData: [],
         currentPage: 1,
-        pageSize: 20
+        pageSize: 20,
+        loading:false
       }
     },
     mounted() {
+      this.setOperationDetailPage(-1);
       this.find();
     },
     computed: {
@@ -91,10 +95,9 @@
       },
     },
     methods: {
-      ...mapActions(['setLoading', 'setOperationDetailPage']),
+      ...mapActions(['setOperationDetailPage']),
       fetchData: function (options) {
         axiosPost(options).then(response => {
-          this.setLoading(false);
           if (response.data.list) {
             let result = response.data.list;
             let page = response.data.page;
@@ -108,13 +111,14 @@
               this.$alertInfo('当前是最后一页');
             }
           }
+          this.loading = false;
         }).catch(err => {
-          this.setLoading(false);
+          this.loading = false;
           this.$alertError("网络错误，请先检查网络，再连接联系管理员");
         });
       },
       find: function () {
-        this.setLoading(true);
+        this.loading = true;
         let options = {
           url: operationReportListUrl,
           data: this.operationInfo
@@ -127,6 +131,14 @@
         this.pageSize = pageSize;
         this.currentPage = 1;
         this.setOperationDetailPage(-1);
+        this.find();
+      },
+      handlePageChange:function(currentPage){
+        if(this.operationDetailPage !== -1 && currentPage > this.operationDetailPage){
+          this.currentPage = this.operationDetailPage;
+          this.$alertInfo("当前是最后一页");
+          return;
+        }
         this.find();
       }
     }

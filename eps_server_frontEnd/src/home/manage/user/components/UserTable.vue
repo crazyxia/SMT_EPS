@@ -1,9 +1,10 @@
 <template>
-  <div class="userTable">
+  <div class="userTable" v-loading="loading">
     <!--表格-->
     <el-table
       :data="tableData"
       border
+      max-height="700"
       style="width: 100%">
       <el-table-column
         label="工号"
@@ -56,7 +57,7 @@
         :current-page.sync="page.currentPage"
         :page-size="page.pageSize"
         @size-change="handleSizeChange"
-        @current-change="find"
+        @current-change="handlePageChange"
         :page-sizes="[20, 40, 80, 100]"
         layout="sizes, prev, pager, next">
       </el-pagination>
@@ -79,7 +80,8 @@
         page: {
           currentPage: 1,
           pageSize: 20
-        }
+        },
+        loading:false
       }
     },
     beforeDestroy() {
@@ -88,7 +90,7 @@
       Bus.$off('findUser');
     },
     computed: {
-      ...mapGetters(['userPage', 'user'])
+      ...mapGetters(['userPage','user'])
     },
     mounted() {
       this.find();
@@ -107,10 +109,9 @@
       });
     },
     methods: {
-      ...mapActions(['setLoading', 'setUserPage']),
+      ...mapActions([ 'setUserPage']),
       fetchData: function (options) {
         axiosPost(options).then(response => {
-          this.setLoading(false);
           if (response.data.data) {
             let result = response.data.result;
             let list = response.data.data.list;
@@ -143,17 +144,18 @@
               this.page.currentPage = 1;
             }
           }
+          this.loading = false;
         }).catch(err => {
-          this.setLoading(false);
+          this.loading = false;
           this.$alertError("接口请求错误，请检查网络连接，再联系管理员");
         });
       },
       //查询
       find: function () {
-        this.setLoading(true);
+        this.loading = true;
         let options = {
           url: userListUrl,
-          data: this.user
+          data:JSON.parse(JSON.stringify(this.user))
         };
         options.data["orderBy"] = 'create_time desc';
         options.data["currentPage"] = this.page.currentPage;
@@ -165,6 +167,15 @@
         this.page.currentPage = 1;
         this.page.pageSize = pageSize;
         this.setUserPage(-1);
+        this.find();
+      },
+      //改变currentPage
+      handlePageChange:function(currentPage){
+        if(this.userPage !== -1 && currentPage > this.userPage){
+          this.page.currentPage = this.userPage;
+          this.$alertInfo("当前是最后一页");
+          return;
+        }
         this.find();
       },
       //编辑
@@ -190,7 +201,7 @@
         line-height: 32px;
         font-size: 14px;
         color: #606266;
-        margin-right: 10px;
+        margin-right:10px;
       }
     }
   }

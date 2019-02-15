@@ -44,11 +44,11 @@ export  const setOperations = (state,operations) =>{
   state.operations = operations;
 };
 /*material*/
-export  const setMaterialPage = (state,materialPage) =>{
-  state.materialPage = materialPage;
-};
 export  const setMaterial = (state,material) =>{
   state.material = material;
+};
+export  const setMaterialPage = (state,materialPage) =>{
+  state.materialPage = materialPage;
 };
 
 /*client*/
@@ -60,6 +60,9 @@ export  const setClientPage = (state,clientPage) =>{
 };
 
 /*operation*/
+export  const setPageInfo = (state,pageInfo) =>{
+  state.pageInfo = pageInfo;
+};
 export  const setOperation = (state,operation) =>{
   state.operation = operation;
 };
@@ -73,11 +76,11 @@ export  const setOperationDetailPage = (state,operationDetailPage) =>{
   state.operationDetailPage = operationDetailPage;
 };
 /*io*/
-export  const setIOPage = (state,ioPage) =>{
-  state.ioPage = ioPage;
-};
 export  const setIO = (state,io) =>{
   state.io = io;
+};
+export  const setIOPage = (state,ioPage) =>{
+  state.ioPage = ioPage;
 };
 
 /*display*/

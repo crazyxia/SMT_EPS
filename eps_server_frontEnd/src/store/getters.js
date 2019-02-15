@@ -17,6 +17,7 @@ export const lineSize = (state) => {
 export const denied = (state) => {
   return state.denied;
 };
+/*user*/
 export const user = (state) => {
   return state.user;
 };
@@ -26,6 +27,7 @@ export const loginUser = (state) => {
 export const userPage = (state) => {
   return state.userPage;
 };
+/*program*/
 export const program = (state) => {
   return state.program;
 };
@@ -38,22 +40,27 @@ export const programPage = (state) => {
 export const programItemList = (state) => {
   return state.programItemList;
 };
-export const material = (state) => {
-  return state.material;
-};
 export const operations = (state) => {
   return state.operations;
+};
+/*material*/
+export const material = (state) => {
+  return state.material;
 };
 export const materialPage = (state) => {
   return state.materialPage;
 };
+/*client*/
 export const client = (state) => {
   return state.client;
 };
 export const clientPage = (state) => {
   return state.clientPage;
 };
-
+/*operation*/
+export const pageInfo = (state) => {
+  return state.pageInfo;
+};
 export const operation = (state) => {
   return state.operation;
 };
@@ -66,12 +73,14 @@ export const operationPage = (state) => {
 export const operationDetailPage = (state) => {
   return state.operationDetailPage;
 };
+/*io*/
+export const io = (state) => {
+  return state.io;
+};
 export const ioPage = (state) => {
   return state.ioPage;
 };
-export const io= (state) => {
-  return state.io;
-};
+/*display*/
 export const lineStatusData = (state) => {
   return state.lineStatusData;
 };

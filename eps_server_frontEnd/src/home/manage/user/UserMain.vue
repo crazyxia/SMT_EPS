@@ -69,8 +69,7 @@
       }
     },
     created(){
-      //存取查询信息
-      this.setUser(JSON.parse(JSON.stringify(this.userInfo)))
+      this.setUser(JSON.parse(JSON.stringify(this.userInfo)));
     },
     components:{
       UserTable,UserModal

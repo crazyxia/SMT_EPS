@@ -91,12 +91,11 @@
         fileName: ''
       }
     },
-    created(){
-      //保存表单查询信息
-      this.setProgram(JSON.parse(JSON.stringify(this.programInfo)));
-    },
     components: {
       ProgramTable, ProgramModal, ProgramItem
+    },
+    created(){
+      this.setProgram(JSON.parse(JSON.stringify(this.programInfo)));
     },
     computed: {
       ...mapGetters(['lines', 'token'])
@@ -143,10 +142,12 @@
         axios.post(programFileUploadUrl, param, config).then(response => {
           if (response.data) {
             let result = response.data.result;
-            if (result === "上传完成，共解析到1张表" || result === "覆盖完成，共解析到1张表") {
-              this.$alertSuccess(result);
+            let data = response.data.data;
+            if (result === "200") {
+              this.$alertSuccess(data);
+              this.find();
             } else {
-              this.$alertWarning(result);
+              this.$alertWarning(data);
             }
             this.fileInfo.programFile = '';
             this.fileInfo.boardType = '';

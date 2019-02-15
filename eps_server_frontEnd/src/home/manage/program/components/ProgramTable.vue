@@ -1,8 +1,9 @@
 <template>
-  <div class="programTable">
+  <div class="programTable" v-loading="loading">
     <!--表格-->
     <el-table
       :data="tableData"
+      max-height="700"
       border
       style="width: 100%">
       <el-table-column
@@ -66,7 +67,7 @@
         :current-page.sync="page.currentPage"
         :page-size="page.pageSize"
         @size-change="handleSizeChange"
-        @current-change="find"
+        @current-change="handlePageChange"
         :page-sizes="[20, 40, 80, 100]"
         background
         layout="sizes, prev, pager, next">
@@ -91,7 +92,8 @@
         page:{
           currentPage: 1,
           pageSize: 20
-        }
+        },
+        loading:false
       }
     },
     computed: {
@@ -118,10 +120,9 @@
       })
     },
     methods: {
-      ...mapActions(['setLoading', 'setProgramInfo', 'setProgramPage']),
+      ...mapActions(['setProgramInfo', 'setProgramPage']),
       fetchData: function (options) {
         axiosPost(options).then(response => {
-          this.setLoading(false);
           if (response.data.list) {
             let list = response.data.list;
             let page = response.data.page;
@@ -138,17 +139,18 @@
               this.page.currentPage = this.programPage;
             }
           }
+          this.loading = false;
         }).catch(err => {
-          this.setLoading(false);
+          this.loading = false;
           this.$alertError("接口请求失败，请检查网络，再联系管理员");
         });
       },
       //查询
       find: function () {
-        this.setLoading(true);
+        this.loading = true;
         let options = {
           url: programListUrl,
-          data: this.program
+          data: JSON.parse(JSON.stringify(this.program))
         };
         options.data["orderBy"] = 'create_time desc';
         options.data["currentPage"] = this.page.currentPage;
@@ -160,6 +162,15 @@
         this.page.pageSize = pageSize;
         this.page.currentPage = 1;
         this.setProgramPage(-1);
+        this.find();
+      },
+      //currentPage改变
+      handlePageChange:function(currentPage){
+        if(this.programPage !== -1 && currentPage > this.programPage){
+          this.page.currentPage = this.programPage;
+          this.$alertInfo("当前是最后一页");
+          return;
+        }
         this.find();
       },
       //修改状态

@@ -23,8 +23,8 @@ const state = {
   userPage:-1,
 
   /*program*/
-  //站位表详情查询条件
   program:{},
+  //站位表详情查询条件
   programPage:-1,
   //站位表详情列表
   programItemList:[],
@@ -41,6 +41,7 @@ const state = {
   clientPage:-1,
 
   //当前操作的操作报表对象
+  pageInfo:{},
   operation:{},
   //操作详情列表查询条件
   detail:{},
@@ -48,8 +49,8 @@ const state = {
   operationDetailPage:-1,
 
   /*io*/
-  ioPage:-1,
   io:{},
+  ioPage:-1,
 
   /*display*/
   lineStatusData:[],
