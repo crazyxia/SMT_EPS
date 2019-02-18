@@ -21,21 +21,6 @@
             android:textColor="@android:color/black"
             android:textSize="22sp" />
 
-        <!--<EditText
-                android:id="@+id/edt_pwd"
-                android:layout_marginTop="10dp"
-                android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:gravity="center"
-                android:hint="请输入密码"
-                android:singleLine="true"
-                android:textSize="20sp"
-                android:textColor="@android:color/black"
-                />-->
-
         <com.jimi.smt.eps_appclient.Views.MyEditTextDel
             android:id="@+id/edt_pwd"
             android:layout_width="match_parent"

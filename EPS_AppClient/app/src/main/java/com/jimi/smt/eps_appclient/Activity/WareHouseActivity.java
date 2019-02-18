@@ -135,8 +135,10 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
         List<Ware> wares = new GreenDaoUtil().queryWareRecord(globalData.getOperator(), globalData.getWork_order()
                 , globalData.getLine(), globalData.getBoard_type());
 
+        int wareSize = wares.size();
+        Log.d(TAG, "wares.size() - " + wareSize);
         //数据库存在缓存数据
-        if (wares.size() != 0) {
+        if (wareSize != 0) {
             //保存缓存
             wareList.addAll(wares);
             isRestoreCache = true;
@@ -160,6 +162,7 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
         //没有数据库缓存
         if (!isRestoreCache) {
             //填充数据
+            tempBeans.clear();
             tempBeans.addAll(globalData.getMaterialBeans());
             for (Material.MaterialBean org : tempBeans) {
                 Material.MaterialBean bean = new Material.MaterialBean();
@@ -188,8 +191,6 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
                         ware.getQuantity(), ware.getOrgLineSeat(), ware.getOrgMaterial(), ware.getScanLineSeat(), ware.getScanMaterial(),
                         ware.getResult(), ware.getRemark());
                 mWareMaterialBeans.add(bean);
-//                Log.d(TAG, "bean - " + bean.getLineseat());
-//                Log.d(TAG, "bean - " + bean.getSerialNo());
 
                 //获取成功发料次数
                 if ((null != ware.getResult()) && (ware.getResult().equalsIgnoreCase("PASS"))) {
@@ -304,29 +305,6 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
         Log.d(TAG, "showUpdateDialog");
 
         globalFunc.showInfo(title, msg, toast);
-//        globalData.setUpdateProgram(false);
-
-
-        /*
-        final LoadingDialog loadingDialog = new LoadingDialog(this, "站位表更新...");
-        loadingDialog.setCanceledOnTouchOutside(false);
-        loadingDialog.show();
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                loadingDialog.cancel();
-                loadingDialog.dismiss();
-            }
-        }).start();
-
-        */
-
-
     }
 
     @Override
@@ -355,7 +333,6 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
             //先判断是否联网
             if (globalFunc.isNetWorkConnected()) {
                 Log.d(TAG, "onEditorAction::" + v.getText());
-//                Log.d(TAG, "event.getAction()::" + event.getAction());
 
                 if (!TextUtils.isEmpty(v.getText().toString().trim())) {
                     //扫描的内容
@@ -533,8 +510,6 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
     //发料结果
     private void showIssueInfo(String[] titleMsg, int[] msgStyle, final boolean result) {
         //对话框所有控件id
-//        int itemResIds[] = new int[]{R.id.dialog_title_view,
-//                R.id.dialog_title, R.id.tv_alert_info, R.id.info_trust};
 
         int itemResIds[] = new int[]{R.id.dialog_title_view,
                 R.id.dialog_title, R.id.tv_alert_info, R.id.info_trust, R.id.tv_alert_msg};
@@ -638,7 +613,6 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
                     com.jimi.smt.eps_appclient.Beans.ProgramItemVisit itemVisit = com.jimi.smt.eps_appclient.Beans.ProgramItemVisit.getProgramItemVisit(Constants.STORE_ISSUE, operate);
                     mHttpUtils.updateVisit(operate, itemVisit, m);
                     //添加日志
-//                    Log.d(TAG, "operate " + operate.getMaterialStr());
                     Operation operation = Operation.getOperation(curOperatorNUm, Constants.STORE_ISSUE, operate);
                     mHttpUtils.addOperation(operation);
                 }

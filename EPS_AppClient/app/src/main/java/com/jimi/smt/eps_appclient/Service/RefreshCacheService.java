@@ -346,7 +346,6 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
                     evenBusTest.setQcCheckAllList(newQcCheckAlls);
                 }
             }
-            globalData.setUpdateProgram(true);
         }
         //未更新
         else {

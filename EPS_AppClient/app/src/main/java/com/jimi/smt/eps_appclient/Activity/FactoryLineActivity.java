@@ -139,7 +139,6 @@ public class FactoryLineActivity extends FragmentActivity implements View.OnClic
                 Log.d(TAG, "getCheckAllTimeOut - " + 0);
                 showUpdateDialog("站位表更新!", "站位表更新!");
             }
-            globalData.setUpdateProgram(false);
         } else {
             if (event.getCheckAllTimeOut() == 1) {
                 Log.d(TAG, "getUpdated - " + 1);

@@ -151,7 +151,6 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
     public void onEventMainThread(EvenBusTest event) {
         if (event.getUpdated() == 0) {
             Log.d(TAG, "mHidden - " + mHidden);
-            Log.d(TAG, "isUpdateProgram - " + globalData.isUpdateProgram());
             if (!mHidden) {
                 /*
                 if (qcActivity.updateDialog != null && qcActivity.updateDialog.isShowing()) {

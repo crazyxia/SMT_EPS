@@ -109,16 +109,7 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
 
         globalData.setOperator(savedInstanceState != null ? savedInstanceState.getString("operatorNum") : null);
 
-/*
-
-        if (mActivity.updateDialog != null && mActivity.updateDialog.isShowing()) {
-            mActivity.updateDialog.cancel();
-            mActivity.updateDialog.dismiss();
-        }
-*/
-
-
-        checkResetCondition = 2;
+        checkResetCondition = 0;
         showLoading();
         mHttpUtils.isReset(globalData.getProgramId(), Constants.FEEDMATERIAL);
 
@@ -165,7 +156,7 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
         Log.i(TAG, "onHiddenChanged - " + hidden);
         this.mHidden = hidden;
         if (!hidden) {
-            checkResetCondition = 2;
+            checkResetCondition = 0;
             showLoading();
             mHttpUtils.isReset(globalData.getProgramId(), Constants.FEEDMATERIAL);
         }
@@ -205,7 +196,6 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
     public void onEventMainThread(EvenBusTest event) {
         if (event.getUpdated() == 0) {
             Log.d(TAG, "onEventMainThread - " + event.getUpdated());
-            Log.d(TAG, "event.getFeedList() - " + event.getFeedList().size());
             if (event.getFeedList() != null && event.getFeedList().size() > 0) {
                 //更新页面
                 feedList.clear();
@@ -230,19 +220,9 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
             }
             Log.d(TAG, "mHidden - " + mHidden);
             if (!mHidden) {
-                //更新站位表后是否发料完成
-
-                    /*
-                    if (mActivity.updateDialog != null && mActivity.updateDialog.isShowing()) {
-                        mActivity.updateDialog.cancel();
-                        mActivity.updateDialog.dismiss();
-                    }
-                    */
-
                 //重新开始扫描站位
                 clearLineSeatMaterialScan();
-
-                // TODO: 2018/9/17
+                //可重新上料
                 dismissFeedLogin();
 
                 /*
@@ -250,7 +230,6 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                 showLoading();
                 mHttpUtils.checkAllDoneStr(globalData.getProgramId(),String.valueOf(Constants.STORE_ISSUE));
                 */
-
             }
         }
         //未更新
@@ -693,7 +672,6 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
         assert window != null;
         window.setContentView(R.layout.fragment_feed_login);
         window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
-//        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE | WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
         feedLoginDialog.setCancelable(false);
         edt_pwd = window.findViewById(R.id.edt_pwd);
         edt_pwd.setFocusable(true);
@@ -741,6 +719,7 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
 
     @Override
     public void showHttpResponse(int code, Object request, String response) {
+        // TODO: 2019/2/18 加载进度 
         dismissLoading();
         Log.d(TAG, "showHttpResponse - " + response);
         Log.d(TAG, "code - " + code);
@@ -760,7 +739,7 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                 }
                 Log.d(TAG, "reseted - " + reseted);
                 switch (checkResetCondition) {
-                    case 2://切换到上料页面时
+                    case 0://切换到上料页面时
                         if (checkReset == 1 && !reseted) {
                             //重置，判断发料
                             checkAllDoneStrCondition = 0;
@@ -774,7 +753,7 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                         }
                         break;
 
-                    case 3://扫站位时
+                    case 1://扫站位时
                         if (checkReset == 1) {
                             if (!reseted) {
                                 //重置
@@ -792,72 +771,6 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                 }
 
                 break;
-
-            /*
-            case HttpUtils.CodeIsAllDone://查询某一项或某几项操作是否完成
-                int checkWareOrFeed = Integer.valueOf(response);
-                int type = (Integer) ((Object[]) request)[1];
-                Log.d(TAG, "checkWareOrFeed - " + checkWareOrFeed);
-                Log.d(TAG, "type - " + type);
-                if (type == 4) {
-                    switch (checkWareCondition) {
-                        case 0:
-                            if (checkWareOrFeed == 0) {
-                                String titleMsgs[] = new String[]{"提示", "仓库未完成发料!"};
-                                int msgStyleStr[] = new int[]{22, Color.argb(255, 219, 201, 36)};
-                                showInfo(titleMsgs, msgStyleStr, false, 2);
-                                clearFeedDisplay();
-                                clearLineSeatMaterialScan();
-                            } else {
-                                clearFeedDisplay();
-                                clearLineSeatMaterialScan();
-                            }
-                            break;
-
-                        case 1:
-                            if (checkWareOrFeed == 0) {
-                                String titleMsgStr[] = new String[]{"提示", "仓库未完成发料!"};
-                                int msgStyles[] = new int[]{22, Color.argb(255, 219, 201, 36)};
-                                showInfo(titleMsgStr, msgStyles, false, 2);
-                            } else {
-                                mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FEEDMATERIAL);
-                            }
-                            break;
-
-                        case 2:
-                            // TODO: 2018/9/17  
-                            if (checkWareOrFeed == 0) {
-                                dismissFeedLogin();
-                                *//*
-                                String titleMsg[] = new String[]{"站位表更新!", "仓库未完成发料!"};
-                                int msgStyle[] = new int[]{22, Color.argb(255, 219, 201, 36)};
-                                showInfo(titleMsg, msgStyle, false, 2);
-                                *//*
-                            }
-                            break;
-
-                        case 3://扫站位时
-                            if (checkWareOrFeed == 0) {
-                                String titleMsgStr[] = new String[]{"提示", "仓库未完成发料!"};
-                                int msgStyles[] = new int[]{22, Color.argb(255, 219, 201, 36)};
-                                showInfo(titleMsgStr, msgStyles, false, 2);
-                            } else if (checkWareOrFeed == 1) {
-                                checkResetCondition = 3;
-                                showLoading();
-                                mHttpUtils.isReset(globalData.getProgramId(), Constants.FEEDMATERIAL);
-                            }
-
-                            break;
-                    }
-                } else if (type == 0) {
-                    if (checkWareOrFeed == 1) {
-                        showFeedLoginWin();
-                    }
-                }
-
-                break;
-                */
-
 
             // TODO: 2019/2/12  
             case HttpUtils.CodeIsAllDoneSTR://查询某一项或某几项操作是否完成
@@ -910,7 +823,7 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                                 showInfo(titleMsgStr, msgStyles, false, 2);
                             } else if (isWare == 1) {
                                 if (isFeed == 0){
-                                    checkResetCondition = 3;
+                                    checkResetCondition = 1;
                                     showLoading();
                                     mHttpUtils.isReset(globalData.getProgramId(), Constants.FEEDMATERIAL);
                                 }else if (isFeed == 1){

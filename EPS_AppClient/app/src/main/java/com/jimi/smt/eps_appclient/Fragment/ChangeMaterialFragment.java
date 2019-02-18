@@ -132,7 +132,6 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
                 infoDialog.dismiss();
             }
             Log.d(TAG, "mHidden - " + mHidden);
-            Log.d(TAG, "isUpdateProgram - " + globalData.isUpdateProgram());
             if (!mHidden) {
                 /*
                 if (factoryLineActivity.updateDialog != null && factoryLineActivity.updateDialog.isShowing()) {

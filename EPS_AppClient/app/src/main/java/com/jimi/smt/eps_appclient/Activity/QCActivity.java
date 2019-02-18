@@ -110,7 +110,6 @@ public class QCActivity extends FragmentActivity implements View.OnClickListener
             } else {
                 showUpdateDialog("站位表更新!", "站位表更新!");
             }
-            globalData.setUpdateProgram(false);
         } else {
             if (event.getCheckAllTimeOut() == 1) {
                 //是否作废

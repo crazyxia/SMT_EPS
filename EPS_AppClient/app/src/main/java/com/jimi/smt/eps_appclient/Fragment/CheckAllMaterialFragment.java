@@ -174,7 +174,6 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
             materialAdapter.notifyDataSetChanged();
 //            edt_ScanMaterial.requestFocus();
             Log.d(TAG, "mHidden - " + mHidden);
-            Log.d(TAG, "isUpdateProgram - " + globalData.isUpdateProgram());
             //提示首检或上料
             if (!mHidden) {
                 /*
@@ -231,7 +230,6 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                 dismissLoading();
 //                edt_ScanMaterial.requestFocus();
                 Log.d(TAG, "mHidden - " + mHidden);
-                Log.d(TAG, "isUpdateProgram - " + globalData.isUpdateProgram());
                 //提示首检或上料
                 if (!mHidden) {
                     /*
