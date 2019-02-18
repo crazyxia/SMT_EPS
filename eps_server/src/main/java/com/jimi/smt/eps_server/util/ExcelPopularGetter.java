@@ -39,6 +39,11 @@ public class ExcelPopularGetter extends ExcelHelper {
 	 * STRUCTURE_COL_NUM : 联板数所在的列
 	 */
 	private static final int STRUCTURE_COL_NUM = 9;
+	
+	/**
+	 * SERIALNO_NUM : 校验序列号时所在的行列值
+	 */
+	private static final int SERIALNO_NUM = 0;
 
 
 	/**
@@ -110,6 +115,17 @@ public class ExcelPopularGetter extends ExcelHelper {
 				case BOOLEAN:
 					return cell.getStringCellValue().equals("") ? false : true;
 				case STRING:
+					if (cell.getStringCellValue().trim().isEmpty()) {
+						if (rowNum == PLANPRODUCT_AND_STRUCTURE_NUM && colNum == PLANPRODUCT_AND_STRUCTURE_NUM) {
+							errorInfos.add("无法获取表格 " + sheetName + " 计划生产总数的值，该单元格可能为空");
+						} else if ((rowNum == PLANPRODUCT_AND_STRUCTURE_NUM && colNum == STRUCTURE_COL_NUM)) {
+							errorInfos.add("无法获取表格 " + sheetName + " 连板的值，该单元格可能为空");
+						} else if (rowNum == CLIENT_AND_MACHINENAME_AND_VERSION_ROW || rowNum == MACHINECONFIG_AND_PROGRAMNO_AND_LINE_ROW || rowNum == EFFECTIVEDATE_AND_PCBNO_AND_WORKDERORDER_ROW) {
+							errorInfos.add("无法获取表格 " + sheetName + " 第 " + (rowNum + 1) + " 行,第 " + colNum + " 列的值，该单元格可能为空");
+						} else {
+							errorInfos.add("无法获取表格 " + sheetName + " 第 " + (rowNum + 1) + " 行,第 " + (colNum + 1) + " 列的值，该单元格可能为空");
+						}
+					}
 					return cell.getStringCellValue();
 				case INT:
 					return Integer.parseInt(cell.getStringCellValue());
@@ -147,7 +163,7 @@ public class ExcelPopularGetter extends ExcelHelper {
 			}
 		} catch (NullPointerException e) {
 			logger.error("无法获取表格" + sheetName + "第 " + (rowNum + 1) + "行,第" + (colNum + 1) + "列的值，该单元格可能为空");
-			if (rowNum != 0 && colNum != 0) {
+			if (rowNum != SERIALNO_NUM && colNum != SERIALNO_NUM) {
 				errorInfos.add("无法获取表格 " + sheetName + " 第 " + (rowNum + 1) + " 行,第 " + (colNum + 1) + " 列的值，该单元格可能为空");
 			}
 			return null;

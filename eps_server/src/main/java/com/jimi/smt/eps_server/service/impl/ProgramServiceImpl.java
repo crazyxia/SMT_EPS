@@ -74,15 +74,15 @@ public class ProgramServiceImpl implements ProgramService {
 	private LineService lineService;
 	
 	/**
-	 * THIRTY_TWO_LENGTH : 字段长度为32
+	 * FIELD_LENGTH : 字段长度为32
 	 */
 	private static final Integer FIELD_LENGTH = 32;
 	/**
-	 * ONE_HUNDRED_AND_TWENTY_EIGHT_LENGTH : 程序名和工单长度为128
+	 * FILENAME_AND_PROGRAMNAME_AND_WORKORDER_LENGTH : 文件名、程序名和工单长度为128
 	 */
-	private static final Integer PROGRAMNAME_AND_WORKORDER_LENGTH = 128;
+	private static final Integer FILENAME_AND_PROGRAMNAME_AND_WORKORDER_LENGTH = 128;
 	/**
-	 * TWO_HUNDRED_AND_FIFTY_SIX_LENGTH : Bom长度为256
+	 * BOM_LENGTH : Bom长度为256
 	 */
 	private static final Integer BOM_LENGTH = 256;
 
@@ -100,13 +100,13 @@ public class ProgramServiceImpl implements ProgramService {
 
 		// 因添加流水号而进行的站位表校验
 		if (getter.getString(0, 0) != null && !"".equals(getter.getString(0, 0))) {
-			getter.getErrorInfos().add("站位表版本错误：请使用带有序列号的站位表");
+			throw new RuntimeException("站位表版本错误：请使用带有序列号的站位表");
 		}
 
 		// 校验头部
 		final String header = "SMT FEEDER LIST";
 		if (!header.equals(getter.getString(1, 0 + offset))) {
-			getter.getErrorInfos().add("头部错误：没有找到\\\"SMT FEEDER LIST\\\"标题栏");
+			throw new RuntimeException("站位表版本错误：请使用带有 SMT FEEDER LIST 标题栏的站位表");
 		}
 
 		// 分割解析工单和线号
@@ -116,7 +116,7 @@ public class ProgramServiceImpl implements ProgramService {
 		// 判断线号是否正确
 		for (String line : lines) {
 			if (lineService.getLineIdByName(line) == null) {
-				getter.getErrorInfos().add("线号错误：请填写正确的线号");
+				throw new RuntimeException("线号错误：请填写正确的线号");
 			}
 		}
 
@@ -137,7 +137,7 @@ public class ProgramServiceImpl implements ProgramService {
 				program.setProgramName(getter.getString(6, 1 + offset));
 				program.setPlanProduct(getPlanProduct(getter.getString(6, 5 + offset), getter));
 				program.setStructure(getStructure(getter.getString(6, 8 + offset), getter));
-				program.setAuditor(getter.getString(7, 4 + offset).substring(3));
+				program.setAuditor(getAuditor(getter.getString(7, 4 + offset), getter));
 				program.setFileName(programFile.getOriginalFilename());
 				program.setId(UuidUtil.get32UUID());
 				program.setCreateTime(getCurrentTime());
@@ -156,13 +156,20 @@ public class ProgramServiceImpl implements ProgramService {
 			result.put("actionName", "上传");
 
 			// 覆盖：如果“未开始”的工单列表中存在板面类型、工单号、线号同时一致的工单项目，将被新文件内容覆盖
-			List<Program> programs2 = new ArrayList<>();
 			ProgramExample programExample = new ProgramExample();
-
 			if (getter.getErrorInfos().size() < 1) {
 				// 如果存在符合条件的工单
 				programExample.createCriteria().andWorkOrderEqualTo(program.getWorkOrder()).andBoardTypeEqualTo(program.getBoardType()).andLineEqualTo(program.getLine()).andStateEqualTo(0);
-				programs2 = programMapper.selectByExample(programExample);
+				List<Program> programs2 = programMapper.selectByExample(programExample);
+				if (!programs2.isEmpty()) {
+					programMapper.updateByExampleSelective(program, programExample);
+					ProgramItemExample programItemExample = new ProgramItemExample();
+					programItemExample.createCriteria().andProgramIdEqualTo(programs2.get(0).getId());
+					programItemMapper.deleteByExample(programItemExample);
+					result.put("actionName", "覆盖");
+				} else{
+					programMapper.insertSelective(program);
+				}
 			}
 			addErrorInfo(program, getter);
 
@@ -170,7 +177,6 @@ public class ProgramServiceImpl implements ProgramService {
 			if (!OsHelper.isProductionEnvironment()) {
 				FieldUtil.print(program);
 			}
-
 			// 填充表项
 			for (int i = 0; i < sum; i++) {
 				getter.switchSheet(i);
@@ -199,19 +205,11 @@ public class ProgramServiceImpl implements ProgramService {
 					// 忽略重复项
 					try {
 						if (getter.getErrorInfos().size() < 1) {
-							if (!programs2.isEmpty()) {
-								programMapper.updateByExampleSelective(program, programExample);
-								ProgramItemExample programItemExample = new ProgramItemExample();
-								programItemExample.createCriteria().andProgramIdEqualTo(programs2.get(0).getId());
-								programItemMapper.deleteByExample(programItemExample);
-								result.put("actionName", "覆盖");
-							} else {
-								programMapper.insertSelective(program);
-							}
+							
 							// 插入表项
 							programItemMapper.insert(programItem);
 							// 打印到控制台
-							if (OsHelper.isWindows()) {
+							if (!OsHelper.isProductionEnvironment()) {
 								FieldUtil.print(programItem);
 							}
 						}
@@ -1027,6 +1025,22 @@ public class ProgramServiceImpl implements ProgramService {
 	
 	
 	/**@author HCJ
+	 * 获取从Excel表格读取的审核人
+	 * @date 2019年2月18日 下午3:00:45
+	 */
+	private String getAuditor(String content, ExcelPopularGetter getter) {
+		if (content.length() > 3) {
+			String auditor = content.substring(3);
+			if (!auditor.trim().isEmpty()) {
+				return auditor;
+			}
+		}
+		getter.getErrorInfos().add("审核人不能为空");
+		return "";
+	}
+	
+	
+	/**@author HCJ
 	 * 判断字符串是否为数字
 	 * @date 2018年11月28日 上午8:40:02
 	 */
@@ -1048,14 +1062,14 @@ public class ProgramServiceImpl implements ProgramService {
 		addLengthErrorInfo(program.getClient(), getter, FIELD_LENGTH);
 		addLengthErrorInfo(program.getAuditor(), getter, FIELD_LENGTH);
 		addLengthErrorInfo(program.getMachineName(), getter, FIELD_LENGTH);
-		addLengthErrorInfo(program.getFileName(), getter, PROGRAMNAME_AND_WORKORDER_LENGTH);
+		addLengthErrorInfo(program.getFileName(), getter, FILENAME_AND_PROGRAMNAME_AND_WORKORDER_LENGTH);
 		addLengthErrorInfo(program.getVersion(), getter, FIELD_LENGTH);
 		addLengthErrorInfo(program.getMachineConfig(), getter, FIELD_LENGTH);
 		addLengthErrorInfo(program.getProgramNo(), getter, FIELD_LENGTH);
 		addLengthErrorInfo(program.getPcbNo(), getter, FIELD_LENGTH);
 		addLengthErrorInfo(program.getBom(), getter, BOM_LENGTH);
-		addLengthErrorInfo(program.getProgramName(), getter, PROGRAMNAME_AND_WORKORDER_LENGTH);
-		addLengthErrorInfo(program.getWorkOrder(), getter, PROGRAMNAME_AND_WORKORDER_LENGTH);
+		addLengthErrorInfo(program.getProgramName(), getter, FILENAME_AND_PROGRAMNAME_AND_WORKORDER_LENGTH);
+		addLengthErrorInfo(program.getWorkOrder(), getter, FILENAME_AND_PROGRAMNAME_AND_WORKORDER_LENGTH);
 	}
 
 	

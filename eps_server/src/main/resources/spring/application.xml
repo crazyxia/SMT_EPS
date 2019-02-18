@@ -117,7 +117,7 @@
 
 		<!--连接池中保留的最大连接数。Default: 15 -->
 		<property name="maxPoolSize">
-			<value>64</value>
+			<value>1024</value>
 		</property>
 
 		<!--初始化时获取的连接数，取值应在minPoolSize与maxPoolSize之间。Default: 3 -->

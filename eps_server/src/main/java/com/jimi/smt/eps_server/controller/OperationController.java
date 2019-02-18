@@ -93,14 +93,14 @@ public class OperationController {
 	@Role(RoleType.IPQC)
 	@ResponseBody
 	@RequestMapping("/listOperationReport")
-	public PageVO<OperationReport> listOperationReport(String operator, String client, Integer line, String workOrderNo, String startTime, String endTime, Integer type, Integer currentPage, Integer pageSize) {
+	public PageVO<OperationReport> listOperationReport(String operator, Integer line, String workOrderNo, String startTime, String endTime, Integer type, Integer currentPage, Integer pageSize) {
 		Page page = new Page();
 		page.setCurrentPage(currentPage);
 		page.setPageSize(pageSize);
 		PageVO<OperationReport> pageVO = new PageVO<OperationReport>();
 		pageVO.setPage(page);
 		try {
-			pageVO.setList(operationService.listOperationReport(operator, client, line, workOrderNo, startTime, endTime, type, page));
+			pageVO.setList(operationService.listOperationReport(operator, line, workOrderNo, startTime, endTime, type, page));
 		} catch (ParseException e) {
 			ResultUtil.failed("日期格式不正确", e);
 		}

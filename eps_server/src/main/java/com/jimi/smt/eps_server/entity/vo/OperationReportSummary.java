@@ -15,6 +15,16 @@ public class OperationReportSummary {
 	protected String operator;
 	
 	protected String operationType;
+	
+	protected Integer lineId;
+
+	public Integer getLineId() {
+		return lineId;
+	}
+
+	public void setLineId(Integer lineId) {
+		this.lineId = lineId;
+	}
 
 	public String getOperationType() {
 		return operationType;

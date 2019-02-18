@@ -4,6 +4,7 @@ import com.jimi.smt.eps_server.entity.Operation;
 import com.jimi.smt.eps_server.entity.OperationDetials;
 import com.jimi.smt.eps_server.entity.OperationExample;
 import com.jimi.smt.eps_server.entity.bo.ReportParameter;
+import com.jimi.smt.eps_server.entity.vo.OperationReportSummary;
 
 import java.util.List;
 import org.apache.ibatis.annotations.Param;
@@ -104,4 +105,6 @@ public interface OperationMapper {
     List<OperationDetials> selectByOperationParameter(ReportParameter record);
     
     int countByOperationParameter(ReportParameter record);
+    
+    List<OperationReportSummary> SelectOperationReportSummary(ReportParameter record);
 }

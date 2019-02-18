@@ -185,13 +185,13 @@ public class ProgramController {
 	@RequestMapping("/upload")
 	public ResultUtil upload(MultipartFile programFile, Integer boardType) {
 		if (programFile == null || boardType == null) {
-			return ResultUtil.failed("参数不足");
+			return ResultUtil.failed("400", "参数不足");
 		}
 
 		// 文件名检查
 		String originalFileName = programFile.getOriginalFilename();
 		if (!originalFileName.endsWith(".xls") && !originalFileName.endsWith(".xlsx")) {
-			return ResultUtil.failed("上传失败，必须为xls\\xlsx格式的文件");
+			return ResultUtil.failed("400", "上传失败，必须为xls\\xlsx格式的文件");
 		}
 
 		List<Map<String, Object>> resultList = null;
@@ -200,7 +200,9 @@ public class ProgramController {
 		try {
 			resultList = programService.upload(programFile, boardType);
 		} catch (IOException e) {
-			return ResultUtil.failed("上传失败，IO错误，请重试，或联系开发者", e);
+			return ResultUtil.failed("400", "上传失败，IO错误，请重试，或联系开发者");
+		} catch (RuntimeException e) {
+			return ResultUtil.failed("400", e.getMessage());
 		}
 
 		// 结果检查
@@ -228,9 +230,9 @@ public class ProgramController {
 			}
 		}
 		if (isSucceed) {
-			return ResultUtil.succeed(sb.toString());
+			return ResultUtil.succeed("200", sb.toString());
 		} else {
-			return ResultUtil.failed(sb.toString());
+			return ResultUtil.failed("400", sb.toString());
 		}
 	}
 

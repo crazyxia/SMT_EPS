@@ -58,7 +58,7 @@ public interface OperationService {
 	 * @return
 	 * @throws ParseException 
 	 */
-	List<OperationReport> listOperationReport(String operator, String client, Integer line, String workOrderNo, String startTime, String endTime , Integer type, Page page) throws ParseException;
+	List<OperationReport> listOperationReport(String operator, Integer line, String workOrderNo, String startTime, String endTime , Integer type, Page page) throws ParseException;
 	
 	
 	/**

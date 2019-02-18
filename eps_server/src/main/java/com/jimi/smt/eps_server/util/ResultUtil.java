@@ -53,6 +53,10 @@ public class ResultUtil {
 		return new ResultUtil(result);
 	}
 	
+	public static ResultUtil failed(String result, Object data) {
+		return new ResultUtil(result, data);
+	}
+	
 	public static ResultUtil succeed(Object data) {
 		return new ResultUtil(data);
 	}

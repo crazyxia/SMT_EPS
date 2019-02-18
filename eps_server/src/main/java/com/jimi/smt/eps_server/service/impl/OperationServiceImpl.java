@@ -8,10 +8,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,8 +19,6 @@ import com.jimi.smt.eps_server.entity.OperationDetials;
 import com.jimi.smt.eps_server.entity.OperationExample;
 import com.jimi.smt.eps_server.entity.Page;
 import com.jimi.smt.eps_server.entity.StockLogExample;
-import com.jimi.smt.eps_server.entity.bo.OperationReportSummaryKey;
-import com.jimi.smt.eps_server.entity.bo.OperationReportSummaryValue;
 import com.jimi.smt.eps_server.entity.bo.ReportParameter;
 import com.jimi.smt.eps_server.entity.filler.OperationToClientReportFiller;
 import com.jimi.smt.eps_server.entity.filler.OperationToOperationReportFiller;
@@ -75,7 +70,6 @@ public class OperationServiceImpl implements OperationService {
 	 */
 	@Override
 	public synchronized List<ClientReport> listClientReport(String client, String programNo, Integer line, String orderNo, String workOrderNo, String startTime, String endTime, Page page) throws ParseException {
-//		operationToClientReportFiller.init();
 		List<ClientReport> clientReports = new ArrayList<ClientReport>();
 		ReportParameter parameter = new ReportParameter();
 		// 筛选时间
@@ -116,7 +110,6 @@ public class OperationServiceImpl implements OperationService {
 			// 把操作日志转化为客户报告
 			clientReports.add(operationToClientReportFiller.fill(operation));
 		}
-//		operationToClientReportFiller.destroy();
 		return clientReports;
 	}
 
@@ -175,7 +168,6 @@ public class OperationServiceImpl implements OperationService {
 			// 记录操作者
 			item.getOperators().add(operation.getOperator());
 		}
-
 		return displayReport;
 	}
 
@@ -193,8 +185,7 @@ public class OperationServiceImpl implements OperationService {
 	 * @throws ParseException 
 	 */
 	@Override
-	public synchronized List<OperationReport> listOperationReport(String operator, String client, Integer line, String workOrderNo, String startTime, String endTime, Integer type, Page page) throws ParseException {
-//		operationToOperationReportFiller.init();
+	public synchronized List<OperationReport> listOperationReport(String operator, Integer line, String workOrderNo, String startTime, String endTime, Integer type, Page page) throws ParseException {
 		List<OperationReport> operationReports = new ArrayList<OperationReport>();
 		ReportParameter parameter = new ReportParameter();
 		// 筛选时间
@@ -206,7 +197,7 @@ public class OperationServiceImpl implements OperationService {
 		}
 		// 筛选工单号
 		if (workOrderNo != null && !workOrderNo.equals("")) {
-			parameter.setWorkOrderNo("%" + SqlUtil.escapeParameter(workOrderNo) + "%");
+			parameter.setWorkOrderNo(workOrderNo);
 		}
 		// 筛选线别
 		if (line != null) {
@@ -214,21 +205,17 @@ public class OperationServiceImpl implements OperationService {
 		}
 		// 筛选操作员
 		if (operator != null && !operator.equals("")) {
-			parameter.setOperator("%" + SqlUtil.escapeParameter(operator) + "%");
+			parameter.setOperator(operator);
 		}
 		// 过滤类型
 		if (type != null) {
 			parameter.setType(type);
 		}
-		// 筛选客户
-		if (client != null && !client.equals("")) {
-			parameter.setClient("%" + SqlUtil.escapeParameter(client) + "%");
-		}
 		if (page != null) {
 			parameter.setFirstIndex(page.getFirstIndex());
 			parameter.setPageSize(page.getPageSize());
 		}
-		
+
 		List<OperationDetials> operations = operationMapper.selectByOperationParameter(parameter);
 
 		// 包装
@@ -236,7 +223,6 @@ public class OperationServiceImpl implements OperationService {
 			// 把操作日志转化为操作报告
 			operationReports.add(operationToOperationReportFiller.fill(operation));
 		}
-//		operationToOperationReportFiller.destroy();
 		return operationReports;
 	}
 
@@ -246,16 +232,22 @@ public class OperationServiceImpl implements OperationService {
 		List<OperationReport> operationReports = new ArrayList<>();
 		List<OperationReportSummary> operationReportSummarys = listOperationReportSummary(line, workOrderNo, startTime, endTime, type, page);
 		if (operationReportSummarys != null && operationReportSummarys.size() > 0) {
-			for (OperationReportSummary operationReportSummary : operationReportSummarys) {
-				operationReports.addAll(listOperationReport(operationReportSummary.getOperator(), null, line, operationReportSummary.getWorkOrderNo(), startTime, endTime, getOperationTypeByTypeString(operationReportSummary.getOperationType()), null));
+			if (line != null) {
+				for (OperationReportSummary operationReportSummary : operationReportSummarys) {
+					operationReports.addAll(listOperationReport(operationReportSummary.getOperator(), line, operationReportSummary.getWorkOrderNo(), startTime, endTime, getOperationTypeByTypeString(operationReportSummary.getOperationType()), null));
+				}
+			} else {
+				for (OperationReportSummary operationReportSummary : operationReportSummarys) {
+					operationReports.addAll(listOperationReport(operationReportSummary.getOperator(), operationReportSummary.getLineId(), operationReportSummary.getWorkOrderNo(), startTime, endTime, getOperationTypeByTypeString(operationReportSummary.getOperationType()), null));
+				}
 			}
 		}
 		ExcelSpringHelper helper = ExcelSpringHelper.create(true);
 		// 解析操作类型
 		String title = null;
-		if(type == null) {
+		if (type == null) {
 			title = "SMT操作报表";
-		}else {
+		} else {
 			switch (type) {
 			case 0:
 				title = "SMT上料报表";
@@ -286,70 +278,61 @@ public class OperationServiceImpl implements OperationService {
 	
 	@Override
 	public List<OperationReportSummary> listOperationReportSummary(Integer line, String workOrderNo, String startTime, String endTime, Integer type, Page page) throws ParseException {
-		// 筛选数据
-		List<OperationReport> operationReports = listOperationReport(null, null, line, workOrderNo, startTime, endTime, type, null);
-		// 创建分组Map，按OperationReportSummaryKey分组，值为result的与运算
-		Map<OperationReportSummaryKey, OperationReportSummaryValue> map = new HashMap<OperationReportSummaryKey, OperationReportSummaryValue>();
-		for (OperationReport operationReport : operationReports) {
-			// 创建Key
-			OperationReportSummaryKey key = new OperationReportSummaryKey();
-			key.setLine(operationReport.getLine());
-			key.setWorkOrderNo(operationReport.getWorkOrderNo());
-			key.setOperator(operationReport.getOperator());
-			key.setOperationType(operationReport.getOperationType());
-			// 获取该key之前的value
-			OperationReportSummaryValue value = map.get(key);
-			if (value == null) {
-				value = new OperationReportSummaryValue();
-			}
-			boolean result = operationReport.getResult().equals("PASS") ? true : false;
-			if (result == true) {
-				value.setPassCount(value.getPassCount() + 1);
-			} else {
-				value.setFailCount(value.getFailCount() + 1);
-			}
-			map.put(key, value);
+		ReportParameter parameter = new ReportParameter();
+		// 筛选时间
+		if (startTime != null && !startTime.equals("")) {
+			parameter.setStartTime(Timestamp.valueOf(startTime));
 		}
-		List<OperationReportSummaryKey> operationReportSummaryKeys = new ArrayList<>();
-		for (Entry<OperationReportSummaryKey, OperationReportSummaryValue> entry : map.entrySet()) {
-			operationReportSummaryKeys.add(entry.getKey());
+		if (endTime != null && !endTime.equals("")) {
+			parameter.setEndTime(Timestamp.valueOf(endTime));
 		}
-		List<OperationReportSummary> operationReportSummaries = new ArrayList<OperationReportSummary>();
-		if (operationReportSummaryKeys.size() - page.getFirstIndex() > page.getPageSize()) {
-			for (int i = page.getFirstIndex(); i < operationReportSummaryKeys.size(); i++) {
-				OperationReportSummary summary = new OperationReportSummary();
-				summary.setLine(operationReportSummaryKeys.get(i).getLine());
-				summary.setWorkOrderNo(operationReportSummaryKeys.get(i).getWorkOrderNo());
-				summary.setOperator(operationReportSummaryKeys.get(i).getOperator());
-				summary.setPassCount(map.get(operationReportSummaryKeys.get(i)).getPassCount());
-				summary.setFailCount(map.get(operationReportSummaryKeys.get(i)).getFailCount());
-				if(type == null) {
-					summary.setOperationType("");
-				}else {
-					summary.setOperationType(operationReportSummaryKeys.get(i).getOperationType());
-				}
-				operationReportSummaries.add(summary);
-				if (operationReportSummaries.size() == page.getPageSize()) {
-					break;
-				}
+		// 筛选工单号
+		if (workOrderNo != null && !workOrderNo.equals("")) {
+			parameter.setWorkOrderNo("%" + SqlUtil.escapeParameter(workOrderNo) + "%");
+		}
+		// 筛选线别
+		if (line != null) {
+			parameter.setLine(line);
+		}
+		// 过滤类型
+		if (type != null) {
+			parameter.setType(type);
+		}
+		if (page != null) {
+			parameter.setFirstIndex(page.getFirstIndex());
+			parameter.setPageSize(page.getPageSize());
+		}
+		List<OperationReportSummary> operationReportSummaries = operationMapper.SelectOperationReportSummary(parameter);
+		if (type == null) {
+			for (OperationReportSummary operationReportSummary : operationReportSummaries) {
+				operationReportSummary.setOperationType("");
 			}
 		} else {
-			for (int i = page.getFirstIndex(); i < operationReportSummaryKeys.size(); i++) {
-				OperationReportSummary summary = new OperationReportSummary();
-				summary.setLine(operationReportSummaryKeys.get(i).getLine());
-				summary.setWorkOrderNo(operationReportSummaryKeys.get(i).getWorkOrderNo());
-				summary.setOperator(operationReportSummaryKeys.get(i).getOperator());
-				summary.setPassCount(map.get(operationReportSummaryKeys.get(i)).getPassCount());
-				summary.setFailCount(map.get(operationReportSummaryKeys.get(i)).getFailCount());
-				if(type == null) {
-					summary.setOperationType("");
-				}else {
-					summary.setOperationType(operationReportSummaryKeys.get(i).getOperationType());
-				}
-				operationReportSummaries.add(summary);
-				if (operationReportSummaries.size() == operationReportSummaryKeys.size() - page.getFirstIndex() + 1) {
-					break;
-				}
+			String typeString = "";
+			switch (type) {
+			case 0:
+				typeString = "上料";
+				break;
+			case 1:
+				typeString = "换料";
+				break;
+			case 2:
+				typeString = "核料";
+				break;
+			case 3:
+				typeString = "全检";
+				break;
+			case 4:
+				typeString = "发料";
+				break;
+			case 5:
+				typeString = "首检";
+				break;
+			default:
+				break;
+			}
+			for (OperationReportSummary operationReportSummary : operationReportSummaries) {
+				operationReportSummary.setOperationType(typeString);
 			}
 		}
 		return operationReportSummaries;
@@ -358,7 +341,6 @@ public class OperationServiceImpl implements OperationService {
 	
 	@Override
 	public List<StockLogVO> listStockLogs(String operator, String materialNo, String custom, String position, String startTime, String endTime, Page page) throws ParseException {
-
 		StockLogExample stockLogExample = new StockLogExample();
 		StockLogExample.Criteria stockLogCriteria = stockLogExample.createCriteria();
 
@@ -393,7 +375,7 @@ public class OperationServiceImpl implements OperationService {
 
 		// 时间降序
 		stockLogExample.setOrderByClause("operation_time desc");
-		if(page != null) {
+		if (page != null) {
 			stockLogExample.setLimitStart(page.getFirstIndex());
 			stockLogExample.setLimitSize(page.getPageSize());
 		}
@@ -405,10 +387,10 @@ public class OperationServiceImpl implements OperationService {
 	public Integer add(Operation operation) {
 		operation.setTime(programService.getCurrentTime());
 		Integer lineId = lineService.getLineIdByName(operation.getLine().toString());
-		if(lineId != null) {
+		if (lineId != null) {
 			operation.setLine(lineId);
 			return operationMapper.insert(operation);
-		}		
+		}
 		return 0;
 	}
 	
