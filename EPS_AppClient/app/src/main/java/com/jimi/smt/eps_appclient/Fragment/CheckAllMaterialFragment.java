@@ -137,7 +137,7 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEventMainThread(EvenBusTest event) {
         if (event.getUpdated() == 0) {
-            Log.d(TAG, "onEventMainThread - getUpdated - ");
+            Log.d(TAG, "onEventMainThread - getUpdated - 0");
             if (inputDialog != null && inputDialog.isShowing()) {
                 inputDialog.cancel();
                 inputDialog.dismiss();
@@ -186,6 +186,7 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
             }
         } else {
             // TODO: 2018/12/26
+            /*
             if (event.getCheckAllTimeOut() == 1) {
                 Log.d(TAG, "onEventMainThread - getCheckAllTimeOut - 1");
                 //超时,无论是否作废重传
@@ -232,18 +233,21 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                 Log.d(TAG, "mHidden - " + mHidden);
                 //提示首检或上料
                 if (!mHidden) {
-                    /*
+                    *//*
                     if (factoryLineActivity.updateDialog != null && factoryLineActivity.updateDialog.isShowing()) {
                         factoryLineActivity.updateDialog.cancel();
                         factoryLineActivity.updateDialog.dismiss();
                     }
-                    */
+                    *//*
                     edt_ScanMaterial.requestFocus();
                 }
 
             }
+            */
+
+
             //未超时
-            else {
+//            else {
                 //作废重传
                 if (0 == event.getProgramIdEqual()) {
                     Log.d(TAG, "getProgramIdEqual - " + event.getProgramIdEqual());
@@ -274,7 +278,7 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                         }
                     }
                 }
-            }
+//            }
         }
     }
 

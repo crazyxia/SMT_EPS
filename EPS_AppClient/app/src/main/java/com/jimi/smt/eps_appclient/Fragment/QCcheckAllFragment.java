@@ -125,7 +125,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
     public void onEventMainThread(EvenBusTest event) {
         if (event.getUpdated() == 0) {
             Log.d(TAG, "onEventMainThread - update - ");
-            //更新或重置
+            //更新
             if (inputDialog != null && inputDialog.isShowing()) {
                 inputDialog.cancel();
                 inputDialog.dismiss();
@@ -174,6 +174,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
 
         } else {
             // TODO: 2018/12/26
+            /*
             if (event.getCheckAllTimeOut() == 1) {
                 Log.d(TAG, "onEventMainThread - getCheckAllTimeOut - ");
                 boolean mReset = true;
@@ -217,18 +218,19 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                 Log.d(TAG, "mHidden - " + mHidden);
                 //提示首检或上料
                 if (!mHidden) {
-                        /*
+                        *//*
                         if (mQcActivity.updateDialog != null && mQcActivity.updateDialog.isShowing()) {
                             mQcActivity.updateDialog.cancel();
                             mQcActivity.updateDialog.dismiss();
                         }
-                        */
+                        *//*
                     edt_ScanMaterial.requestFocus();
                 }
 
             }
+            */
             //未超时
-            else {
+//            else {
                 //作废重传
                 if (0 == event.getProgramIdEqual()) {
                     Log.d(TAG, "getProgramIdEqual - " + event.getProgramIdEqual());
@@ -262,7 +264,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                         edt_ScanMaterial.requestFocus();
                     }
                 }
-            }
+//            }
         }
     }
 

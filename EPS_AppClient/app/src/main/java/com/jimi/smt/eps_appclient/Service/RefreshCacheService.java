@@ -1,5 +1,6 @@
 package com.jimi.smt.eps_appclient.Service;
 
+import android.app.FragmentManager;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
@@ -52,9 +53,7 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "onStartCommand");
 
-        if (Constants.liveUpdate) {
-            getRefreshProgram(globalData);
-        }
+        getRefreshProgram(globalData);
 
         return super.onStartCommand(intent, flags, startId);
     }
@@ -78,11 +77,14 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
                 String line = globalData.getLine();
                 String workOrder = globalData.getWork_order();
                 int boardType = globalData.getBoard_type();
-//                Log.d(TAG, "getRefreshProgram - " + "  line : " + line + "  workOrder: " + workOrder + "  boardType: " + boardType);
-//                mHttpUtils.getProgramId(line, workOrder, boardType);
-                if ((null != line) && (null != workOrder)){
+                if ((null != line) && (null != workOrder)) {
+                    mHttpUtils.getProgramId(line, workOrder, boardType);
+                }
+                /*
+                if ((null != line) && (null != workOrder)) {
                     mHttpUtils.isCheckAllTimeOut(line, workOrder, boardType);
                 }
+                */
             }
         }
     });
@@ -91,6 +93,22 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
     public void showHttpResponse(int code, Object request, String response) {
         switch (code) {
 
+            case HttpUtils.CodeGetProgramId:
+                String result = "";
+                try {
+                    JSONObject jsonObject = new JSONObject(response);
+                    result = jsonObject.getString("result");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    Log.d(TAG, "showHttpResponse - " + response);
+                }
+                if (!request.equals("fail")) {
+                    int resultcode = doCheckProgramId(result);
+                    mHttpUtils.getMaterials(result, resultcode);
+                }
+                break;
+
+            /*
             case HttpUtils.CodeIsCheckAllTimeOut:
                 Log.d(TAG, "response - " + response);
                 String programId = "";
@@ -103,10 +121,11 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
                     Log.d(TAG, "showHttpResponse - " + e.toString());
                 }
                 if (null != programId && !("".equals(programId))) {
-                    int result = doCheckProgramId(programId);
-                    mHttpUtils.getMaterials(programId, result);
+                    int resultcode = doCheckProgramId(programId);
+                    mHttpUtils.getMaterials(programId, resultcode);
                 }
                 break;
+                */
 
             case HttpUtils.CodeMaterials:
                 int resCode = -1;
@@ -122,17 +141,21 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
                 if (resCode == 1) {
                     List<Material.MaterialBean> materialBeans = gson.fromJson(response, Material.class).getData();
                     for (Material.MaterialBean bean : materialBeans) {
+                        bean.setProgramId(globalData.getProgramId());
                         bean.setLine(globalData.getLine());
                         bean.setWorkOrder(globalData.getWork_order());
                         bean.setBoardType(globalData.getBoard_type());
                     }
-                    doRefresh(materialBeans, checkAllTimeOut, equal);
-                } else {
+                    doRefresh(materialBeans, equal);
+                }
+                /*
+                else {
                     // TODO: 2018/12/26 判断是否全检超时
                     EvenBusTest evenBusTest = doCheckTimeOut(new EvenBusTest(), checkAllTimeOut, equal);
                     //发送消息
                     EventBus.getDefault().post(evenBusTest);
                 }
+                */
                 break;
             default:
                 break;
@@ -148,6 +171,7 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
 
     /**
      * 改变programId
+     * 用于处理作废重传情况
      *
      * @param newProgramId
      * @return 1, 表示相同; 0,表示不相同
@@ -183,11 +207,6 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
                 globalData.setQcProgramId(newProgramId);
         }
 
-        /*
-        if (newProgramId.equals(globalData.getProgramId()))
-            return 1;
-        */
-
         //programId不一样
         globalData.setProgramId(newProgramId);
 
@@ -199,11 +218,9 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
      * 获取站位表更新
      *
      * @param materialBeans 站位表
-     * @param timeOut       1, 表示超时 ;  0,表示不超时
-     * @param equal         1,表示相同; 0,表示不相同
+     * @param equal         作废重传标志        1,表示相同; 0,表示不相同
      */
-    private void doRefresh(List<Material.MaterialBean> materialBeans, int timeOut, int equal) {
-        Log.d(TAG, "doRefresh - timeOut " + timeOut);
+    private void doRefresh(List<Material.MaterialBean> materialBeans, int equal) {
         Log.d(TAG, "doRefresh - equal " + equal);
         EvenBusTest evenBusTest = new EvenBusTest();
         //当前的料号表
@@ -215,9 +232,6 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
         if (!isEqual) {
             //更新
             evenBusTest.setUpdated(0);
-            //超时与否
-            // TODO: 2018/12/26
-            evenBusTest.setCheckAllTimeOut(timeOut);
             //更新全局变量
             globalData.setMaterialBeans(materialBeans);
             //更新本地数据库
@@ -280,23 +294,9 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
                 }
                 //操作员全检
                 if (flCheckAlls != null && flCheckAlls.size() > 0) {
-                    // TODO: 2018/12/26
-                    if (timeOut == 0) {
-                        //未超时
-                        for (FLCheckAll flCheckAll : flCheckAlls) {
-                            flCheckAll.setProgramId(globalData.getProgramId());
-                            GreenDaoUtil.getGreenDaoUtil().updateFLCheck(flCheckAll);
-                        }
-                    } else if (timeOut == 1) {
-                        //超时
-                        for (FLCheckAll flCheckAll : flCheckAlls) {
-                            flCheckAll.setProgramId(globalData.getProgramId());
-                            flCheckAll.setScanLineSeat("");
-                            flCheckAll.setScanMaterial("");
-                            flCheckAll.setRemark("");
-                            flCheckAll.setResult("");
-                            GreenDaoUtil.getGreenDaoUtil().updateFLCheck(flCheckAll);
-                        }
+                    for (FLCheckAll flCheckAll : flCheckAlls) {
+                        flCheckAll.setProgramId(globalData.getProgramId());
+                        GreenDaoUtil.getGreenDaoUtil().updateFLCheck(flCheckAll);
                     }
                     //先删除更新的对应站位的数据
                     boolean delete = new GreenDaoUtil().deleteFLCheckBySeat(seats);
@@ -316,7 +316,12 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
                 List<QcCheckAll> qcCheckAlls = new GreenDaoUtil().queryQcCheckRecord(globalData.getOperator(), globalData.getWork_order()
                         , globalData.getLine(), globalData.getBoard_type());
                 if (qcCheckAlls != null && qcCheckAlls.size() > 0) {
+                    for (QcCheckAll qcCheckAll : qcCheckAlls) {
+                        qcCheckAll.setProgramId(globalData.getProgramId());
+                        GreenDaoUtil.getGreenDaoUtil().updateQcCheck(qcCheckAll);
+                    }
                     // TODO: 2018/12/26
+                    /*
                     if (timeOut == 0) {
                         for (QcCheckAll qcCheckAll : qcCheckAlls) {
                             qcCheckAll.setProgramId(globalData.getProgramId());
@@ -332,6 +337,7 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
                             GreenDaoUtil.getGreenDaoUtil().updateQcCheck(qcCheckAll);
                         }
                     }
+                    */
 
                     //先删除更新的对应站位的数据
                     boolean delete = new GreenDaoUtil().deleteQcCheckBySeat(seats);
@@ -350,7 +356,8 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
         //未更新
         else {
             // TODO: 2018/12/26
-            evenBusTest = doCheckTimeOut(evenBusTest, timeOut, equal);
+//            evenBusTest = doCheckTimeOut(evenBusTest, timeOut, equal);
+            evenBusTest = invalidRetransmit(evenBusTest, equal);
         }
 
         //发送消息
@@ -358,10 +365,114 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
     }
 
     /**
+     *
+     * @param evenBusTest 事件车
+     * @param equal 作废重传标志  1,表示相同; 0,表示不相同
+     * @return
+     */
+    private EvenBusTest invalidRetransmit(EvenBusTest evenBusTest, int equal) {
+        Log.d(TAG, "invalidRetransmit -  equal - " + equal);
+        //不更新
+        evenBusTest.setUpdated(1);
+        evenBusTest.setProgramIdEqual(equal);
+        int userType = globalData.getUserType();
+
+        if (0 == equal) {
+            //不一样
+            if ((globalData.getUserType() == Constants.WARE_HOUSE)
+                    || (globalData.getUserType() == Constants.ADMIN && globalData.getAdminOperType() == Constants.ADMIN_WARE_HOUSE)) {
+                //仓库发料纪录
+                List<Ware> wares = new GreenDaoUtil().queryWareRecord(globalData.getOperator(), globalData.getWork_order(),
+                        globalData.getLine(), globalData.getBoard_type());
+                //发料
+                if (wares != null && wares.size() > 0) {
+                    //更新programID
+                    for (Ware ware : wares) {
+                        ware.setProgramId(globalData.getProgramId());
+                        ware.setScanLineSeat("");
+                        ware.setScanMaterial("");
+                        ware.setRemark("");
+                        ware.setResult("");
+                        GreenDaoUtil.getGreenDaoUtil().updateWare(ware);
+                    }
+                    //保存到订阅事件中
+                    evenBusTest.setWareList(wares);
+                }
+
+            } else if ((userType == Constants.FACTORY)
+                    || (userType == Constants.ADMIN && globalData.getAdminOperType() == Constants.ADMIN_FACTORY)) {
+                //厂线操作员
+                List<FLCheckAll> flCheckAlls = new GreenDaoUtil().queryFLCheckRecord(globalData.getOperator(), globalData.getWork_order(),
+                        globalData.getLine(), globalData.getBoard_type());
+                //厂线上料
+                List<Feed> feeds = new GreenDaoUtil().queryFeedRecord(globalData.getOperator(), globalData.getWork_order(),
+                        globalData.getLine(), globalData.getBoard_type());
+                //操作员全检
+                if (flCheckAlls != null && flCheckAlls.size() > 0) {
+                    for (FLCheckAll flCheckAll : flCheckAlls) {
+                        flCheckAll.setProgramId(globalData.getProgramId());
+                        flCheckAll.setScanLineSeat("");
+                        flCheckAll.setScanMaterial("");
+                        flCheckAll.setRemark("");
+                        flCheckAll.setResult("");
+                        GreenDaoUtil.getGreenDaoUtil().updateFLCheck(flCheckAll);
+                    }
+                    //保存到订阅事件中
+                    evenBusTest.setFlCheckAllList(flCheckAlls);
+                }
+                //上料
+                if (feeds != null && feeds.size() > 0) {
+                    for (Feed feed : feeds) {
+                        feed.setProgramId(globalData.getProgramId());
+                        feed.setScanLineSeat("");
+                        feed.setScanMaterial("");
+                        feed.setRemark("");
+                        feed.setResult("");
+                        GreenDaoUtil.getGreenDaoUtil().updateFeed(feed);
+                    }
+                    //保存到订阅事件中
+                    evenBusTest.setFeedList(feeds);
+                }
+
+            } else if ((userType == Constants.QC)
+                    || (userType == Constants.ADMIN && globalData.getAdminOperType() == Constants.ADMIN_QC)) {
+                //QC全检纪录
+                List<QcCheckAll> qcCheckAlls = new GreenDaoUtil().queryQcCheckRecord(globalData.getOperator(), globalData.getWork_order()
+                        , globalData.getLine(), globalData.getBoard_type());
+                if (qcCheckAlls != null && qcCheckAlls.size() > 0) {
+                    for (QcCheckAll qcCheckAll : qcCheckAlls) {
+                        qcCheckAll.setProgramId(globalData.getProgramId());
+                        qcCheckAll.setScanLineSeat("");
+                        qcCheckAll.setScanMaterial("");
+                        qcCheckAll.setRemark("");
+                        qcCheckAll.setResult("");
+                        GreenDaoUtil.getGreenDaoUtil().updateQcCheck(qcCheckAll);
+                    }
+                    //保存到订阅事件中
+                    evenBusTest.setQcCheckAllList(qcCheckAlls);
+                }
+            }
+
+            //更新全局料号表
+            List<Material.MaterialBean> materialBeans = globalData.getMaterialBeans();
+            for (Material.MaterialBean bean : materialBeans) {
+                bean.setProgramId(globalData.getProgramId());
+                bean.setScanlineseat("");
+                bean.setScanMaterial("");
+                bean.setResult("");
+                bean.setRemark("");
+            }
+        }
+
+        return evenBusTest;
+    }
+
+
+    /**
      * 获取更新不成功，判断全检超时情况
      *
      * @param checkAllTimeOut 1, 表示超时 ;  0,表示不超时
-     * @param equal           1,表示相同; 0,表示不相同
+     * @param equal           作废重传标志         1,表示相同; 0,表示不相同
      */
     private EvenBusTest doCheckTimeOut(EvenBusTest evenBusTest, int checkAllTimeOut, int equal) {
         Log.d(TAG, "doCheckTimeOut -  checkAllTimeOut - " + checkAllTimeOut);

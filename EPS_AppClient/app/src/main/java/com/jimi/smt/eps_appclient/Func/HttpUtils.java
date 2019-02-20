@@ -6,16 +6,12 @@ import com.google.gson.Gson;
 import com.jimi.smt.eps_appclient.Beans.Material;
 import com.jimi.smt.eps_appclient.Beans.Operation;
 import com.jimi.smt.eps_appclient.Beans.ProgramItemVisit;
-import com.jimi.smt.eps_appclient.R;
-import com.jimi.smt.eps_appclient.Unit.Constants;
 import com.jimi.smt.eps_appclient.Interfaces.OkHttpInterface;
 import com.jimi.smt.eps_appclient.Unit.GlobalData;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
 
 import java.util.ArrayList;
-
-import javax.microedition.khronos.opengles.GL;
 
 import okhttp3.Call;
 import okhttp3.MediaType;
@@ -113,7 +109,7 @@ public class HttpUtils {
      * @param operatType   操作类型
      * @return 失败 failed_not_exist_item 、failed_not_exist ; 成功  succeed
      */
-    public int operate(ArrayList<Integer> integers, Material.MaterialBean materialItem, int operatType, int condition) {
+    public void operate(ArrayList<Integer> integers, Material.MaterialBean materialItem, int operatType, int condition) {
         Log.d(TAG, "operate - " + materialItem.getMaterialStr());
         String operationResult = materialItem.getResult();
         if (operationResult.equalsIgnoreCase("FAIL")) {
@@ -124,7 +120,6 @@ public class HttpUtils {
 
         Log.d(TAG, "operate - " + operateUrl);
 
-        int operateResult = 0;
         OkHttpUtils.post().url(globalData.getIp() + operateUrl)
                 .addParams("line", materialItem.getLine())
                 .addParams("workOrder", materialItem.getWorkOrder())
@@ -138,17 +133,16 @@ public class HttpUtils {
                 .execute(new StringCallback() {
                     @Override
                     public void onError(Call call, Exception e, int id) {
-                        Log.d(TAG, "onError - " + e.toString());
+                        Log.d(TAG, "operate - onError - " + e.toString());
                         mOkHttpInterface.showHttpError(CodeOperate, new Object[]{integers, materialItem, condition}, e.toString());
                     }
 
                     @Override
                     public void onResponse(String response, int id) {
-                        Log.d(TAG, "onResponse - " + response);
+                        Log.d(TAG, "operate - onResponse - " + response);
                         mOkHttpInterface.showHttpResponse(CodeOperate, new Object[]{integers, materialItem, condition}, response);
                     }
                 });
-        return operateResult;
     }
 
     /**
@@ -159,9 +153,8 @@ public class HttpUtils {
      * @param boardType
      * @return 失败 failed_not_exist ; 成功 succeed
      */
-    public int reset(String line, String workOrder, int boardType) {
+    public void reset(String line, String workOrder, int boardType) {
         Log.d(TAG, "reset - " + "\n" + line + "\n" + workOrder + "\n" + boardType);
-        int resetResult = 0;
         OkHttpUtils.post().url(globalData.getIp() + resetUrl)
                 .addParams("line", line)
                 .addParams("workOrder", workOrder)
@@ -170,17 +163,16 @@ public class HttpUtils {
                 .execute(new StringCallback() {
                     @Override
                     public void onError(Call call, Exception e, int id) {
-                        Log.d(TAG, "onError - " + e.toString());
+                        Log.d(TAG, "reset - onError - " + e.toString());
                         mOkHttpInterface.showHttpError(CodeReset, null, e.toString());
                     }
 
                     @Override
                     public void onResponse(String response, int id) {
-                        Log.d(TAG, "onResponse - " + response);
+                        Log.d(TAG, "reset - onResponse - " + response);
                         mOkHttpInterface.showHttpResponse(CodeReset, null, response);
                     }
                 });
-        return resetResult;
     }
 
 
@@ -199,13 +191,13 @@ public class HttpUtils {
                 .execute(new StringCallback() {
                     @Override
                     public void onError(Call call, Exception e, int id) {
-                        Log.d(TAG, "onError - " + e.toString());
+                        Log.d(TAG, "getOrdersByLine - onError - " + e.toString());
                         mOkHttpInterface.showHttpError(CodeWokingOrders, line, e.toString());
                     }
 
                     @Override
                     public void onResponse(String response, int id) {
-                        Log.d(TAG, "onResponse - " + response);
+                        Log.d(TAG, "getOrdersByLine - onResponse - " + response);
                         mOkHttpInterface.showHttpResponse(CodeWokingOrders, line, response);
                     }
                 });
@@ -226,13 +218,13 @@ public class HttpUtils {
                 .execute(new StringCallback() {
                     @Override
                     public void onError(Call call, Exception e, int id) {
-                        Log.d(TAG, "onError - " + e.toString());
+                        Log.d(TAG, "getUserInfo - onError - " + e.toString());
                         mOkHttpInterface.showHttpError(CodeUserInfo, uid, e.toString());
                     }
 
                     @Override
                     public void onResponse(String response, int id) {
-                        Log.d(TAG, "onResponse - " + response);
+                        Log.d(TAG, "getUserInfo - onResponse - " + response);
                         mOkHttpInterface.showHttpResponse(CodeUserInfo, uid, response);
                     }
                 });
@@ -253,13 +245,13 @@ public class HttpUtils {
                 .execute(new StringCallback() {
                     @Override
                     public void onError(Call call, Exception e, int id) {
-                        Log.d(TAG, "onError - " + e.toString());
+                        Log.d(TAG, "getMaterials - onError - " + e.toString());
                         mOkHttpInterface.showHttpError(CodeMaterials, programId, e.toString());
                     }
 
                     @Override
                     public void onResponse(String response, int id) {
-//                        Log.d(TAG, "onResponse - " + response);
+//                        Log.d(TAG, "getMaterials - onResponse - " + response);
                         mOkHttpInterface.showHttpResponse(CodeMaterials, programId, response);
                     }
                 });
@@ -280,13 +272,13 @@ public class HttpUtils {
                 .execute(new StringCallback() {
                     @Override
                     public void onError(Call call, Exception e, int id) {
-                        Log.d(TAG, "onError - " + e.toString());
+                        Log.d(TAG, "getMaterials - onError - " + e.toString());
                         mOkHttpInterface.showHttpError(CodeMaterials, new Object[]{programId,equal}, e.toString());
                     }
 
                     @Override
                     public void onResponse(String response, int id) {
-//                        Log.d(TAG, "onResponse - " + response);
+//                        Log.d(TAG, "getMaterials - onResponse - " + response);
                         mOkHttpInterface.showHttpResponse(CodeMaterials, new Object[]{programId,equal}, response);
                     }
                 });
@@ -310,13 +302,13 @@ public class HttpUtils {
                 .execute(new StringCallback() {
                     @Override
                     public void onError(Call call, Exception e, int id) {
-                        Log.d(TAG, "onError - " + e.toString());
+                        Log.d(TAG, "addOperation - onError - " + e.toString());
                         mOkHttpInterface.showHttpError(CodeAddOperate, operationStr, e.toString());
                     }
 
                     @Override
                     public void onResponse(String response, int id) {
-                        Log.d(TAG, "onResponse - " + response);
+                        Log.d(TAG, "addOperation - onResponse - " + response);
                         mOkHttpInterface.showHttpResponse(CodeAddOperate, operationStr, response);
                     }
                 });
@@ -342,13 +334,13 @@ public class HttpUtils {
                 .execute(new StringCallback() {
                     @Override
                     public void onError(Call call, Exception e, int id) {
-                        Log.d(TAG, "onError - " + e.toString());
+                        Log.d(TAG, "updateVisit - onError - " + e.toString());
                         mOkHttpInterface.showHttpError(CodeAddVisit, new Object[]{bean, visit, count}, e.toString());
                     }
 
                     @Override
                     public void onResponse(String response, int id) {
-                        Log.d(TAG, "onResponse - " + response);
+                        Log.d(TAG, "updateVisit - onResponse - " + response);
                         mOkHttpInterface.showHttpResponse(CodeAddVisit, new Object[]{bean, visit, count}, response);
                     }
                 });
@@ -371,13 +363,13 @@ public class HttpUtils {
                 .execute(new StringCallback() {
                     @Override
                     public void onError(Call call, Exception e, int id) {
-                        Log.d(TAG, "onError - " + e.toString());
+                        Log.d(TAG, "updateVisit - onError - " + e.toString());
                         mOkHttpInterface.showHttpError(CodeAddVisit, new Object[]{bean, visit, count, integers}, e.toString());
                     }
 
                     @Override
                     public void onResponse(String response, int id) {
-                        Log.d(TAG, "onResponse - " + response);
+                        Log.d(TAG, "updateVisit - onResponse - " + response);
                         mOkHttpInterface.showHttpResponse(CodeAddVisit, new Object[]{bean, visit, count, integers}, response);
                     }
                 });
@@ -401,13 +393,13 @@ public class HttpUtils {
                 .execute(new StringCallback() {
                     @Override
                     public void onError(Call call, Exception e, int id) {
-                        Log.d(TAG, "onError - " + e.toString());
+                        Log.d(TAG, "isReset - onError - " + e.toString());
                         mOkHttpInterface.showHttpError(CodeCheckIsReset, new String[]{programId, String.valueOf(type)}, e.toString());
                     }
 
                     @Override
                     public void onResponse(String response, int id) {
-                        Log.d(TAG, "onResponse - " + response);
+                        Log.d(TAG, "isReset - onResponse - " + response);
                         mOkHttpInterface.showHttpResponse(CodeCheckIsReset, new String[]{programId, String.valueOf(type)}, response);
                     }
                 });
@@ -428,13 +420,13 @@ public class HttpUtils {
                 .execute(new StringCallback() {
                     @Override
                     public void onError(Call call, Exception e, int id) {
-                        Log.d(TAG, "onError - " + e.toString());
+                        Log.d(TAG, "resetCheckAllRR - onError - " + e.toString());
                         mOkHttpInterface.showHttpError(CodeResetCheckAll, programId, e.toString());
                     }
 
                     @Override
                     public void onResponse(String response, int id) {
-                        Log.d(TAG, "onResponse - " + response);
+                        Log.d(TAG, "resetCheckAllRR - onResponse - " + response);
                         mOkHttpInterface.showHttpResponse(CodeResetCheckAll, programId, response);
                     }
                 });
@@ -477,9 +469,9 @@ public class HttpUtils {
      *             0:上料 1:换料 2:核料 3:全检 4:发料 5:首检
      */
     public void checkAllDoneStr(String programId, String type) {
-        Log.d(TAG, "checkAllDone - " + isAllDone);
-        Log.d(TAG, "checkAllDone - programId - " + programId);
-        Log.d(TAG, "checkAllDone - type - " + type);
+        Log.d(TAG, "checkAllDoneStr - " + isAllDone);
+        Log.d(TAG, "checkAllDoneStr - programId - " + programId);
+        Log.d(TAG, "checkAllDoneStr - type - " + type);
         OkHttpUtils.post().url(globalData.getIp() + isAllDone)
                 .addParams("programId", programId)
                 .addParams("type", String.valueOf(type))
@@ -487,13 +479,13 @@ public class HttpUtils {
                 .execute(new StringCallback() {
                     @Override
                     public void onError(Call call, Exception e, int id) {
-                        Log.d(TAG, "onError - " + e.toString());
+                        Log.d(TAG, "checkAllDoneStr - onError - " + e.toString());
                         mOkHttpInterface.showHttpError(CodeIsAllDoneSTR, new Object[]{programId, type}, e.toString());
                     }
 
                     @Override
                     public void onResponse(String response, int id) {
-                        Log.d(TAG, "onResponse - " + response);
+                        Log.d(TAG, "checkAllDoneStr - onResponse - " + response);
                         mOkHttpInterface.showHttpResponse(CodeIsAllDoneSTR, new Object[]{programId, type}, response);
                     }
                 });
@@ -535,9 +527,9 @@ public class HttpUtils {
      *             0:上料 1:换料 2:核料 3:全检 4:发料 5:首检
      */
     public void checkAllDoneStr(String programId, String type,ArrayList<Integer> integers, Material.MaterialBean bean, int condition) {
-        Log.d(TAG, "checkAllDone - " + isAllDone);
-        Log.d(TAG, "checkAllDone - programId - " + programId);
-        Log.d(TAG, "checkAllDone - type - " + type);
+        Log.d(TAG, "checkAllDoneStr - " + isAllDone);
+        Log.d(TAG, "checkAllDoneStr - programId - " + programId);
+        Log.d(TAG, "checkAllDoneStr - type - " + type);
         OkHttpUtils.post().url(globalData.getIp() + isAllDone)
                 .addParams("programId", programId)
                 .addParams("type", String.valueOf(type))
@@ -545,13 +537,13 @@ public class HttpUtils {
                 .execute(new StringCallback() {
                     @Override
                     public void onError(Call call, Exception e, int id) {
-                        Log.d(TAG, "onError - " + e.toString());
+                        Log.d(TAG, "checkAllDoneStr - onError - " + e.toString());
                         mOkHttpInterface.showHttpError(CodeIsAllDoneSTR, new Object[]{programId, type, integers, bean, condition}, e.toString());
                     }
 
                     @Override
                     public void onResponse(String response, int id) {
-                        Log.d(TAG, "onResponse - " + response);
+                        Log.d(TAG, "checkAllDoneStr - onResponse - " + response);
                         mOkHttpInterface.showHttpResponse(CodeIsAllDoneSTR, new Object[]{programId, type, integers, bean, condition}, response);
                     }
                 });
@@ -597,13 +589,13 @@ public class HttpUtils {
                 .execute(new StringCallback() {
                     @Override
                     public void onError(Call call, Exception e, int id) {
-                        Log.d(TAG, "onError - " + e.toString());
+                        Log.d(TAG, "getChangeSucceed - onError - " + e.toString());
                         mOkHttpInterface.showHttpError(CodeIsChangeSucceed, new String[]{programId, lineseat}, e.toString());
                     }
 
                     @Override
                     public void onResponse(String response, int id) {
-                        Log.d(TAG, "onResponse - " + response);
+                        Log.d(TAG, "getChangeSucceed - onResponse - " + response);
                         mOkHttpInterface.showHttpResponse(CodeIsChangeSucceed, new String[]{programId, lineseat}, response);
                     }
                 });
@@ -628,13 +620,13 @@ public class HttpUtils {
                 .execute(new StringCallback() {
                     @Override
                     public void onError(Call call, Exception e, int id) {
-                        Log.d(TAG, "onError - " + e.toString());
+                        Log.d(TAG, "getProgramId - onError - " + e.toString());
                         mOkHttpInterface.showHttpError(CodeGetProgramId, new String[]{line, workOrder, String.valueOf(boardType)}, e.toString());
                     }
 
                     @Override
                     public void onResponse(String response, int id) {
-                        Log.d(TAG, "onResponse - " + response);
+//                        Log.d(TAG, "getProgramId - onResponse - " + response);
                         mOkHttpInterface.showHttpResponse(CodeGetProgramId, new String[]{line, workOrder, String.valueOf(boardType)}, response);
                     }
                 });
@@ -658,13 +650,13 @@ public class HttpUtils {
                 .execute(new StringCallback() {
                     @Override
                     public void onError(Call call, Exception e, int id) {
-                        Log.d(TAG, "onError - " + e.toString());
+                        Log.d(TAG, "isCheckAllTimeOut - onError - " + e.toString());
                         mOkHttpInterface.showHttpError(CodeIsCheckAllTimeOut, new String[]{line, workOrder, String.valueOf(boardType)}, e.toString());
                     }
 
                     @Override
                     public void onResponse(String response, int id) {
-                        Log.d(TAG, "onResponse - " + response);
+                        Log.d(TAG, "isCheckAllTimeOut - onResponse - " + response);
                         mOkHttpInterface.showHttpResponse(CodeIsCheckAllTimeOut, new String[]{line, workOrder, String.valueOf(boardType)}, response);
                     }
                 });

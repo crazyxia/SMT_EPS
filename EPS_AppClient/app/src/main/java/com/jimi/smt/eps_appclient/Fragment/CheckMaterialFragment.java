@@ -53,7 +53,7 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
     //操作员　站位　料号
     private MyEditTextDel edt_LineSeat;
     private MyEditTextDel edt_Material;
-    private TextView tv_Result, tv_Remark, tv_seat,tv_check_material/*tv_LastInfo*/;
+    private TextView tv_Result, tv_Remark, tv_seat, tv_check_material/*tv_LastInfo*/;
     //当前扫描的站位,料号
     private String curLineSeat, curMaterial;
     //当前检料时用到的排位料号表
@@ -67,7 +67,7 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
     private QCActivity qcActivity;
     private boolean mHidden = false;
     private HttpUtils mHttpUtils;
-//    private int checkFirstCondition = -1;
+    //    private int checkFirstCondition = -1;
     private int checkAllDoneStrCondition = -1;
 
 
@@ -150,19 +150,29 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEventMainThread(EvenBusTest event) {
         if (event.getUpdated() == 0) {
+            Log.d(TAG, "onEventMainThread - getUpdated - " + 0);
+            //加载更新后的工单
+            initData();
             Log.d(TAG, "mHidden - " + mHidden);
             if (!mHidden) {
-                /*
-                if (qcActivity.updateDialog != null && qcActivity.updateDialog.isShowing()) {
-                    qcActivity.updateDialog.cancel();
-                    qcActivity.updateDialog.dismiss();
-                }
-                */
-//                showLoading();
-//                checkFirstCondition = 1;
-//                mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
+                clearAndSetFocus();
             }
-
+        } else {
+            if (0 == event.getProgramIdEqual()) {
+                Log.d(TAG, "onEventMainThread - getProgramIdEqual - " + 0);
+                curCheckMaterialId = -1;
+                for (Material.MaterialBean bean : mCheckBeanList) {
+                    bean.setProgramId(globalData.getProgramId());
+                    bean.setScanlineseat("");
+                    bean.setScanMaterial("");
+                    bean.setRemark("");
+                    bean.setResult("");
+                }
+                Log.d(TAG, "mHidden - " + mHidden);
+                if (!mHidden) {
+                    clearAndSetFocus();
+                }
+            }
         }
     }
 
@@ -207,15 +217,14 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
 
     //初始化数据
     private void initData() {
-        Log.i(TAG, "initData");
+        Log.i(TAG, "- initData -");
         //填充数据
         mCheckBeanList.clear();
         tempBeans.clear();
         tempBeans.addAll(globalData.getMaterialBeans());
         for (Material.MaterialBean org : tempBeans) {
-            //操作员
             Material.MaterialBean bean = new Material.MaterialBean();
-            bean= bean.copy(org);
+            bean = bean.copy(org);
             bean.setScanlineseat("");
             bean.setScanMaterial("");
             bean.setRemark("");
@@ -396,7 +405,7 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
      * http返问回调
      *
      * @param code 请求码
-     * @param s 返回信息
+     * @param s    返回信息
      */
     @Override
     public void showHttpResponse(int code, Object request, String s) {
@@ -511,12 +520,12 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
      * http返问出错回调
      *
      * @param code 请求码
-     * @param s 返回信息
+     * @param s    返回信息
      */
     @Override
     public void showHttpError(int code, Object request, String s) {
         dismissLoading();
-        switch (code){
+        switch (code) {
             case HttpUtils.CodeAddVisit:
                 globalFunc.showInfo("操作失败", "请重新操作!", "请重新操作!");
                 clearAndSetFocus();

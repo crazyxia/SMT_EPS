@@ -125,29 +125,39 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
     //监听订阅的消息
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEventMainThread(EvenBusTest event) {
-//        Log.d(TAG, "onEventMainThread - " + event.getUpdated());
         if (event.getUpdated() == 0) {
+            Log.d(TAG, "onEventMainThread - getUpdated - " + 0);
             if (infoDialog != null && infoDialog.isShowing()) {
                 infoDialog.cancel();
                 infoDialog.dismiss();
             }
+            //加载更新后的工单
+            initData();
             Log.d(TAG, "mHidden - " + mHidden);
             if (!mHidden) {
-                /*
-                if (factoryLineActivity.updateDialog != null && factoryLineActivity.updateDialog.isShowing()) {
-                    factoryLineActivity.updateDialog.cancel();
-                    factoryLineActivity.updateDialog.dismiss();
-                }
-                */
-//                clearAndSetFocus();
+                clearAndSetFocus();
 //                showLoading();
 //                checkFirstCondition = 2;
 //                mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
             }
 
-
+        } else {
+            if (0 == event.getProgramIdEqual()) {
+                Log.d(TAG, "onEventMainThread - getProgramIdEqual - " + 0);
+                curChangeMaterialId = -1;
+                for (Material.MaterialBean bean : mChangeMaterialBeans) {
+                    bean.setProgramId(globalData.getProgramId());
+                    bean.setScanlineseat("");
+                    bean.setScanMaterial("");
+                    bean.setRemark("");
+                    bean.setResult("");
+                }
+                Log.d(TAG, "mHidden - " + mHidden);
+                if (!mHidden) {
+                    clearAndSetFocus();
+                }
+            }
         }
-        // TODO: 2019/1/23 需解决作废重传问题
     }
 
     @Override
@@ -179,11 +189,6 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
         EventBus.getDefault().unregister(this);
     }
 
-    /**
-     * @author connie
-     * @time 2017-9-22
-     * @describe 初始化控件
-     */
     private void initViews(Bundle bundle) {
         Log.i(TAG, "initViews");
         TextView tv_change_order = vChangeMaterialFragment.findViewById(R.id.tv_change_order);
@@ -254,14 +259,13 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
 
     //初始化数据
     private void initData() {
-        Log.i(TAG, "initData");
+        Log.i(TAG, "- initData -");
         curChangeMaterialId = -1;
         //填充数据
         mChangeMaterialBeans.clear();
         tempBeans.clear();
         tempBeans.addAll(globalData.getMaterialBeans());
         for (Material.MaterialBean org : tempBeans) {
-            //保存缓存到数据库中
             Material.MaterialBean bean = new Material.MaterialBean();
             bean = bean.copy(org);
             bean.setScanlineseat("");

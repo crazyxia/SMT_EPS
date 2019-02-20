@@ -43,8 +43,6 @@ public class Constants {
     public static final boolean isCache = true;
     //上料解锁密码
     public static final String feedPwd = "12348765";
-    //实时更新功能
-    public static final boolean liveUpdate = true;
     //ip地址（测试）
 //    public static final String urlBase = "http://10.10.11.153:8080/eps_server";
     //ip地址（生产）

@@ -63,7 +63,7 @@ public class FactoryLineActivity extends FragmentActivity implements View.OnClic
     private static final int EXIT = 139;
     // 定义一个变量，来标识是否退出
     private static boolean isExit = false;
-//    public LoadingDialog updateDialog;
+    //    public LoadingDialog updateDialog;
     private GlobalFunc globalFunc;
 
     @SuppressLint("HandlerLeak")
@@ -117,59 +117,15 @@ public class FactoryLineActivity extends FragmentActivity implements View.OnClic
     //监听订阅的消息
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEventMainThread(EvenBusTest event) {
-        // TODO: 2018/12/26
+
         if (event.getUpdated() == 0) {
             Log.d(TAG, "getUpdated - " + 0);
-            if (event.getCheckAllTimeOut() == 1) {
-                Log.d(TAG, "getCheckAllTimeOut - " + 1);
-                //判断本地数据是否清空
-                boolean clear = true;
-                List<FLCheckAll> flCheckAlls = new GreenDaoUtil().queryFLCheckRecord(globalData.getOperator(), globalData.getWork_order(),
-                        globalData.getLine(), globalData.getBoard_type());
-                for (FLCheckAll flCheckAll : flCheckAlls) {
-                    if ((null != flCheckAll.getResult()) && ((flCheckAll.getResult().equalsIgnoreCase("PASS")) || (flCheckAll.getResult().equalsIgnoreCase("FAIL")))) {
-                        clear = false;
-                        break;
-                    }
-                }
-                if (!clear) {
-                    showUpdateDialog("全检超时!", "全检超时!");
-                }
-            } else {
-                Log.d(TAG, "getCheckAllTimeOut - " + 0);
-                showUpdateDialog("站位表更新!", "站位表更新!");
-            }
+            showUpdateDialog("站位表更新!", "站位表更新!");
         } else {
-            if (event.getCheckAllTimeOut() == 1) {
-                Log.d(TAG, "getUpdated - " + 1);
-                Log.d(TAG, "getCheckAllTimeOut - " + 1);
-                //是否作废
-                if (0 == event.getProgramIdEqual()){
-                    showUpdateDialog("站位表作废并重传！", "站位表作废并重传！");
-                }else {
-                    //判断本地数据是否清空
-                    boolean clear = true;
-                    List<FLCheckAll> flCheckAlls = new GreenDaoUtil().queryFLCheckRecord(globalData.getOperator(), globalData.getWork_order(),
-                            globalData.getLine(), globalData.getBoard_type());
-                    for (FLCheckAll flCheckAll : flCheckAlls) {
-                        if ((null != flCheckAll.getResult()) && ((flCheckAll.getResult().equalsIgnoreCase("PASS")) || (flCheckAll.getResult().equalsIgnoreCase("FAIL")))) {
-                            clear = false;
-                            break;
-                        }
-                    }
-                    if (!clear) {
-                        showUpdateDialog("全检超时!", "全检超时!");
-                    }
-                }
-
-            }else {
-                //是否作废
-                if (0 == event.getProgramIdEqual()){
-                    Log.d(TAG, "getUpdated - " + 1);
-                    Log.d(TAG, "getCheckAllTimeOut - " + 1);
-                    Log.d(TAG, "getProgramIdEqual - " + 0);
-                    showUpdateDialog("站位表作废并重传！", "站位表作废并重传！");
-                }
+            //是否作废
+            if (0 == event.getProgramIdEqual()) {
+                Log.d(TAG, "getProgramIdEqual - " + 0);
+                showUpdateDialog("站位表作废并重传！", "站位表作废并重传！");
             }
         }
     }
