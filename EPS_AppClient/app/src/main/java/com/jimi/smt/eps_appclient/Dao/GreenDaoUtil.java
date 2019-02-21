@@ -351,12 +351,14 @@ public class GreenDaoUtil {
             GreenDaoManager.getInstance().getmDaoSession().runInTx(new Runnable() {
                 @Override
                 public void run() {
+                    /*
                     for (QcCheckAll qcCheckAll : qcCheckAlls) {
                         qcCheckAll.setScanLineSeat("");
                         qcCheckAll.setScanMaterial("");
                         qcCheckAll.setResult("");
                         qcCheckAll.setRemark("");
                     }
+                    */
                     getQcCheckAllDao().updateInTx(qcCheckAlls);
                 }
             });

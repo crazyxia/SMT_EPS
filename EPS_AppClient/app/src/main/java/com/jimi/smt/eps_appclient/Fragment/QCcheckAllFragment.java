@@ -68,9 +68,8 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
     private boolean mHidden;
     private HttpUtils mHttpUtils;
     private int checkAllDoneStrCondition = -1;
-    //    private int checkFeedCondition = -1;
-//    private int checkFirstCondition = -1;
     private int checkResetCondition = -1;
+    private int checkTimeOutCondition = -1;
     private String dialogScanValue;
     private LoadingDialog loadingDialog;
 
@@ -176,6 +175,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
             // TODO: 2018/12/26
             /*
             if (event.getCheckAllTimeOut() == 1) {
+//            checkTimeOutCondition
                 Log.d(TAG, "onEventMainThread - getCheckAllTimeOut - ");
                 boolean mReset = true;
                 for (Material.MaterialBean materialItem : mQcCheckALLMaterialBeans) {
@@ -231,39 +231,39 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
             */
             //未超时
 //            else {
-                //作废重传
-                if (0 == event.getProgramIdEqual()) {
-                    Log.d(TAG, "getProgramIdEqual - " + event.getProgramIdEqual());
-                    if (inputDialog != null && inputDialog.isShowing()) {
-                        inputDialog.cancel();
-                        inputDialog.dismiss();
-                        selectRow = -1;
-                    }
-                    if (resultInfoDialog != null && resultInfoDialog.isShowing()) {
-                        resultInfoDialog.cancel();
-                        resultInfoDialog.dismiss();
-                    }
-                    if (event.getQcCheckAllList() != null && event.getQcCheckAllList().size() > 0) {
-                        qcCheckAllList.clear();
-                        qcCheckAllList.addAll(event.getQcCheckAllList());
-                        curCheckId = 0;
-                        for (Material.MaterialBean bean : mQcCheckALLMaterialBeans) {
-                            bean.setProgramId(globalData.getProgramId());
-                            bean.setScanMaterial("");
-                            bean.setScanlineseat("");
-                            bean.setRemark("");
-                            bean.setResult("");
-                        }
-                    }
-
-                    //更新显示
-                    materialAdapter.notifyDataSetChanged();
-                    Log.d(TAG, "mHidden - " + mHidden);
-                    //提示首检或上料
-                    if (!mHidden) {
-                        edt_ScanMaterial.requestFocus();
+            //作废重传
+            if (0 == event.getProgramIdEqual()) {
+                Log.d(TAG, "getProgramIdEqual - " + event.getProgramIdEqual());
+                if (inputDialog != null && inputDialog.isShowing()) {
+                    inputDialog.cancel();
+                    inputDialog.dismiss();
+                    selectRow = -1;
+                }
+                if (resultInfoDialog != null && resultInfoDialog.isShowing()) {
+                    resultInfoDialog.cancel();
+                    resultInfoDialog.dismiss();
+                }
+                if (event.getQcCheckAllList() != null && event.getQcCheckAllList().size() > 0) {
+                    qcCheckAllList.clear();
+                    qcCheckAllList.addAll(event.getQcCheckAllList());
+                    curCheckId = 0;
+                    for (Material.MaterialBean bean : mQcCheckALLMaterialBeans) {
+                        bean.setProgramId(globalData.getProgramId());
+                        bean.setScanMaterial("");
+                        bean.setScanlineseat("");
+                        bean.setRemark("");
+                        bean.setResult("");
                     }
                 }
+
+                //更新显示
+                materialAdapter.notifyDataSetChanged();
+                Log.d(TAG, "mHidden - " + mHidden);
+                //提示首检或上料
+                if (!mHidden) {
+                    edt_ScanMaterial.requestFocus();
+                }
+            }
 //            }
         }
     }
@@ -332,7 +332,6 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
         mQcCheckALLMaterialBeans.clear();
         if (!isRestoreCache) {
             //不存在缓存
-            // TODO: 2018/12/25 清空全局变量
             tempBeans.clear();
             tempBeans.addAll(globalData.getMaterialBeans());
             for (Material.MaterialBean org : tempBeans) {
@@ -409,12 +408,15 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                                     dialogScanValue = globalFunc.getMaterial(dialogScanValue);
                                     v.setText(dialogScanValue);
 
+                                    // TODO: 2019/2/21
                                     showLoading();
-//                                    checkFeedCondition = 3;
+
+                                    checkTimeOutCondition = 2;
+                                    mHttpUtils.isCheckAllTimeOut(globalData.getLine(), globalData.getWork_order(), globalData.getBoard_type());
+                                    /*
                                     checkAllDoneStrCondition = 2;
                                     mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FEEDMATERIAL) + "&" + String.valueOf(Constants.FIRST_CHECK_ALL));
-//                                    mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FEEDMATERIAL);
-
+                                    */
                                     break;
                             }
 
@@ -451,10 +453,14 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                                 textView.setText(scanValue);
 
                                 showLoading();
-//                                checkFeedCondition = 2;
+                                // TODO: 2019/2/21
+                                checkTimeOutCondition = 1;
+                                mHttpUtils.isCheckAllTimeOut(globalData.getLine(), globalData.getWork_order(), globalData.getBoard_type());
+
+                                /*
                                 checkAllDoneStrCondition = 1;
                                 mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FEEDMATERIAL) + "&" + String.valueOf(Constants.FIRST_CHECK_ALL));
-//                                mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FEEDMATERIAL);
+                                */
 
                                 break;
                         }
@@ -760,126 +766,6 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
         Log.d(TAG, "showHttpResponse - " + "  code:" + code + "  s:" + s);
         switch (code) {
 
-/*
-
-            case HttpUtils.CodeIsAllDone:
-                Log.d(TAG, "CodeIsAllDone - " + HttpUtils.CodeIsAllDone);
-                int checkFeedOrFirst = Integer.valueOf(s);
-                int type = (Integer) ((Object[]) request)[1];
-                Log.d(TAG, "checkFeedOrFirst - " + checkFeedOrFirst);
-                Log.d(TAG, "type - " + type);
-                if (type == 0) {//feed
-
-                    Log.d(TAG, "checkFeedCondition - " + checkFeedCondition);
-                    switch (checkFeedCondition) {
-                        case 0://切换到该页面
-                            if (checkFeedOrFirst == 1) {
-                                checkFirstCondition = 0;
-                                mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
-                            } else {
-                                edt_ScanMaterial.setText("");
-                                showInfo("操作员未完成上料!", "", 2);
-                                //检测是否重置,但不操作
-
-                                checkFirstCondition = 1;
-                                mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
-                            }
-                            break;
-
-                        case 2://扫料号
-                            if (checkFeedOrFirst == 1) {
-                                //完成上料,检测是否重置,同时操作
-                                checkFirstCondition = 2;
-                                mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
-                            } else {
-                                //未完成上料
-                                edt_ScanMaterial.setText("");
-                                showInfo("操作员未完成上料!", "", 2);
-                                //检测是否重置,但不操作
-
-                                checkFirstCondition = 1;
-                                mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
-                            }
-
-                            break;
-                        case 3:
-                            if (checkFeedOrFirst == 1) {
-                                //完成上料,检测是否重置,同时操作
-                                checkFirstCondition = 3;
-                                mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
-                            } else {
-                                //未完成上料
-                                edt_ScanMaterial.setText("");
-                                showInfo("操作员未完成上料!", "", 2);
-                                //检测是否重置,但不操作
-                                checkFirstCondition = 1;
-                                mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
-                            }
-                            break;
-                    }
-                } else if (type == 5) {//first
-                    Log.d(TAG, "checkFirstCondition - " + checkFirstCondition);
-                    switch (checkFirstCondition) {
-                        case 0:
-                            dismissLoading();
-                            if (checkFeedOrFirst == 0) {
-                                showInfo("将进行首次全检", "", 3);
-                            }
-                            break;
-
-                        case 1:
-                            checkResetCondition = 1;
-                            if (checkFeedOrFirst == 1) {
-                                mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
-                            } else {
-                                mHttpUtils.isReset(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
-                            }
-
-                            break;
-
-                        case 2:
-                            checkResetCondition = 2;
-                            if (checkFeedOrFirst == 1) {
-                                mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
-                            } else {
-                                mHttpUtils.isReset(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
-                            }
-                            break;
-
-                        case 3:
-                            checkResetCondition = 3;
-                            if (checkFeedOrFirst == 1) {
-                                mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
-                            } else {
-                                mHttpUtils.isReset(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
-                            }
-                            break;
-
-                        case 4:
-                            dismissLoading();
-                            ArrayList<Integer> integers = (ArrayList<Integer>) ((Object[]) request)[2];
-                            Material.MaterialBean bean = (Material.MaterialBean) ((Object[]) request)[3];
-                            int condition = (int) ((Object[]) request)[4];
-                            if (checkFeedOrFirst == 1) {
-                                Operation operation = Operation.getOperation(globalData.getOperator(), Constants.CHECKALLMATERIAL, bean);
-                                globalData.setUpdateType(Constants.CHECKALLMATERIAL);
-                                mHttpUtils.operate(integers, bean, Constants.CHECKALLMATERIAL, condition);
-                                mHttpUtils.addOperation(operation);
-                            } else {
-                                Operation operation = Operation.getOperation(globalData.getOperator(), Constants.FIRST_CHECK_ALL, bean);
-                                globalData.setUpdateType(Constants.FIRST_CHECK_ALL);
-                                ProgramItemVisit visit = ProgramItemVisit.getProgramItemVisit(Constants.FIRST_CHECK_ALL, bean);
-                                mHttpUtils.updateVisit(bean, visit, condition, integers);
-                                mHttpUtils.addOperation(operation);
-                            }
-                            break;
-                    }
-
-                }
-                break;
-*/
-
-
             // TODO: 2019/2/12
             case HttpUtils.CodeIsAllDoneSTR://查询某一项或某几项操作是否完成
                 int allDoneCode;
@@ -900,6 +786,10 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                                 dismissLoading();
                                 if (isFirstCheck == 0) {
                                     showInfo("将进行首次全检", "", 3);
+                                } else if (isFirstCheck == 1) {
+                                    // TODO: 2019/2/21 首检完成了，检查是否超时
+                                    checkTimeOutCondition = 0;
+                                    mHttpUtils.isCheckAllTimeOut(globalData.getLine(), globalData.getWork_order(), globalData.getBoard_type());
                                 }
                             } else if (isFeed == 0) {
                                 edt_ScanMaterial.setText("");
@@ -994,6 +884,68 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                     }
                     Log.d(TAG, "isFeed - " + isFeed);
                     Log.d(TAG, "isFirstCheck - " + isFirstCheck);
+                }
+                break;
+
+            // TODO: 2019/2/21
+            case HttpUtils.CodeIsCheckAllTimeOut://判断是否超时
+                String programId = "";
+                int checkAllTimeOut = -1;
+                try {
+                    JSONObject jsonObject = new JSONObject(s);
+                    programId = jsonObject.getString("programId");
+                    checkAllTimeOut = jsonObject.getInt("isCheckAllTimeOutExist");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    Log.d(TAG, "showHttpResponse - CodeIsCheckAllTimeOut - " + e.toString());
+                }
+                switch (checkTimeOutCondition) {
+                    case 0:
+                        if (checkAllTimeOut == 1) {
+                            boolean mTimeOut = true;
+                            for (Material.MaterialBean materialItem : mQcCheckALLMaterialBeans) {
+                                if ((null != materialItem.getResult()) && (!materialItem.getResult().equalsIgnoreCase(""))) {
+                                    mTimeOut = false;
+                                }
+                            }
+                            Log.d(TAG, "mTimeOut - " + mTimeOut);
+                            //超时
+                            if (inputDialog != null && inputDialog.isShowing()) {
+                                inputDialog.cancel();
+                                inputDialog.dismiss();
+                                selectRow = -1;
+                            }
+                            if (resultInfoDialog != null && resultInfoDialog.isShowing()) {
+                                resultInfoDialog.cancel();
+                                resultInfoDialog.dismiss();
+                            }
+                            if (!mTimeOut) {
+                                //清空记录
+                                clearMaterialInfo();
+                                showInfo("全检超时", "请重新全检", 2);
+                            }
+                        }
+                        break;
+                    case 1:
+                        if (checkAllTimeOut == 0) {
+                            checkAllDoneStrCondition = 1;
+                            mHttpUtils.checkAllDoneStr(globalData.getProgramId(),
+                                    String.valueOf(Constants.FEEDMATERIAL) + "&" + String.valueOf(Constants.FIRST_CHECK_ALL));
+                        } else if (checkAllTimeOut == 1) {
+                            // TODO: 2019/2/21 处理超时
+
+                        }
+                        break;
+                    case 2:
+                        if (checkAllTimeOut == 0) {
+                            checkAllDoneStrCondition = 2;
+                            mHttpUtils.checkAllDoneStr(globalData.getProgramId(),
+                                    String.valueOf(Constants.FEEDMATERIAL) + "&" + String.valueOf(Constants.FIRST_CHECK_ALL));
+                        } else if (checkAllTimeOut == 1) {
+                            // TODO: 2019/2/21 处理超时
+
+                        }
+                        break;
                 }
                 break;
 
