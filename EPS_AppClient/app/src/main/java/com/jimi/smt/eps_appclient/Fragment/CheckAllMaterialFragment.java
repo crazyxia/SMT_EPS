@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.DisplayMetrics;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -77,6 +78,7 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
     //    private int checkFistCondition = -1;
     private int checkAllDoneStrCondition = -1;
     private int checkResetCondition = -1;
+    private int checkTimeOutCondition = -1;
     private String longClickInput = "";
 
     @Nullable
@@ -248,36 +250,36 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
 
             //未超时
 //            else {
-                //作废重传
-                if (0 == event.getProgramIdEqual()) {
-                    Log.d(TAG, "getProgramIdEqual - " + event.getProgramIdEqual());
-                    if (inputDialog != null && inputDialog.isShowing()) {
-                        inputDialog.cancel();
-                        inputDialog.dismiss();
-                        selectRow = -1;
+            //作废重传
+            if (0 == event.getProgramIdEqual()) {
+                Log.d(TAG, "getProgramIdEqual - " + event.getProgramIdEqual());
+                if (inputDialog != null && inputDialog.isShowing()) {
+                    inputDialog.cancel();
+                    inputDialog.dismiss();
+                    selectRow = -1;
+                }
+                if (resultInfoDialog != null && resultInfoDialog.isShowing()) {
+                    resultInfoDialog.cancel();
+                    resultInfoDialog.dismiss();
+                }
+                if (event.getFlCheckAllList() != null && event.getFlCheckAllList().size() > 0) {
+                    flCheckAllList.clear();
+                    flCheckAllList.addAll(event.getFlCheckAllList());
+                    curCheckId = 0;
+                    for (Material.MaterialBean bean : mCheckAllMaterialBeans) {
+                        bean.setProgramId(globalData.getProgramId());
+                        bean.setScanlineseat("");
+                        bean.setScanMaterial("");
+                        bean.setRemark("");
+                        bean.setResult("");
                     }
-                    if (resultInfoDialog != null && resultInfoDialog.isShowing()) {
-                        resultInfoDialog.cancel();
-                        resultInfoDialog.dismiss();
-                    }
-                    if (event.getFlCheckAllList() != null && event.getFlCheckAllList().size() > 0) {
-                        flCheckAllList.clear();
-                        flCheckAllList.addAll(event.getFlCheckAllList());
-                        curCheckId = 0;
-                        for (Material.MaterialBean bean : mCheckAllMaterialBeans) {
-                            bean.setProgramId(globalData.getProgramId());
-                            bean.setScanlineseat("");
-                            bean.setScanMaterial("");
-                            bean.setRemark("");
-                            bean.setResult("");
-                        }
-                        //更新显示
-                        materialAdapter.notifyDataSetChanged();
-                        if (!mHidden) {
-                            edt_ScanMaterial.requestFocus();
-                        }
+                    //更新显示
+                    materialAdapter.notifyDataSetChanged();
+                    if (!mHidden) {
+                        edt_ScanMaterial.requestFocus();
                     }
                 }
+            }
 //            }
         }
     }
@@ -380,10 +382,13 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                                     longClickInput = scanValue;
                                     //检测是否首次全检
                                     showLoading();
-//                                    checkFistCondition = 3;
+                                    // TODO: 2019/2/21
+                                    checkTimeOutCondition = 3;
+                                    mHttpUtils.isCheckAllTimeOut(globalData.getLine(), globalData.getWork_order(), globalData.getBoard_type());
+                                    /*
                                     checkAllDoneStrCondition = 3;
                                     mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FIRST_CHECK_ALL));
-//                                    mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
+                                    */
                                     break;
                             }
                         } else {
@@ -478,10 +483,14 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
 
                                 //检测是否首次全检
                                 showLoading();
-//                                checkFistCondition = 2;
+                                // TODO: 2019/2/21
+                                checkTimeOutCondition = 2;
+                                mHttpUtils.isCheckAllTimeOut(globalData.getLine(), globalData.getWork_order(), globalData.getBoard_type());
+
+                                /*
                                 checkAllDoneStrCondition = 2;
                                 mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FIRST_CHECK_ALL));
-//                                mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
+                                */
 
                                 break;
                         }
@@ -634,12 +643,12 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
     }
 
     //IPQC未做首次全检
-    private void showInfo() {
+    private void showInfo(String tip, String msg) {
         //对话框所有控件id
         int itemResIds[] = new int[]{R.id.dialog_title_view, R.id.dialog_title, R.id.tv_alert_info,
                 R.id.info_trust, R.id.tv_alert_msg};
         //标题和内容
-        String titleMsg[] = new String[]{"提示", "IPQC未做首次全检"};
+        String titleMsg[] = new String[]{tip, msg};
         //内容的样式
         int msgStype[] = new int[]{22, Color.RED, Color.argb(255, 219, 201, 36)};
         InfoDialog infoDialog = new InfoDialog(getActivity(), R.layout.info_dialog_layout, itemResIds, titleMsg, msgStype);
@@ -757,6 +766,34 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
 
 
     /**
+     * 处理超时情况
+     */
+    private void doTimeOut() {
+        boolean mTimeOut = true;
+        for (Material.MaterialBean materialItem : mCheckAllMaterialBeans) {
+            if ((null != materialItem.getResult()) && (!materialItem.getResult().equalsIgnoreCase(""))) {
+                mTimeOut = false;
+            }
+        }
+        Log.d(TAG, "mTimeOut - " + mTimeOut);
+        //超时
+        if (inputDialog != null && inputDialog.isShowing()) {
+            inputDialog.cancel();
+            inputDialog.dismiss();
+            selectRow = -1;
+        }
+        if (resultInfoDialog != null && resultInfoDialog.isShowing()) {
+            resultInfoDialog.cancel();
+            resultInfoDialog.dismiss();
+        }
+        if (!mTimeOut) {
+            //清空记录
+            clearMaterialInfo();
+            showInfo("全检超时", "请重新全检");
+        }
+    }
+
+    /**
      * http返问回调
      *
      * @param code 请求码
@@ -765,49 +802,8 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
     @Override
     public void showHttpResponse(int code, Object request, String s) {
         Log.d(TAG, "showHttpResponse - " + s);
-        dismissLoading();
+//        dismissLoading();
         switch (code) {
-            /*
-            case HttpUtils.CodeIsAllDone:
-                int checkFirst = Integer.valueOf(s);
-                switch (checkFistCondition) {
-                    case 1:
-                        if (checkFirst == 0) {
-                            //未首检
-                            showInfo();
-                            checkResetCondition = 4;
-                            mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
-                        }
-                        break;
-
-                    case 2://正常扫料号
-                        if (checkFirst == 1) {
-                            //已首检，检测是否重置
-                            checkResetCondition = 2;
-                            mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
-                        } else {
-                            //未首检
-                            showInfo();
-                            checkResetCondition = 4;
-                            mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
-                        }
-                        break;
-
-                    case 3://长按扫料号
-                        if (checkFirst == 1) {
-                            //已首检，检测是否重置
-                            checkResetCondition = 3;
-                            mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
-                        } else {
-                            //未首检
-                            showInfo();
-                            checkResetCondition = 4;
-                            mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
-                        }
-                        break;
-                }
-                break;
-                */
 
             // TODO: 2019/2/12
             case HttpUtils.CodeIsAllDoneSTR://查询某一项或某几项操作是否完成
@@ -824,9 +820,13 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                         case 1:
                             if (isFirstCheck == 0) {
                                 //未首检
-                                showInfo();
+                                showInfo("提示", "IPQC未做首次全检");
                                 checkResetCondition = 4;
                                 mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
+                            } else if (isFirstCheck == 1) {
+                                //已全检检测是否超时
+                                checkTimeOutCondition = 1;
+                                mHttpUtils.isCheckAllTimeOut(globalData.getLine(), globalData.getWork_order(), globalData.getBoard_type());
                             }
                             break;
 
@@ -837,7 +837,7 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                                 mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
                             } else {
                                 //未首检
-                                showInfo();
+                                showInfo("提示", "IPQC未做首次全检");
                                 checkResetCondition = 4;
                                 mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
                             }
@@ -850,7 +850,7 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                                 mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
                             } else {
                                 //未首检
-                                showInfo();
+                                showInfo("提示", "IPQC未做首次全检");
                                 checkResetCondition = 4;
                                 mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
                             }
@@ -858,6 +858,52 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                     }
                 }
                 break;
+
+            // TODO: 2019/2/21
+            case HttpUtils.CodeIsCheckAllTimeOut://判断是否超时
+                String programId = "";
+                int checkAllTimeOut = -1;
+                try {
+                    JSONObject jsonObject = new JSONObject(s);
+                    programId = jsonObject.getString("programId");
+                    checkAllTimeOut = jsonObject.getInt("isCheckAllTimeOutExist");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    Log.d(TAG, "showHttpResponse - CodeIsCheckAllTimeOut - " + e.toString());
+                }
+                switch (checkTimeOutCondition) {
+
+                    case 1:
+                        if (checkAllTimeOut == 1) {
+                            doTimeOut();
+                        }
+                        dismissLoading();
+                        break;
+
+                    case 2://正常扫料号
+                        if (checkAllTimeOut == 0) {
+                            checkAllDoneStrCondition = 2;
+                            mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FIRST_CHECK_ALL));
+                        } else if (checkAllTimeOut == 1) {
+                            // TODO: 2019/2/21 处理超时
+                            doTimeOut();
+                            dismissLoading();
+                        }
+                        break;
+
+                    case 3://长按扫料号
+                        if (checkAllTimeOut == 0) {
+                            checkAllDoneStrCondition = 3;
+                            mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FIRST_CHECK_ALL));
+                        } else if (checkAllTimeOut == 1) {
+                            // TODO: 2019/2/21 处理超时
+                            doTimeOut();
+                            dismissLoading();
+                        }
+                        break;
+                }
+                break;
+
 
             case HttpUtils.CodeCheckIsReset:
                 int reset = Integer.valueOf(s);
@@ -868,10 +914,10 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                         mReset = false;
                     }
                 }
-                Log.d(TAG, "reset - " + reset);
-                Log.d(TAG, "mReset - " + mReset);
+                Log.d(TAG, "reset - " + reset + " mReset - " + mReset);
                 switch (checkResetCondition) {
                     case 2://正常扫料号
+                        dismissLoading();
                         if (reset == 0) {
                             //未重置,操作
                             beginOperate(curCheckId, edt_ScanMaterial.getText().toString().trim(), 2);
@@ -887,6 +933,7 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                         break;
 
                     case 3://长按扫料号
+                        dismissLoading();
                         if (reset == 0) {
                             //未重置,操作
                             beginOperate(selectRow, longClickInput, 3);
@@ -902,6 +949,7 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                         break;
 
                     case 4:
+                        dismissLoading();
                         if (reset == 1 && !mReset) {
                             clearMaterialInfo();
                         }

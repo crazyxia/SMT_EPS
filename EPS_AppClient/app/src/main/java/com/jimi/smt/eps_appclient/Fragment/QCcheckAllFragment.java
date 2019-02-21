@@ -477,12 +477,17 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
         return false;
     }
 
-    private void beginOperate(int checkIndex, String scanValue, int condition) {
-        Log.d(TAG, "beginOperate - " + "checkIndex:" + checkIndex + " scanValue:" + scanValue + " condition:" + condition);
+    /**
+     * @param checkIndex    全检的索引
+     * @param scanValue     扫描料号
+     * @param condition     2,正常扫描; 3,长按扫描
+     * @param firstCheckRes 首检结果 0,未完成首检; 1,已完成首检
+     */
+    private void beginOperate(int checkIndex, String scanValue, int condition, int firstCheckRes) {
+        Log.d(TAG, "beginOperate - " + "checkIndex:" + checkIndex + " scanValue:" + scanValue + " condition:" + condition + " firstCheckRes:" + firstCheckRes);
 
         //未重置
         Log.d(TAG, "curCheckId - " + curCheckId);
-        Log.d(TAG, "checkIndex - " + checkIndex);
         //将扫描的内容更新至列表中
         Material.MaterialBean checkAllMaterialItem = mQcCheckALLMaterialBeans.get(checkIndex);
         //当前操作的站位
@@ -528,11 +533,11 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                 singleMaterialItem.setRemark("料号与站位不对应");
             }
 
-            updateVisitLog(sameLineSeatIndexs, singleMaterialItem, condition);
+            updateVisitLog(sameLineSeatIndexs, singleMaterialItem, condition, firstCheckRes);
 
         } else if (sameLineSeatIndexs.size() > 1) {
             //多个相同的站位,即有替换料
-            checkMultiItem(sameLineSeatIndexs, scanValue, condition);
+            checkMultiItem(sameLineSeatIndexs, scanValue, condition, firstCheckRes);
         }
 
         materialAdapter.notifyDataSetChanged();
@@ -568,14 +573,32 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
     }
 
     //更新显示日志
-    private void updateVisitLog(ArrayList<Integer> integers, Material.MaterialBean materialItem, int condition) {
-//        checkFirstCondition = 4;
+    private void updateVisitLog(ArrayList<Integer> integers, Material.MaterialBean materialItem, int condition, int firstCheckRes) {
+
+        Log.d(TAG, "updateVisitLog - " + condition + " - " + firstCheckRes);
+        /*
         checkAllDoneStrCondition = 4;
         mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FIRST_CHECK_ALL), integers, materialItem, condition);
-//        mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL, integers, materialItem, condition);
+        */
+
+        // TODO: 2019/2/21
+        if (firstCheckRes == 1) {
+            Operation operation = Operation.getOperation(globalData.getOperator(), Constants.CHECKALLMATERIAL, materialItem);
+            globalData.setUpdateType(Constants.CHECKALLMATERIAL);
+            mHttpUtils.operate(integers, materialItem, Constants.CHECKALLMATERIAL, condition);
+            mHttpUtils.addOperation(operation);
+        } else if (firstCheckRes == 0) {
+            Operation operation = Operation.getOperation(globalData.getOperator(), Constants.FIRST_CHECK_ALL, materialItem);
+            globalData.setUpdateType(Constants.FIRST_CHECK_ALL);
+            ProgramItemVisit visit = ProgramItemVisit.getProgramItemVisit(Constants.FIRST_CHECK_ALL, materialItem);
+            mHttpUtils.updateVisit(materialItem, visit, condition, integers);
+            mHttpUtils.addOperation(operation);
+        }
+
+
     }
 
-    private void checkMultiItem(ArrayList<Integer> integers, String mScanValue, int condition) {
+    private void checkMultiItem(ArrayList<Integer> integers, String mScanValue, int condition, int firstCheckRes) {
         //多个相同的站位,即有替换料
         Material.MaterialBean bean = new Material.MaterialBean();
         int index = -1;
@@ -604,7 +627,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
             }
         }
         //更新显示日志
-        updateVisitLog(integers, bean, condition);
+        updateVisitLog(integers, bean, condition, firstCheckRes);
     }
 
     //IPQC未做首次全检
@@ -753,6 +776,34 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
         materialAdapter.notifyDataSetChanged();
     }
 
+    /**
+     * 处理超时情况
+     */
+    private void doTimeOut() {
+        boolean mTimeOut = true;
+        for (Material.MaterialBean materialItem : mQcCheckALLMaterialBeans) {
+            if ((null != materialItem.getResult()) && (!materialItem.getResult().equalsIgnoreCase(""))) {
+                mTimeOut = false;
+            }
+        }
+        Log.d(TAG, "mTimeOut - " + mTimeOut);
+        //超时
+        if (inputDialog != null && inputDialog.isShowing()) {
+            inputDialog.cancel();
+            inputDialog.dismiss();
+            selectRow = -1;
+        }
+        if (resultInfoDialog != null && resultInfoDialog.isShowing()) {
+            resultInfoDialog.cancel();
+            resultInfoDialog.dismiss();
+        }
+        if (!mTimeOut) {
+            //清空记录
+            clearMaterialInfo();
+            showInfo("全检超时", "请重新全检", 2);
+        }
+    }
+
 
     /**
      * http返问回调
@@ -779,12 +830,12 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                     int isFirstCheck = -1;
                     switch (checkAllDoneStrCondition) {
 
-                        case 0:
+                        case 0://onCreateView与onHiddenChanged
                             isFeed = Integer.valueOf(allDoneInfoBean.getFeed());
                             isFirstCheck = Integer.valueOf(allDoneInfoBean.getFirstCheckAll());
                             if (isFeed == 1) {
-                                dismissLoading();
                                 if (isFirstCheck == 0) {
+                                    dismissLoading();
                                     showInfo("将进行首次全检", "", 3);
                                 } else if (isFirstCheck == 1) {
                                     // TODO: 2019/2/21 首检完成了，检查是否超时
@@ -797,23 +848,23 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                                 //检测是否重置,但不操作
                                 checkResetCondition = 1;
                                 if (isFirstCheck == 1) {
-                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
+                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL, isFirstCheck);
                                 } else if (isFirstCheck == 0) {
-                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
+                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.FIRST_CHECK_ALL, isFirstCheck);
                                 }
                             }
                             break;
 
-                        case 1:
+                        case 1://扫料号检测到未超时
                             isFeed = Integer.valueOf(allDoneInfoBean.getFeed());
                             isFirstCheck = Integer.valueOf(allDoneInfoBean.getFirstCheckAll());
                             if (isFeed == 1) {
                                 //完成上料,检测是否重置,同时操作
                                 checkResetCondition = 2;
                                 if (isFirstCheck == 1) {
-                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
+                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL, isFirstCheck);
                                 } else if (isFirstCheck == 0) {
-                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
+                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.FIRST_CHECK_ALL, isFirstCheck);
                                 }
                             } else if (isFeed == 0) {
                                 //未完成上料
@@ -822,9 +873,9 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                                 //检测是否重置,但不操作
                                 checkResetCondition = 1;
                                 if (isFirstCheck == 1) {
-                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
+                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL, isFirstCheck);
                                 } else if (isFirstCheck == 0) {
-                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
+                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.FIRST_CHECK_ALL, isFirstCheck);
                                 }
                             }
                             break;
@@ -836,9 +887,9 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                                 //完成上料,检测是否重置,同时操作
                                 checkResetCondition = 3;
                                 if (isFirstCheck == 1) {
-                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
+                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL, isFirstCheck);
                                 } else if (isFirstCheck == 0) {
-                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
+                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.FIRST_CHECK_ALL, isFirstCheck);
                                 }
                             } else if (isFeed == 0) {
                                 //未完成上料
@@ -847,9 +898,9 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                                 //检测是否重置,但不操作
                                 checkResetCondition = 1;
                                 if (isFirstCheck == 1) {
-                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
+                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL, isFirstCheck);
                                 } else if (isFirstCheck == 0) {
-                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
+                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.FIRST_CHECK_ALL, isFirstCheck);
                                 }
                             }
                             break;
@@ -902,48 +953,30 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                 switch (checkTimeOutCondition) {
                     case 0:
                         if (checkAllTimeOut == 1) {
-                            boolean mTimeOut = true;
-                            for (Material.MaterialBean materialItem : mQcCheckALLMaterialBeans) {
-                                if ((null != materialItem.getResult()) && (!materialItem.getResult().equalsIgnoreCase(""))) {
-                                    mTimeOut = false;
-                                }
-                            }
-                            Log.d(TAG, "mTimeOut - " + mTimeOut);
-                            //超时
-                            if (inputDialog != null && inputDialog.isShowing()) {
-                                inputDialog.cancel();
-                                inputDialog.dismiss();
-                                selectRow = -1;
-                            }
-                            if (resultInfoDialog != null && resultInfoDialog.isShowing()) {
-                                resultInfoDialog.cancel();
-                                resultInfoDialog.dismiss();
-                            }
-                            if (!mTimeOut) {
-                                //清空记录
-                                clearMaterialInfo();
-                                showInfo("全检超时", "请重新全检", 2);
-                            }
+                            doTimeOut();
                         }
+                        dismissLoading();
                         break;
-                    case 1:
+
+                    case 1://正常扫料号
                         if (checkAllTimeOut == 0) {
                             checkAllDoneStrCondition = 1;
                             mHttpUtils.checkAllDoneStr(globalData.getProgramId(),
                                     String.valueOf(Constants.FEEDMATERIAL) + "&" + String.valueOf(Constants.FIRST_CHECK_ALL));
                         } else if (checkAllTimeOut == 1) {
                             // TODO: 2019/2/21 处理超时
-
+                            doTimeOut();
                         }
                         break;
-                    case 2:
+
+                    case 2://长按扫料号
                         if (checkAllTimeOut == 0) {
                             checkAllDoneStrCondition = 2;
                             mHttpUtils.checkAllDoneStr(globalData.getProgramId(),
                                     String.valueOf(Constants.FEEDMATERIAL) + "&" + String.valueOf(Constants.FIRST_CHECK_ALL));
                         } else if (checkAllTimeOut == 1) {
                             // TODO: 2019/2/21 处理超时
-
+                            doTimeOut();
                         }
                         break;
                 }
@@ -952,14 +985,15 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
             case HttpUtils.CodeCheckIsReset:
                 Log.d(TAG, "CodeCheckIsReset - " + HttpUtils.CodeCheckIsReset);
                 int reset = Integer.valueOf(s);
+                //首检结果
+                int firstCheckRes = (int) ((Object[]) request)[2];
                 boolean reseted = true;
                 for (Material.MaterialBean materialItem : mQcCheckALLMaterialBeans) {
                     if ((null != materialItem.getResult()) && (!materialItem.getResult().equalsIgnoreCase(""))) {
                         reseted = false;
                     }
                 }
-                Log.d(TAG, "reset - " + reset);
-                Log.d(TAG, "reseted - " + reseted);
+                Log.d(TAG, "reset - " + reset + "reseted - " + reseted);
                 Log.d(TAG, "checkResetCondition - " + checkResetCondition);
                 switch (checkResetCondition) {
 
@@ -978,7 +1012,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                             Log.d(TAG, "isResteted - 重置了");
                         } else {
                             if (curCheckId >= 0) {
-                                beginOperate(curCheckId, edt_ScanMaterial.getText().toString().trim(), 2);
+                                beginOperate(curCheckId, edt_ScanMaterial.getText().toString().trim(), 2, firstCheckRes);
                             } else {
                                 dismissLoading();
                                 curCheckId = 0;
@@ -993,7 +1027,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                             clearMaterialInfo();
                             Log.d(TAG, "isResteted - 重置了");
                         } else {
-                            beginOperate(selectRow, dialogScanValue, 3);
+                            beginOperate(selectRow, dialogScanValue, 3, firstCheckRes);
                         }
                         break;
 

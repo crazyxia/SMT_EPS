@@ -327,12 +327,14 @@ public class GreenDaoUtil {
             GreenDaoManager.getInstance().getmDaoSession().runInTx(new Runnable() {
                 @Override
                 public void run() {
+                    /*
                     for (FLCheckAll flCheckAll : flCheckAlls) {
                         flCheckAll.setScanLineSeat("");
                         flCheckAll.setScanMaterial("");
                         flCheckAll.setResult("");
                         flCheckAll.setRemark("");
                     }
+                    */
                     getFlCheckAllDao().updateInTx(flCheckAlls);
                 }
             });

@@ -104,7 +104,8 @@ public class HttpUtils {
 
     /**
      * 插入结果到visit表
-     *核料、全检
+     * 核料、全检
+     *
      * @param materialItem
      * @param operatType   操作类型
      * @return 失败 failed_not_exist_item 、failed_not_exist ; 成功  succeed
@@ -261,9 +262,9 @@ public class HttpUtils {
      * 获取某个工单的料号表,刷新判断更新时使用
      *
      * @param programId
-     * @param equal 1,表示相同; 0,表示不相同
+     * @param equal     1,表示相同; 0,表示不相同
      */
-    public void getMaterials(String programId,int equal) {
+    public void getMaterials(String programId, int equal) {
 //        Log.d(TAG, "getMaterials - " + globalData.getIp());
 //        Log.d(TAG, "getMaterials - " + materials);
         OkHttpUtils.post().url(globalData.getIp() + materials)
@@ -273,13 +274,13 @@ public class HttpUtils {
                     @Override
                     public void onError(Call call, Exception e, int id) {
                         Log.d(TAG, "getMaterials - onError - " + e.toString());
-                        mOkHttpInterface.showHttpError(CodeMaterials, new Object[]{programId,equal}, e.toString());
+                        mOkHttpInterface.showHttpError(CodeMaterials, new Object[]{programId, equal}, e.toString());
                     }
 
                     @Override
                     public void onResponse(String response, int id) {
 //                        Log.d(TAG, "getMaterials - onResponse - " + response);
-                        mOkHttpInterface.showHttpResponse(CodeMaterials, new Object[]{programId,equal}, response);
+                        mOkHttpInterface.showHttpResponse(CodeMaterials, new Object[]{programId, equal}, response);
                     }
                 });
     }
@@ -319,7 +320,8 @@ public class HttpUtils {
 
     /**
      * 更新visit表日志
-     *发料、上料、换料
+     * 发料、上料、换料
+     *
      * @param visit
      */
     public void updateVisit(Material.MaterialBean bean, ProgramItemVisit visit, int count) {
@@ -348,7 +350,8 @@ public class HttpUtils {
 
     /**
      * 更新visit表日志
-     *首检
+     * 首检
+     *
      * @param visit
      */
     public void updateVisit(Material.MaterialBean bean, ProgramItemVisit visit, int count, ArrayList<Integer> integers) {
@@ -401,6 +404,36 @@ public class HttpUtils {
                     public void onResponse(String response, int id) {
                         Log.d(TAG, "isReset - onResponse - " + response);
                         mOkHttpInterface.showHttpResponse(CodeCheckIsReset, new String[]{programId, String.valueOf(type)}, response);
+                    }
+                });
+    }
+
+    /**
+     * 判断工单是否重置
+     *
+     * @param programId     工单id
+     * @param type          操作类型
+     * @param firstCheckRes 首检的结果
+     * @onResponse 返回  1 表示重置;0 表示未重置
+     */
+    public void isReset(String programId, int type, int firstCheckRes) {
+        Log.d(TAG, "isReset - " + programId + "- type - " + type);
+        Log.d(TAG, "isReset - " + checkIsReset);
+        OkHttpUtils.post().url(globalData.getIp() + checkIsReset)
+                .addParams("programId", programId)
+                .addParams("type", String.valueOf(type))
+                .build()
+                .execute(new StringCallback() {
+                    @Override
+                    public void onError(Call call, Exception e, int id) {
+                        Log.d(TAG, "isReset - onError - " + e.toString());
+                        mOkHttpInterface.showHttpError(CodeCheckIsReset, new String[]{programId, String.valueOf(type), String.valueOf(firstCheckRes)}, e.toString());
+                    }
+
+                    @Override
+                    public void onResponse(String response, int id) {
+                        Log.d(TAG, "isReset - onResponse - " + response);
+                        mOkHttpInterface.showHttpResponse(CodeCheckIsReset, new String[]{programId, String.valueOf(type), String.valueOf(firstCheckRes)}, response);
                     }
                 });
     }
@@ -465,8 +498,8 @@ public class HttpUtils {
      * 返回某个工单是否全部完成某项操作的结果
      *
      * @param programId
-     * @param type 0&1&3&4 表示同时查询4个结果
-     *             0:上料 1:换料 2:核料 3:全检 4:发料 5:首检
+     * @param type      0&1&3&4 表示同时查询4个结果
+     *                  0:上料 1:换料 2:核料 3:全检 4:发料 5:首检
      */
     public void checkAllDoneStr(String programId, String type) {
         Log.d(TAG, "checkAllDoneStr - " + isAllDone);
@@ -523,10 +556,10 @@ public class HttpUtils {
      * 返回某个工单是否全部完成某项操作的结果
      *
      * @param programId
-     * @param type 0&1&3&4 表示同时查询4个结果
-     *             0:上料 1:换料 2:核料 3:全检 4:发料 5:首检
+     * @param type      0&1&3&4 表示同时查询4个结果
+     *                  0:上料 1:换料 2:核料 3:全检 4:发料 5:首检
      */
-    public void checkAllDoneStr(String programId, String type,ArrayList<Integer> integers, Material.MaterialBean bean, int condition) {
+    public void checkAllDoneStr(String programId, String type, ArrayList<Integer> integers, Material.MaterialBean bean, int condition) {
         Log.d(TAG, "checkAllDoneStr - " + isAllDone);
         Log.d(TAG, "checkAllDoneStr - programId - " + programId);
         Log.d(TAG, "checkAllDoneStr - type - " + type);
