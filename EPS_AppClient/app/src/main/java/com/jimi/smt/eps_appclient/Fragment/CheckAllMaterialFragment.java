@@ -507,8 +507,7 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
     }
 
     private void beginOperate(int checkIndex, String scanValue, int condition) {
-        Log.d(TAG, "curCheckId - " + curCheckId);
-        Log.d(TAG, "checkIndex - " + checkIndex);
+        Log.d(TAG, "curCheckId - " + curCheckId + "checkIndex - " + checkIndex);
         //将扫描的内容更新至列表中
         Material.MaterialBean checkAllMaterialItem = mCheckAllMaterialBeans.get(checkIndex);
         //当前操作的站位
@@ -768,7 +767,7 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
     /**
      * 处理超时情况
      */
-    private void doTimeOut() {
+    private boolean doTimeOut() {
         boolean mTimeOut = true;
         for (Material.MaterialBean materialItem : mCheckAllMaterialBeans) {
             if ((null != materialItem.getResult()) && (!materialItem.getResult().equalsIgnoreCase(""))) {
@@ -786,11 +785,7 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
             resultInfoDialog.cancel();
             resultInfoDialog.dismiss();
         }
-        if (!mTimeOut) {
-            //清空记录
-            clearMaterialInfo();
-            showInfo("全检超时", "请重新全检");
-        }
+        return mTimeOut;
     }
 
     /**
@@ -871,13 +866,19 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                     e.printStackTrace();
                     Log.d(TAG, "showHttpResponse - CodeIsCheckAllTimeOut - " + e.toString());
                 }
+                Log.d(TAG, "checkTimeOutCondition - " + checkTimeOutCondition);
                 switch (checkTimeOutCondition) {
 
                     case 1:
-                        if (checkAllTimeOut == 1) {
-                            doTimeOut();
-                        }
                         dismissLoading();
+                        if (checkAllTimeOut == 1) {
+                            boolean timeOut = doTimeOut();
+                            if (!timeOut) {
+                                //清空记录
+                                clearMaterialInfo();
+                                showInfo("全检超时", "请重新全检");
+                            }
+                        }
                         break;
 
                     case 2://正常扫料号
@@ -886,8 +887,16 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                             mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FIRST_CHECK_ALL));
                         } else if (checkAllTimeOut == 1) {
                             // TODO: 2019/2/21 处理超时
-                            doTimeOut();
-                            dismissLoading();
+                            boolean timeOut = doTimeOut();
+                            if (timeOut) {
+                                checkAllDoneStrCondition = 2;
+                                mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FIRST_CHECK_ALL));
+                            } else {
+                                dismissLoading();
+                                //清空记录
+                                clearMaterialInfo();
+                                showInfo("全检超时", "请重新全检");
+                            }
                         }
                         break;
 
@@ -897,8 +906,16 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                             mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FIRST_CHECK_ALL));
                         } else if (checkAllTimeOut == 1) {
                             // TODO: 2019/2/21 处理超时
-                            doTimeOut();
-                            dismissLoading();
+                            boolean timeOut = doTimeOut();
+                            if (timeOut) {
+                                checkAllDoneStrCondition = 3;
+                                mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FIRST_CHECK_ALL));
+                            } else {
+                                dismissLoading();
+                                //清空记录
+                                clearMaterialInfo();
+                                showInfo("全检超时", "请重新全检");
+                            }
                         }
                         break;
                 }
@@ -906,6 +923,7 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
 
 
             case HttpUtils.CodeCheckIsReset:
+                Log.d(TAG, "checkResetCondition - " + checkResetCondition);
                 int reset = Integer.valueOf(s);
                 //本地数据结果是否清空
                 boolean mReset = true;
@@ -914,10 +932,11 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                         mReset = false;
                     }
                 }
-                Log.d(TAG, "reset - " + reset + " mReset - " + mReset);
+                Log.d(TAG, "reset - " + reset + " - mReset - " + mReset);
                 switch (checkResetCondition) {
                     case 2://正常扫料号
-                        dismissLoading();
+                        // TODO: 2019/2/22
+//                        dismissLoading();
                         if (reset == 0) {
                             //未重置,操作
                             beginOperate(curCheckId, edt_ScanMaterial.getText().toString().trim(), 2);
@@ -926,6 +945,7 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                                 //操作
                                 beginOperate(curCheckId, edt_ScanMaterial.getText().toString().trim(), 2);
                             } else {
+                                dismissLoading();
                                 //重置
                                 clearMaterialInfo();
                             }
@@ -1002,6 +1022,7 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                     }
                     clearLineSeatMaterialScan();
                 }
+                dismissLoading();
 
                 break;
         }

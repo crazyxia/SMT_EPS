@@ -520,7 +520,7 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
     @Override
     public void showHttpResponse(int code, Object request, String response) {
         Log.d(TAG, "showHttpResponse - " + response);
-        dismissLoading();
+//        dismissLoading();
         switch (code) {
             /*
             case HttpUtils.CodeIsAllDone:
@@ -561,11 +561,13 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
                     int isFirstCheck = Integer.valueOf(allDoneInfoBean.getFirstCheckAll());
                     switch (checkAllDoneStrCondition) {
                         case 0://进入页面
+                            dismissLoading();
                             if (isFirstCheck == 0) {
                                 showInfo("IPQC未做首次全检", "");
                             }
                             break;
                         case 1://扫描时
+                            dismissLoading();
                             if (isFirstCheck == 1) {//已首次全检
                                 beginChange(edt_LineSeat.getText().toString().trim());
                             } else {//未首次全检

@@ -779,7 +779,7 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
     /**
      * 处理超时情况
      */
-    private void doTimeOut() {
+    private boolean doTimeOut() {
         boolean mTimeOut = true;
         for (Material.MaterialBean materialItem : mQcCheckALLMaterialBeans) {
             if ((null != materialItem.getResult()) && (!materialItem.getResult().equalsIgnoreCase(""))) {
@@ -797,11 +797,8 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
             resultInfoDialog.cancel();
             resultInfoDialog.dismiss();
         }
-        if (!mTimeOut) {
-            //清空记录
-            clearMaterialInfo();
-            showInfo("全检超时", "请重新全检", 2);
-        }
+
+        return mTimeOut;
     }
 
 
@@ -950,12 +947,17 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                     e.printStackTrace();
                     Log.d(TAG, "showHttpResponse - CodeIsCheckAllTimeOut - " + e.toString());
                 }
+                Log.d(TAG, "checkTimeOutCondition - " + checkTimeOutCondition);
                 switch (checkTimeOutCondition) {
                     case 0:
-                        if (checkAllTimeOut == 1) {
-                            doTimeOut();
-                        }
                         dismissLoading();
+                        if (checkAllTimeOut == 1) {
+                            if (!doTimeOut()) {
+                                //清空记录
+                                clearMaterialInfo();
+                                showInfo("全检超时", "请重新全检", 2);
+                            }
+                        }
                         break;
 
                     case 1://正常扫料号
@@ -965,7 +967,17 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                                     String.valueOf(Constants.FEEDMATERIAL) + "&" + String.valueOf(Constants.FIRST_CHECK_ALL));
                         } else if (checkAllTimeOut == 1) {
                             // TODO: 2019/2/21 处理超时
-                            doTimeOut();
+                            if (doTimeOut()) {
+                                //没有记录,不用清空,继续操作
+                                checkAllDoneStrCondition = 1;
+                                mHttpUtils.checkAllDoneStr(globalData.getProgramId(),
+                                        String.valueOf(Constants.FEEDMATERIAL) + "&" + String.valueOf(Constants.FIRST_CHECK_ALL));
+                            } else {
+                                dismissLoading();
+                                //清空记录
+                                clearMaterialInfo();
+                                showInfo("全检超时", "请重新全检", 2);
+                            }
                         }
                         break;
 
@@ -976,24 +988,33 @@ public class QCcheckAllFragment extends Fragment implements TextView.OnEditorAct
                                     String.valueOf(Constants.FEEDMATERIAL) + "&" + String.valueOf(Constants.FIRST_CHECK_ALL));
                         } else if (checkAllTimeOut == 1) {
                             // TODO: 2019/2/21 处理超时
-                            doTimeOut();
+                            if (doTimeOut()) {
+                                //没有记录,不用清空,继续操作
+                                checkAllDoneStrCondition = 2;
+                                mHttpUtils.checkAllDoneStr(globalData.getProgramId(),
+                                        String.valueOf(Constants.FEEDMATERIAL) + "&" + String.valueOf(Constants.FIRST_CHECK_ALL));
+                            } else {
+                                dismissLoading();
+                                //清空记录
+                                clearMaterialInfo();
+                                showInfo("全检超时", "请重新全检", 2);
+                            }
                         }
                         break;
                 }
                 break;
 
             case HttpUtils.CodeCheckIsReset:
-                Log.d(TAG, "CodeCheckIsReset - " + HttpUtils.CodeCheckIsReset);
                 int reset = Integer.valueOf(s);
                 //首检结果
-                int firstCheckRes = (int) ((Object[]) request)[2];
+                int firstCheckRes = Integer.valueOf((String) ((Object[]) request)[2]);
                 boolean reseted = true;
                 for (Material.MaterialBean materialItem : mQcCheckALLMaterialBeans) {
                     if ((null != materialItem.getResult()) && (!materialItem.getResult().equalsIgnoreCase(""))) {
                         reseted = false;
                     }
                 }
-                Log.d(TAG, "reset - " + reset + "reseted - " + reseted);
+                Log.d(TAG, "reset - " + reset + " - reseted - " + reseted);
                 Log.d(TAG, "checkResetCondition - " + checkResetCondition);
                 switch (checkResetCondition) {
 
