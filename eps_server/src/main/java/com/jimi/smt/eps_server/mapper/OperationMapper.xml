@@ -551,8 +551,9 @@
     	</if>
   </select>
   <select id="SelectOperationReportSummary" parameterType="com.jimi.smt.eps_server.entity.bo.ReportParameter" resultMap="OperationReportSummaryResultMap">
+    SELECT * FROM (
     SELECT o.operator AS operation_operator, o.work_order AS operation_work_order, 
-    line.line AS line_name, line.id AS line_id, SUM(IF(o.result = 'PASS', 1, 0)) AS operation_pass_count, SUM(IF(o.result = 'FAIL', 1, 0)) AS operation_fail_count
+    line.line AS line_name, line.id AS line_id, o.time AS operation_time, SUM(IF(o.result = 'PASS', 1, 0)) AS operation_pass_count, SUM(IF(o.result = 'FAIL', 1, 0)) AS operation_fail_count
 	FROM operation o JOIN line JOIN program_item p
 	ON 
 		line.id = o.line 
@@ -579,9 +580,10 @@
 			o.operator,
 			o.work_order,
 			o.line
-		ORDER BY o.time DESC
 		<if test="firstIndex != null and pageSize&gt;=0">
       		limit #{firstIndex}, #{pageSize}
     	</if>
+    	) result 
+    	ORDER BY operation_time DESC
   </select>
 </mapper>

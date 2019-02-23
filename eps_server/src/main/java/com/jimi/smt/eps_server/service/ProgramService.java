@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.jimi.smt.eps_server.entity.Display;
@@ -33,9 +34,10 @@ public interface ProgramService {
 	 * @param programFile 文件
 	 * @return 
 	 * @throws IOException IO异常
+	 * @throws InvalidFormatException 无效的格式异常
 	 * @throws XLSException 解析异常
 	 */
-	List<Map<String, Object>> upload(MultipartFile programFile, Integer boardType) throws IOException, RuntimeException;
+	List<Map<String, Object>> upload(MultipartFile programFile, Integer boardType) throws IOException, RuntimeException, InvalidFormatException;
 
 
 	/**

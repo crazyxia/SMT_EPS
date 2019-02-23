@@ -9,33 +9,41 @@ import com.jimi.smt.eps_server.util.ResultUtil;
  */
 public interface UserService {
 
-	/**
-	 * 新增一个用户
+	/**@author HCJ
+	 * 新增一个用户，根据登录的用户类型去判断有没有权限
+	 * @method add
 	 * @param id
-	 * @param classType 
+	 * @param classType
 	 * @param name
-	 * @param type
+	 * @param type 要增加的用户类型
 	 * @param password
+	 * @param userType 登录的用户类型
 	 * @return
+	 * @return String
+	 * @date 2019年2月22日 上午11:28:03
 	 */
 	String add(String id, Integer classType, String name, Integer type, String password, Integer userType);
 	
-	
-	/**
-	 * 修改指定工号的用户信息
+
+	/**@author HCJ
+	 * 更新用户信息，根据登录的用户类型去判断有没有权限
+	 * @method update
 	 * @param id
-	 * @param classType 
+	 * @param classType
 	 * @param name
-	 * @param type
+	 * @param type 要修改的用户类型
 	 * @param password
 	 * @param enabled
+	 * @param userType 登录的用户类型
 	 * @return
+	 * @return String
+	 * @date 2019年2月22日 上午11:29:41
 	 */
 	String update(String id, Integer classType, String name, Integer type, String password, Boolean enabled, Integer userType);
 
-	
-	/**
-	 * 根据条件列出用户
+
+	/**@author HCJ
+	 * 根据条件列出用户，根据登录的用户类型去判断拥有查询到哪些职员信息的权限
 	 * 前三个为查询条件，多选为求交集；
 		orderBy：
 		根据字段名排序
@@ -44,15 +52,19 @@ public interface UserService {
 		name
 		type
 		create_time；
-		enabled为true时，只显示在职用户，默认为false
+	 * @method list
 	 * @param id
-	 * @param classType 
+	 * @param classType
 	 * @param name
-	 * @param type
-	 * @param password
+	 * @param type 要查询的用户类型
 	 * @param orderBy
 	 * @param enabled
+	 * @param currentPage
+	 * @param pageSize
+	 * @param userType 登录的用户类型
 	 * @return
+	 * @return ResultUtil 查询失败为400，查询成功为401
+	 * @date 2019年2月22日 上午11:31:25
 	 */
 	ResultUtil list(String id, Integer classType, String name, Integer type, String orderBy, Boolean enabled, Integer currentPage, Integer pageSize, Integer userType);
 				

@@ -10,6 +10,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
@@ -74,21 +75,25 @@ public class ProgramServiceImpl implements ProgramService {
 	private LineService lineService;
 	
 	/**
-	 * FIELD_LENGTH : 字段长度为32
+	 * FIELD_LENGTH : 字段最大长度为32
 	 */
 	private static final Integer FIELD_LENGTH = 32;
 	/**
-	 * FILENAME_AND_PROGRAMNAME_AND_WORKORDER_LENGTH : 文件名、程序名和工单长度为128
+	 * PCBNO_LENGTH : PCBNO最大长度为64
 	 */
-	private static final Integer FILENAME_AND_PROGRAMNAME_AND_WORKORDER_LENGTH = 128;
+	private static final Integer PCBNO_LENGTH = 64;
 	/**
-	 * BOM_LENGTH : Bom长度为256
+	 * FILENAME_AND_PROGRAMNAME_AND_WORKORDER_LENGTH : 料号、文件名、程序名和工单最大长度为128
+	 */
+	private static final Integer MATERIALNO_AND_FILENAME_AND_PROGRAMNAME_AND_WORKORDER_LENGTH = 128;
+	/**
+	 * BOM_LENGTH : Bom最大长度为256
 	 */
 	private static final Integer BOM_LENGTH = 256;
 
 	
 	@Override
-	public List<Map<String, Object>> upload(MultipartFile programFile, Integer boardType) throws IOException {
+	public List<Map<String, Object>> upload(MultipartFile programFile, Integer boardType) throws IOException, InvalidFormatException {
 		// 读文件
 		ExcelPopularGetter getter = ExcelPopularGetter.from(programFile);
 
@@ -154,6 +159,9 @@ public class ProgramServiceImpl implements ProgramService {
 			result.put("realParseNum", sum);
 			result.put("planParseNum", sum);
 			result.put("actionName", "上传");
+			
+			// 添加错误信息
+			addErrorInfo(program, getter);
 
 			// 覆盖：如果“未开始”的工单列表中存在板面类型、工单号、线号同时一致的工单项目，将被新文件内容覆盖
 			ProgramExample programExample = new ProgramExample();
@@ -171,7 +179,6 @@ public class ProgramServiceImpl implements ProgramService {
 					programMapper.insertSelective(program);
 				}
 			}
-			addErrorInfo(program, getter);
 
 			// 打印到控制台
 			if (!OsHelper.isProductionEnvironment()) {
@@ -182,18 +189,22 @@ public class ProgramServiceImpl implements ProgramService {
 				getter.switchSheet(i);
 				for (int j = 9; j < getter.getBook().getSheetAt(i).getLastRowNum() - 5; j++) {
 					ProgramItem programItem = new ProgramItem();
+					String lineseat = getter.getString(j, 0 + offset);
 					// 空表判断
-					if (getter.getString(j, 0 + offset).equals("")) {
+					if (lineseat.equals("")) {
 						int temp = (int) result.get("realParseNum");
 						result.put("realParseNum", --temp);
 						break;
 					}
 					// 排除手盖
-					String lineseat = getter.getString(j, 0 + offset);
 					if ("手盖".equals(lineseat)) {
 						continue;
 					}
-					programItem.setLineseat(formatLineseat(lineseat));
+					if (lineseat.contains("-")) {
+						programItem.setLineseat(formatLineseat(lineseat));
+					} else {
+						getter.getErrorInfos().add("请在第 " + (j + 1) + " 行，第 2 列输入正确的站位格式，如 1-20");
+					}
 					programItem.setMaterialNo(getter.getString(j, 1 + offset));
 					programItem.setAlternative(getter.getBoolean(j, 2 + offset));
 					programItem.setSpecitification(getter.getString(j, 3 + offset));
@@ -1062,14 +1073,14 @@ public class ProgramServiceImpl implements ProgramService {
 		addLengthErrorInfo(program.getClient(), getter, FIELD_LENGTH);
 		addLengthErrorInfo(program.getAuditor(), getter, FIELD_LENGTH);
 		addLengthErrorInfo(program.getMachineName(), getter, FIELD_LENGTH);
-		addLengthErrorInfo(program.getFileName(), getter, FILENAME_AND_PROGRAMNAME_AND_WORKORDER_LENGTH);
+		addLengthErrorInfo(program.getFileName(), getter, MATERIALNO_AND_FILENAME_AND_PROGRAMNAME_AND_WORKORDER_LENGTH);
 		addLengthErrorInfo(program.getVersion(), getter, FIELD_LENGTH);
 		addLengthErrorInfo(program.getMachineConfig(), getter, FIELD_LENGTH);
 		addLengthErrorInfo(program.getProgramNo(), getter, FIELD_LENGTH);
-		addLengthErrorInfo(program.getPcbNo(), getter, FIELD_LENGTH);
+		addLengthErrorInfo(program.getPcbNo(), getter, PCBNO_LENGTH);
 		addLengthErrorInfo(program.getBom(), getter, BOM_LENGTH);
-		addLengthErrorInfo(program.getProgramName(), getter, FILENAME_AND_PROGRAMNAME_AND_WORKORDER_LENGTH);
-		addLengthErrorInfo(program.getWorkOrder(), getter, FILENAME_AND_PROGRAMNAME_AND_WORKORDER_LENGTH);
+		addLengthErrorInfo(program.getProgramName(), getter, MATERIALNO_AND_FILENAME_AND_PROGRAMNAME_AND_WORKORDER_LENGTH);
+		addLengthErrorInfo(program.getWorkOrder(), getter, MATERIALNO_AND_FILENAME_AND_PROGRAMNAME_AND_WORKORDER_LENGTH);
 	}
 
 	

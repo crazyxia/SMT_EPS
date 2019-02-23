@@ -9,6 +9,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -201,6 +202,8 @@ public class ProgramController {
 			resultList = programService.upload(programFile, boardType);
 		} catch (IOException e) {
 			return ResultUtil.failed("400", "上传失败，IO错误，请重试，或联系开发者");
+		} catch (InvalidFormatException e) {
+			return ResultUtil.failed("400", "上传失败，请上传Excel格式的表格");
 		} catch (RuntimeException e) {
 			return ResultUtil.failed("400", e.getMessage());
 		}

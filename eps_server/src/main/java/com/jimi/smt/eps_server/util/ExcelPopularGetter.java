@@ -6,9 +6,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.web.multipart.MultipartFile;
 
 /**获取Excel表格单元格信息
@@ -48,8 +48,9 @@ public class ExcelPopularGetter extends ExcelHelper {
 
 	/**
 	 * 传入一个excel表格，构造Helper
+	 * @throws InvalidFormatException 
 	 */
-	public static ExcelPopularGetter from(MultipartFile file) throws IOException {
+	public static ExcelPopularGetter from(MultipartFile file) throws IOException, InvalidFormatException {
 		return new ExcelPopularGetter(file);
 	}
 
@@ -181,14 +182,16 @@ public class ExcelPopularGetter extends ExcelHelper {
 
 	/**
 	 * 根据文件格式创建workbook
+	 * @throws InvalidFormatException 
 	 */
-	private ExcelPopularGetter(MultipartFile file) throws IOException {
+	private ExcelPopularGetter(MultipartFile file) throws IOException, InvalidFormatException {
 		// 判断格式
-		if (file.getOriginalFilename().endsWith(".xlsx")) {
+		/*if (file.getOriginalFilename().endsWith(".xlsx")) {
 			workbook = new XSSFWorkbook(file.getInputStream());
 		} else {
 			workbook = new HSSFWorkbook(file.getInputStream());
-		}
+		}*/
+		workbook = WorkbookFactory.create(file.getInputStream());
 		init();
 	}
 }
