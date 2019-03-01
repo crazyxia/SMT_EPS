@@ -14,10 +14,10 @@
       </el-form-item>
       <el-form-item label="状态">
         <el-select v-model.trim="editData.state" placeholder="状态" value="" style="width:100%">
-          <el-option label="未开始" value='0'></el-option>
-          <el-option label="进行中" value='1'></el-option>
-          <el-option label="已完成" value='2'></el-option>
-          <el-option label="已作废" value='3'></el-option>
+          <el-option label="未开始" value='0' :disabled="loginUser.type !== ''"></el-option>
+          <el-option label="进行中" value='1' :disabled="loginUser.type === 6"></el-option>
+          <el-option label="已完成" value='2' :disabled="loginUser.type === 6"></el-option>
+          <el-option label="已作废" value='3' :disabled="loginUser.type === 4"></el-option>
         </el-select>
       </el-form-item>
     </el-form>
@@ -29,6 +29,7 @@
 </template>
 
 <script>
+  import {mapGetters} from 'vuex'
   import Bus from '../../../../utils/bus'
   import {programTip} from "./../../../../utils/formValidate"
   import {axiosPost} from "./../../../../utils/fetchData"
@@ -45,22 +46,25 @@
         editDialogVisible: false,
         //修改信息
         editData: {
-          id:'',
+          id: '',
           lineName: '',
           workOrder: '',
           state: ''
         },
         //初始状态
-        oldState:''
+        oldState: '',
       }
     },
-    beforeDestroy(){
+    beforeDestroy() {
       //取消监听
       Bus.$off('editState');
     },
-    mounted(){
+    computed: {
+      ...mapGetters(['loginUser'])
+    },
+    mounted() {
       //监听状态修改事件
-      Bus.$on('editState',(row) => {
+      Bus.$on('editState', (row) => {
         this.editData.id = row.id;
         this.editData.lineName = row.lineName;
         this.editData.workOrder = row.workOrder;
@@ -85,7 +89,7 @@
             } else {
               this.$alertWarning(errTip(result));
             }
-            Bus.$emit('refreshProgram',true);
+            Bus.$emit('refreshProgram', true);
             this.editDialogVisible = false;
           }
         }).catch(err => {
@@ -95,8 +99,8 @@
       //编辑
       edit: function () {
         let state = this.editData.state;
-        let result = programTip(this.oldState,state);
-        if(result !== ''){
+        let result = programTip(this.oldState, state);
+        if (result !== '') {
           this.$alertWarning(result);
           return;
         }

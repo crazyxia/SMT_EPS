@@ -27,7 +27,7 @@
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="find">查询</el-button>
-          <el-button type="primary" @click="download">下载站位表模板</el-button>
+          <el-button type="primary" @click="download"  :disabled="loginUser.type === 4">下载站位表模板</el-button>
           <el-button type="info" @click="reset">清除条件</el-button>
         </el-form-item>
       </el-form>
@@ -46,7 +46,7 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="upload">上传</el-button>
+          <el-button type="primary" @click="upload"  :disabled="loginUser.type === 4">上传</el-button>
         </el-form-item>
       </el-form>
       <!--表格-->
@@ -98,7 +98,7 @@
       this.setProgram(JSON.parse(JSON.stringify(this.programInfo)));
     },
     computed: {
-      ...mapGetters(['lines', 'token'])
+      ...mapGetters(['lines', 'token','loginUser'])
     },
     watch: {
       //监听文件名

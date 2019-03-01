@@ -8,8 +8,8 @@
       <el-form-item label="姓名">
         <el-input v-model.trim="userInfo.name" placeholder="姓名"></el-input>
       </el-form-item>
-      <el-form-item label="岗位">
-        <el-select v-model.trim="userInfo.type" placeholder="岗位" value="">
+      <el-form-item label="岗位" >
+        <el-select v-model.trim="userInfo.type" placeholder="岗位" value="" :disabled="isDisabled">
           <el-option label="不限" selected="selected"  value=''></el-option>
           <el-option label="仓库操作员" value='0'></el-option>
           <el-option label="厂线操作员" value='1'></el-option>
@@ -49,10 +49,11 @@
 </template>
 
 <script>
-  import {mapActions} from 'vuex'
+  import {mapActions,mapGetters} from 'vuex'
   import Bus from '../../../utils/bus'
   import UserModal from './components/UserModal'
   import UserTable from './components/UserTable'
+  import {loginUser} from "../../../store/getters";
   export default {
     name:'user',
     data () {
@@ -66,9 +67,16 @@
           password:'',
           enabled:''
         },
+        isDisabled:false
       }
     },
+    computed:{
+      ...mapGetters(['loginUser','userTypes'])
+    },
     created(){
+      let type = this.setType();
+      this.userInfo.type = type + '';
+      this.isDisabled = type !== '';
       this.setUser(JSON.parse(JSON.stringify(this.userInfo)));
     },
     components:{
@@ -93,6 +101,25 @@
         this.userInfo.classType = '';
         this.userInfo.password = '';
         this.userInfo.enabled = '';
+        let type = this.setType();
+        this.userInfo.type = type + '';
+        this.isDisabled = type !== '';
+      },
+      //设置权限
+      setType:function(){
+        let type = '';
+        switch (this.loginUser.type) {
+          case 5:
+            type = 2;
+            break;
+          case 4:
+            type = 1;
+            break;
+          case 7:
+            type = 0;
+            break;
+        }
+        return type;
       }
     }
   }

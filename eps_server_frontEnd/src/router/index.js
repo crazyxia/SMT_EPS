@@ -38,12 +38,16 @@ const router = new Router({
 if (window.localStorage.getItem('token')) {
   store.commit('setToken', window.localStorage.getItem('token'))
 }
+if (window.localStorage.getItem('user')) {
+  store.commit('setLoginUser',JSON.parse(window.localStorage.getItem('loginUser')))
+}
 
 
 router.beforeEach((to, from, next) => {
   if (to.path === '/login' && from.path === '/home') {
     window.localStorage.clear();
     store.commit("setToken", "");
+    store.commit('setLoginUser',"");
   }
   if (from.path === '/display' && to.path === '/home') {
     clearInterval(window.mainInterval);

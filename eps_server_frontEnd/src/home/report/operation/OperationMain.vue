@@ -15,7 +15,6 @@
         </el-form-item>
         <el-form-item label="线号">
           <el-select v-model.trim="operationInfo.line"  value="">
-            <el-option label="不限" value=""></el-option>
             <el-option v-for="item in lines" :label="item.line" :value="item.id" :key="item.id"></el-option>
           </el-select>
         </el-form-item>
@@ -85,6 +84,9 @@
       }
     },
     created() {
+      if(this.lines.length > 0){
+        this.operationInfo.line = this.lines[0].id;
+      }
       let time = setInitialTime();
       this.operationInfo.startTime = time[0] +  " 00:00:00";
       this.operationInfo.endTime = time[1] +  " 23:59:59";
