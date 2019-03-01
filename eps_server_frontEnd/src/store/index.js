@@ -21,6 +21,7 @@ const state = {
   user:{},
   loginUser:{},
   userPage:-1,
+  userTypes:['仓库管理员','厂线操作员','IPQC','超级管理员','生产管理员','品质管理员','工程管理员','仓库管理员'],
 
   /*program*/
   program:{},

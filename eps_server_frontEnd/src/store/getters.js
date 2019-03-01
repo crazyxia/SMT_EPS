@@ -27,6 +27,9 @@ export const loginUser = (state) => {
 export const userPage = (state) => {
   return state.userPage;
 };
+export const userTypes = (state) => {
+  return state. userTypes;
+};
 /*program*/
 export const program = (state) => {
   return state.program;

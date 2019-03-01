@@ -55,7 +55,7 @@
             type="success"
             size="mini"
             @click="editTable(scope.row)"
-            :disabled="scope.row.state === 2 || scope.row.state === 3">修改表格
+            :disabled="scope.row.state === 2 || scope.row.state === 3 || loginUser.type === 4">修改表格
           </el-button>
         </template>
       </el-table-column>
@@ -97,7 +97,7 @@
       }
     },
     computed: {
-      ...mapGetters(['programPage','program']),
+      ...mapGetters(['programPage','program','loginUser']),
     },
     beforeDestroy() {
       //取消监听

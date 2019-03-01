@@ -19,7 +19,7 @@
           <el-input v-model.trim="userInfo.password" size="large"></el-input>
         </el-form-item>
         <el-form-item label="岗位">
-          <el-select v-model.trim="userInfo.type" value="" style="width:100%">
+          <el-select v-model.trim="userInfo.type" value="" style="width:100%" :disabled="isDisabled">
             <el-option label="仓库操作员" value='0'></el-option>
             <el-option label="厂线操作员" value='1'></el-option>
             <el-option label="IPQC" value='2'></el-option>
@@ -60,7 +60,7 @@
           <el-input v-model.trim="editData.password" size="large"></el-input>
         </el-form-item>
         <el-form-item label="岗位">
-          <el-select v-model.trim="editData.type" value="" style="width:100%">
+          <el-select v-model.trim="editData.type" value="" style="width:100%" :disabled="isDisabled">
             <el-option label="仓库操作员" value='0'></el-option>
             <el-option label="厂线操作员" value='1'></el-option>
             <el-option label="IPQC" value='2'></el-option>
@@ -127,7 +127,8 @@
           password: '',
           classType: '',
           enabled: ''
-        }
+        },
+        isDisabled:false
       }
     },
     beforeDestroy() {
@@ -149,11 +150,13 @@
         this.editData.password = editData.password;
         this.editData.classType = editData.classType + '';
         this.editData.enabled = editData.enabled === true ? '1' : '0';
+        let type = this.setType();
+        this.isDisabled = type !== '';
         this.editDialogVisible = true;
       })
     },
     computed:{
-      ...mapGetters(['loginUser'])
+      ...mapGetters(['loginUser','userTypes'])
     },
     methods: {
       //添加
@@ -243,6 +246,25 @@
         this.userInfo.classType = '';
         this.userInfo.password = '';
         this.userInfo.enabled = '1';
+        let type = this.setType();
+        this.userInfo.type = type + '';
+        this.isDisabled = type !== '';
+      },
+      //设置权限
+      setType:function(){
+        let type = '';
+        switch (this.loginUser.type) {
+          case 5:
+            type = 2;
+            break;
+          case 4:
+            type = 1;
+            break;
+          case 7:
+            type = 0;
+            break;
+        }
+        return type;
       }
     }
   }

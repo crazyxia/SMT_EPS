@@ -5,7 +5,7 @@
         <el-input v-model.trim="clientInfo.client" placeholder="客户名"></el-input>
       </el-form-item>
       <el-form-item label="程序表编号">
-        <el-input v-model.trim="clientInfo.programNo" placeholder="程序员编号"></el-input>
+        <el-input v-model.trim="clientInfo.programNo" placeholder="程序表编号"></el-input>
       </el-form-item>
       <el-form-item label="线号">
         <el-select v-model.trim="clientInfo.line"  value="">

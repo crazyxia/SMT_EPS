@@ -63,8 +63,9 @@
             if (result === "200") {
               let obj = response.data.data;
               this.setLoginUser(obj);
-              window.localStorage.setItem("token", obj.tokenId);
-              this.setToken(obj.tokenId);
+              window.localStorage.setItem("user",JSON.stringify(obj));
+              window.localStorage.setItem("token", obj["tokenId"]);
+              this.setToken(obj["tokenId"]);
               this.$router.push('home');
             } else {
               this.$alertWarning(errTip(result));
