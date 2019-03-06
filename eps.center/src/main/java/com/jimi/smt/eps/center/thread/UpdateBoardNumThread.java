@@ -1,8 +1,6 @@
 package com.jimi.smt.eps.center.thread;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,6 +14,7 @@ import com.pi4j.io.gpio.event.GpioPinDigitalStateChangeEvent;
 import com.pi4j.io.gpio.event.GpioPinListenerDigital;
 
 import cc.darhao.dautils.api.TextFileUtil;
+
 
 /**监听红外线和更新板子数量线程
  * @package  com.jimi.smt.eps.center.thread
@@ -42,7 +41,7 @@ public class UpdateBoardNumThread extends Thread {
 
     
     @Override
-    public void run() {
+	public void run() {
 		// 提示已运行
 		logger.info("SMT 中控  更新板子数量线程已开启!");
 		GpioPinDigitalInput io29 = gpio.provisionDigitalInputPin(RaspiPin.GPIO_21, PinPullResistance.PULL_UP);
@@ -58,13 +57,10 @@ public class UpdateBoardNumThread extends Thread {
 							num = Integer.parseInt(num_str);
 							num = num + 1;
 							TextFileUtil.writeToFile(System.getProperty("user.dir") + BOARDNUM_FILE, num + "");
-							logger.info("板子数量+1,现在数量为："+ TextFileUtil.readFromFile(System.getProperty("user.dir") + BOARDNUM_FILE));
+							//logger.info("板子数量+1,现在数量为：" + TextFileUtil.readFromFile(System.getProperty("user.dir") + BOARDNUM_FILE));
 						}
 					} catch (IOException e) {
-						ByteArrayOutputStream bos = new ByteArrayOutputStream();
-						PrintStream printStream = new PrintStream(bos);
-						e.printStackTrace(printStream);
-						logger.error(new String(bos.toByteArray()));
+						logger.error(e.getMessage());
 					}
 				}
 			}
@@ -73,11 +69,8 @@ public class UpdateBoardNumThread extends Thread {
 			try {
 				Thread.sleep(500);
 			} catch (InterruptedException e) {
-				ByteArrayOutputStream bos = new ByteArrayOutputStream();
-				PrintStream printStream = new PrintStream(bos);
-				e.printStackTrace(printStream);
-				logger.error(new String(bos.toByteArray()));
+				logger.error(e.getMessage());
 			}
 		}
-    }
+	}
 }

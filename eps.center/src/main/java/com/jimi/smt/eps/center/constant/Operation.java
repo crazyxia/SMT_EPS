@@ -1,4 +1,4 @@
-package com.jimi.smt.eps_server.constant;
+package com.jimi.smt.eps.center.constant;
 
 /**
  * 操作受控设备的工作方式常量

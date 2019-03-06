@@ -6,13 +6,14 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
 
+
 public class IpHelper {
 
 	
 	/**
 	 * 获取linux系统下的本地IP
 	 */
-	public static String getLinuxLocalIp(){
+	public static String getLinuxLocalIp() {
 		String ip = "";
 		try {
 			for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
@@ -42,7 +43,7 @@ public class IpHelper {
 	/**
 	 * 获取windows系统下的本地IP
 	 */
-	public static String getWindowsLocalIp(){
+	public static String getWindowsLocalIp() {
 		try {
 			return InetAddress.getLocalHost().getHostAddress();
 		} catch (UnknownHostException e) {
