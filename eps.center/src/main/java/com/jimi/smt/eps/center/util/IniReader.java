@@ -7,9 +7,8 @@ import java.util.Map;
 import org.ini4j.Config;
 import org.ini4j.Ini;
 
+
 /**读取配置文件
- * @package  com.jimi.smt.eps.center.util
- * @file     IniReader.java
  * @author   HCJ
  * @date     2018年9月25日 下午5:14:42
  * @version  V 1.0

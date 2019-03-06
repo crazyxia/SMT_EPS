@@ -1,4 +1,4 @@
-package com.jimi.smt.eps_server.constant;
+package com.jimi.smt.eps.center.constant;
 
 /**
  * 板子数清零原因常量
