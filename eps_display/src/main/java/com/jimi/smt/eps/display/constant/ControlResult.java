@@ -1,4 +1,4 @@
-package com.jimi.smt.eps_server.constant;
+package com.jimi.smt.eps.display.constant;
 
 /**
  * 中控受控后返回码常量
