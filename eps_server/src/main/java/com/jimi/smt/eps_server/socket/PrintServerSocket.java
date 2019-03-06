@@ -36,11 +36,11 @@ public class PrintServerSocket {
 	
 	@OnClose
 	public void onClose(Session session,@PathParam("printerIP") String printerIP) {
-		try {
+		/*try {
 			session.close();
 		} catch (IOException e) {
 			throw new PrinterSocketException(e.getMessage());
-		}
+		}*/
 		clients.remove(printerIP);
 	}
 

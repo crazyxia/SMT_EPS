@@ -87,7 +87,7 @@ public interface ProgramService {
 	 * @param boardType
 	 * @return
 	 */
-	String switchWorkOrder(String line, String workOrder, Integer boardType);
+	String switchWorkOrder(String line, String workOrder, Integer boardType, Boolean selected);
 	
 	
 	/**
@@ -267,7 +267,7 @@ public interface ProgramService {
 	 * @return String
 	 * @date 2018年9月25日 下午4:29:28
 	 */
-	String getProgramId(String line, String workOrder, Integer boardType);
+	ResultUtil2 getProgramId(String line, String workOrder, Integer boardType);
 	
 	
 	/**@author HCJ
@@ -282,5 +282,13 @@ public interface ProgramService {
 	 * @date 2018年12月21日 下午6:59:10
 	 */
 	Date getCurrentTime();
+	
+	
+	/**@author HCJ
+	 * 返回产线是否已经处于监控状态的结果
+	 * @param lineId 产线ID
+	 * @date 2019年3月21日 上午9:44:54
+	 */
+	String isLineMonitored(Integer lineId);
 	
 }

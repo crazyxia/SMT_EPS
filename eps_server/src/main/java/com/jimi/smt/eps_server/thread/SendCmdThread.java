@@ -5,19 +5,17 @@ import org.apache.logging.log4j.Logger;
 
 import com.jimi.smt.eps_server.constant.ClientDevice;
 import com.jimi.smt.eps_server.constant.ControlledDevice;
-import com.jimi.smt.eps_server.rmi.CenterRemoteWrapper;
+import com.jimi.smt.eps_server.util.CenterControlInfoSender;
 
-/**
- * 命令发送子线程
- * <br>
- * <b>2018年3月22日</b>
- * @author 沫熊工作室 <a href="http://www.darhao.cc">www.darhao.cc</a>
+
+/**命令发送子线程
+ * @date     2019年3月4日 上午11:01:12
  */
 public class SendCmdThread extends Thread{
 
 	private static Logger logger = LogManager.getRootLogger();
 	
-	private CenterRemoteWrapper connectToCenterRemote;
+	private String centerMac;
 	
 	private boolean isAlarm;
 	
@@ -25,12 +23,22 @@ public class SendCmdThread extends Thread{
 	
 	private ControlledDevice controlledDevice;
 	
+	private Integer lineId;
 	
-	public SendCmdThread(ClientDevice clientDevice, CenterRemoteWrapper connectToCenterRemote, boolean isAlarm, ControlledDevice controlledDevice) {
-		this.connectToCenterRemote = connectToCenterRemote;
+	
+	/**命令发送子线程
+	 * @param clientDevice 发起者
+	 * @param centerMac 树莓派Mac
+	 * @param lineId 产线ID
+	 * @param isAlarm 报警/解除报警
+	 * @param controlledDevice 被控制设备：报警灯或接驳台
+	 */
+	public SendCmdThread(ClientDevice clientDevice, String centerMac, Integer lineId,boolean isAlarm, ControlledDevice controlledDevice) {
+		this.centerMac = centerMac;
 		this.isAlarm = isAlarm;
 		this.clientDevice = clientDevice;
 		this.controlledDevice = controlledDevice;
+		this.lineId = lineId;
 	}
 	
 	
@@ -39,12 +47,12 @@ public class SendCmdThread extends Thread{
 		try {
 			// 发送命令
 			if (controlledDevice == ControlledDevice.ALARM) {
-				connectToCenterRemote.sendCmdToAlarm(clientDevice, isAlarm);
+				CenterControlInfoSender.sendCmdToAlarm(centerMac, lineId, clientDevice, isAlarm);
 			} else if (controlledDevice == ControlledDevice.CONVEYOR) {
-				connectToCenterRemote.sendCmdToConvery(clientDevice, isAlarm);
+				CenterControlInfoSender.sendCmdToConvery(centerMac, lineId, clientDevice, isAlarm);
 			}
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			logger.error("命令发送子线程出错 |" + e.getMessage());
 		}
 	}
 	

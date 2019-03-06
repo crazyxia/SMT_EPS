@@ -186,6 +186,7 @@ public class UserServiceImpl implements UserService {
 			userExample.setLimitSize(page.getPageSize());
 		}
 		List<User> users = userMapper.selectByExample(userExample);
+		/*
 		Integer requireType = null;
 		switch (userType) {
 		case PRODUCER_ADMINISTRATOR:
@@ -210,6 +211,7 @@ public class UserServiceImpl implements UserService {
 				}
 			}
 		}
+		*/
 		pageVO.setList(filler.fill(users));
 		resultUtil.setData(pageVO);
 		resultUtil.setResult("401");

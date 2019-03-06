@@ -28,7 +28,7 @@ public class SocketLog {
      *
      * @mbg.generated Fri Aug 24 09:38:43 CST 2018
      */
-    private Short serialNo;
+    private Short serialNo = 0;
 
     /**
      *

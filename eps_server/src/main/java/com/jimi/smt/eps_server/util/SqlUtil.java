@@ -18,6 +18,9 @@ public class SqlUtil {
 			case '%':
 				buffer.append("\\%");
 				break;
+			case '\\':
+				buffer.append("\\\\");
+				break;
 			default:
 				buffer.append(c);
 			}

@@ -209,7 +209,5 @@
 
 	<bean id="TokenBox" class="com.jimi.smt.eps_server.util.TokenBox"
 		scope="singleton" init-method="begin" destroy-method="stop" />
-	<bean id="RMIServer" class="com.jimi.smt.eps_server.rmi.RMIServer"
-		scope="singleton" destroy-method="stop" />
 
 </beans>  

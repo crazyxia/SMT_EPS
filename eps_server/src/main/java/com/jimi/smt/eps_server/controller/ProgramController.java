@@ -248,8 +248,8 @@ public class ProgramController {
 	@Open
 	@ResponseBody
 	@RequestMapping("/switch")
-	public ResultUtil switchWorkOrder(String line, String workOrder, Integer boardType) {
-		String result = programService.switchWorkOrder(line, workOrder, boardType);
+	public synchronized ResultUtil switchWorkOrder(String line, String workOrder, Integer boardType, Boolean selected) {
+		String result = programService.switchWorkOrder(line, workOrder, boardType, selected);
 		if (result.equals("succeed")) {
 			return ResultUtil.succeed();
 		} else {
@@ -266,10 +266,8 @@ public class ProgramController {
 	@Open
 	@ResponseBody
 	@RequestMapping("/operate")
-	public ResultUtil operate(String line, String workOrder, Integer boardType, Integer type, String lineseat,
-			String materialNo, String scanLineseat, String scanMaterialNo, Integer operationResult) {
-		String result = programService.operate(line, workOrder, boardType, type, lineseat, scanLineseat, scanMaterialNo,
-				operationResult);
+	public ResultUtil operate(String line, String workOrder, Integer boardType, Integer type, String lineseat, String materialNo, String scanLineseat, String scanMaterialNo, Integer operationResult) {
+		String result = programService.operate(line, workOrder, boardType, type, lineseat, scanLineseat, scanMaterialNo, operationResult);
 		if (result.equals("succeed")) {
 			return ResultUtil.succeed();
 		} else {
@@ -311,9 +309,9 @@ public class ProgramController {
 			return resultUtil2;
 		}
 		List<ProgramVO> list = programService.selectWorkingProgram(line);
-		if (list.size() == 0) {
-			resultUtil2.setCode(0);
-			resultUtil2.setMsg("此线号不存在工单");
+		if (list == null || list.size() == 0) {
+			resultUtil2.setCode(-1);
+			resultUtil2.setMsg("此线号不存在进行中的工单");
 		} else {
 			resultUtil2.setCode(1);
 			resultUtil2.setMsg("此线号存在工单");
@@ -356,11 +354,12 @@ public class ProgramController {
 	public ResultUtil2 updateItemVisit(@RequestBody ProgramItemVisit programItemVisit) {
 		int result = programService.updateItemVisit(programItemVisit);
 		ResultUtil2 resultUtil2 = new ResultUtil2();
-		if (result > 0) {
-			resultUtil2.setCode(1);
+		resultUtil2.setCode(result);
+		if (result < 0) {
+			resultUtil2.setMsg("不存在此进行中的工单");
+		} else if (result > 0) {
 			resultUtil2.setMsg("更新成功");
 		} else {
-			resultUtil2.setCode(0);
 			resultUtil2.setMsg("更新失败");
 		}
 		return resultUtil2;
@@ -379,12 +378,7 @@ public class ProgramController {
 		if (programId == null || programId.equals("")) {
 			return 0;
 		}
-		int result = programService.resetCheckAll(programId);
-		if (result > 0) {
-			return 1;
-		} else {
-			return 0;
-		}
+		return programService.resetCheckAll(programId);
 	}
 
 	
@@ -479,12 +473,8 @@ public class ProgramController {
 	@Open
 	@ResponseBody
 	@RequestMapping("/getProgramId")
-	public ResultUtil getProgramId(String line, String workOrder, Integer boardType) {
-		String result = programService.getProgramId(line, workOrder, boardType);
-		if(result == null) {
-			return ResultUtil.failed("fail");
-		}
-		return ResultUtil.succeed(result);
+	public ResultUtil2 getProgramId(String line, String workOrder, Integer boardType) {
+		return programService.getProgramId(line, workOrder, boardType);
 	}
 	
 	
@@ -545,7 +535,8 @@ public class ProgramController {
 			}
 		}
 		return null;
-		/*String fileName = "标准站位表.xls";
+		/*第一种方法
+		String fileName = "标准站位表.xls";
 		String path = request.getSession().getServletContext().getRealPath("WEB-INF") + File.separator + fileName;
 		InputStream in = null;
 		BufferedOutputStream out = null;
@@ -573,6 +564,33 @@ public class ProgramController {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		}*/
+		}
+		第二种方法
+		String fileName = "标准站位表.xls";
+		String path = request.getSession().getServletContext().getRealPath("WEB-INF") + File.separator + fileName;
+		File file = new File(path);
+		HttpHeaders headers = new HttpHeaders();
+		try {
+			fileName = URLEncoder.encode(fileName, "UTF-8");
+			headers.setContentDispositionFormData("attachment", fileName);
+			headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+			return new ResponseEntity<byte[]>(FileUtils.readFileToByteArray(file), headers, HttpStatus.OK);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;*/
+	}
+	
+	
+	@Open
+	@ResponseBody
+	@RequestMapping("/isLineMonitored")
+	public ResultUtil isLineMonitored(Integer lineId) {
+		String result = programService.isLineMonitored(lineId);
+		if (result.equals("succeed")) {
+			return ResultUtil.succeed();
+		} else {
+			return ResultUtil.failed(result);
+		}
 	}
 }

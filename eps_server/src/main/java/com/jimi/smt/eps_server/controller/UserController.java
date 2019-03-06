@@ -52,8 +52,7 @@ public class UserController {
 	@RequestMapping("/add")
 	public ResultUtil add(String id, Integer classType, String name, Integer type, String password, HttpServletRequest request) {
 		if (id == null || type == null) {
-			ResultUtil.failed("参数不足");
-			return ResultUtil.failed();
+			return ResultUtil.failed("参数不足");
 		}
 		String result = "";
 		try {
