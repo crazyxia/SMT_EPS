@@ -49,7 +49,7 @@ import com.jimi.smt.eps.display.util.IpHelper;
 import cc.darhao.dautils.api.BytesParser;
 import cc.darhao.dautils.api.TextFileUtil;
 
-import com.jimi.smt.eps.display.websocket.BoardResetInfoSender;
+import com.jimi.smt.eps.display.websocket.DisplayClientSocket;
 
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -64,14 +64,17 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
@@ -85,8 +88,8 @@ public class DisplayController implements Initializable {
 
 	// 刷新表格数据线程的启动延时时间
 	private static final Integer TIME_DELAY = 0;
-	// 刷线表格数据线程的启动间隔时间
-	private static final Integer TIME_PERIOD = 1000;
+	// 刷新表格数据周期
+	private static Integer timePeriod;
 	// 默认结果
 	private static final Integer DEFAULT_RESULT = 2;
 
@@ -225,7 +228,7 @@ public class DisplayController implements Initializable {
 	// 刷新表格定时器
 	private static Timer updateTimer = new Timer(true);
 	// 表格数据
-	private ObservableList<ResultData> tableLsit = null;
+	private ObservableList<ResultData> tableList = FXCollections.observableArrayList();
 	// 日志记录
 	private Logger logger = LogManager.getRootLogger();
 
@@ -271,6 +274,8 @@ public class DisplayController implements Initializable {
 	private static final String GET_CONFIG_ACTION = "config/list";
 	// 查询服务器时间戳请求
 	private static final String GET_TIMESTAMP_ACTION = "program/getTimesTamp";
+	// 查询产线是否处于被监控状态
+	private static final String GET_LINE_MONITORING_STATE = "program/isLineMonitored";
 	
 	// 包ID
 	static short packageId = 0;
@@ -283,9 +288,9 @@ public class DisplayController implements Initializable {
 
 	private Finger finger;
 
-	// 发送板子数量重置信息线程
-	private Runnable sendBoardResetInfoRunnable = null;
-	private Thread sendBoardResetInfoThread = null;
+	// 连接到websocket服务端线程
+	private Runnable connectToServerRunnable = null;
+	private Thread connectToServerThread = null;
 	private Session session = null;
 
 	/**
@@ -317,15 +322,44 @@ public class DisplayController implements Initializable {
 	/**
 	 * dateFormat : 时间格式化
 	 */
-	private static SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd hh:mm");
+	private static SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd HH:mm");
 
 	/**
-	 * alert : 错误提示窗口
+	 * requestErrorAlert : 请求错误提示窗口
 	 */
-	private Alert alert = new Alert(AlertType.ERROR);
+	private Alert requestErrorAlert = new Alert(AlertType.ERROR);
+
+	/**
+	 * FONT_SIZE : 中控断线提示信息字体大小
+	 */
+	private static final Integer FONT_SIZE = 26;
+	/**
+	 * TEXTAREA_MAX_WIDTH : 中控断线文本提示框的最大宽度
+	 */
+	private static final Integer TEXTAREA_MAX_WIDTH = 600;
+	/**
+	 * TEXTAREA_MAX_HEIGHT : 中控断线文本提示框的最大高度
+	 */
+	private static final Integer TEXTAREA_MAX_HEIGHT = 200;
+
+	/**
+	 * DEFAULT_TIMEPERIOD_AND_RECONNECT_CYCLE : 默认刷新表格数据周期和websocket重连睡眠时间
+	 */
+	private static final Integer DEFAULT_TIMEPERIOD_AND_RECONNECT_CYCLE = 5000;
+	
+	/**
+	 * centerOfflineAlert : 中控下线提示弹窗
+	 */
+	private static Alert centerOfflineAlert = new Alert(AlertType.INFORMATION);
+
+	/**
+	 * selectedLine : 选中的产线名称
+	 */
+	private static String selectedLineName = "";
 
 
 	public void initialize(URL arg0, ResourceBundle arg1) {
+		initTimePeriod();
 		initVersion();
 		initVersionLb();
 		initlineCb();
@@ -339,14 +373,13 @@ public class DisplayController implements Initializable {
 		// 初始化websocket客户端
 		initWebsocketClient();
 		// 设备端初始化
-		/*initFinger();*/
+		/* initFinger(); */
 	}
 
-	
-	/**
+
+	/**@author HCJ
 	 * 初始化线号选择框
-	 * 
-	 * @throws IOException
+	 * @date 2019年3月20日 上午10:07:16
 	 */
 	public void initlineCb() {
 		lines = JSON.parseArray(sendRequest(GET_LINE_ACTION, null), String.class);
@@ -362,7 +395,7 @@ public class DisplayController implements Initializable {
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void initDatatTV() {
-
+		DataTv.setItems(tableList);
 		lineseatCl.setCellValueFactory(new PropertyValueFactory<ResultData, String>("lineseat"));
 		storeIssueResultCl.setCellValueFactory(new PropertyValueFactory<ResultData, Integer>("storeIssueResult"));
 		feedResultCl.setCellValueFactory(new PropertyValueFactory<ResultData, Integer>("feedResult"));
@@ -444,7 +477,7 @@ public class DisplayController implements Initializable {
 							} else {
 								// 显示上一次换料时间
 								long timeStamp = item.intValue();
-								this.setText(dateFormat.format(new Date(timeStamp * 1000)));
+								this.setText(dateFormat.format(new Date(timeStamp * ONE_SECOND_TO_MILLISECOND)));
 								this.setTextFill(Color.GREEN);
 							}
 						}
@@ -477,7 +510,7 @@ public class DisplayController implements Initializable {
 					});
 				}
 			}
-		}, TIME_DELAY, TIME_PERIOD);
+		}, TIME_DELAY, timePeriod);
 	}
 
 	
@@ -490,13 +523,37 @@ public class DisplayController implements Initializable {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
 				if (newValue != null && newValue.intValue() >= 0) {
-					String line = lineCb.getItems().get(newValue.intValue());
-					resetWorkOrderCb(line);
-					// 根据产线设置板子数量重置信息
-					boardResetInfo.setLine(lineList.get(newValue.intValue()).getId());
-					boardResetInfo.setBoardResetReson(BoardResetReson.WORK_ORDER_RESTART);
-					logger.info(" 产线名称: " + line);
-					clearText();
+					Map<String, String> map = new HashMap<>();
+					map.put("lineId", lineList.get(newValue.intValue()).getId().toString());
+					try {
+						String result = httpHelper.requestHttp(GET_LINE_MONITORING_STATE, map);
+						if (result != null && !"".equals(result) && result.equals("{\"result\":\"succeed\"}")) {
+							Platform.runLater(new Runnable() {
+
+								@Override
+								public void run() {
+									isUpdate = false;
+									new Alert(AlertType.INFORMATION, "该线号已经被使用，请选择其他产线进行查看", ButtonType.OK).showAndWait();
+									lineCb.getSelectionModel().clearSelection();
+									workOrderCb.getItems().clear();
+									boardTybeCb.getItems().clear();
+									clearText();
+								}
+							});
+						} else {
+							selectedLineName = lineCb.getItems().get(newValue.intValue());
+							resetWorkOrderCb(selectedLineName);
+							// 根据产线设置板子数量重置信息
+							boardResetInfo.setLine(lineList.get(newValue.intValue()).getId());
+							boardResetInfo.setBoardResetReson(BoardResetReson.WORK_ORDER_RESTART);
+							logger.info(" 产线名称: " + selectedLineName);
+							clearText();
+						}
+					} catch (IOException e) {
+						httpFail(GET_LINE_MONITORING_STATE, IS_NETWORK, null);
+						e.printStackTrace();
+					}
+
 				}
 			}
 		});
@@ -640,8 +697,7 @@ public class DisplayController implements Initializable {
 
 								@Override
 								public void onResponse(Call call, Response response) throws IOException {
-									if (response != null
-											&& response.body().string().equals("{\"result\":\"succeed\"}")) {
+									if (response != null && response.body().string().equals("{\"result\":\"succeed\"}")) {
 										Platform.runLater(new Runnable() {
 											@Override
 											public void run() {
@@ -702,6 +758,20 @@ public class DisplayController implements Initializable {
 						});
 					}
 					sendHttpCloseRequest(line);
+				} else {
+					if (session != null && session.isOpen()) {
+						Platform.runLater(new Runnable() {
+
+							@Override
+							public void run() {
+								try {
+									session.close();
+								} catch (IOException e) {
+									logger.error("关闭session时出错：" + e.getMessage());
+								}
+							}
+						});
+					}
 				}
 			}
 		});
@@ -919,14 +989,14 @@ public class DisplayController implements Initializable {
 				@Override
 				public void run() {
 
-					if (isNetwork && !alert.isShowing()) {
+					if (isNetwork && !requestErrorAlert.isShowing()) {
 						logger.error("选定工单失败，switch请求失败，网络连接出错");
-						alert.setContentText("选定工单失败，请检查你的网络连接");
-						alert.showAndWait();
-					} else if (!alert.isShowing()) {
+						requestErrorAlert.setContentText("选定工单失败，请检查你的网络连接");
+						requestErrorAlert.showAndWait();
+					} else if (!requestErrorAlert.isShowing()) {
 						logger.error("选定工单失败，服务器内部错误");
-						alert.setContentText("选定工单失败，服务器内部错误");
-						alert.showAndWait();
+						requestErrorAlert.setContentText("选定工单失败，服务器内部错误");
+						requestErrorAlert.showAndWait();
 					}
 					setDisableCb(false);
 					resetBt.setDisable(false);
@@ -940,14 +1010,14 @@ public class DisplayController implements Initializable {
 			Platform.runLater(new Runnable() {
 				@Override
 				public void run() {
-					if (isNetwork && !alert.isShowing()) {
+					if (isNetwork && !requestErrorAlert.isShowing()) {
 						logger.error("重置工单失败，reset请求失败，网络连接出错");
-						alert.setContentText("重置工单失败，请检查你的网络连接");
-						alert.showAndWait();
-					} else if (!alert.isShowing()) {
+						requestErrorAlert.setContentText("重置工单失败，请检查你的网络连接");
+						requestErrorAlert.showAndWait();
+					} else if (!requestErrorAlert.isShowing()) {
 						logger.error("重置工单失败，服务器内部原因");
-						alert.setContentText("重置工单失败，服务器内部错误");
-						alert.showAndWait();
+						requestErrorAlert.setContentText("重置工单失败，服务器内部错误");
+						requestErrorAlert.showAndWait();
 					}
 					setDisableCb(false);
 					resetBt.setDisable(false);
@@ -960,14 +1030,14 @@ public class DisplayController implements Initializable {
 			Platform.runLater(new Runnable() {
 				@Override
 				public void run() {
-					if (isNetwork && !alert.isShowing()) {
+					if (isNetwork && !requestErrorAlert.isShowing()) {
 						logger.error("查询所有产线名称失败，select_line请求失败，网络连接出错");
-						alert.setContentText("查询所有产线名称失败，请检查你的网络连接");
-						alert.showAndWait();
-					} else if (!alert.isShowing()) {
+						requestErrorAlert.setContentText("查询所有产线名称失败，请检查你的网络连接");
+						requestErrorAlert.showAndWait();
+					} else if (!requestErrorAlert.isShowing()) {
 						logger.error("查询所有产线名称失败，服务器内部原因");
-						alert.setContentText("查询所有产线名称失败，服务器内部错误");
-						alert.showAndWait();
+						requestErrorAlert.setContentText("查询所有产线名称失败，服务器内部错误");
+						requestErrorAlert.showAndWait();
 					}
 					setDisableCb(false);
 					resetBt.setDisable(false);
@@ -980,14 +1050,14 @@ public class DisplayController implements Initializable {
 			Platform.runLater(new Runnable() {
 				@Override
 				public void run() {
-					if (isNetwork && !alert.isShowing()) {
+					if (isNetwork && !requestErrorAlert.isShowing()) {
 						logger.error("查询所有产线失败，select_all请求失败，网络连接出错");
-						alert.setContentText("查询所有产线失败，请检查你的网络连接");
-						alert.showAndWait();
-					} else if (!alert.isShowing()) {
+						requestErrorAlert.setContentText("查询所有产线失败，请检查你的网络连接");
+						requestErrorAlert.showAndWait();
+					} else if (!requestErrorAlert.isShowing()) {
 						logger.error("查询所有产线失败，服务器内部原因");
-						alert.setContentText("查询所有产线失败，服务器内部错误");
-						alert.showAndWait();
+						requestErrorAlert.setContentText("查询所有产线失败，服务器内部错误");
+						requestErrorAlert.showAndWait();
 					}
 					setDisableCb(false);
 					resetBt.setDisable(false);
@@ -1000,14 +1070,14 @@ public class DisplayController implements Initializable {
 			Platform.runLater(new Runnable() {
 				@Override
 				public void run() {
-					if (isNetwork && !alert.isShowing()) {
+					if (isNetwork && !requestErrorAlert.isShowing()) {
 						logger.error("查询登录对象失败，select_id请求失败，网络连接出错");
-						alert.setContentText("查询登录对象失败，请检查你的网络连接");
-						alert.showAndWait();
-					} else if (!alert.isShowing()) {
+						requestErrorAlert.setContentText("查询登录对象失败，请检查你的网络连接");
+						requestErrorAlert.showAndWait();
+					} else if (!requestErrorAlert.isShowing()) {
 						logger.error("查询登录对象失败，服务器内部原因");
-						alert.setContentText("查询登录对象失败，服务器内部错误");
-						alert.showAndWait();
+						requestErrorAlert.setContentText("查询登录对象失败，服务器内部错误");
+						requestErrorAlert.showAndWait();
 					}
 					setDisableCb(false);
 					resetBt.setDisable(false);
@@ -1020,14 +1090,14 @@ public class DisplayController implements Initializable {
 			Platform.runLater(new Runnable() {
 				@Override
 				public void run() {
-					if (isNetwork && !alert.isShowing()) {
+					if (isNetwork && !requestErrorAlert.isShowing()) {
 						logger.error("查询工单失败，select_workorder请求失败，网络连接出错");
-						alert.setContentText("查询工单失败，请检查你的网络连接");
-						alert.showAndWait();
-					} else if (!alert.isShowing()) {
+						requestErrorAlert.setContentText("查询工单失败，请检查你的网络连接");
+						requestErrorAlert.showAndWait();
+					} else if (!requestErrorAlert.isShowing()) {
 						logger.error("查询工单失败，服务器内部原因");
-						alert.setContentText("查询工单失败，服务器内部错误");
-						alert.showAndWait();
+						requestErrorAlert.setContentText("查询工单失败，服务器内部错误");
+						requestErrorAlert.showAndWait();
 					}
 					setDisableCb(false);
 					resetBt.setDisable(false);
@@ -1040,14 +1110,14 @@ public class DisplayController implements Initializable {
 			Platform.runLater(new Runnable() {
 				@Override
 				public void run() {
-					if (isNetwork && !alert.isShowing()) {
+					if (isNetwork && !requestErrorAlert.isShowing()) {
 						logger.error("查询版面类型失败，select_boardtype请求失败，网络连接出错");
-						alert.setContentText("查询版面类型失败，请检查你的网络连接");
-						alert.showAndWait();
-					} else if (!alert.isShowing()) {
+						requestErrorAlert.setContentText("查询版面类型失败，请检查你的网络连接");
+						requestErrorAlert.showAndWait();
+					} else if (!requestErrorAlert.isShowing()) {
 						logger.error("查询版面类型失败，服务器内部原因");
-						alert.setContentText("查询版面类型失败，服务器内部错误");
-						alert.showAndWait();
+						requestErrorAlert.setContentText("查询版面类型失败，服务器内部错误");
+						requestErrorAlert.showAndWait();
 					}
 					setDisableCb(false);
 					resetBt.setDisable(false);
@@ -1060,14 +1130,14 @@ public class DisplayController implements Initializable {
 			Platform.runLater(new Runnable() {
 				@Override
 				public void run() {
-					if (isNetwork && !alert.isShowing()) {
+					if (isNetwork && !requestErrorAlert.isShowing()) {
 						logger.error("查询操作员失败，select_operator请求失败，网络连接出错");
-						alert.setContentText("查询操作员失败，请检查你的网络连接");
-						alert.showAndWait();
-					} else if (!alert.isShowing()) {
+						requestErrorAlert.setContentText("查询操作员失败，请检查你的网络连接");
+						requestErrorAlert.showAndWait();
+					} else if (!requestErrorAlert.isShowing()) {
 						logger.error("查询操作员失败，服务器内部原因");
-						alert.setContentText("查询操作员失败，服务器内部错误");
-						alert.showAndWait();
+						requestErrorAlert.setContentText("查询操作员失败，服务器内部错误");
+						requestErrorAlert.showAndWait();
 					}
 					setDisableCb(false);
 					resetBt.setDisable(false);
@@ -1080,14 +1150,14 @@ public class DisplayController implements Initializable {
 			Platform.runLater(new Runnable() {
 				@Override
 				public void run() {
-					if (isNetwork && !alert.isShowing()) {
+					if (isNetwork && !requestErrorAlert.isShowing()) {
 						logger.error("查询工单操作失败，select_itemvisit请求失败，网络连接出错");
-						alert.setContentText("查询工单操作失败，请检查你的网络连接");
-						alert.showAndWait();
-					} else if (!alert.isShowing()) {
+						requestErrorAlert.setContentText("查询工单操作失败，请检查你的网络连接");
+						requestErrorAlert.showAndWait();
+					} else if (!requestErrorAlert.isShowing()) {
 						logger.error("查询工单操作失败，服务器内部原因");
-						alert.setContentText("查询工单操作失败，服务器内部错误");
-						alert.showAndWait();
+						requestErrorAlert.setContentText("查询工单操作失败，服务器内部错误");
+						requestErrorAlert.showAndWait();
 					}
 					setDisableCb(false);
 					resetBt.setDisable(false);
@@ -1127,9 +1197,19 @@ public class DisplayController implements Initializable {
 			map.put("workOrder", workOrder);
 			map.put("boardType", boardTypeNo.toString());
 			String response = sendRequest(GET_OPERATOR_ACTION, map);
-			operator = response.equals("") ? "unknown" : response;
+			if (response == null || "".equals(response)) {
+				operator = "unknown";
+			} else {
+				operator = response;
+			}
 			try {
-				httpHelper.requestHttp(GET_ITEMVISIT_ACTION, map, new okhttp3.Callback() {
+				String itemVisits = httpHelper.requestHttp(GET_ITEMVISIT_ACTION, map);
+				if (!itemVisits.equals("[]")) {
+					programItemVisits = JSON.parseArray(itemVisits, ProgramItemVisit.class);
+				} else {
+					httpFail(GET_ITEMVISIT_ACTION, !IS_NETWORK, null);
+				}
+				/*httpHelper.requestHttp(GET_ITEMVISIT_ACTION, map, new okhttp3.Callback() {
 
 					@Override
 					public void onResponse(Call call, Response response) throws IOException {
@@ -1146,7 +1226,7 @@ public class DisplayController implements Initializable {
 						httpFail(GET_ITEMVISIT_ACTION, IS_NETWORK, null);
 
 					}
-				});
+				});*/
 
 			} catch (IOException e) {
 				httpFail(GET_ITEMVISIT_ACTION, IS_NETWORK, null);
@@ -1160,8 +1240,8 @@ public class DisplayController implements Initializable {
 				scanMaterialNoLb.setText(programItemVisit.getScanMaterialNo());
 				operatorLb.setText(operator);
 				setTypeAndResult(programItemVisit);
-				tableLsit = FXCollections.observableArrayList(programItemVisitToResultData(programItemVisits));
-				DataTv.setItems(tableLsit);
+				tableList.clear();
+				tableList.addAll(programItemVisitToResultData(programItemVisits));
 			}
 		}
 	}
@@ -1294,7 +1374,7 @@ public class DisplayController implements Initializable {
 			resultData.setStoreIssueResult(programItemVisit.getStoreIssueResult());
 			resultData.setFeedResult(programItemVisit.getFeedResult());
 			if (programItemVisit.getChangeResult() == SUCCESS_STATE) {
-				resultData.setChangeResult((int) ((programItemVisit.getChangeTime().getTime()) / 1000));
+				resultData.setChangeResult((int) ((programItemVisit.getChangeTime().getTime()) / ONE_SECOND_TO_MILLISECOND));
 			} else {
 				resultData.setChangeResult(programItemVisit.getChangeResult());
 			}
@@ -1352,7 +1432,7 @@ public class DisplayController implements Initializable {
 		scanMaterialNoLb.setText("");
 		operatorLb.setText("");
 		showResult(DEFAULT_RESULT);
-		DataTv.setItems(null);
+		tableList.clear();
 	}
 
 	
@@ -1539,13 +1619,13 @@ public class DisplayController implements Initializable {
 	
 	/**
 	 * @author HCJ 根据产线配置类型返回配置时间的秒数
-	 * @param timeType
+	 * @param configName 配置项名称
 	 * @date 2018年10月22日 上午9:49:27
 	 */
-	private Integer getConfigValue(String timeType) {
+	private Integer getConfigValue(String configName) {
 		List<ConfigVO> configVOs = JSON.parseArray(sendRequest(GET_CONFIG_ACTION, null), ConfigVO.class);
 		for (ConfigVO configVO : configVOs) {
-			if (configVO.getLineName().equals(lineCb.getSelectionModel().getSelectedItem()) && configVO.getName().equals(timeType)) {
+			if (configVO.getLineName().equals(lineCb.getSelectionModel().getSelectedItem()) && configVO.getName().equals(configName)) {
 				return Integer.parseInt(configVO.getValue()) * 60;
 			}
 		}
@@ -1566,23 +1646,23 @@ public class DisplayController implements Initializable {
 		return result.append(hour.length() < 2 ? "0" + hour : hour).append(":").append(minute.length() < 2 ? "0" + minute : minute).append(":").append(second.length() < 2 ? "0" + second : second).toString();
 	}
 
-	
+
 	/**@author HCJ
 	 * 初始化与服务端连接的websocket客户端
 	 * @date 2019年3月3日 上午10:11:20
 	 */
 	private void initWebsocketClient() {
-		BoardResetInfoSender sender = new BoardResetInfoSender();
+		DisplayClientSocket clientSocket = new DisplayClientSocket();
 		WebSocketContainer container = ContainerProvider.getWebSocketContainer();
 		Map<String, String> websocket = IniReader.getItem(System.getProperty("user.dir") + "/" + CONFIG_FILE, "websocket");
 		String url = websocket.get("url");
-		sendBoardResetInfoRunnable = new Runnable() {
+		connectToServerRunnable = new Runnable() {
 
 			@Override
 			public void run() {
 				try {
 					// logger.info("Display开始使用websocket连接服务端");
-					session = container.connectToServer(sender, URI.create(url));
+					session = container.connectToServer(clientSocket, URI.create(url));
 					logger.info("Display使用websocket连接服务端成功");
 					while (!Thread.currentThread().isInterrupted()) {
 						try {
@@ -1599,10 +1679,41 @@ public class DisplayController implements Initializable {
 				}
 			}
 		};
-		sendBoardResetInfoThread = new Thread(sendBoardResetInfoRunnable);
-		sendBoardResetInfoThread.setDaemon(true);
-		sendBoardResetInfoThread.setName("sendBoardResetInfoThread");
-		sender.setCloseCallBack((closeReason) -> {
+		connectToServerThread = new Thread(connectToServerRunnable);
+		connectToServerThread.setDaemon(true);
+		connectToServerThread.setName("connectToServerThread");
+		clientSocket.setReceiveCallBack((message) -> {
+			if (message != null && !"".equals(message) && message.contains("已断开") && !"".equals(selectedLineName) && message.contains(selectedLineName) && !centerOfflineAlert.isShowing()) {
+				Platform.runLater(new Runnable() {
+
+					@Override
+					public void run() {
+						TextArea textArea = new TextArea(message);
+						textArea.setEditable(false);
+						textArea.setWrapText(true);
+						textArea.setFont(Font.font("Timer New Roman", FontWeight.BOLD, FONT_SIZE));
+						textArea.setMaxSize(TEXTAREA_MAX_WIDTH, TEXTAREA_MAX_HEIGHT);
+
+						GridPane content = new GridPane();
+						content.add(textArea, 0, 1);
+
+						centerOfflineAlert.getDialogPane().setContent(content);
+						centerOfflineAlert.setHeaderText("接收到服务端信息：");
+						centerOfflineAlert.showAndWait();
+					}
+				});
+			} else if (message != null && !"".equals(message) && message.contains("已连接") && !"".equals(selectedLineName) && message.contains(selectedLineName) && centerOfflineAlert.isShowing()) {
+				Platform.runLater(new Runnable() {
+
+					@Override
+					public void run() {
+						centerOfflineAlert.close();
+
+					}
+				});
+			}
+		});
+		clientSocket.setCloseCallBack((closeReason) -> {
 			if (closeReason.getCloseCode().equals(CloseCodes.NORMAL_CLOSURE)) {
 				logger.info("webSocekt关闭，Display与服务端断开连接");
 			} else {
@@ -1610,7 +1721,7 @@ public class DisplayController implements Initializable {
 				reConnect();
 			}
 		});
-		sendBoardResetInfoThread.start();
+		connectToServerThread.start();
 	}
 	
 	
@@ -1640,22 +1751,40 @@ public class DisplayController implements Initializable {
 			@Override
 			public void run() {
 				try {
-					Thread.sleep(5000);
-					if (!(session != null && session.isOpen() && sendBoardResetInfoThread.isAlive())) {
-						if (session != null && session.isOpen() && !sendBoardResetInfoThread.isAlive()) {
+					Thread.sleep(DEFAULT_TIMEPERIOD_AND_RECONNECT_CYCLE);
+					if (!(session != null && session.isOpen() && connectToServerThread.isAlive())) {
+						if (session != null && session.isOpen() && !connectToServerThread.isAlive()) {
 							session.close();
 						}
-						if (sendBoardResetInfoThread.isAlive()) {
-							sendBoardResetInfoThread.interrupt();
+						if (connectToServerThread.isAlive()) {
+							connectToServerThread.interrupt();
 						}
-						sendBoardResetInfoThread = new Thread(sendBoardResetInfoRunnable);
-						sendBoardResetInfoThread.start();
+						connectToServerThread = new Thread(connectToServerRunnable);
+						connectToServerThread.start();
 					}
 				} catch (InterruptedException | IOException e) {
 					logger.error(e.getMessage());
 				}
 			}
 		});
+	}
+	
+	
+	/**@author HCJ
+	 * 初始化更新时间周期
+	 * @date 2019年3月11日 上午11:50:19
+	 */
+	private void initTimePeriod() {
+		Map<String, String> cycleMap = IniReader.getItem(System.getProperty("user.dir") + "/" + CONFIG_FILE, "cycle");
+		Integer updateCycle;
+		try {
+			updateCycle = Integer.parseInt(cycleMap.get("updateCycle"));
+			if (updateCycle != null) {
+				timePeriod = updateCycle;
+			}
+		} catch (NumberFormatException e) {
+			timePeriod = DEFAULT_TIMEPERIOD_AND_RECONNECT_CYCLE;
+		}
 	}
 
 }

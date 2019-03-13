@@ -15,22 +15,25 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.alibaba.fastjson.JSONObject;
-import com.jimi.smt.eps.display.callback.SendBoardResetInfoCloseCallBack;
+import com.jimi.smt.eps.display.callback.ReceiveCenterStateInfoCallBack;
+import com.jimi.smt.eps.display.callback.ConnectCloseCallBack;
 import com.jimi.smt.eps.display.entity.BoardResetInfo;
 
 
-/**Display的websocket客户端，发送板子数量重置信息
+/**Display的websocket客户端
  * @author   HCJ
  * @date     2019年3月1日 上午11:36:55
  */
 @ClientEndpoint
-public class BoardResetInfoSender {
+public class DisplayClientSocket {
 
 	private static Logger logger = LogManager.getRootLogger();
 
 	private static Session session;
 	
-	private SendBoardResetInfoCloseCallBack closeCallBack;
+	private ConnectCloseCallBack closeCallBack;
+	
+	private ReceiveCenterStateInfoCallBack receiveCallBack;
 	
 	/**
 	 * ERROR_CLOSECODE : 自定义错误代码
@@ -44,7 +47,7 @@ public class BoardResetInfoSender {
 	 */
 	@OnOpen
 	public void onOpen(Session session) {
-		BoardResetInfoSender.session = session;
+		DisplayClientSocket.session = session;
 		logger.info("sessionID为" + session.getId() + "的Display与服务器连接");
 	}
 
@@ -55,7 +58,10 @@ public class BoardResetInfoSender {
 	 */
 	@OnMessage
 	public void onMessage(String message) {
-		logger.info("接收到服务端信息" + message);
+		//logger.info("接收到服务端信息 |" + message);
+		if (receiveCallBack != null) {
+			receiveCallBack.receiveCenterStateInfoCallBack(message);
+		}
 	}
 
 
@@ -68,7 +74,7 @@ public class BoardResetInfoSender {
 	public void onClose(Session session, CloseReason closeReason) {
 		logger.info("sessionID为  " + session.getId() + " 的Display客户端与服务端断开连接，原因为：" + closeReason);
 		if(closeCallBack != null) {
-			closeCallBack.sendBoardResetInfoCloseCallBack(closeReason);
+			closeCallBack.connectCloseCallBack(closeReason);
 		}
 	}
 
@@ -104,12 +110,17 @@ public class BoardResetInfoSender {
 	}
 
 
-	public SendBoardResetInfoCloseCallBack getCloseCallBack() {
+	public ConnectCloseCallBack getCloseCallBack() {
 		return closeCallBack;
 	}
 
 
-	public void setCloseCallBack(SendBoardResetInfoCloseCallBack closeCallBack) {
+	public void setCloseCallBack(ConnectCloseCallBack closeCallBack) {
 		this.closeCallBack = closeCallBack;
+	}
+
+
+	public void setReceiveCallBack(ReceiveCenterStateInfoCallBack receiveCallBack) {
+		this.receiveCallBack = receiveCallBack;
 	}
 }
