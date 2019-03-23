@@ -322,7 +322,7 @@ public class DisplayController implements Initializable {
 	/**
 	 * dateFormat : 时间格式化
 	 */
-	private static SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd HH:mm");
+	private SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd HH:mm");
 
 	/**
 	 * requestErrorAlert : 请求错误提示窗口
@@ -357,6 +357,15 @@ public class DisplayController implements Initializable {
 	 */
 	private static String selectedLineName = "";
 
+	// 产线被选中为1，产线未被选中为0
+	private static final String LINE_SELECTED = "1";
+	private static final String LINE_UNSELECTED = "0";
+
+	/**
+	 * isWorkingOrderExist : 产线是否存在进行中的工单
+	 */
+	private static boolean isWorkingOrderExist;
+
 
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		initTimePeriod();
@@ -389,7 +398,7 @@ public class DisplayController implements Initializable {
 		lineCb.setItems(lineList);
 	}
 
-	
+
 	/**
 	 * 初始化表格
 	 */
@@ -425,7 +434,7 @@ public class DisplayController implements Initializable {
 		initcell(firstCheckAllResultCl);
 	}
 
-	
+
 	/**
 	 * 初始化表格中某一列的每个单元格
 	 * 
@@ -487,7 +496,7 @@ public class DisplayController implements Initializable {
 		});
 	}
 
-	
+
 	/**
 	 * 初始化定时器任务
 	 */
@@ -513,7 +522,7 @@ public class DisplayController implements Initializable {
 		}, TIME_DELAY, timePeriod);
 	}
 
-	
+
 	/**
 	 * 线号选择框文本内容变更监听器
 	 */
@@ -523,43 +532,67 @@ public class DisplayController implements Initializable {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
 				if (newValue != null && newValue.intValue() >= 0) {
-					Map<String, String> map = new HashMap<>();
-					map.put("lineId", lineList.get(newValue.intValue()).getId().toString());
-					try {
-						String result = httpHelper.requestHttp(GET_LINE_MONITORING_STATE, map);
-						if (result != null && !"".equals(result) && result.equals("{\"result\":\"succeed\"}")) {
-							Platform.runLater(new Runnable() {
+					String lineName = lineCb.getItems().get(newValue.intValue());
+					Map<String, String> lineMap = new HashMap<>();
+					Map<String, String> lineIdMap = new HashMap<>();
+					lineIdMap.put("lineId", lineList.get(newValue.intValue()).getId().toString());
+					String result = sendRequest(GET_LINE_MONITORING_STATE, lineIdMap);
+					if (oldValue.intValue() >= 0) {
+						lineMap.put("line", lineCb.getItems().get(oldValue.intValue()));
+						lineMap.put("selected", LINE_UNSELECTED);
+						sendRequest(SWITCH_ACTION, lineMap);
+					}
+					if (result != null && !"".equals(result) && result.equals("{\"result\":\"succeed\"}")) {
+						Platform.runLater(new Runnable() {
 
-								@Override
-								public void run() {
-									isUpdate = false;
-									new Alert(AlertType.INFORMATION, "该线号已经被使用，请选择其他产线进行查看", ButtonType.OK).showAndWait();
+							@Override
+							public void run() {
+								isUpdate = false;
+								selectedLineName = "";
+								Alert alert = new Alert(AlertType.CONFIRMATION, "该产线已经被使用，是否仍然要选择这个线号？");
+								Optional<ButtonType> result = alert.showAndWait();
+								if (result.get() == ButtonType.OK) {
+									if (session != null && session.isOpen()) {
+										try {
+											session.getBasicRemote().sendText(lineName);
+											// logger.info("发送重置信息：" + JSONObject.toJSONString(boardResetInfo));
+										} catch (IOException e) {
+											logger.error("发送产线选择信息失败" + " | " + e.getMessage());
+											new Alert(AlertType.ERROR, "发送产线选择信息失败，请查看网络，并重启软件", ButtonType.OK).showAndWait();
+										}
+										resetWorkOrderCb(lineName);
+										logger.info(" 产线名称: " + lineName);
+									} else {
+										logger.error("与websocket服务端断开连接");
+										new Alert(AlertType.ERROR, "与服务端断开连接，请查看网络，并重启软件", ButtonType.OK).show();
+									}
+								} else {
 									lineCb.getSelectionModel().clearSelection();
 									workOrderCb.getItems().clear();
 									boardTybeCb.getItems().clear();
 									clearText();
 								}
-							});
-						} else {
-							selectedLineName = lineCb.getItems().get(newValue.intValue());
-							resetWorkOrderCb(selectedLineName);
+							}
+						});
+					} else {
+						resetWorkOrderCb(lineName);
+						if (isWorkingOrderExist) {
+							lineMap.put("line", lineName);
+							lineMap.put("selected", LINE_SELECTED);
+							sendRequest(SWITCH_ACTION, lineMap);
 							// 根据产线设置板子数量重置信息
 							boardResetInfo.setLine(lineList.get(newValue.intValue()).getId());
 							boardResetInfo.setBoardResetReson(BoardResetReson.WORK_ORDER_RESTART);
-							logger.info(" 产线名称: " + selectedLineName);
+							logger.info(" 产线名称: " + lineName);
 							clearText();
 						}
-					} catch (IOException e) {
-						httpFail(GET_LINE_MONITORING_STATE, IS_NETWORK, null);
-						e.printStackTrace();
 					}
-
 				}
 			}
 		});
 	}
 
-	
+
 	/**
 	 * 工单选择框文本内容变更监听器
 	 */
@@ -593,7 +626,7 @@ public class DisplayController implements Initializable {
 
 	}
 
-	
+
 	/**
 	 * 板面类型选择框文本内容变更监听器
 	 */
@@ -632,12 +665,14 @@ public class DisplayController implements Initializable {
 						map.put("line", line);
 						map.put("workOrder", workOrder);
 						map.put("boardType", boardTypeNo.toString());
+						map.put("selected", LINE_SELECTED);
 						try {
 							httpHelper.requestHttp(SWITCH_ACTION, map, new okhttp3.Callback() {
 
 								@Override
 								public void onResponse(Call call, Response response) throws IOException {
-									if (response.body().string().equals("{\"result\":\"succeed\"}")) {
+									String result = response.body().string();
+									if (result.equals("{\"result\":\"succeed\"}")) {
 										Platform.runLater(new Runnable() {
 											@Override
 											public void run() {
@@ -668,7 +703,7 @@ public class DisplayController implements Initializable {
 		});
 	}
 
-	
+
 	/**
 	 * 重置按钮监听器
 	 */
@@ -728,7 +763,7 @@ public class DisplayController implements Initializable {
 		});
 	}
 
-	
+
 	/**
 	 * 关闭程序事件
 	 * 
@@ -777,7 +812,7 @@ public class DisplayController implements Initializable {
 		});
 	}
 
-	
+
 	/**
 	 * 根据窗口大小调整界面控件大小
 	 * 
@@ -969,7 +1004,7 @@ public class DisplayController implements Initializable {
 		return packageId;
 	}
 
-	
+
 	private void initVersionLb() {
 		versionLb.setText("V" + Main.getVersion() + " © 2019 几米物联技术有限公司  All rights reserved.");
 	}
@@ -1164,10 +1199,30 @@ public class DisplayController implements Initializable {
 
 				}
 			});
+			return;
+		}
+		if (action.equals(GET_LINE_MONITORING_STATE)) {
+			Platform.runLater(new Runnable() {
+				@Override
+				public void run() {
+					if (isNetwork && !requestErrorAlert.isShowing()) {
+						logger.error("查询产线状态操作失败，select_line_state请求失败，网络连接出错");
+						requestErrorAlert.setContentText("查询产线状态操作失败，请检查你的网络连接");
+						requestErrorAlert.showAndWait();
+					} else if (!requestErrorAlert.isShowing()) {
+						logger.error("查询产线状态操作失败，服务器内部原因");
+						requestErrorAlert.setContentText("查询产线状态操作失败，服务器内部错误");
+						requestErrorAlert.showAndWait();
+					}
+					setDisableCb(false);
+					resetBt.setDisable(false);
+
+				}
+			});
 		}
 	}
 
-	
+
 	/**
 	 * 设置下拉框的状态
 	 * 
@@ -1179,7 +1234,7 @@ public class DisplayController implements Initializable {
 		boardTybeCb.setDisable(status);
 	}
 
-	
+
 	/**
 	 * 更新站位，扫描站位，物料号，扫描物料号，操作员，操作结果以及表格数据
 	 * 
@@ -1246,7 +1301,7 @@ public class DisplayController implements Initializable {
 		}
 	}
 
-	
+
 	/**
 	 * 设置typeLb和resultLb文本值，更改操作结果
 	 * 
@@ -1288,7 +1343,7 @@ public class DisplayController implements Initializable {
 		}
 	}
 
-	
+
 	/**
 	 * 根据操作结果进行显示
 	 * 
@@ -1330,7 +1385,7 @@ public class DisplayController implements Initializable {
 		}
 	}
 
-	
+
 	/**@author HCJ
 	 * 将ProgramItemVisit转化为可被表格识别的ResultData
 	 * @date 2019年1月16日 下午4:56:57
@@ -1421,7 +1476,7 @@ public class DisplayController implements Initializable {
 		return resultDatas;
 	}
 
-	
+
 	/**
 	 * 清除文本框文本，表格数据
 	 */
@@ -1435,7 +1490,7 @@ public class DisplayController implements Initializable {
 		tableList.clear();
 	}
 
-	
+
 	/**
 	 * 清空板面类型下拉框，重置工单下拉框内容
 	 * 
@@ -1448,16 +1503,29 @@ public class DisplayController implements Initializable {
 		map.put("line", line);
 		String response = sendRequest(GET_WORKORDER_ACTION, map);
 		if (!response.equals("[]")) {
+			selectedLineName = line;
+			isWorkingOrderExist = true;
 			List<String> workorders = JSON.parseArray(response, String.class);
 			ObservableList<String> workOrderList = FXCollections.observableArrayList(workorders);
 			workOrderCb.setItems(workOrderList);
 		} else {
-			logger.error("获取工单失败，此产线不存在进行中的工单");
-			new Alert(AlertType.ERROR, "获取工单失败，此产线不存在进行中的工单", ButtonType.OK).showAndWait();
+			selectedLineName = "";
+			isWorkingOrderExist = false;
+			Platform.runLater(new Runnable() {
+
+				@Override
+				public void run() {
+					lineCb.getSelectionModel().clearSelection();
+					clearText();
+					logger.error("获取工单失败，此产线不存在进行中的工单");
+					new Alert(AlertType.INFORMATION, "获取工单失败，此产线不存在进行中的工单", ButtonType.OK).showAndWait();
+				}
+			});
+
 		}
 	}
 
-	
+
 	/**
 	 * 将板面类型数字转化为中文
 	 * 
@@ -1480,7 +1548,7 @@ public class DisplayController implements Initializable {
 		return boardTybeList;
 	}
 
-	
+
 	/**
 	 * 将板面类型中文转化为数字
 	 * 
@@ -1501,7 +1569,7 @@ public class DisplayController implements Initializable {
 		return boardTypeNo;
 	}
 
-	
+
 	/**
 	 * http关闭请求取消工单
 	 * 
@@ -1510,6 +1578,7 @@ public class DisplayController implements Initializable {
 	private void sendHttpCloseRequest(String line) {
 		Map<String, String> map = new HashMap<>();
 		map.put("line", line);
+		map.put("selected", LINE_UNSELECTED);
 		try {
 			httpHelper.requestHttp(SWITCH_ACTION, map, new okhttp3.Callback() {
 				@Override
@@ -1534,7 +1603,7 @@ public class DisplayController implements Initializable {
 		}
 	}
 
-	
+
 	/**
 	 * 改变工单下拉框和板面类型下拉框的宽度和字体大小
 	 * 
@@ -1550,7 +1619,7 @@ public class DisplayController implements Initializable {
 		boardTybeCb.setStyle(boardTybeCb.getStyle() + "-fx-font-size:" + (DEFAULT_CB_TEXTSIZE + (boardTybeCb.getMinWidth() - DEAFULT_BOARDTYPECB_WIDTH) / FACTOR_2) + ";");
 	}
 
-	
+
 	/**
 	 * 改变操作员文本框和线号下拉框的宽度，位置和字体
 	 * 
@@ -1568,7 +1637,7 @@ public class DisplayController implements Initializable {
 		lineCb.setStyle(lineCb.getStyle() + "-fx-font-size:" + (DEFAULT_CB_TEXTSIZE + (lineCb.getMinWidth() - DEFAULT_LINECB_WIDTH) / FACTOR_4) + ";");
 	}
 
-	
+
 	/**
 	 * 改变文本框的宽度和字体大小
 	 * 
@@ -1595,7 +1664,7 @@ public class DisplayController implements Initializable {
 
 	}
 
-	
+
 	/**
 	 * @author HCJ 发送http请求
 	 * @method sendRequest
@@ -1616,7 +1685,7 @@ public class DisplayController implements Initializable {
 		return result;
 	}
 
-	
+
 	/**
 	 * @author HCJ 根据产线配置类型返回配置时间的秒数
 	 * @param configName 配置项名称
@@ -1632,7 +1701,7 @@ public class DisplayController implements Initializable {
 		return null;
 	}
 
-	
+
 	/**
 	 * @author HCJ 根据秒数返回时分秒的字符串
 	 * @param time
@@ -1711,6 +1780,19 @@ public class DisplayController implements Initializable {
 
 					}
 				});
+			} else if (message != null && !"".equals(message) && message.contains("selected") && !"".equals(selectedLineName) && message.contains(selectedLineName)) {
+				Platform.runLater(new Runnable() {
+
+					@Override
+					public void run() {
+						lineCb.getSelectionModel().clearSelection();
+						workOrderCb.getItems().clear();
+						boardTybeCb.getItems().clear();
+						clearText();
+						new Alert(AlertType.INFORMATION, "此产线已经被使用，请重新选择线号", ButtonType.OK).show();
+					}
+				});
+
 			}
 		});
 		clientSocket.setCloseCallBack((closeReason) -> {
@@ -1723,8 +1805,8 @@ public class DisplayController implements Initializable {
 		});
 		connectToServerThread.start();
 	}
-	
-	
+
+
 	/**@author HCJ
 	 * 记录当前版本
 	 * @date 2019年1月21日 上午11:24:24
@@ -1739,8 +1821,8 @@ public class DisplayController implements Initializable {
 			e.printStackTrace();
 		}
 	}
-	
-	
+
+
 	/**@author HCJ
 	 * websocket连接错误关闭时，重新连接服务端
 	 * @date 2019年3月3日 上午10:12:29
@@ -1768,8 +1850,8 @@ public class DisplayController implements Initializable {
 			}
 		});
 	}
-	
-	
+
+
 	/**@author HCJ
 	 * 初始化更新时间周期
 	 * @date 2019年3月11日 上午11:50:19
