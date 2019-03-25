@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.jimi.smt.eps_appclient.Activity.FactoryLineActivity;
@@ -312,27 +313,33 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
                                 orgTimestamp = globalFunc.getSerialNum(strValue);
                                 //料号
                                 strValue = globalFunc.getMaterial(strValue);
-                                textView.setText(strValue);
-                                curOrgMaterial = strValue;
-                                //初始化换料位置
-                                curChangeMaterialId = -1;
-                                //先获取扫描到的站位
-                                String scanSeatNo = curLineSeat;
-                                Log.d(TAG, "scanSeatNo-" + scanSeatNo);
-                                //判断扫到的料号是否等于站位的原始料号
-                                for (int jj = 0; jj < materialList.size(); jj++) {
-                                    if (materialList.get(jj).equalsIgnoreCase(curOrgMaterial)) {
-                                        curChangeMaterialId = materialIndex.get(jj);
+                                if (strValue.length() <= Constants.MATERIAL_LENGTH) {
+                                    textView.setText(strValue);
+                                    curOrgMaterial = strValue;
+                                    //初始化换料位置
+                                    curChangeMaterialId = -1;
+                                    //先获取扫描到的站位
+                                    String scanSeatNo = curLineSeat;
+                                    Log.d(TAG, "scanSeatNo-" + scanSeatNo);
+                                    //判断扫到的料号是否等于站位的原始料号
+                                    for (int jj = 0; jj < materialList.size(); jj++) {
+                                        if (materialList.get(jj).equalsIgnoreCase(curOrgMaterial)) {
+                                            curChangeMaterialId = materialIndex.get(jj);
+                                        }
                                     }
+                                    //扫描到的料号不存在表中
+                                    if (curChangeMaterialId < 0) {
+                                        displayResult(1, scanSeatNo, "料号与站位不对应！", 1);
+                                        materialIndex.clear();
+                                        materialList.clear();
+                                        return true;
+                                    }
+                                    edt_ChgMaterial.requestFocus();
+                                } else {
+                                    Toast.makeText(getContext(), "料号超出范围", Toast.LENGTH_LONG).show();
+                                    edt_OrgMaterial.setText("");
+                                    edt_OrgMaterial.requestFocus();
                                 }
-                                //扫描到的料号不存在表中
-                                if (curChangeMaterialId < 0) {
-                                    displayResult(1, scanSeatNo, "料号与站位不对应！", 1);
-                                    materialIndex.clear();
-                                    materialList.clear();
-                                    return true;
-                                }
-                                edt_ChgMaterial.requestFocus();
                                 break;
 
                             case R.id.edt_change_ChgMaterial://站位且线上料号正确后才进入这里
@@ -340,46 +347,52 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
                                 chgTimestamp = globalFunc.getSerialNum(strValue);
                                 //更换料号
                                 strValue = globalFunc.getMaterial(strValue);
-                                textView.setText(strValue);
-                                curChgMaterial = strValue;
-                                //初始化换料位置
-                                curChangeMaterialId = -1;
-                                //先获取扫描到的站位
-                                String scanSeatNum = curLineSeat;
-                                Log.d(TAG, "scanSeatNum-" + scanSeatNum);
+                                if (strValue.length() <= Constants.MATERIAL_LENGTH) {
+                                    textView.setText(strValue);
+                                    curChgMaterial = strValue;
+                                    //初始化换料位置
+                                    curChangeMaterialId = -1;
+                                    //先获取扫描到的站位
+                                    String scanSeatNum = curLineSeat;
+                                    Log.d(TAG, "scanSeatNum-" + scanSeatNum);
 
-                                //时间相同、并且料号也相同(防呆)
-                                if ((chgTimestamp.equalsIgnoreCase(orgTimestamp)) && (curChgMaterial.equals(curOrgMaterial))) {
-                                    curChangeMaterialId = -2;
-                                } else {
-                                    //不相等,判断扫到的料号是否等于站位的原始料号
-                                    for (int kk = 0; kk < materialList.size(); kk++) {
-                                        if (materialList.get(kk).equalsIgnoreCase(curChgMaterial)) {
-                                            curChangeMaterialId = materialIndex.get(kk);
+                                    //时间相同、并且料号也相同(防呆)
+                                    if ((chgTimestamp.equalsIgnoreCase(orgTimestamp)) && (curChgMaterial.equals(curOrgMaterial))) {
+                                        curChangeMaterialId = -2;
+                                    } else {
+                                        //不相等,判断扫到的料号是否等于站位的原始料号
+                                        for (int kk = 0; kk < materialList.size(); kk++) {
+                                            if (materialList.get(kk).equalsIgnoreCase(curChgMaterial)) {
+                                                curChangeMaterialId = materialIndex.get(kk);
+                                            }
                                         }
                                     }
-                                }
-                                //扫描到的料号不存在表中
-                                if (curChangeMaterialId < 0) {
-                                    if (curChangeMaterialId == -1) {
-                                        displayResult(1, scanSeatNum, "料号与站位不对应！", 1);
-                                    } else if (curChangeMaterialId == -2) {
-                                        displayResult(1, scanSeatNum, "不能扫同一个料盘", 1);
+                                    //扫描到的料号不存在表中
+                                    if (curChangeMaterialId < 0) {
+                                        if (curChangeMaterialId == -1) {
+                                            displayResult(1, scanSeatNum, "料号与站位不对应！", 1);
+                                        } else if (curChangeMaterialId == -2) {
+                                            displayResult(1, scanSeatNum, "不能扫同一个料盘", 1);
+                                        }
+                                        materialIndex.clear();
+                                        materialList.clear();
+                                        return true;
                                     }
+                                    //扫到的料号在站位表中
+                                    if (edt_ChgMaterial.getText().toString().equals(edt_OrgMaterial.getText().toString())) {
+                                        displayResult(0, mChangeMaterialBeans.get(curChangeMaterialId).getLineseat(), "换料成功!", 1);
+                                    } else {
+                                        displayResult(0, mChangeMaterialBeans.get(curChangeMaterialId).getLineseat(), "主替料换料成功!", 1);
+                                    }
+                                    //清空该站位的料号(包括替换料)、和位置
                                     materialIndex.clear();
                                     materialList.clear();
-                                    return true;
-                                }
-                                //扫到的料号在站位表中
-                                if (edt_ChgMaterial.getText().toString().equals(edt_OrgMaterial.getText().toString())) {
-                                    displayResult(0, mChangeMaterialBeans.get(curChangeMaterialId).getLineseat(), "换料成功!", 1);
+                                    edt_LineSeat.requestFocus();
                                 } else {
-                                    displayResult(0, mChangeMaterialBeans.get(curChangeMaterialId).getLineseat(), "主替料换料成功!", 1);
+                                    Toast.makeText(getContext(), "料号超出范围", Toast.LENGTH_LONG).show();
+                                    edt_ChgMaterial.setText("");
+                                    edt_ChgMaterial.requestFocus();
                                 }
-                                //清空该站位的料号(包括替换料)、和位置
-                                materialIndex.clear();
-                                materialList.clear();
-                                edt_LineSeat.requestFocus();
                                 break;
                         }
 
@@ -520,62 +533,52 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
     @Override
     public void showHttpResponse(int code, Object request, String response) {
         Log.d(TAG, "showHttpResponse - " + response);
-//        dismissLoading();
         switch (code) {
-            /*
-            case HttpUtils.CodeIsAllDone:
-                int checkFirst = Integer.valueOf(response);
-                switch (checkFirstCondition) {
-                    case 0://进入页面
-                        if (checkFirst == 0) {
-                            showInfo("IPQC未做首次全检", "");
-                        }
-                        break;
-                    case 1://扫描时
-                        if (checkFirst == 1) {//已首次全检
-                            beginChange(edt_LineSeat.getText().toString().trim());
-                        } else {//未首次全检
-                            edt_LineSeat.setText("");
-                            showInfo("IPQC未做首次全检", "");
-                        }
-                        break;
-                    case 2://站位表更新
-                        *//*
-                        if (checkFirst == 0) {
-                            showInfo("站位表更新!", "IPQC未做首次全检");
-                        }
-                        *//*
-                        break;
-                }
-                break;
-                */
-
             // TODO: 2019/2/12
             case HttpUtils.CodeIsAllDoneSTR://查询某一项或某几项操作是否完成
                 int allDoneCode;
                 Gson allDoneGson = new Gson();
                 IsAllDoneInfo isAllDoneInfo = allDoneGson.fromJson(response, IsAllDoneInfo.class);
                 allDoneCode = isAllDoneInfo.getCode();
-                if (allDoneCode == 1) {
-                    IsAllDoneInfo.AllDoneInfoBean allDoneInfoBean = isAllDoneInfo.getData();
-                    int isFirstCheck = Integer.valueOf(allDoneInfoBean.getFirstCheckAll());
-                    switch (checkAllDoneStrCondition) {
-                        case 0://进入页面
-                            dismissLoading();
-                            if (isFirstCheck == 0) {
-                                showInfo("IPQC未做首次全检", "");
-                            }
-                            break;
-                        case 1://扫描时
-                            dismissLoading();
-                            if (isFirstCheck == 1) {//已首次全检
-                                beginChange(edt_LineSeat.getText().toString().trim());
-                            } else {//未首次全检
-                                edt_LineSeat.setText("");
-                                showInfo("IPQC未做首次全检", "");
-                            }
-                            break;
-                    }
+                switch (allDoneCode) {
+
+                    case 1://查询成功
+                        IsAllDoneInfo.AllDoneInfoBean allDoneInfoBean = isAllDoneInfo.getData();
+                        int isFirstCheck = Integer.valueOf(allDoneInfoBean.getFirstCheckAll());
+                        switch (checkAllDoneStrCondition) {
+                            case 1://扫描时
+                                dismissLoading();
+                                if (isFirstCheck == 1) {//已首次全检
+                                    if (!TextUtils.isEmpty(edt_LineSeat.getText().toString().trim())){
+                                        beginChange(edt_LineSeat.getText().toString().trim());
+                                    }else {
+                                        Toast.makeText(getContext(), "操作失败,请重新扫描!", Toast.LENGTH_LONG).show();
+                                        clearAndSetFocus();
+                                    }
+                                } else {//未首次全检
+                                    edt_LineSeat.setText("");
+                                    showInfo("IPQC未做首次全检", "");
+                                }
+                                break;
+
+                            case 0://进入页面
+                                dismissLoading();
+                                if (isFirstCheck == 0) {
+                                    showInfo("IPQC未做首次全检", "");
+                                }
+                                break;
+                        }
+                        break;
+
+                    case -1://查询失败，此工单不在生产中
+                        dismissLoading();
+                        showInfo("此工单不在生产中！", "");
+                        break;
+
+                    case 0://查询失败，参数不存在
+                        dismissLoading();
+                        showInfo("操作失败,请重新扫描!", "");
+                        break;
                 }
                 break;
 
@@ -603,8 +606,10 @@ public class ChangeMaterialFragment extends Fragment implements TextView.OnEdito
     public void showHttpError(int code, Object request, String s) {
         dismissLoading();
         switch (code) {
+            case HttpUtils.CodeIsAllDoneSTR:
+//                break;
             case HttpUtils.CodeAddVisit:
-                globalFunc.showInfo("操作失败", "请重新操作!", "请重新操作!");
+                globalFunc.showInfo("操作失败", "请检查网络!", "请重新操作!");
                 clearAndSetFocus();
                 break;
         }

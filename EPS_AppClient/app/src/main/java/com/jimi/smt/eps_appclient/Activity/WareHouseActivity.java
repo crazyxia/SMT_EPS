@@ -329,68 +329,90 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
 
         if (actionId == EditorInfo.IME_ACTION_SEND ||
                 (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
-            clearLastOperate();
-            //先判断是否联网
-            if (globalFunc.isNetWorkConnected()) {
-                Log.d(TAG, "onEditorAction::" + v.getText());
 
-                if (!TextUtils.isEmpty(v.getText().toString().trim())) {
-                    //扫描的内容
-                    scanMaterial = String.valueOf(((EditText) v).getText());
-                    scanMaterial = scanMaterial.replaceAll("\r", "");
-                    Log.i(TAG, "sacnMaterial = " + scanMaterial);
-                    //料号,若为二维码则提取@@前的料号
-                    //提取有效料号
-                    scanMaterial = globalFunc.getMaterial(scanMaterial);
-                    v.setText(scanMaterial);
-                    //未扫描过料号的站位及结果
-                    HashSet<String> lineSeatHashSet = new HashSet<>();
-                    //未扫描过料号的站位
-                    ArrayList<String> lineSeatList = new ArrayList<>();
-                    //已经扫描过料号的站位及结果
-                    HashSet<String> scanedSeatSet = new HashSet<>();
+            switch (event.getAction()) {
+                //按下
+                case KeyEvent.ACTION_UP:
 
-                    for (int i = 0, len = mWareMaterialBeans.size(); i < len; i++) {
-                        Material.MaterialBean bean = mWareMaterialBeans.get(i);
-                        if (bean.getMaterialNo().equalsIgnoreCase(scanMaterial)) {
-                            int serialNo = bean.getSerialNo();
-                            if ((null == bean.getResult()) || (!bean.getResult().equalsIgnoreCase("PASS"))) {
-                                lineSeatHashSet.add("(" + String.valueOf(serialNo) + ")" + " " + bean.getLineseat());
-                                lineSeatList.add(bean.getLineseat());
-                            } else if (bean.getResult().equalsIgnoreCase("PASS")) {
-                                scanedSeatSet.add("(" + String.valueOf(serialNo) + ")" + " " + bean.getLineseat() + "(已经发料)");
+                    clearLastOperate();
+                    //先判断是否联网
+                    if (globalFunc.isNetWorkConnected()) {
+                        Log.d(TAG, "onEditorAction::" + v.getText());
+
+                        if (!TextUtils.isEmpty(v.getText().toString().trim())) {
+                            //扫描的内容
+                            scanMaterial = String.valueOf(((EditText) v).getText());
+                            scanMaterial = scanMaterial.replaceAll("\r", "");
+                            Log.i(TAG, "sacnMaterial = " + scanMaterial);
+                            v.setText(scanMaterial);
+
+                            switch (v.getId()){
+                                case R.id.et_ware_scan_material:
+                                    //提取有效料号
+                                    scanMaterial = globalFunc.getMaterial(scanMaterial);
+                                    if (scanMaterial.length() <= Constants.MATERIAL_LENGTH) {
+                                        v.setText(scanMaterial);
+                                        //未扫描过料号的站位及结果
+                                        HashSet<String> lineSeatHashSet = new HashSet<>();
+                                        //未扫描过料号的站位
+                                        ArrayList<String> lineSeatList = new ArrayList<>();
+                                        //已经扫描过料号的站位及结果
+                                        HashSet<String> scanedSeatSet = new HashSet<>();
+
+                                        for (int i = 0, len = mWareMaterialBeans.size(); i < len; i++) {
+                                            Material.MaterialBean bean = mWareMaterialBeans.get(i);
+                                            if (bean.getMaterialNo().equalsIgnoreCase(scanMaterial)) {
+                                                int serialNo = bean.getSerialNo();
+                                                Log.i(TAG, "result = " + bean.getResult());
+                                                if ((null == bean.getResult()) || (!bean.getResult().equalsIgnoreCase("PASS"))) {
+                                                    lineSeatHashSet.add("(" + String.valueOf(serialNo) + ")" + " " + bean.getLineseat());
+                                                    lineSeatList.add(bean.getLineseat());
+                                                } else if (bean.getResult().equalsIgnoreCase("PASS")) {
+                                                    scanedSeatSet.add("(" + String.valueOf(serialNo) + ")" + " " + bean.getLineseat() + "(已经发料)");
+                                                }
+                                            }
+                                        }
+
+                                        //未扫过料的站位
+                                        lineSeatAl.addAll(lineSeatHashSet);
+                                        //已经扫描过料号的站位
+                                        wareSeatList.addAll(scanedSeatSet);
+
+                                        //arrayLists的外部长度等于lineSeatList的长度
+                                        for (int k = 0, len = lineSeatList.size(); k < len; k++) {
+                                            ArrayList<Integer> lineSeatIndex = new ArrayList<>();
+                                            for (int j = 0, length = mWareMaterialBeans.size(); j < length; j++) {
+                                                Material.MaterialBean bean = mWareMaterialBeans.get(j);
+                                                if (bean.getLineseat().equalsIgnoreCase(lineSeatList.get(k))) {
+                                                    bean.setScanlineseat(bean.getLineseat());
+                                                    bean.setScanMaterial(scanMaterial);
+                                                    bean.setResult("PASS");
+                                                    lineSeatIndex.add(j);
+                                                    //成功次数加1
+                                                    sucIssueCount++;
+                                                }
+                                            }
+                                            arrayLists.add(lineSeatIndex);
+                                        }
+
+                                        //写日志
+                                        showLoading();
+                                        setOperateLog(arrayLists, scanMaterial);
+                                    } else {
+                                        Toast.makeText(getApplicationContext(), "料号超出范围", Toast.LENGTH_LONG).show();
+                                        v.setText("");
+                                        v.requestFocus();
+                                    }
+
+                                    break;
                             }
                         }
+                    } else {
+                        showInfo("警告", null, null, 2);
                     }
-
-                    //未扫过料的站位
-                    lineSeatAl.addAll(lineSeatHashSet);
-                    //已经扫描过料号的站位
-                    wareSeatList.addAll(scanedSeatSet);
-
-                    //arrayLists的外部长度等于lineSeatList的长度
-                    for (int k = 0, len = lineSeatList.size(); k < len; k++) {
-                        ArrayList<Integer> lineSeatIndex = new ArrayList<>();
-                        for (int j = 0, length = mWareMaterialBeans.size(); j < length; j++) {
-                            Material.MaterialBean bean = mWareMaterialBeans.get(j);
-                            if (bean.getLineseat().equalsIgnoreCase(lineSeatList.get(k))) {
-                                bean.setScanlineseat(bean.getLineseat());
-                                bean.setScanMaterial(scanMaterial);
-                                bean.setResult("PASS");
-                                lineSeatIndex.add(j);
-                                //成功次数加1
-                                sucIssueCount++;
-                            }
-                        }
-                        arrayLists.add(lineSeatIndex);
-                    }
-
-                    //写日志
-                    showLoading();
-                    setOperateLog(arrayLists, scanMaterial);
-                }
-            } else {
-                showInfo("警告", null, null, 2);
+                    return true;
+                default:
+                    return true;
             }
         }
         return false;
@@ -714,7 +736,7 @@ public class WareHouseActivity extends Activity implements View.OnClickListener,
             case HttpUtils.CodeAddVisit://更新visit表
                 dismissLoading();
                 if ((Integer) (((Object[]) request)[2]) == (wareCount - 1)) {
-                    if (resCode == 1) {
+                    if (resCode >= 1) {
                         //更新成功,显示并写本地数据
                         showInfo("料号:" + scanMaterial, lineSeatAl, wareSeatList, 1);
                         //保存本地数据库缓存

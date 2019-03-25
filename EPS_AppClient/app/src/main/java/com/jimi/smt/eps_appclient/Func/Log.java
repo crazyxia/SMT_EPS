@@ -20,8 +20,8 @@ public class Log {
     private static Boolean MYLOG_WRITE_TO_FILE = true;// 日志写入文件开关
     private static char MYLOG_TYPE = 'v';// 输入日志类型，w代表只输出告警信息等，v代表输出所有信息
     private static String MYLOG_PATH_SDCARD_DIR = "/sdcard0/";// 日志文件在sdcard中的路径
-    private static int SDCARD_LOG_FILE_SAVE_DAYS = 0;// sd卡中日志文件的最多保存天数
-    private static String MYLOGFILEName = "EPS.txt";// 本类输出的日志文件名称
+    private static int SDCARD_LOG_FILE_SAVE_DAYS = 5;// sd卡中日志文件的最多保存天数
+    private static String MYLOGFILEName = "-EPS-Log.txt";// 本类输出的日志文件名称
     private static SimpleDateFormat myLogSdf = new SimpleDateFormat(
             "yyyy-MM-dd HH:mm:ss");// 日志的输出格式
     private static SimpleDateFormat logfile = new SimpleDateFormat("yyyy-MM-dd");// 日志文件格式
@@ -107,7 +107,7 @@ public class Log {
                 + "    " + tag + "    " + text;
         String fileName = getSDPath();//以name存在目录中
         if (fileName == null) return;
-        File file = new File(fileName, MYLOGFILEName);
+        File file = new File(fileName, needWriteFiel + MYLOGFILEName);
         try {
             FileWriter filerWriter = new FileWriter(file, true);// 后面这个参数代表是不是要接上文件中原来的数据，不进行覆盖
             BufferedWriter bufWriter = new BufferedWriter(filerWriter);
@@ -123,12 +123,15 @@ public class Log {
     /**
      * 删除制定的日志文件
      */
-    public static void delFile() {// 删除日志文件
+    public static boolean delFile() {// 删除日志文件
+        boolean deleteRes = false;
         String needDelFiel = logfile.format(getDateBefore());
-        File file = new File(MYLOG_PATH_SDCARD_DIR, needDelFiel + MYLOGFILEName);
+        File file = new File(getSDPath(), needDelFiel + MYLOGFILEName);
         if (file.exists()) {
-            file.delete();
+            d("Log", "needDelFiel: " + file.getAbsolutePath());
+            deleteRes = file.delete();
         }
+        return deleteRes;
     }
 
     /**

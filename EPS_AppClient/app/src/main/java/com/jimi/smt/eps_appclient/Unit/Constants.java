@@ -30,6 +30,7 @@ public class Constants {
     //返回首页时返回码
     public static final int ACTIVITY_RESULT = 6;
     public static final int ADMIN_ACTIVITY_RESULT = 7;
+    public static final int MATERIAL_LENGTH = 128;
     //apk地址
     public static final String DOWNLOAD_URL = "http://39.108.231.15/SMT_EPS_APK";
     //线号301-308
@@ -46,13 +47,13 @@ public class Constants {
     //ip地址（测试）
 //    public static final String urlBase = "http://10.10.11.153:8080/eps_server";
     //ip地址（生产）
-//    public static final String urlBase = "http://192.168.2.9:8080/eps_server";
+    static final String urlBase = "http://192.168.2.9:8080/eps_server";
     //ip地址（贵州）
 //    public static final String urlBase = "http://192.168.66.9:8080/eps_server";
     //测试 10.10.11.186:8080/eps_server
 //    public static final String urlBase = "http://10.10.11.186:8080/eps_server";
     //城杰
-    static final String urlBase = "http://10.10.11.90:8080/eps_server";
+//    static final String urlBase = "http://10.10.11.90:8080/eps_server";
     //四楼
 //    public static final String urlBase = "http://192.168.2.110:8080/eps_server";
     //培鹏

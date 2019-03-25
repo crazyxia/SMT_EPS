@@ -1,5 +1,6 @@
 package com.jimi.smt.eps_appclient.Func;
 
+import android.app.PendingIntent;
 import android.content.Context;
 
 import com.google.gson.Gson;
@@ -31,15 +32,12 @@ public class HttpUtils {
 
     private static HttpUtils httpUtils = null;
     private OkHttpInterface mOkHttpInterface;
-    //    private String baseIp;
     private final GlobalData globalData;
 
 
     public HttpUtils(OkHttpInterface okHttpInterface, Context context) {
         this.mOkHttpInterface = okHttpInterface;
         globalData = (GlobalData) context.getApplicationContext();
-//        baseIp = globalData.getIp();
-//        Log.d(TAG, "baseIp - " + baseIp);
     }
 
     public static HttpUtils getHttpUtils(OkHttpInterface okHttpInterface, GlobalData context) {
@@ -48,24 +46,6 @@ public class HttpUtils {
         }
         return httpUtils;
     }
-/*
-
-    private static final String operateUrl = Constants.urlBase + "/program/operate";
-    private static final String resetUrl = Constants.urlBase + "/program/reset";
-    private static final String lineExist = Constants.urlBase + "/line/selectByLine";
-    private static final String lines = Constants.urlBase + "/line/selectAll";
-    private static final String wokingOrders = Constants.urlBase + "/program/selectWorkingProgram";
-    private static final String userInfo = Constants.urlBase + "/user/selectById";
-    private static final String materials = Constants.urlBase + "/program/selectProgramItem";
-    private static final String addOperate = Constants.urlBase + "/operation/add";
-    private static final String addVisit = Constants.urlBase + "/program/updateItemVisit";
-    private static final String checkIsReset = Constants.urlBase + "/program/checkIsReset";
-    private static final String resetCheckAll = Constants.urlBase + "/program/resetCheckAll";
-    private static final String isAllDone = Constants.urlBase + "/program/isAllDone";
-    private static final String isChangeSucceed = Constants.urlBase + "/program/isChangeSucceed";
-    private static final String programID = Constants.urlBase + "/program/getProgramId";
-
-*/
 
     private static final String operateUrl = "/program/operate";
     private static final String resetUrl = "/program/reset";
@@ -101,6 +81,16 @@ public class HttpUtils {
     public static final int CodeIsCheckAllTimeOut = 15;
     public static final int CodeIsAllDoneSTR = 16;
 
+    private String errorResp_1 = "{\n" +
+            "    \"code\": -1,\n" +
+            "    \"msg\": \"此线号不存在进行中的工单\"\n" +
+            "}";
+
+    private String errorResp0 = "{\n" +
+            "    \"code\": 0,\n" +
+            "    \"msg\": \"查询失败，参数不存在\"\n" +
+            "}";
+
 
     /**
      * 插入结果到visit表
@@ -118,6 +108,12 @@ public class HttpUtils {
         } else if (operationResult.equalsIgnoreCase("PASS")) {
             operationResult = "1";
         }
+        String failed_not_exist = "{\n" +
+                "    \"result\": \"failed_not_exist\"\n" +
+                "}";
+        String notExist = "{\n" +
+                "    \"result\": \"不存在此进行中的工单\"\n" +
+                "}";
 
         Log.d(TAG, "operate - " + operateUrl);
 
@@ -265,7 +261,7 @@ public class HttpUtils {
      * @param equal     1,表示相同; 0,表示不相同
      */
     public void getMaterials(String programId, int equal) {
-//        Log.d(TAG, "getMaterials - " + globalData.getIp());
+        Log.d(TAG, "getMaterials - " + programId + equal);
 //        Log.d(TAG, "getMaterials - " + materials);
         OkHttpUtils.post().url(globalData.getIp() + materials)
                 .addParams("programId", programId)
@@ -500,7 +496,17 @@ public class HttpUtils {
      * @param programId
      * @param type      0&1&3&4 表示同时查询4个结果
      *                  0:上料 1:换料 2:核料 3:全检 4:发料 5:首检
+     *                  {
+     *                  "code": 0,
+     *                  "msg": "查询失败，参数不存在"
+     *                  }
+     *                  <p>
+     *                  {
+     *                  "code": -1,
+     *                  "msg": "查询失败，此工单不在生产中"
+     *                  }
      */
+    // TODO: 2019/3/12
     public void checkAllDoneStr(String programId, String type) {
         Log.d(TAG, "checkAllDoneStr - " + isAllDone);
         Log.d(TAG, "checkAllDoneStr - programId - " + programId);

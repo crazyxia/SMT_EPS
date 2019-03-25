@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -14,6 +15,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.jimi.smt.eps_appclient.Activity.FactoryLineActivity;
@@ -101,9 +103,7 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
         */
         mHttpUtils = new HttpUtils(this, getContext());
         showLoading();
-//        checkFistCondition = 1;
         checkAllDoneStrCondition = 1;
-//        mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
         mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FIRST_CHECK_ALL));
 
         initViews(savedInstanceState);
@@ -378,17 +378,22 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                                     //扫描内容
                                     String scanValue = String.valueOf(((EditText) v).getText());
                                     scanValue = globalFunc.getMaterial(scanValue);
-                                    v.setText(scanValue);
-                                    longClickInput = scanValue;
-                                    //检测是否首次全检
-                                    showLoading();
-                                    // TODO: 2019/2/21
-                                    checkTimeOutCondition = 3;
-                                    mHttpUtils.isCheckAllTimeOut(globalData.getLine(), globalData.getWork_order(), globalData.getBoard_type());
+                                    if (scanValue.length() <= Constants.MATERIAL_LENGTH) {
+                                        v.setText(scanValue);
+                                        longClickInput = scanValue;
+                                        //检测是否首次全检
+                                        showLoading();
+                                        // TODO: 2019/2/21
+                                        checkTimeOutCondition = 3;
+                                        mHttpUtils.isCheckAllTimeOut(globalData.getLine(), globalData.getWork_order(), globalData.getBoard_type());
                                     /*
                                     checkAllDoneStrCondition = 3;
                                     mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FIRST_CHECK_ALL));
                                     */
+                                    } else {
+                                        Toast.makeText(getContext(), "料号超出范围", Toast.LENGTH_LONG).show();
+                                        v.setText("");
+                                    }
                                     break;
                             }
                         } else {
@@ -479,19 +484,24 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                                 Log.i(TAG, "scan Value:" + scanValue);
                                 //料号,若为二维码则提取@@前的料号
                                 scanValue = globalFunc.getMaterial(scanValue);
-                                textView.setText(scanValue);
+                                if (scanValue.length() <= Constants.MATERIAL_LENGTH) {
+                                    textView.setText(scanValue);
 
-                                //检测是否首次全检
-                                showLoading();
-                                // TODO: 2019/2/21
-                                checkTimeOutCondition = 2;
-                                mHttpUtils.isCheckAllTimeOut(globalData.getLine(), globalData.getWork_order(), globalData.getBoard_type());
+                                    //检测是否首次全检
+                                    showLoading();
+                                    // TODO: 2019/2/21
+                                    checkTimeOutCondition = 2;
+                                    mHttpUtils.isCheckAllTimeOut(globalData.getLine(), globalData.getWork_order(), globalData.getBoard_type());
 
                                 /*
                                 checkAllDoneStrCondition = 2;
                                 mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FIRST_CHECK_ALL));
                                 */
-
+                                } else {
+                                    Toast.makeText(getContext(), "料号超出范围", Toast.LENGTH_LONG).show();
+                                    edt_ScanMaterial.setText("");
+                                    edt_ScanMaterial.requestFocus();
+                                }
                                 break;
                         }
                     } else {
@@ -717,6 +727,7 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                 case R.id.info_trust:
                     dialog.dismiss();
                     if (result) {
+                        // TODO: 2019/3/12
                         clearMaterialInfo();
                         //将全检的时间设为当前时间
                         mHttpUtils.resetCheckAllRR(globalData.getProgramId());
@@ -796,7 +807,7 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
      */
     @Override
     public void showHttpResponse(int code, Object request, String s) {
-        Log.d(TAG, "showHttpResponse - " + s);
+        Log.d(TAG, "showHttpResponse - code - " + code + " response - " + s);
 //        dismissLoading();
         switch (code) {
 
@@ -806,67 +817,111 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                 Gson allDoneGson = new Gson();
                 IsAllDoneInfo isAllDoneInfo = allDoneGson.fromJson(s, IsAllDoneInfo.class);
                 allDoneCode = isAllDoneInfo.getCode();
-                if (allDoneCode == 1) {
-                    IsAllDoneInfo.AllDoneInfoBean allDoneInfoBean = isAllDoneInfo.getData();
-                    int isFirstCheck = Integer.valueOf(allDoneInfoBean.getFirstCheckAll());
-                    Log.d(TAG, "checkAllDoneStrCondition - " + checkAllDoneStrCondition);
-                    Log.d(TAG, "isFirstCheck - " + isFirstCheck);
-                    switch (checkAllDoneStrCondition) {
-                        case 1:
-                            if (isFirstCheck == 0) {
-                                //未首检
-                                showInfo("提示", "IPQC未做首次全检");
-                                checkResetCondition = 4;
-                                mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
-                            } else if (isFirstCheck == 1) {
-                                //已全检检测是否超时
-                                checkTimeOutCondition = 1;
-                                mHttpUtils.isCheckAllTimeOut(globalData.getLine(), globalData.getWork_order(), globalData.getBoard_type());
-                            }
-                            break;
+                Log.d(TAG, "checkAllDoneStrCondition - " + checkAllDoneStrCondition);
+                switch (allDoneCode) {
+                    // TODO: 2019/3/11
+                    case 1://查询成功
+                        IsAllDoneInfo.AllDoneInfoBean allDoneInfoBean = isAllDoneInfo.getData();
+                        int isFirstCheck = Integer.valueOf(allDoneInfoBean.getFirstCheckAll());
+                        Log.d(TAG, "isFirstCheck - " + isFirstCheck);
+                        switch (checkAllDoneStrCondition) {
+                            case 1:
+                                if (isFirstCheck == 0) {
+                                    //未首检
+                                    showInfo("提示", "IPQC未做首次全检");
+                                    checkResetCondition = 4;
+                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
+                                } else if (isFirstCheck == 1) {
+                                    //已全检检测是否超时
+                                    checkTimeOutCondition = 1;
+                                    mHttpUtils.isCheckAllTimeOut(globalData.getLine(), globalData.getWork_order(), globalData.getBoard_type());
+                                }
+                                break;
 
-                        case 2://正常扫料号
-                            if (isFirstCheck == 1) {
-                                //已首检，检测是否重置
-                                checkResetCondition = 2;
-                                mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
-                            } else {
-                                //未首检
-                                showInfo("提示", "IPQC未做首次全检");
-                                checkResetCondition = 4;
-                                mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
-                            }
-                            break;
+                            case 2://正常扫料号
+                                if (isFirstCheck == 1) {
+                                    //已首检，检测是否重置
+                                    checkResetCondition = 2;
+                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
+                                } else {
+                                    //未首检
+                                    showInfo("提示", "IPQC未做首次全检");
+                                    checkResetCondition = 4;
+                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
+                                }
+                                break;
 
-                        case 3://长按扫料号
-                            if (isFirstCheck == 1) {
-                                //已首检，检测是否重置
-                                checkResetCondition = 3;
-                                mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
-                            } else {
-                                //未首检
-                                showInfo("提示", "IPQC未做首次全检");
-                                checkResetCondition = 4;
-                                mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
-                            }
-                            break;
-                    }
+                            case 3://长按扫料号
+                                if (isFirstCheck == 1) {
+                                    //已首检，检测是否重置
+                                    checkResetCondition = 3;
+                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
+                                } else {
+                                    //未首检
+                                    showInfo("提示", "IPQC未做首次全检");
+                                    checkResetCondition = 4;
+                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.CHECKALLMATERIAL);
+                                }
+                                break;
+                        }
+                        break;
+
+                    case -1://查询失败，不存在此进行中的工单
+                        dismissLoading();
+                        switch (checkAllDoneStrCondition) {
+                            case 1:
+                                showInfo("警告", "此工单不在生产中！");
+                                break;
+
+                            case 2://正常扫料号
+                                showInfo("警告", "此工单不在生产中！");
+                                break;
+
+                            case 3://长按扫料号
+                                if (inputDialog != null && inputDialog.isShowing()) {
+                                    inputDialog.dismiss();
+                                }
+                                showInfo("警告", "此工单不在生产中！");
+                                break;
+                        }
+                        break;
+
+                    case 0://查询失败，参数不存在
+                        dismissLoading();
+                        switch (checkAllDoneStrCondition) {
+                            case 2://正常扫料号
+                                showInfo("提示", "操作失败,请重新扫描!");
+                                break;
+
+                            case 3://长按扫料号
+                                if (inputDialog != null && inputDialog.isShowing()) {
+                                    inputDialog.dismiss();
+                                }
+                                showInfo("提示", "操作失败,请重新扫描!");
+                                break;
+                        }
+                        break;
+
+                    default:
+                        break;
+
                 }
                 break;
 
             // TODO: 2019/2/21
             case HttpUtils.CodeIsCheckAllTimeOut://判断是否超时
                 String programId = "";
-                int checkAllTimeOut = -1;
+                int checkAllTimeOut = -2;
                 try {
                     JSONObject jsonObject = new JSONObject(s);
-                    programId = jsonObject.getString("programId");
-                    checkAllTimeOut = jsonObject.getInt("isCheckAllTimeOutExist");
+                    programId = jsonObject.getString("msg");
+                    checkAllTimeOut = jsonObject.getInt("code");
                 } catch (JSONException e) {
                     e.printStackTrace();
                     Log.d(TAG, "showHttpResponse - CodeIsCheckAllTimeOut - " + e.toString());
                 }
                 Log.d(TAG, "checkTimeOutCondition - " + checkTimeOutCondition);
+
                 switch (checkTimeOutCondition) {
 
                     case 1:
@@ -878,44 +933,68 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                                 clearMaterialInfo();
                                 showInfo("全检超时", "请重新全检");
                             }
+                        }else if (checkAllTimeOut == -1){
+                            showInfo("警告", "此工单不在生产中！");
                         }
                         break;
 
                     case 2://正常扫料号
-                        if (checkAllTimeOut == 0) {
-                            checkAllDoneStrCondition = 2;
-                            mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FIRST_CHECK_ALL));
-                        } else if (checkAllTimeOut == 1) {
-                            // TODO: 2019/2/21 处理超时
-                            boolean timeOut = doTimeOut();
-                            if (timeOut) {
+                        switch (checkAllTimeOut){
+                            case 0:
                                 checkAllDoneStrCondition = 2;
                                 mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FIRST_CHECK_ALL));
-                            } else {
+                                break;
+
+                            case 1:
+                                boolean timeOut = doTimeOut();
+                                if (timeOut) {
+                                    checkAllDoneStrCondition = 2;
+                                    mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FIRST_CHECK_ALL));
+                                } else {
+                                    dismissLoading();
+                                    //清空记录
+                                    clearMaterialInfo();
+                                    showInfo("全检超时", "请重新全检");
+                                }
+                                break;
+
+                            case -1:
                                 dismissLoading();
-                                //清空记录
-                                clearMaterialInfo();
-                                showInfo("全检超时", "请重新全检");
-                            }
+                                showInfo("警告", "此工单不在生产中！");
+                                break;
                         }
                         break;
 
                     case 3://长按扫料号
-                        if (checkAllTimeOut == 0) {
-                            checkAllDoneStrCondition = 3;
-                            mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FIRST_CHECK_ALL));
-                        } else if (checkAllTimeOut == 1) {
-                            // TODO: 2019/2/21 处理超时
-                            boolean timeOut = doTimeOut();
-                            if (timeOut) {
+                        switch (checkAllTimeOut){
+                            case 0:
                                 checkAllDoneStrCondition = 3;
                                 mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FIRST_CHECK_ALL));
-                            } else {
+                                break;
+
+                            case 1:
+                                boolean timeOut = doTimeOut();
+                                if (timeOut) {
+                                    checkAllDoneStrCondition = 3;
+                                    mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FIRST_CHECK_ALL));
+                                } else {
+                                    dismissLoading();
+                                    if (inputDialog != null && inputDialog.isShowing()) {
+                                        inputDialog.dismiss();
+                                    }
+                                    //清空记录
+                                    clearMaterialInfo();
+                                    showInfo("全检超时", "请重新全检");
+                                }
+                                break;
+
+                            case -1:
                                 dismissLoading();
-                                //清空记录
-                                clearMaterialInfo();
-                                showInfo("全检超时", "请重新全检");
-                            }
+                                if (inputDialog != null && inputDialog.isShowing()) {
+                                    inputDialog.dismiss();
+                                }
+                                showInfo("警告", "此工单不在生产中！");
+                                break;
                         }
                         break;
                 }
@@ -930,45 +1009,80 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                 for (Material.MaterialBean materialItem : mCheckAllMaterialBeans) {
                     if ((null != materialItem.getResult()) && (!materialItem.getResult().equalsIgnoreCase(""))) {
                         mReset = false;
+                        break;
                     }
                 }
                 Log.d(TAG, "reset - " + reset + " - mReset - " + mReset);
                 switch (checkResetCondition) {
                     case 2://正常扫料号
                         // TODO: 2019/2/22
-//                        dismissLoading();
-                        if (reset == 0) {
-                            //未重置,操作
-                            beginOperate(curCheckId, edt_ScanMaterial.getText().toString().trim(), 2);
-                        } else if (reset == 1) {
-                            if (mReset) {
-                                //操作
-                                beginOperate(curCheckId, edt_ScanMaterial.getText().toString().trim(), 2);
-                            } else {
+                        switch (reset){
+                            case 0:
+                                //未重置,操作
+                                if (!TextUtils.isEmpty(edt_ScanMaterial.getText().toString().trim())){
+                                    beginOperate(curCheckId, edt_ScanMaterial.getText().toString().trim(), 2);
+                                }else {
+                                    dismissLoading();
+                                    clearLineSeatMaterialScan();
+                                    Toast.makeText(getContext(), "操作失败,请重新扫描!", Toast.LENGTH_LONG).show();
+                                }
+                                break;
+
+                            case 1:
+                                if (mReset) {
+                                    //操作
+                                    if (!TextUtils.isEmpty(edt_ScanMaterial.getText().toString().trim())){
+                                        beginOperate(curCheckId, edt_ScanMaterial.getText().toString().trim(), 2);
+                                    }else {
+                                        dismissLoading();
+                                        clearLineSeatMaterialScan();
+                                        Toast.makeText(getContext(), "操作失败,请重新扫描!", Toast.LENGTH_LONG).show();
+                                    }
+                                } else {
+                                    dismissLoading();
+                                    //重置
+                                    clearMaterialInfo();
+                                }
+                                break;
+
+                            case -1:
                                 dismissLoading();
-                                //重置
-                                clearMaterialInfo();
-                            }
+                                clearLineSeatMaterialScan();
+                                showInfo("警告", "此工单不在生产中！");
+                                break;
                         }
                         break;
 
                     case 3://长按扫料号
                         dismissLoading();
-                        if (reset == 0) {
-                            //未重置,操作
-                            beginOperate(selectRow, longClickInput, 3);
-                        } else if (reset == 1) {
-                            if (mReset) {
-                                //操作
+                        switch (reset){
+                            case 0:
+                                //未重置,操作
                                 beginOperate(selectRow, longClickInput, 3);
-                            } else {
-                                //重置
-                                clearMaterialInfo();
-                            }
+                                break;
+
+                            case 1:
+                                if (mReset) {
+                                    //操作
+                                    beginOperate(selectRow, longClickInput, 3);
+                                } else {
+                                    //重置
+                                    clearMaterialInfo();
+                                }
+                                break;
+
+                            case -1:
+                                dismissLoading();
+                                if (inputDialog != null && inputDialog.isShowing()) {
+                                    inputDialog.dismiss();
+                                }
+                                showInfo("警告", "此工单不在生产中！");
+                                break;
                         }
                         break;
 
                     case 4:
+                        // TODO: 2019/3/12  
                         dismissLoading();
                         if (reset == 1 && !mReset) {
                             clearMaterialInfo();
@@ -980,6 +1094,7 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
 
             case HttpUtils.CodeResetCheckAll:
                 //设置全检的时间为当前时间
+                dismissLoading();
                 break;
 
             case HttpUtils.CodeOperate:
@@ -1011,16 +1126,23 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
                         edt_ScanMaterial.requestFocus();
                     }
 
-                } else {
+                } else if ("failed_not_exist".equals(result)) {
+                    // TODO: 2019/3/11  
                     //清除刚刚的操作
                     clearDisplay(integers);
+                    /*
                     if (condition == 2) {
                         //正常的全检操作,回退
                         if (null != integers && integers.size() > 0) {
                             curCheckId -= integers.size();
                         }
                     }
+                    */
                     clearLineSeatMaterialScan();
+                } else {
+                    // TODO: 2019/3/11
+//                    此工单在进行中
+
                 }
                 dismissLoading();
 
@@ -1037,14 +1159,24 @@ public class CheckAllMaterialFragment extends Fragment implements TextView.OnEdi
      */
     @Override
     public void showHttpError(int code, Object request, String s) {
-        Log.d(TAG, "showHttpResponse - " + s);
-        Log.d(TAG, "showHttpResponse - code - " + code);
+        Log.d(TAG, "showHttpError - " + s);
+        Log.d(TAG, "showHttpError - code - " + code);
         dismissLoading();
 //        globalFunc.showInfo("警告", "请检查网络连接是否正常!", "请连接网络!");
         switch (code) {
+            case HttpUtils.CodeIsAllDoneSTR:
+//                break;
+            case HttpUtils.CodeIsCheckAllTimeOut:
+//                break;
+            case HttpUtils.CodeCheckIsReset:
+//                break;
+            case HttpUtils.CodeResetCheckAll:
+                globalFunc.showInfo("操作失败", "请检查网络!", "请重新操作!");
+                clearLineSeatMaterialScan();
+                break;
             case HttpUtils.CodeOperate:
                 //更新visit表
-                globalFunc.showInfo("操作失败", "请重新操作!", "请重新操作!");
+                globalFunc.showInfo("操作失败", "请检查网络!", "请重新操作!");
                 ArrayList<Integer> integers = (ArrayList<Integer>) ((Object[]) request)[0];
                 Material.MaterialBean bean = (Material.MaterialBean) ((Object[]) request)[1];
                 int condition = (int) ((Object[]) request)[2];

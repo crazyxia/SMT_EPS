@@ -1,6 +1,5 @@
 package com.jimi.smt.eps_appclient.Service;
 
-import android.app.FragmentManager;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
@@ -59,8 +58,31 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
     }
 
     private void getRefreshProgram(final GlobalData globalData) {
-        mThread.start();
+            new Thread(mRunnable).start();
+
     }
+
+    private Runnable mRunnable = new Runnable() {
+        @Override
+        public void run() {
+            while (true){
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    break;
+                }
+                //根据线号、工单、版面类型去获取programId, 再根据programId去获取料号表
+                String line = globalData.getLine();
+                String workOrder = globalData.getWork_order();
+                int boardType = globalData.getBoard_type();
+                if ((null != line) && (null != workOrder)) {
+                    mHttpUtils.getProgramId(line, workOrder, boardType);
+                }
+
+            }
+        }
+    };
 
 
     private Thread mThread = new Thread(new Runnable() {
@@ -95,16 +117,20 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
 
             case HttpUtils.CodeGetProgramId:
                 String result = "";
+                int rCode = -2;
                 try {
                     JSONObject jsonObject = new JSONObject(response);
-                    result = jsonObject.getString("result");
+                    result = jsonObject.getString("msg");
+                    rCode = jsonObject.getInt("code");
                 } catch (JSONException e) {
                     e.printStackTrace();
                     Log.d(TAG, "showHttpResponse - " + response);
                 }
-                if (!request.equals("fail")) {
-                    int resultcode = doCheckProgramId(result);
-                    mHttpUtils.getMaterials(result, resultcode);
+                switch (rCode){
+                    case 1:
+                        int resultcode = doCheckProgramId(result);
+                        mHttpUtils.getMaterials(result, resultcode);
+                        break;
                 }
                 break;
 
@@ -863,7 +889,7 @@ public class RefreshCacheService extends Service implements OkHttpInterface {
         Log.d(TAG, "onDestroy");
         stopSelf();
         // TODO: 2019/2/14
-        mThread.interrupt();
+//        mThread.interrupt();
         super.onDestroy();
     }
 }

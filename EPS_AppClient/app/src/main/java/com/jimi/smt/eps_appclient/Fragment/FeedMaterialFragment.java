@@ -374,6 +374,7 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
 
                                 checkAllDoneStrCondition = 3;
                                 showLoading();
+                                Log.i(TAG, "globalData.getProgramId() " + globalData.getProgramId());
                                 mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FEEDMATERIAL) + "&" + String.valueOf(Constants.STORE_ISSUE));
 
                                 break;
@@ -381,53 +382,64 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                             case R.id.edt_feed_material:
                                 //站位存在且已发料才会进入这里
                                 scanValue = globalFunc.getMaterial(scanValue);
-                                textView.setText(scanValue);
-                                //站位不存在
-                                if (matchFeedMaterialId < 0) {
-                                    feedNextMaterial();
-                                    return true;
-                                }
-                                //比对料号，包含替代料
-                                matchFeedMaterialId = -1;
+                                if (scanValue.length() <= Constants.MATERIAL_LENGTH) {
+                                    textView.setText(scanValue);
+                                    //站位不存在
+                                    if (matchFeedMaterialId < 0) {
+                                        feedNextMaterial();
+                                        return true;
+                                    }
+                                    //比对料号，包含替代料
+                                    matchFeedMaterialId = -1;
 
-                                //只有一个料
-                                if (scanLineIndex.size() == 1) {
-                                    Material.MaterialBean singleMaterialItem = mFeedMaterialBeans.get(scanLineIndex.get(0));
-                                    singleMaterialItem.setScanMaterial(scanValue);
-                                    if (singleMaterialItem.getMaterialNo().equalsIgnoreCase(scanValue)) {
-                                        singleMaterialItem.setResult("PASS");
-                                        singleMaterialItem.setRemark("上料成功");
-                                        //成功次数加1
-                                        sucFeedCount++;
-                                    } else {
-                                        singleMaterialItem.setResult("FAIL");
-                                        singleMaterialItem.setRemark("料号与站位不相符");
+                                    //操作的料
+                                    Material.MaterialBean bean;
+                                    //只有一个料
+                                    if (scanLineIndex.size() == 1) {
+                                        Material.MaterialBean singleMaterialItem = mFeedMaterialBeans.get(scanLineIndex.get(0));
+                                        singleMaterialItem.setScanMaterial(scanValue);
+                                        if (singleMaterialItem.getMaterialNo().equalsIgnoreCase(scanValue)) {
+                                            singleMaterialItem.setResult("PASS");
+                                            singleMaterialItem.setRemark("上料成功");
+                                            //成功次数加1
+                                            sucFeedCount++;
+                                        } else {
+                                            singleMaterialItem.setResult("FAIL");
+                                            singleMaterialItem.setRemark("料号与站位不相符");
+                                        }
+
+                                        bean = singleMaterialItem;
+
+                                        //当前上料索引
+                                        matchFeedMaterialId = scanLineIndex.get(0);
+                                    }
+                                    //存在主替料
+                                    else {
+                                        bean = checkMultiItem(scanLineIndex, scanValue);
                                     }
 
-                                    //添加显示日志
+                                    if (matchFeedMaterialId < 0) {
+                                        feedNextMaterial();
+                                        return true;
+                                    }
+
+                                    //添加显示
+                                    showLoading();
                                     globalData.setUpdateType(Constants.FEEDMATERIAL);
-                                    com.jimi.smt.eps_appclient.Beans.ProgramItemVisit itemVisit = com.jimi.smt.eps_appclient.Beans.ProgramItemVisit.getProgramItemVisit(Constants.FEEDMATERIAL, singleMaterialItem);
-                                    mHttpUtils.updateVisit(singleMaterialItem, itemVisit, 1);
-                                    //当前上料索引
-                                    matchFeedMaterialId = scanLineIndex.get(0);
-                                }
-                                //存在主替料
-                                else {
-                                    checkMultiItem(scanLineIndex, scanValue);
-                                }
+                                    com.jimi.smt.eps_appclient.Beans.ProgramItemVisit itemVisit = com.jimi.smt.eps_appclient.Beans.ProgramItemVisit.getProgramItemVisit(Constants.FEEDMATERIAL, bean);
+                                    mHttpUtils.updateVisit(bean, itemVisit, 1);
 
-                                if (matchFeedMaterialId < 0) {
-                                    feedNextMaterial();
-                                    return true;
+                                    //更新数据显示
+                                    materialAdapter.notifyDataSetChanged();
+                                    //增加数据库日志
+                                    globalData.setOperType(Constants.FEEDMATERIAL);
+                                    Operation operation = Operation.getOperation(globalData.getOperator(), Constants.FEEDMATERIAL, mFeedMaterialBeans.get(matchFeedMaterialId));
+                                    mHttpUtils.addOperation(operation);
+                                } else {
+                                    Toast.makeText(getContext(), "料号超出范围", Toast.LENGTH_LONG).show();
+                                    edt_Material.setText("");
+                                    edt_Material.requestFocus();
                                 }
-
-                                //更新数据显示
-                                materialAdapter.notifyDataSetChanged();
-                                //增加数据库日志
-                                globalData.setOperType(Constants.FEEDMATERIAL);
-
-                                Operation operation = Operation.getOperation(globalData.getOperator(), Constants.FEEDMATERIAL, mFeedMaterialBeans.get(matchFeedMaterialId));
-                                mHttpUtils.addOperation(operation);
                                 break;
                         }
                     } else {
@@ -469,7 +481,7 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
 
     }
 
-    private void checkMultiItem(ArrayList<Integer> integers, String mScanValue) {
+    private Material.MaterialBean checkMultiItem(ArrayList<Integer> integers, String mScanValue) {
         Material.MaterialBean bean = new Material.MaterialBean();
         //多个相同的站位,即有替换料
         for (int z = 0; z < integers.size(); z++) {
@@ -518,10 +530,7 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
             }
         }
 
-        //添加显示
-        globalData.setUpdateType(Constants.FEEDMATERIAL);
-        com.jimi.smt.eps_appclient.Beans.ProgramItemVisit itemVisit = com.jimi.smt.eps_appclient.Beans.ProgramItemVisit.getProgramItemVisit(Constants.FEEDMATERIAL, bean);
-        mHttpUtils.updateVisit(bean, itemVisit, 1);
+        return bean;
     }
 
     //更新上料缓存
@@ -626,9 +635,6 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
     //弹出消息窗口
     private void showInfo(String[] titleMsg, int[] msgStyle, final boolean result, final int resultType) {
         //对话框所有控件id
-//        int itemResIds[] = new int[]{R.id.dialog_title_view,
-//                R.id.dialog_title, R.id.tv_alert_info, R.id.info_trust};
-
 
         int itemResIds[] = new int[]{R.id.dialog_title_view,
                 R.id.dialog_title, R.id.tv_alert_info, R.id.info_trust, R.id.tv_alert_msg};
@@ -720,11 +726,17 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
     @Override
     public void showHttpResponse(int code, Object request, String response) {
         // TODO: 2019/2/18 加载进度 
-        dismissLoading();
+//        dismissLoading();
         Log.d(TAG, "showHttpResponse - " + response);
         Log.d(TAG, "code - " + code);
         switch (code) {
             case HttpUtils.CodeCheckIsReset:
+                /**
+                 * checkReset
+                 * -1 该工单不在生产状态,请退出app重新选择工单
+                 * 1 表示重置
+                 * 0 表示未重置
+                 */
                 int checkReset = Integer.valueOf(response);
                 Log.d(TAG, "checkReset - " + checkReset);
                 //本地数据是否重置
@@ -740,32 +752,71 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                 Log.d(TAG, "reseted - " + reseted);
                 switch (checkResetCondition) {
                     case 0://切换到上料页面时
-                        if (checkReset == 1 && !reseted) {
-                            //重置，判断发料
-                            checkAllDoneStrCondition = 0;
-                            showLoading();
-                            mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.STORE_ISSUE));
-                        } else {
-                            //判断发料与上料
-                            checkAllDoneStrCondition = 1;
-                            showLoading();
-                            mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FEEDMATERIAL) + "&" + String.valueOf(Constants.STORE_ISSUE));
+                        switch (checkReset) {
+                            case 0:
+                                //判断发料与上料
+                                checkAllDoneStrCondition = 1;
+                                showLoading();
+                                mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FEEDMATERIAL) + "&" + String.valueOf(Constants.STORE_ISSUE));
+                                break;
+
+                            case 1:
+                                if (reseted) {
+                                    //判断发料与上料
+                                    checkAllDoneStrCondition = 1;
+                                    showLoading();
+                                    mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FEEDMATERIAL) + "&" + String.valueOf(Constants.STORE_ISSUE));
+                                } else {
+                                    //重置，判断发料
+                                    checkAllDoneStrCondition = 0;
+                                    showLoading();
+                                    mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.STORE_ISSUE));
+                                }
+                                break;
+
+                            case -1:
+                                dismissLoading();
+                                String titleMsg[] = new String[]{"警告", "此工单不在生产中!"};
+                                int msgStyle[] = new int[]{22, Color.RED};
+                                showInfo(titleMsg, msgStyle, false, 0);
+                                break;
                         }
                         break;
 
                     case 1://扫站位时
-                        if (checkReset == 1) {
-                            if (!reseted) {
-                                //重置
-                                clearFeedDisplay();
-                                clearLineSeatMaterialScan();
-                            } else {
+                        dismissLoading();
+                        switch (checkReset) {
+                            case 1:
+                                if (reseted) {
+                                    //操作
+                                    if (!TextUtils.isEmpty(edt_LineSeat.getText().toString().trim())) {
+                                        beginOperate(edt_LineSeat.getText().toString().trim());
+                                    } else {
+                                        clearLineSeatMaterialScan();
+                                        Toast.makeText(getContext(), "操作失败,请重新扫描!", Toast.LENGTH_LONG).show();
+                                    }
+                                } else {
+                                    //重置
+                                    clearFeedDisplay();
+                                    clearLineSeatMaterialScan();
+                                }
+                                break;
+
+                            case 0:
                                 //操作
-                                beginOperate(edt_LineSeat.getText().toString().trim());
-                            }
-                        } else if (checkReset == 0) {
-                            //操作
-                            beginOperate(edt_LineSeat.getText().toString().trim());
+                                if (!TextUtils.isEmpty(edt_LineSeat.getText().toString().trim())) {
+                                    beginOperate(edt_LineSeat.getText().toString().trim());
+                                } else {
+                                    clearLineSeatMaterialScan();
+                                    Toast.makeText(getContext(), "操作失败,请重新扫描!", Toast.LENGTH_LONG).show();
+                                }
+                                break;
+
+                            case -1:
+                                String titleMsg[] = new String[]{"警告", "此工单不在生产中!"};
+                                int msgStyle[] = new int[]{22, Color.RED};
+                                showInfo(titleMsg, msgStyle, false, 0);
+                                break;
                         }
                         break;
                 }
@@ -778,70 +829,98 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                 Gson allDoneGson = new Gson();
                 IsAllDoneInfo isAllDoneInfo = allDoneGson.fromJson(response, IsAllDoneInfo.class);
                 allDoneCode = isAllDoneInfo.getCode();
-                if (allDoneCode == 1) {
-                    IsAllDoneInfo.AllDoneInfoBean allDoneInfoBean = isAllDoneInfo.getData();
-                    int isWare = Integer.valueOf(allDoneInfoBean.getStore());
-                    int isFeed = -1;
-                    switch (checkAllDoneStrCondition) {
-                        case 0://只查发料
-                            if (isWare == 0) {
-                                String titleMsgs[] = new String[]{"提示", "仓库未完成发料!"};
-                                int msgStyleStr[] = new int[]{22, Color.argb(255, 219, 201, 36)};
-                                showInfo(titleMsgs, msgStyleStr, false, 2);
-                                clearFeedDisplay();
-                                clearLineSeatMaterialScan();
-                            } else {
-                                clearFeedDisplay();
-                                clearLineSeatMaterialScan();
-                            }
-                            break;
-                        case 1://查发料与上料
-                            isFeed = Integer.valueOf(allDoneInfoBean.getFeed());
-                            if (isWare == 0) {
-                                String titleMsgStr[] = new String[]{"提示", "仓库未完成发料!"};
-                                int msgStyles[] = new int[]{22, Color.argb(255, 219, 201, 36)};
-                                showInfo(titleMsgStr, msgStyles, false, 2);
-                            } else if (isFeed == 1) {
-                                showFeedLoginWin();
-                            }
-                            break;
-                        case 2:
-                            if (isWare == 0) {
-                                dismissFeedLogin();
+                switch (allDoneCode) {
+                    case 1://查询成功
+                        IsAllDoneInfo.AllDoneInfoBean allDoneInfoBean = isAllDoneInfo.getData();
+                        int isWare = Integer.valueOf(allDoneInfoBean.getStore());
+                        int isFeed = -1;
+                        switch (checkAllDoneStrCondition) {
+                            case 0://只查发料
+                                dismissLoading();
+                                if (isWare == 0) {
+                                    String titleMsgs[] = new String[]{"提示", "仓库未完成发料!"};
+                                    int msgStyleStr[] = new int[]{22, Color.argb(255, 219, 201, 36)};
+                                    showInfo(titleMsgs, msgStyleStr, false, 2);
+                                    clearFeedDisplay();
+                                    clearLineSeatMaterialScan();
+                                } else {
+                                    clearFeedDisplay();
+                                    clearLineSeatMaterialScan();
+                                }
+                                break;
+
+                            case 1://查发料与上料
+                                dismissLoading();
+                                isFeed = Integer.valueOf(allDoneInfoBean.getFeed());
+                                if (isWare == 0) {
+                                    String titleMsgStr[] = new String[]{"提示", "仓库未完成发料!"};
+                                    int msgStyles[] = new int[]{22, Color.argb(255, 219, 201, 36)};
+                                    showInfo(titleMsgStr, msgStyles, false, 2);
+                                } else if (isFeed == 1) {
+                                    showFeedLoginWin();
+                                }
+                                break;
+
+                            case 2:
+                                dismissLoading();
+                                if (isWare == 0) {
+                                    dismissFeedLogin();
                                 /*
                                 String titleMsg[] = new String[]{"站位表更新!", "仓库未完成发料!"};
                                 int msgStyle[] = new int[]{22, Color.argb(255, 219, 201, 36)};
                                 showInfo(titleMsg, msgStyle, false, 2);
                                 */
-                            }
-                            break;
-                        case 3://扫站位时查发料、上料
-                            isFeed = Integer.valueOf(allDoneInfoBean.getFeed());
-                            if (isWare == 0) {
-                                String titleMsgStr[] = new String[]{"提示", "仓库未完成发料!"};
-                                int msgStyles[] = new int[]{22, Color.argb(255, 219, 201, 36)};
-                                showInfo(titleMsgStr, msgStyles, false, 2);
-                            } else if (isWare == 1) {
-                                if (isFeed == 0){
-                                    checkResetCondition = 1;
-                                    showLoading();
-                                    mHttpUtils.isReset(globalData.getProgramId(), Constants.FEEDMATERIAL);
-                                }else if (isFeed == 1){
-                                    //已完成上料，清空本地数据，提示再次上料
-                                    showFeedLoginWin();
                                 }
-                            }
-                            break;
-                    }
-                    Log.d(TAG, "isFeed - " + isFeed);
-                    Log.d(TAG, "isWare - " + isWare);
+                                break;
+                            case 3://扫站位时查发料、上料
+                                isFeed = Integer.valueOf(allDoneInfoBean.getFeed());
+                                if (isWare == 1) {
+                                    if (isFeed == 0) {
+                                        checkResetCondition = 1;
+                                        showLoading();
+                                        mHttpUtils.isReset(globalData.getProgramId(), Constants.FEEDMATERIAL);
+                                    } else if (isFeed == 1) {
+                                        //已完成上料，清空本地数据，提示再次上料
+                                        showFeedLoginWin();
+                                    }
+                                } else if (isWare == 0) {
+                                    dismissLoading();
+                                    String titleMsgStr[] = new String[]{"提示", "仓库未完成发料!"};
+                                    int msgStyles[] = new int[]{22, Color.argb(255, 219, 201, 36)};
+                                    showInfo(titleMsgStr, msgStyles, false, 2);
+                                }
+                                break;
+                        }
+                        Log.d(TAG, "isFeed - " + isFeed);
+                        Log.d(TAG, "isWare - " + isWare);
+                        break;
+
+                    case 0://查询失败，参数不存在
+                        dismissLoading();
+                        switch (checkAllDoneStrCondition) {
+                            case 3:
+                                String titleMsg[] = new String[]{"提示", "操作失败,请重新扫描!"};
+                                int msgStyle[] = new int[]{22, Color.RED};
+                                showInfo(titleMsg, msgStyle, false, 0);
+                                break;
+                        }
+                        break;
+
+                    case -1://查询失败，此工单不在生产中
+                        dismissLoading();
+                        String msg[] = new String[]{"警告", "此工单不在生产中!"};
+                        int mStyle[] = new int[]{22, Color.RED};
+                        showInfo(msg, mStyle, false, 0);
+                        break;
                 }
                 break;
 
             case HttpUtils.CodeAddOperate:
+//                dismissLoading();
                 break;
 
             case HttpUtils.CodeAddVisit:
+
                 int resCode = -1;
                 try {
                     JSONObject jsonObject = new JSONObject(response);
@@ -850,16 +929,26 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                     e.printStackTrace();
                     Log.d(TAG, "showHttpResponse - " + e.toString());
                 }
-                if (resCode == 1) {
-                    cacheFeedResult(scanLineIndex, mFeedMaterialBeans.get(scanLineIndex.get(0)));
-                    feedNextMaterial();
+                if (resCode >= 1) {
+                    dismissLoading();
+                    if (scanLineIndex.size() > 0){
+                        cacheFeedResult(scanLineIndex, mFeedMaterialBeans.get(scanLineIndex.get(0)));
+                        feedNextMaterial();
+                    }else {
+                        // TODO: 2019/3/15
+                        clearLineSeatMaterialScan();
+                        globalFunc.showInfo("提示", "上料失败!", "请重新上料");
+                    }
+
                 } else if (resCode == 0) {
+                    dismissLoading();
                     globalFunc.showInfo("提示", "上料失败!", "请重新上料");
                     clearDisplay(scanLineIndex);
                 }
                 break;
 
             case HttpUtils.CodeReset://失败 failed_not_exist ; 成功 succeed
+                dismissLoading();
                 String result = "";
                 try {
                     JSONObject jsonObject = new JSONObject(response);
@@ -868,9 +957,7 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                     e.printStackTrace();
                     Log.d(TAG, "showHttpResponse - " + response);
                 }
-                if (result.equalsIgnoreCase("failed_not_exist")) {
-                    globalFunc.showInfo("警告", "请检查网络连接是否正常!", "请连接网络!");
-                } else if (result.equalsIgnoreCase("succeed")) {
+                if (result.equalsIgnoreCase("succeed")) {
                     //清空上料结果
                     // TODO: 2018/12/17 不止清空上料记录，全检，首检 都要清空 
                     boolean updateAllFeed = new GreenDaoUtil().updateAllFeed(feedList);
@@ -885,6 +972,12 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
                     clearFeedDisplay();
                     edt_pwd.setText("");
                     dismissFeedLogin();
+                } else if (result.equalsIgnoreCase("failed_not_exist")) {
+                    globalFunc.showInfo("警告", "请检查网络连接是否正常!", "请连接网络!");
+                } else if (result.equals("")) {
+                    String msg[] = new String[]{"警告", "此工单不在生产中!"};
+                    int mStyle[] = new int[]{22, Color.RED};
+                    showInfo(msg, mStyle, false, 0);
                 }
                 break;
         }
@@ -896,6 +989,16 @@ public class FeedMaterialFragment extends Fragment implements OnEditorActionList
         Log.d(TAG, "showHttpError - " + s);
 //        globalFunc.showInfo("警告", "请检查网络连接是否正常!", "请连接网络!");
         switch (code) {
+
+            case HttpUtils.CodeIsAllDoneSTR:
+//                break;
+            case HttpUtils.CodeCheckIsReset:
+//                break;
+            case HttpUtils.CodeReset:
+                globalFunc.showInfo("操作失败", "请检查网络!", "请重新操作!");
+                clearLineSeatMaterialScan();
+                break;
+
             case HttpUtils.CodeAddOperate://添加操作日志
                 break;
             case HttpUtils.CodeAddVisit://更新visit表

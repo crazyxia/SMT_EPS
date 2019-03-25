@@ -1,9 +1,11 @@
 package com.jimi.smt.eps_appclient.Func;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import com.jimi.smt.eps_appclient.R;
@@ -48,12 +50,8 @@ public class GlobalFunc {
     public void showInfo(String title, String message, final String toast) {
 
         //对话框所有控件id
-//        int itemResIds[] = new int[]{R.id.dialog_title_view,
-//                R.id.dialog_title, R.id.tv_alert_info, R.id.info_trust};
-
         int itemResIds[] = new int[]{R.id.dialog_title_view,
                 R.id.dialog_title, R.id.tv_alert_info, R.id.info_trust, R.id.tv_alert_msg};
-
 
         //标题和内容
         String titleMsg[] = new String[]{title, message};
@@ -89,7 +87,7 @@ public class GlobalFunc {
         return lineNum;
     }
 
-    //根据扫的站位条码获取站位值 (两者兼容100805118,3040101)
+    //根据扫的站位条码获取站位值 (两者兼容100805118,3040101)3021007
     public String getLineSeat(String scanValue) {
         scanValue = scanValue.replaceAll(" ", "").trim();
         String linSeat = scanValue;
@@ -107,7 +105,7 @@ public class GlobalFunc {
     public String getMaterial(String scanValue) {
         scanValue = scanValue.replaceAll(" ", "").trim();
         String material = scanValue;
-        if (scanValue.indexOf("@") != -1) {
+        if (scanValue.contains("@")) {
             material = scanValue.substring(0, scanValue.indexOf("@"));
         }
         return material;
@@ -125,6 +123,14 @@ public class GlobalFunc {
         }
         return serialNum;
     }
+
+
+    //隐藏输入法
+    public void hideKeyboard(Activity activity){
+        InputMethodManager inputMethodManager = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromInputMethod(activity.getCurrentFocus().getWindowToken(),InputMethodManager.HIDE_NOT_ALWAYS);
+    }
+
 
 
 }

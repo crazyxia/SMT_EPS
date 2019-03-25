@@ -106,7 +106,7 @@ public class EnterActivity extends Activity implements TextView.OnEditorActionLi
                 case NET_MATERIAL_FALL:
                     //获取料号表失败
                     Toast.makeText(getApplicationContext(), "获取料号表失败", Toast.LENGTH_SHORT).show();
-                    showInfo();
+                    showInfo("请检查网络连接是否正常!");
                     break;
 
                 case Constants.WARE_HOUSE:
@@ -211,7 +211,7 @@ public class EnterActivity extends Activity implements TextView.OnEditorActionLi
 //            boolean result = updateApp();
 //            Log.d(TAG, "updateApp-result::" + result);
         } else {
-            showInfo();
+            showInfo("请检查网络连接是否正常!");
         }
 
         //注册广播
@@ -302,7 +302,7 @@ public class EnterActivity extends Activity implements TextView.OnEditorActionLi
                             Toast.makeText(this, "请重新扫描!", Toast.LENGTH_LONG).show();
                         }
                     } else {
-                        showInfo();
+                        showInfo("请检查网络连接是否正常!");
                     }
 
                     return true;
@@ -315,17 +315,15 @@ public class EnterActivity extends Activity implements TextView.OnEditorActionLi
     }
 
     //弹出提示消息窗口
-    private void showInfo() {
+    private void showInfo(String msg) {
 
         //对话框所有控件id
-//        int itemResIds[] = new int[]{R.id.dialog_title_view,
-//                R.id.dialog_title, R.id.tv_alert_info, R.id.info_trust};
-
         int itemResIds[] = new int[]{R.id.dialog_title_view,
                 R.id.dialog_title, R.id.tv_alert_info, R.id.info_trust, R.id.tv_alert_msg};
 
         //标题和内容
-        String titleMsg[] = new String[]{"警告", "请检查网络连接是否正常!"};
+        //请检查网络连接是否正常!
+        String titleMsg[] = new String[]{"警告", msg};
         //内容的样式
         int msgStype[] = new int[]{22, Color.RED};
 
@@ -394,7 +392,7 @@ public class EnterActivity extends Activity implements TextView.OnEditorActionLi
 //                    Log.d(TAG, "updateApp-result::" + result);
 
                 } else {
-                    showInfo();
+                    showInfo("请检查网络连接是否正常!");
                 }
                 break;
             default:
@@ -433,7 +431,8 @@ public class EnterActivity extends Activity implements TextView.OnEditorActionLi
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.rl_enter:
-
+                //删除5天前的日志
+                boolean del = Log.delFile();
                 if (globalFunc.isNetWorkConnected()) {
                     if ((!TextUtils.isEmpty(et_enter_line.getText().toString().trim())) && (!TextUtils.isEmpty(et_enter_operator.getText().toString().trim()))) {
                         if (curCheckIndex >= 0) {
@@ -441,7 +440,7 @@ public class EnterActivity extends Activity implements TextView.OnEditorActionLi
                             //显示加载框
                             showDialog("请稍等!", "正在加载数据...");
                             //获取工单号对应的料号表
-                            Log.d(TAG, "onClick - programId " + mProgramBeans.get(curCheckIndex).getId());
+//                            Log.d(TAG, "onClick - programId " + mProgramBeans.get(curCheckIndex).getId());
 
                             mHttpUtils.getMaterials(mProgramBeans.get(curCheckIndex).getId());
 
@@ -570,61 +569,75 @@ public class EnterActivity extends Activity implements TextView.OnEditorActionLi
                 //重扫线号
                 oldCheckIndex = -1;
                 Gson line = new Gson();
-                if (resCode == 0) {
-                    BaseMsg baseMsg = line.fromJson(s, BaseMsg.class);
-                    //"该线号不存在，重新扫描线号!"
-                    Toast.makeText(getApplicationContext(), baseMsg.getMsg(), Toast.LENGTH_LONG).show();
-                    et_enter_line.setText("");
-                    et_enter_line.requestFocus();
-                } else if (resCode == 1) {
-                    this.mProgramBeans = line.fromJson(s, com.jimi.smt.eps_appclient.Beans.Program.class).getData();
-                    if ((mProgramBeans != null) && (mProgramBeans.size() > 0)) {
-                        for (Program.ProgramBean bean : mProgramBeans) {
-                            bean.setLine(String.valueOf(request));
+                switch (resCode){
+                    case 1:
+                        this.mProgramBeans = line.fromJson(s, com.jimi.smt.eps_appclient.Beans.Program.class).getData();
+                        if ((mProgramBeans != null) && (mProgramBeans.size() > 0)) {
+                            for (Program.ProgramBean bean : mProgramBeans) {
+                                bean.setLine(String.valueOf(request));
+                            }
+                            //显示工单
+                            ordersAdapter = new EnterOrdersAdapter(getApplicationContext(), mProgramBeans);
+                            lv_orders.setAdapter(ordersAdapter);
+                            et_enter_operator.requestFocus();
+                            globalFunc.hideKeyboard(this);
+                        } else {
+                            Toast.makeText(this, "请重新扫描线号", Toast.LENGTH_LONG).show();
+                            et_enter_line.setText("");
+                            et_enter_line.requestFocus();
                         }
-                        //显示工单
-                        ordersAdapter = new EnterOrdersAdapter(getApplicationContext(), mProgramBeans);
-                        lv_orders.setAdapter(ordersAdapter);
-                        et_enter_operator.requestFocus();
-                    } else {
-                        Toast.makeText(this, "请重新扫描线号", Toast.LENGTH_LONG).show();
+                        break;
+
+                    case 0:
+                        //"该线号不存在，重新扫描线号!"
+                        Toast.makeText(getApplicationContext(), "该线号不存在，重新扫描线号!", Toast.LENGTH_LONG).show();
+                        if ((mProgramBeans != null) && (mProgramBeans.size() > 0)) {
+                            mProgramBeans.clear();
+                            ordersAdapter.notifyDataSetChanged();
+                        }
                         et_enter_line.setText("");
                         et_enter_line.requestFocus();
-                    }
+                        break;
+
+                    case -1:
+                        //"该线号不存在，重新扫描线号!"
+                        globalFunc.showInfo("警告", "此线号不存在进行中的工单!", "重新扫描线号!");
+                        if ((mProgramBeans != null) && (mProgramBeans.size() > 0)) {
+                            mProgramBeans.clear();
+                            ordersAdapter.notifyDataSetChanged();
+                        }
+                        et_enter_line.setText("");
+                        et_enter_line.requestFocus();
+                        break;
                 }
                 break;
 
 
             case HttpUtils.CodeUserInfo://操作员信息
                 Gson operator = new Gson();
-                if (resCode == 0) {
+                if (resCode == 1) {
+                    com.jimi.smt.eps_appclient.Beans.Operator.OperatorBean operatorBean = operator.fromJson(s, com.jimi.smt.eps_appclient.Beans.Operator.class).getData();
+                    if (operatorBean.isEnabled()) {
+                        //操作员在职
+                        mOperatorBean = operatorBean;
+                    } else {
+                        //操作员离职
+                        Toast.makeText(getApplicationContext(), "操作员离职", Toast.LENGTH_SHORT).show();
+                        et_enter_operator.setText("");
+                        et_enter_operator.requestFocus();
+                    }
+                } else if (resCode == 0) {
                     BaseMsg baseMsg = operator.fromJson(s, BaseMsg.class);
                     //不存在该操作员
                     Toast.makeText(getApplicationContext(), baseMsg.getMsg(), Toast.LENGTH_LONG).show();
                     et_enter_operator.setText("");
                     et_enter_operator.requestFocus();
-                } else if (resCode == 1) {
-                    com.jimi.smt.eps_appclient.Beans.Operator.OperatorBean operatorBean = operator.fromJson(s, com.jimi.smt.eps_appclient.Beans.Operator.class).getData();
-                    if (!operatorBean.isEnabled()) {
-                        //操作员离职
-                        Toast.makeText(getApplicationContext(), "操作员离职", Toast.LENGTH_SHORT).show();
-                        et_enter_operator.setText("");
-                        et_enter_operator.requestFocus();
-                    } else {
-                        //操作员在职
-                        mOperatorBean = operatorBean;
-                    }
                 }
                 break;
 
             case HttpUtils.CodeMaterials://料号表
                 Gson gson = new Gson();
-                if (resCode == 0) {
-                    BaseMsg baseMsg = gson.fromJson(s, BaseMsg.class);
-                    //不存在该操作员
-                    Toast.makeText(getApplicationContext(), baseMsg.getMsg(), Toast.LENGTH_LONG).show();
-                    showInfo();
-                } else if (resCode == 1) {
+                if (resCode == 1) {
                     List<Material.MaterialBean> materialBeans = gson.fromJson(s, Material.class).getData();
                     com.jimi.smt.eps_appclient.Beans.Program.ProgramBean programBean = mProgramBeans.get(curCheckIndex);
                     for (Material.MaterialBean bean : materialBeans) {
@@ -642,10 +655,8 @@ public class EnterActivity extends Activity implements TextView.OnEditorActionLi
                     globalData.setWork_order(programBean.getWorkOrder());
                     globalData.setBoard_type(programBean.getBoardType());
 
-//                    Log.d(TAG, "getRefreshProgram - " + "  line : " + globalData.getLine() + "  workOrder: " + globalData.getWork_order() + "  boardType: " + globalData.getBoard_type());
-
                     //成功获取料号表,操作员在职
-                    if (null != mOperatorBean){
+                    if (null != mOperatorBean) {
                         Log.d(TAG, "mOperatorBean - " + mOperatorBean.getType());
                         Message message = Message.obtain();
                         message.what = mOperatorBean.getType();
@@ -654,12 +665,14 @@ public class EnterActivity extends Activity implements TextView.OnEditorActionLi
                         curOperatorNum = mOperatorBean.getId();
                         //发送消息
                         enterHandler.sendMessage(message);
-                    }else {
+                    } else {
                         Message message = Message.obtain();
                         message.what = OPERATOR_NULL;
                         enterHandler.sendMessage(message);
                     }
-
+                } else if (resCode == 0) {
+                    Toast.makeText(getApplicationContext(), "此工单不在生产中！", Toast.LENGTH_LONG).show();
+                    showInfo("此工单不在生产中!");
                 }
                 break;
 
@@ -697,7 +710,27 @@ public class EnterActivity extends Activity implements TextView.OnEditorActionLi
         //取消弹出窗
         dismissDialog();
         Log.d(TAG, "showHttpError-" + s);
-        showInfo();
+        switch (code) {
+
+            case HttpUtils.CodeWokingOrders://线号与其工单
+                Toast.makeText(getApplicationContext(), "获取工单失败，请重新扫描！", Toast.LENGTH_LONG).show();
+                et_enter_line.setText("");
+                et_enter_line.requestFocus();
+                break;
+
+            case HttpUtils.CodeUserInfo://操作员信息
+                Toast.makeText(getApplicationContext(), "获取操作员失败，请重新扫描！", Toast.LENGTH_SHORT).show();
+                et_enter_operator.setText("");
+                et_enter_operator.requestFocus();
+                break;
+
+            case HttpUtils.CodeMaterials://料号表
+                Toast.makeText(getApplicationContext(), "获取操料号表失败，请重新扫描！", Toast.LENGTH_SHORT).show();
+                et_enter_line.setText("");
+                et_enter_operator.setText("");
+                et_enter_line.requestFocus();
+                break;
+        }
     }
 
 

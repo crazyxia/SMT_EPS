@@ -15,6 +15,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.jimi.smt.eps_appclient.Activity.QCActivity;
@@ -53,7 +54,7 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
     //操作员　站位　料号
     private MyEditTextDel edt_LineSeat;
     private MyEditTextDel edt_Material;
-    private TextView tv_Result, tv_Remark, tv_seat, tv_check_material/*tv_LastInfo*/;
+    private TextView tv_Result, tv_Remark, tv_seat, tv_check_material;
     //当前扫描的站位,料号
     private String curLineSeat, curMaterial;
     //当前检料时用到的排位料号表
@@ -67,7 +68,6 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
     private QCActivity qcActivity;
     private boolean mHidden = false;
     private HttpUtils mHttpUtils;
-    //    private int checkFirstCondition = -1;
     private int checkAllDoneStrCondition = -1;
 
 
@@ -95,20 +95,10 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
         this.mHidden = hidden;
         Log.d(TAG, "onHiddenChanged - " + hidden);
         if (!hidden) {
-
-            /*
-            if (qcActivity.updateDialog != null && qcActivity.updateDialog.isShowing()) {
-                qcActivity.updateDialog.cancel();
-                qcActivity.updateDialog.dismiss();
-            }
-            */
-
             clearAndSetFocus();
             showLoading();
-//            checkFirstCondition = 2;
-            checkAllDoneStrCondition = 2;
+            checkAllDoneStrCondition = 1;
             mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FIRST_CHECK_ALL));
-//            mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
         }
     }
 
@@ -123,20 +113,10 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
 
         globalData.setOperator(savedInstanceState.getString("operatorNum"));
 
-        /*
-        if (qcActivity.updateDialog != null && qcActivity.updateDialog.isShowing()) {
-            qcActivity.updateDialog.cancel();
-            qcActivity.updateDialog.dismiss();
-        }
-        */
-
         mHttpUtils = new HttpUtils(this, getContext());
 
         showLoading();
-//        checkFirstCondition = 2;
-//        mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
-
-        checkAllDoneStrCondition = 2;
+        checkAllDoneStrCondition = 1;
         mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FIRST_CHECK_ALL));
 
         initViews(savedInstanceState);
@@ -185,7 +165,6 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
         edt_Material = vCheckMaterialFragment.findViewById(R.id.edt_check_material);
         tv_Result = vCheckMaterialFragment.findViewById(R.id.tv_Result);
         tv_Remark = vCheckMaterialFragment.findViewById(R.id.tv_Remark);
-//        tv_LastInfo = vCheckMaterialFragment.findViewById(R.id.tv_LastInfo);
         tv_seat = vCheckMaterialFragment.findViewById(R.id.tv_seat);
         tv_check_material = vCheckMaterialFragment.findViewById(R.id.tv_check_material);
 
@@ -254,46 +233,49 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
                         switch (textView.getId()) {
 
                             case R.id.edt_check_lineseat:
-                                checkAgain(); // TODO: 2018/9/6  
+                                checkAgain();
                                 //站位
                                 scanValue = globalFunc.getLineSeat(scanValue);
                                 edt_LineSeat.setText(scanValue);
 
                                 //判断是否首检
                                 showLoading();
-//                                checkFirstCondition = 0;
                                 checkAllDoneStrCondition = 0;
                                 mHttpUtils.checkAllDoneStr(globalData.getProgramId(), String.valueOf(Constants.FIRST_CHECK_ALL));
-//                                mHttpUtils.checkAllDone(globalData.getProgramId(), Constants.FIRST_CHECK_ALL);
                                 break;
 
                             case R.id.edt_check_material:
                                 //料号
                                 scanValue = globalFunc.getMaterial(scanValue);
-                                textView.setText(scanValue);
-                                //扫到的料号
-                                curMaterial = scanValue;
-                                curCheckMaterialId = -1;
-                                Material.MaterialBean bean = new Material.MaterialBean();
-                                for (Material.MaterialBean materialItem : checkItems) {
-                                    materialItem.setScanMaterial(scanValue);
-                                    Log.i(TAG, "materialItem - " + materialItem.getMaterialNo());
-                                    if (materialItem.getMaterialNo().equalsIgnoreCase(scanValue)) {
-                                        curCheckMaterialId = 1;
-                                        bean = materialItem;
+                                if (scanValue.length() <= Constants.MATERIAL_LENGTH) {
+                                    textView.setText(scanValue);
+                                    //扫到的料号
+                                    curMaterial = scanValue;
+                                    curCheckMaterialId = -1;
+                                    Material.MaterialBean bean = new Material.MaterialBean();
+                                    for (Material.MaterialBean materialItem : checkItems) {
+                                        materialItem.setScanMaterial(scanValue);
+                                        Log.i(TAG, "materialItem - " + materialItem.getMaterialNo());
+                                        if (materialItem.getMaterialNo().equalsIgnoreCase(scanValue)) {
+                                            curCheckMaterialId = 1;
+                                            bean = materialItem;
+                                        }
                                     }
-                                }
 
-                                if (curCheckMaterialId == -1) {
-                                    bean = checkItems.get(0);
-                                    bean.setResult("FAIL");
-                                    bean.setRemark("站位与料号不对应");
-                                } else if (curCheckMaterialId == 1) {
-                                    bean.setResult("PASS");
-                                    bean.setRemark("站位和料号正确");
+                                    if (curCheckMaterialId == -1) {
+                                        bean = checkItems.get(0);
+                                        bean.setResult("FAIL");
+                                        bean.setRemark("站位与料号不对应");
+                                    } else if (curCheckMaterialId == 1) {
+                                        bean.setResult("PASS");
+                                        bean.setRemark("站位和料号正确");
+                                    }
+                                    showCheckMaterialResult(bean.getResult(), bean.getRemark(), 1, bean);
+                                } else {
+                                    Toast.makeText(getContext(), "料号超出范围", Toast.LENGTH_LONG).show();
+                                    edt_Material.setText("");
+                                    edt_Material.requestFocus();
                                 }
-                                showCheckMaterialResult(bean.getResult(), bean.getRemark(), 1, bean);
-
                                 break;
                         }
                     } else {
@@ -321,6 +303,7 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
             }
         }
         if (curCheckMaterialId < 0) {
+            dismissLoading();
             curLineSeat = scanLine;
             showCheckMaterialResult("FAIL", "排位表不存在此站位！", 0, null);
         } else {
@@ -346,7 +329,6 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
         }
         tv_Remark.setText(strRemark);
         tv_Result.setText(result);
-//        tv_LastInfo.setText("扫描结果\r\n站位:" + curLineSeat + "\r\n" + "料号:" + curMaterial);
         tv_seat.setText("扫描结果:站位:" + curLineSeat);
         tv_check_material.setText("料号:" + curMaterial);
 
@@ -369,7 +351,6 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
         tv_Remark.setTextColor(Color.argb(255, 182, 171, 17));
         tv_Result.setText("WARN");
         tv_Result.setBackgroundColor(Color.YELLOW);
-//        tv_LastInfo.setText("扫描结果\r\n站位:" + lineSeat + "\r\n" + "料号:");
         tv_seat.setText("扫描结果:站位:" + lineSeat);
         tv_check_material.setText("料号:");
     }
@@ -409,45 +390,9 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
      */
     @Override
     public void showHttpResponse(int code, Object request, String s) {
-        dismissLoading();
+//        dismissLoading();
         Log.d(TAG, "showHttpResponse - " + s);
         switch (code) {
-
-            /*
-            case HttpUtils.CodeIsAllDone:
-                int checkFirst = Integer.valueOf(s);
-                switch (checkFirstCondition) {
-                    case 0://扫站位时
-                        if (checkFirst == 1) {
-                            if (!TextUtils.isEmpty(edt_LineSeat.getText())) {
-                                doCheck(edt_LineSeat.getText().toString().trim());
-                            } else {
-                                edt_LineSeat.setText("");
-                            }
-                        } else {
-                            edt_LineSeat.setText("");
-                            qcActivity.showInfo("提示", "IPQC未做首次全检", "");
-                        }
-                        break;
-
-                    case 1:
-                        *//*
-                        if (checkFirst == 0) {
-                            qcActivity.showInfo("提示", "站位表更新!", "IPQC未做首次全检");
-                        }
-                        *//*
-                        break;
-
-                    case 2:
-                        if (checkFirst == 0) {
-                            edt_LineSeat.setText("");
-                            qcActivity.showInfo("提示", "IPQC未做首次全检", "");
-                        }
-                        break;
-
-                }
-                break;
-                */
 
             // TODO: 2019/2/12
             case HttpUtils.CodeIsAllDoneSTR://查询某一项或某几项操作是否完成
@@ -455,48 +400,72 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
                 Gson allDoneGson = new Gson();
                 IsAllDoneInfo isAllDoneInfo = allDoneGson.fromJson(s, IsAllDoneInfo.class);
                 allDoneCode = isAllDoneInfo.getCode();
-                if (allDoneCode == 1) {
-                    IsAllDoneInfo.AllDoneInfoBean allDoneInfoBean = isAllDoneInfo.getData();
-                    int isFirstCheck = Integer.valueOf(allDoneInfoBean.getFirstCheckAll());
-                    Log.d(TAG, "checkAllDoneStrCondition - " + checkAllDoneStrCondition);
-                    Log.d(TAG, "isFirstCheck - " + isFirstCheck);
-                    switch (checkAllDoneStrCondition) {
-                        case 0:
-                            if (isFirstCheck == 1) {
-                                if (!TextUtils.isEmpty(edt_LineSeat.getText())) {
-                                    doCheck(edt_LineSeat.getText().toString().trim());
+                switch (allDoneCode) {
+                    case 1://查询成功
+                        IsAllDoneInfo.AllDoneInfoBean allDoneInfoBean = isAllDoneInfo.getData();
+                        int isFirstCheck = Integer.valueOf(allDoneInfoBean.getFirstCheckAll());
+                        Log.d(TAG, "checkAllDoneStrCondition - " + checkAllDoneStrCondition);
+                        Log.d(TAG, "isFirstCheck - " + isFirstCheck);
+                        switch (checkAllDoneStrCondition) {
+                            case 0://扫站位
+                                if (isFirstCheck == 1) {
+                                    if (!TextUtils.isEmpty(edt_LineSeat.getText())) {
+                                        doCheck(edt_LineSeat.getText().toString().trim());
+                                    } else {
+                                        dismissLoading();
+                                        edt_LineSeat.setText("");
+                                    }
                                 } else {
+                                    dismissLoading();
                                     edt_LineSeat.setText("");
+                                    qcActivity.showInfo("提示", "IPQC未做首次全检", "");
                                 }
-                            } else {
-                                edt_LineSeat.setText("");
-                                qcActivity.showInfo("提示", "IPQC未做首次全检", "");
-                            }
-                            break;
+                                break;
 
-                        case 1:
-                            break;
+                            case 1://来到该页面
+                                dismissLoading();
+                                if (isFirstCheck == 0) {
+                                    edt_LineSeat.setText("");
+                                    qcActivity.showInfo("提示", "IPQC未做首次全检", "");
+                                }
+                                break;
+                        }
+                        break;
 
-                        case 2:
-                            if (isFirstCheck == 0) {
-                                edt_LineSeat.setText("");
-                                qcActivity.showInfo("提示", "IPQC未做首次全检", "");
-                            }
-                            break;
-                    }
+                    case -1://查询失败，不存在此进行中的工单
+                        dismissLoading();
+                        edt_LineSeat.setText("");
+                        qcActivity.showInfo("警告", "此工单不在生产中！", "");
+                        break;
+
+                    case 0://查询失败，参数不存在
+                        dismissLoading();
+                        edt_LineSeat.setText("");
+                        qcActivity.showInfo("警告", "操作失败,请重新扫描！", "");
+                        break;
                 }
                 break;
 
             case HttpUtils.CodeIsChangeSucceed:
+                dismissLoading();
                 int changed = Integer.valueOf(s);
-                if (changed == 1) {
-                    //换料成功
-                    curLineSeat = ((String[]) request)[1];
-                    edt_Material.requestFocus();
-                } else {
-                    //未换料成功
-                    clearAndSetFocus();
-                    showWarnResult(((String[]) request)[1]);
+                switch (changed) {
+                    case 1:
+                        //换料成功
+                        curLineSeat = ((String[]) request)[1];
+                        edt_Material.requestFocus();
+                        break;
+
+                    case 0:
+                        //未换料成功
+                        clearAndSetFocus();
+                        showWarnResult(((String[]) request)[1]);
+                        break;
+
+                    case -1:
+                        edt_LineSeat.setText("");
+                        qcActivity.showInfo("警告", "此工单不在生产中！", "");
+                        break;
                 }
                 break;
 
@@ -509,8 +478,10 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
                     e.printStackTrace();
                     Log.d(TAG, "showHttpResponse - " + e.toString());
                 }
-                if (!updateVisit.equals("succeed")) {
+                if (updateVisit.equals("failed_not_exist")) {
                     globalFunc.showInfo("提示", "核料失败!", "请重新核料");
+                } else if ("不存在此进行中的工单".equals(updateVisit)) {
+                    globalFunc.showInfo("提示", "此工单不在生产中！", "退出App重新登录");
                 }
                 break;
         }
@@ -526,8 +497,12 @@ public class CheckMaterialFragment extends Fragment implements OnEditorActionLis
     public void showHttpError(int code, Object request, String s) {
         dismissLoading();
         switch (code) {
+            case HttpUtils.CodeIsAllDoneSTR:
+//                break;
+            case HttpUtils.CodeIsChangeSucceed:
+//                break;
             case HttpUtils.CodeAddVisit:
-                globalFunc.showInfo("操作失败", "请重新操作!", "请重新操作!");
+                globalFunc.showInfo("操作失败", "请检查网络!", "请重新操作!");
                 clearAndSetFocus();
                 break;
         }

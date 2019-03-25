@@ -15,8 +15,8 @@ android {
         applicationId "com.jimi.smt.eps_appclient"
         minSdkVersion 18
         targetSdkVersion 26
-        versionCode 19
-        versionName "EPS-App_2.2.0_201902140924"
+        versionCode 23
+        versionName "EPS-App_2.3.2_201903200800"
         multiDexEnabled true
 
         //添加部分
