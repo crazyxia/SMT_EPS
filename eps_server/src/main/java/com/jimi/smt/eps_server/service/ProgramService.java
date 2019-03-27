@@ -37,7 +37,7 @@ public interface ProgramService {
 	 * @throws InvalidFormatException 无效的格式异常
 	 * @throws XLSException 解析异常
 	 */
-	List<Map<String, Object>> upload(MultipartFile programFile, Integer boardType) throws IOException, RuntimeException, InvalidFormatException;
+	Map<String, Object> upload(MultipartFile programFile, Integer boardType) throws IOException, RuntimeException, InvalidFormatException;
 
 
 	/**

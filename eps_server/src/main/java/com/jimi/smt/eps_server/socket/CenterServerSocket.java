@@ -123,11 +123,6 @@ public class CenterServerSocket {
 	@OnClose
 	public void onClose(@PathParam("centerMac") String centerMac, Session session) {
 		DisplayServerSocket.sendCenterOfflineInfo(centerMac);
-		/*try {
-			session.close();
-		} catch (IOException e) {
-			logger.error(e.getMessage());
-		}*/
 		String mac = centerMac.replaceAll(":", " ");
 		clients.remove(mac);
 		insertSocketLog("Mac地址为 " + centerMac + " 的中控已关闭连接", "", "", "");

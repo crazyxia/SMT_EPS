@@ -13,6 +13,8 @@ import com.alibaba.fastjson.JSON;
 import com.jimi.smt.eps_server.annotation.Log;
 import com.jimi.smt.eps_server.entity.ActionLog;
 import com.jimi.smt.eps_server.mapper.ActionLogMapper;
+import com.jimi.smt.eps_server.util.IpHelper;
+
 
 /**
  * 日志拦截器，对带有@Log注解的方法进行日志记录
@@ -22,17 +24,17 @@ public class LogInterceptor extends HandlerInterceptorAdapter {
 
 	@Autowired
 	private ActionLogMapper actionLogMapper;
-	
-	
+
+
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-		if(handler.getClass().isAssignableFrom(HandlerMethod.class)){
-			//拦截带@Log注解的方法
+		if (handler.getClass().isAssignableFrom(HandlerMethod.class)) {
+			// 拦截带@Log注解的方法
 			Log log = ((HandlerMethod) handler).getMethodAnnotation(Log.class);
-			if(log != null) {
-				//记录日志
+			if (log != null) {
+				// 记录日志
 				String url = request.getRequestURL().toString();
-				String ip = request.getRemoteAddr();
+				String ip = IpHelper.getCliectIp(request);
 				String parameters = JSON.toJSONString(request.getParameterMap());
 				ActionLog actionLog = new ActionLog();
 				actionLog.setIp(ip);
@@ -40,8 +42,8 @@ public class LogInterceptor extends HandlerInterceptorAdapter {
 				actionLog.setTime(new Date());
 				actionLog.setUrl(url);
 				int result = actionLogMapper.insert(actionLog);
-				//日志插入失败时不执行后续
-				if(result == 0) {
+				// 日志插入失败时不执行后续
+				if (result == 0) {
 					return false;
 				}
 			}

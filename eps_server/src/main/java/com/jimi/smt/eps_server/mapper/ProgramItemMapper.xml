@@ -270,4 +270,22 @@
     where program_id = #{programId,jdbcType=VARCHAR}
     order by lineseat,serial_no,material_no
   </select>
+  <insert id="insertProgramItemList" parameterType="java.util.List">
+	insert into program_item (program_id, lineseat, material_no,
+	alternative, specitification, position,
+	quantity, serial_no)
+	values
+	 <foreach collection="list" index="index" item="item" separator=",">
+		(
+		#{item.programId},
+		#{item.lineseat},
+		#{item.materialNo},
+		#{item.alternative},
+		#{item.specitification},
+		#{item.position},
+		#{item.quantity},
+		#{item.serialNo}
+		)
+	 </foreach>
+	</insert>
 </mapper>

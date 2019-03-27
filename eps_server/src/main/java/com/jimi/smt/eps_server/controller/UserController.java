@@ -133,6 +133,7 @@ public class UserController {
 	 * 登录
 	 * @date 2019年1月29日 下午5:36:03
 	 */
+	@Log
 	@Open
 	@ResponseBody
 	@RequestMapping("/login")

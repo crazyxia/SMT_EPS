@@ -30,4 +30,6 @@ public interface ProgramItemMapper {
     int updateByPrimaryKey(ProgramItem record);
     
     List<ProgramItem> selectProgramItem(String programId);
+    
+	int insertProgramItemList(List<ProgramItem> programItems);
 }

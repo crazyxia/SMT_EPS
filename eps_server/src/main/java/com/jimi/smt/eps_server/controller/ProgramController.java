@@ -175,7 +175,7 @@ public class ProgramController {
 		}
 	}
 
-	
+
 	/**@author HCJ
 	 * 上传站位表
 	 * @date 2019年1月29日 下午5:41:34
@@ -195,11 +195,11 @@ public class ProgramController {
 			return ResultUtil.failed("400", "上传失败，必须为xls\\xlsx格式的文件");
 		}
 
-		List<Map<String, Object>> resultList = null;
+		Map<String, Object> result = null;
 
 		// 格式检查
 		try {
-			resultList = programService.upload(programFile, boardType);
+			result = programService.upload(programFile, boardType);
 		} catch (IOException e) {
 			return ResultUtil.failed("400", "上传失败，IO错误，请重试，或联系开发者");
 		} catch (InvalidFormatException e) {
@@ -211,26 +211,18 @@ public class ProgramController {
 		// 结果检查
 		StringBuffer sb = new StringBuffer();
 		boolean isSucceed = true;
-		for (Map<String, Object> result : resultList) {
-			int realParseNum = (int) result.get("realParseNum");
-			int planParseNum = (int) result.get("planParseNum");
-			String actionName = (String) result.get("actionName");
-			List<String> errorInfos = (List<String>) result.get("errorInfos");
-			if (errorInfos != null && errorInfos.size() > 0) {
-				isSucceed = false;
-				if (realParseNum == 0) {
-					sb.append("操作失败，请检查是否有空表或表中是否有空行，错误信息如下:\n");
-				} else if (realParseNum < planParseNum) {
-					sb.append(actionName + "完成，共检测到" + planParseNum + "张表，但只解析成功" + realParseNum + "张表，请检查是否有空表或表中是否有空行，错误信息如下:\n");
-				} else {
-					sb.append("请检查表中是否有空行或者内容长度是否过长，错误信息如下:\n");
-				}
-				for (String errorInfo : errorInfos) {
-					sb.append(errorInfo + "\n");
-				}
-			} else {
-				sb.append(actionName + "完成，共解析到" + realParseNum + "张表\n");
+
+		int realParseNum = (int) result.get("realParseNum");
+		String actionName = (String) result.get("actionName");
+		List<String> errorInfos = (List<String>) result.get("errorInfos");
+		if (errorInfos != null && errorInfos.size() > 0) {
+			isSucceed = false;
+			sb.append("操作失败，错误信息如下:\n");
+			for (String errorInfo : errorInfos) {
+				sb.append(errorInfo + "\n");
 			}
+		} else {
+			sb.append(actionName + "完成，共解析到" + realParseNum + "张表\n");
 		}
 		if (isSucceed) {
 			return ResultUtil.succeed("200", sb.toString());
@@ -239,7 +231,7 @@ public class ProgramController {
 		}
 	}
 
-	
+
 	/**@author HCJ
 	 * Display切换工单时更新数据库记录
 	 * @date 2019年1月29日 下午5:42:11

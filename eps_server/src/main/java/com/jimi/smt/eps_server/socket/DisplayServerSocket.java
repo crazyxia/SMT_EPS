@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.websocket.CloseReason;
 import javax.websocket.OnClose;
@@ -24,8 +25,10 @@ import com.jimi.smt.eps_server.entity.CenterLogin;
 import com.jimi.smt.eps_server.entity.CenterLoginExample;
 import com.jimi.smt.eps_server.entity.Line;
 import com.jimi.smt.eps_server.entity.LineExample;
+import com.jimi.smt.eps_server.entity.LineSelectedInfo;
 import com.jimi.smt.eps_server.mapper.CenterLoginMapper;
 import com.jimi.smt.eps_server.mapper.LineMapper;
+import com.jimi.smt.eps_server.service.ProgramService;
 import com.jimi.smt.eps_server.util.OsHelper;
 
 
@@ -46,6 +49,7 @@ public class DisplayServerSocket {
 
 	private static CenterLoginMapper centerLoginMapper;
 	private static LineMapper lineMapper;
+	private static ProgramService programService;
 
 
 	/**@author HCJ
@@ -67,11 +71,13 @@ public class DisplayServerSocket {
 	 * @date 2019年2月28日 下午5:15:31
 	 */
 	@OnMessage
-	public void onMessage(String message) {
+	public void onMessage(Session session, String message) {
 		if (message != null && message.contains("boardResetReson")) {
 			resetBoardNum(message);
+		} else {
+			sendLineSelectedInfo(session, message);
 		}
-		if(!OsHelper.isProductionEnvironment()) {
+		if (!OsHelper.isProductionEnvironment()) {
 			logger.info("接收到Display客户端的信息： " + message);
 		}
 	}
@@ -84,11 +90,6 @@ public class DisplayServerSocket {
 	 */
 	@OnClose
 	public void onClose(Session session, CloseReason closeReason) {
-		/*try {
-			session.close();
-		} catch (IOException e) {
-			logger.error(e.getMessage());
-		}*/
 		clients.remove(session.getId());
 		if(!OsHelper.isProductionEnvironment()) {
 			logger.info("sessionID为  " + session.getId() + " 的Display客户端与服务端断开连接，原因为：" + closeReason);
@@ -110,8 +111,8 @@ public class DisplayServerSocket {
 		clients.remove(session.getId());
 		logger.error("sessionID为  " + session.getId() + " 的Display客户端与服务端连接出现错误，原因为：" + error.getMessage());
 	}
-	
-	
+
+
 	/**@author HCJ
 	 * 发送中控下线信息到Display
 	 * @param centerMac 中控树莓派Mac地址
@@ -137,8 +138,8 @@ public class DisplayServerSocket {
 			}
 		}
 	}
-	
-	
+
+
 	/**@author HCJ
 	 * 发送中控上线信息到Display
 	 * @param centerMac 中控树莓派Mac地址
@@ -178,6 +179,12 @@ public class DisplayServerSocket {
 	}
 
 
+	@Autowired
+	public void setProgramService(ProgramService programService) {
+		DisplayServerSocket.programService = programService;
+	}
+
+
 	/**@author HCJ
 	 * 根据板子数量重置信息重置板子数量
 	 * @date 2019年2月28日 下午4:05:16
@@ -194,6 +201,25 @@ public class DisplayServerSocket {
 				logger.error("发送板子数量重置信息到中控失败" + e.getMessage());
 			}
 		}
-	} 
+	}
+
+
+	/**@author HCJ
+	 * 发送产线选择信息到Display
+	 * @param lineName 产线名称
+	 * @date 2019年4月9日 下午3:49:34
+	 */
+	private void sendLineSelectedInfo(Session session, String lineName) {
+		String result = programService.switchWorkOrder(lineName, null, null, true);
+		LineSelectedInfo lineSelectedInfo = new LineSelectedInfo(lineName, "true");
+		if ("succeed".equals(result)) {
+			for (Entry<String, Session> clientSet : clients.entrySet()) {
+				Session clientSession = clientSet.getValue();
+				if (clientSession != null && clientSession.isOpen() && !clientSession.equals(session)) {
+					clientSession.getAsyncRemote().sendText(JSONObject.toJSONString(lineSelectedInfo));
+				}
+			}
+		}
+	}
 	
 }

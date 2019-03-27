@@ -11,6 +11,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.web.multipart.MultipartFile;
 
+
 /**获取Excel表格单元格信息
  * @author   HCJ
  * @date     2019年1月29日 上午11:54:21
@@ -45,6 +46,11 @@ public class ExcelPopularGetter extends ExcelHelper {
 	 */
 	private static final int SERIALNO_NUM = 0;
 
+	/**
+	 * sheetName : 表格名称
+	 */
+	private String sheetName;
+
 
 	/**
 	 * 传入一个excel表格，构造Helper
@@ -73,11 +79,20 @@ public class ExcelPopularGetter extends ExcelHelper {
 	}
 
 
+	/**@author HCJ
+	 * 获取表格名称
+	 * @date 2019年3月27日 下午5:35:53
+	 */
+	public String getSheetName() {
+		return sheetName;
+	}
+
+
 	/**
 	 * 根据行数、列数和类型获取excel表格单元的值
 	 */
 	protected Object get(int rowNum, int colNum, RequireType requireType) {
-		String sheetName = workbook.getSheetAt(currentSheetNum).getSheetName();
+		sheetName = workbook.getSheetAt(currentSheetNum).getSheetName();
 		try {
 			Cell cell = workbook.getSheetAt(currentSheetNum).getRow(rowNum).getCell(colNum);
 

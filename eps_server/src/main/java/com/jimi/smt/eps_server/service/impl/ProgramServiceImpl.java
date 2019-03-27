@@ -51,6 +51,7 @@ import com.jimi.smt.eps_server.util.SqlUtil;
 import cc.darhao.dautils.api.FieldUtil;
 import cc.darhao.dautils.api.UuidUtil;
 
+
 @Service
 public class ProgramServiceImpl implements ProgramService {
 
@@ -74,7 +75,7 @@ public class ProgramServiceImpl implements ProgramService {
 	private TimeoutTimer timeoutTimer;
 	@Autowired
 	private LineService lineService;
-	
+
 	/**
 	 * FIELD_LENGTH : 字段最大长度为32
 	 */
@@ -84,22 +85,26 @@ public class ProgramServiceImpl implements ProgramService {
 	 */
 	private static final Integer PCBNO_LENGTH = 64;
 	/**
-	 * FILENAME_AND_PROGRAMNAME_AND_WORKORDER_LENGTH : 料号、文件名、程序名和工单最大长度为128
+	 * MATERIALNO_FILENAME_PROGRAMNAME_WORKORDER_LENGTH : 料号、文件名、程序名和工单最大长度为128
 	 */
-	private static final Integer MATERIALNO_AND_FILENAME_AND_PROGRAMNAME_AND_WORKORDER_LENGTH = 128;
+	private static final Integer MATERIALNO_FILENAME_PROGRAMNAME_WORKORDER_LENGTH = 128;
 	/**
 	 * BOM_LENGTH : Bom最大长度为256
 	 */
 	private static final Integer BOM_LENGTH = 256;
+	/**
+	 * POSITION_SPECITIFICATION_LENGTH : 单板位置和BOM料号/规格最大长度为1024
+	 */
+	private static final Integer POSITION_SPECITIFICATION_LENGTH = 1024;
 
-	
+
 	@Override
-	public List<Map<String, Object>> upload(MultipartFile programFile, Integer boardType) throws IOException, InvalidFormatException {
+	public Map<String, Object> upload(MultipartFile programFile, Integer boardType) throws IOException, InvalidFormatException {
 		// 读文件
 		ExcelPopularGetter getter = ExcelPopularGetter.from(programFile);
 
 		// 初始化结果
-		List<Map<String, Object>> resultList = new ArrayList<Map<String, Object>>();
+		Map<String, Object> result = new HashMap<String, Object>();
 
 		// 因添加流水号而导致的表格列号偏移量
 		int offset = 1;
@@ -116,59 +121,118 @@ public class ProgramServiceImpl implements ProgramService {
 		}
 
 		// 分割解析工单和线号
-		String[] workOrders = getter.getString(4, 6 + offset).split("\\+");
-		String[] lines = getter.getString(3, 6 + offset).split("\\+");
+		String workOrder = getter.getString(4, 6 + offset);
+		String lineName = getter.getString(3, 6 + offset);
 
 		// 判断线号是否正确
-		for (String line : lines) {
-			if (lineService.getLineIdByName(line) == null) {
-				throw new RuntimeException("线号错误：请填写正确的线号");
+		Integer lineId = lineService.getLineIdByName(lineName);
+		if (lineId == null) {
+			throw new RuntimeException("线号错误：请填写正确的线号");
+		}
+
+		// 获取首个表格表头的数据
+		Program program = new Program();
+		program.setClient(getter.getString(2, 1 + offset));
+		program.setMachineName(getter.getString(2, 4 + offset));
+		program.setVersion(getter.getString(2, 6 + offset));
+		program.setMachineConfig(getter.getString(3, 1 + offset));
+		program.setProgramNo(getter.getString(3, 4 + offset));
+		program.setLine(lineId);
+		program.setEffectiveDate(getEffectiveDate(getter.getDate(4, 1 + offset)));
+		program.setPcbNo(getter.getString(4, 4 + offset));
+		program.setBom(getter.getString(5, 1 + offset));
+		program.setProgramName(getter.getString(6, 1 + offset));
+		program.setPlanProduct(getPlanProduct(getter.getString(6, 5 + offset), getter));
+		program.setStructure(getStructure(getter.getString(6, 8 + offset), getter));
+		program.setAuditor(getAuditor(getter.getString(7, 4 + offset), getter));
+		program.setFileName(programFile.getOriginalFilename());
+		program.setId(UuidUtil.get32UUID());
+		program.setCreateTime(getCurrentTime());
+		program.setBoardType(boardType);
+		program.setWorkOrder(workOrder);
+		// 打印到控制台
+		if (!OsHelper.isProductionEnvironment()) {
+			FieldUtil.print(program);
+		}
+
+		// 为第一个表格的表头添加长度错误信息
+		addErrorInfo(program, null, getter, "headerLength", lineName);
+
+		// 获取表格数量
+		int sheetNum = getter.getBook().getNumberOfSheets();
+		result.put("realParseNum", sheetNum);
+		result.put("actionName", "上传");
+
+		// 所有表格表头的文本与第一个表格的文本进行比较
+		if (sheetNum > 1) {
+			for (int i = 1; i < sheetNum; i++) {
+				getter.switchSheet(i);
+				if ((getter.getString(0, 0) != null && !"".equals(getter.getString(0, 0))) || !header.equals(getter.getString(1, 0 + offset))) {
+					throw new RuntimeException("请检查站位表中是否存在空表");
+				}
+				addErrorInfo(program, null, getter, "headerContent", lineName);
 			}
 		}
 
-		// 创建所有工单
-		List<Program> programs = new ArrayList<Program>(workOrders.length * lines.length);
-		for (String line : lines) {
-			for (String workOrder : workOrders) {
-				Program program = new Program();
-				program.setClient(getter.getString(2, 1 + offset));
-				program.setMachineName(getter.getString(2, 4 + offset));
-				program.setVersion(getter.getString(2, 6 + offset));
-				program.setMachineConfig(getter.getString(3, 1 + offset));
-				program.setProgramNo(getter.getString(3, 4 + offset));
-				program.setLine(lineService.getLineIdByName(line));
-				program.setEffectiveDate(getEffectiveDate(getter.getDate(4, 1 + offset)));
-				program.setPcbNo(getter.getString(4, 4 + offset));
-				program.setBom(getter.getString(5, 1 + offset));
-				program.setProgramName(getter.getString(6, 1 + offset));
-				program.setPlanProduct(getPlanProduct(getter.getString(6, 5 + offset), getter));
-				program.setStructure(getStructure(getter.getString(6, 8 + offset), getter));
-				program.setAuditor(getAuditor(getter.getString(7, 4 + offset), getter));
-				program.setFileName(programFile.getOriginalFilename());
-				program.setId(UuidUtil.get32UUID());
-				program.setCreateTime(getCurrentTime());
-				program.setBoardType(boardType);
-				program.setWorkOrder(workOrder);
-				programs.add(program);
+		List<ProgramItem> programItems = new ArrayList<>();
+		// 填充表项
+		for (int i = 0; i < sheetNum; i++) {
+			getter.switchSheet(i);
+			// Excel表格有效的最后一行所在的位置
+			int effectiveLastRowNum;
+			String content = getter.getString(getter.getBook().getSheetAt(i).getLastRowNum() - 4, 2);
+			if (content != null && !"".equals(content) && content.contains("变更记录")) {
+				effectiveLastRowNum = getter.getBook().getSheetAt(i).getLastRowNum() - 4;
+			} else if (content != null && !"".equals(content) && content.contains("执行日期")) {
+				effectiveLastRowNum = getter.getBook().getSheetAt(i).getLastRowNum() - 5;
+			} else {
+				throw new RuntimeException("站位表版本错误，请使用标准站位表");
+			}
+			for (int j = 9; j < effectiveLastRowNum; j++) {
+				ProgramItem programItem = new ProgramItem();
+				String lineseat = getter.getString(j, 0 + offset);
+				// 空表判断
+				if (lineseat.equals("")) {
+					int temp = (int) result.get("realParseNum");
+					result.put("realParseNum", --temp);
+					break;
+				}
+				// 排除手盖
+				if ("手盖".equals(lineseat)) {
+					continue;
+				}
+				if (lineseat.contains("-")) {
+					programItem.setLineseat(formatLineseat(lineseat));
+				} else {
+					getter.getErrorInfos().add("请在第 " + (j + 1) + " 行，第 2 列输入正确的站位格式，如 1-20");
+				}
+				programItem.setMaterialNo(getter.getString(j, 1 + offset));
+				// 填写内容为0或者空时为主料，其他情况时为替料
+				programItem.setAlternative(getter.getBoolean(j, 2 + offset));
+				programItem.setSpecitification(getter.getString(j, 3 + offset));
+				programItem.setPosition(getter.getString(j, 4 + offset));
+				programItem.setQuantity(getter.getInt(j, 5 + offset));
+				programItem.setSerialNo(getter.getInt(j, -1 + offset));
+				// 设置programId
+				programItem.setProgramId(program.getId());
+
+				// 输出到控制台
+				if (!OsHelper.isProductionEnvironment()) {
+					FieldUtil.print(programItem);
+				}
+				programItems.add(programItem);
+
+				// 根据表格主体的内容添加错误信息
+				addErrorInfo(null, programItem, getter, "bodyLength", null);
 			}
 		}
 
-		for (Program program : programs) {
-			// 初始化结果Item
-			Map<String, Object> result = new HashMap<String, Object>();
-			int sum = getter.getBook().getNumberOfSheets();
-			result.put("realParseNum", sum);
-			result.put("planParseNum", sum);
-			result.put("actionName", "上传");
-			
-			// 添加错误信息
-			addErrorInfo(program, getter);
-
+		ProgramExample programExample = new ProgramExample();
+		if (getter.getErrorInfos().size() < 1) {
+			result.put("errorInfos", null);
 			// 覆盖：如果“未开始”的工单列表中存在板面类型、工单号、线号同时一致的工单项目，将被新文件内容覆盖
-			ProgramExample programExample = new ProgramExample();
-			if (getter.getErrorInfos().size() < 1) {
-				// 如果存在符合条件的工单
-				programExample.createCriteria().andWorkOrderEqualTo(program.getWorkOrder()).andBoardTypeEqualTo(program.getBoardType()).andLineEqualTo(program.getLine()).andStateEqualTo(0);
+			programExample.createCriteria().andWorkOrderEqualTo(program.getWorkOrder()).andBoardTypeEqualTo(program.getBoardType()).andLineEqualTo(program.getLine()).andStateEqualTo(0);
+			try {
 				List<Program> programs2 = programMapper.selectByExample(programExample);
 				if (!programs2.isEmpty()) {
 					programMapper.updateByExampleSelective(program, programExample);
@@ -176,76 +240,18 @@ public class ProgramServiceImpl implements ProgramService {
 					programItemExample.createCriteria().andProgramIdEqualTo(programs2.get(0).getId());
 					programItemMapper.deleteByExample(programItemExample);
 					result.put("actionName", "覆盖");
-				} else{
+				} else {
 					programMapper.insertSelective(program);
 				}
+				programItemMapper.insertProgramItemList(programItems);
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw new RuntimeException("更新数据库出错");
 			}
-
-			// 打印到控制台
-			if (!OsHelper.isProductionEnvironment()) {
-				FieldUtil.print(program);
-			}
-			// 填充表项
-			for (int i = 0; i < sum; i++) {
-				getter.switchSheet(i);
-				int effectiveLastRowNum;
-				String content = getter.getString(getter.getBook().getSheetAt(i).getLastRowNum() - 4, 2);
-				if (content != null && !"".equals(content) && content.contains("变更记录")) {
-					effectiveLastRowNum = getter.getBook().getSheetAt(i).getLastRowNum() - 4;
-				} else if (content != null && !"".equals(content) && content.contains("执行日期")) {
-					effectiveLastRowNum = getter.getBook().getSheetAt(i).getLastRowNum() - 5;
-				} else {
-					throw new RuntimeException("站位表版本错误，请使用标准站位表");
-				}
-				for (int j = 9; j < effectiveLastRowNum; j++) {
-					ProgramItem programItem = new ProgramItem();
-					String lineseat = getter.getString(j, 0 + offset);
-					// 空表判断
-					if (lineseat.equals("")) {
-						int temp = (int) result.get("realParseNum");
-						result.put("realParseNum", --temp);
-						break;
-					}
-					// 排除手盖
-					if ("手盖".equals(lineseat)) {
-						continue;
-					}
-					if (lineseat.contains("-")) {
-						programItem.setLineseat(formatLineseat(lineseat));
-					} else {
-						getter.getErrorInfos().add("请在第 " + (j + 1) + " 行，第 2 列输入正确的站位格式，如 1-20");
-					}
-					programItem.setMaterialNo(getter.getString(j, 1 + offset));
-					programItem.setAlternative(getter.getBoolean(j, 2 + offset));
-					programItem.setSpecitification(getter.getString(j, 3 + offset));
-					programItem.setPosition(getter.getString(j, 4 + offset));
-					programItem.setQuantity(getter.getInt(j, 5 + offset));
-					programItem.setSerialNo(getter.getInt(j, -1 + offset));
-					// 设置programId
-					programItem.setProgramId(program.getId());
-					// 忽略重复项
-					try {
-						if (getter.getErrorInfos().size() < 1) {
-							
-							// 插入表项
-							programItemMapper.insert(programItem);
-							// 打印到控制台
-							if (!OsHelper.isProductionEnvironment()) {
-								FieldUtil.print(programItem);
-							}
-						}
-					} catch (DuplicateKeyException e) {
-					}
-				}
-			}
-			if (getter.getErrorInfos().size() > 0) {
-				result.put("errorInfos", getter.getErrorInfos());
-			} else {
-				result.put("errorInfos", null);
-			}
-			resultList.add(result);
+		} else {
+			result.put("errorInfos", getter.getErrorInfos());
 		}
-		return resultList;
+		return result;
 	}
 
 
@@ -295,7 +301,7 @@ public class ProgramServiceImpl implements ProgramService {
 		return programVOs;
 	}
 
-	
+
 	@Override
 	public List<ProgramItemVO> listItem(String id) {
 		ProgramItemExample example = new ProgramItemExample();
@@ -303,7 +309,7 @@ public class ProgramServiceImpl implements ProgramService {
 		return programItemToProgramItemVOFiller.fill(programItemMapper.selectByExample(example));
 	}
 
-	
+
 	@Override
 	public String updateItem(List<EditProgramItemBO> BOs) {
 		// 获取ProgramId
@@ -356,8 +362,7 @@ public class ProgramServiceImpl implements ProgramService {
 				for (int i = 0; i < items.size(); i++) {
 					ProgramItem programItem = items.get(i);
 					// 匹配记录
-					if (bo.getTargetLineseat().equals(programItem.getLineseat())
-							&& bo.getTargetMaterialNo().equals(programItem.getMaterialNo())) {
+					if (bo.getTargetLineseat().equals(programItem.getLineseat()) && bo.getTargetMaterialNo().equals(programItem.getMaterialNo())) {
 						int index = items.indexOf(programItem);
 						// 执行编辑操作
 						switch (bo.getOperation()) {
@@ -416,8 +421,7 @@ public class ProgramServiceImpl implements ProgramService {
 			}else {
 				for (ProgramItemVisit newVisit : newVisits) {
 					for (ProgramItemVisit oldVisit : oldVisits) {
-						if (newVisit.getLineseat().equals(oldVisit.getLineseat())
-								&& newVisit.getMaterialNo().equals(oldVisit.getMaterialNo())) {
+						if (newVisit.getLineseat().equals(oldVisit.getLineseat()) && newVisit.getMaterialNo().equals(oldVisit.getMaterialNo())) {
 							// 覆盖数据
 							FieldUtil.copy(oldVisit, newVisit);
 							// 设置新id
@@ -434,7 +438,7 @@ public class ProgramServiceImpl implements ProgramService {
 		return "succeed";
 	}
 
-	
+
 	@Override
 	public boolean cancel(String id) {
 		ProgramExample example = new ProgramExample();
@@ -461,7 +465,7 @@ public class ProgramServiceImpl implements ProgramService {
 		}
 	}
 
-	
+
 	@Override
 	public boolean finish(String id) {
 		ProgramExample example = new ProgramExample();
@@ -488,7 +492,7 @@ public class ProgramServiceImpl implements ProgramService {
 		}
 	}
 
-	
+
 	@Override
 	public String start(String id) {
 		ProgramExample example = new ProgramExample();
@@ -530,7 +534,7 @@ public class ProgramServiceImpl implements ProgramService {
 		}
 	}
 
-	
+
 	@Override
 	public String switchWorkOrder(String line, String workOrder, Integer boardType, Boolean selected) {
 		if (line == null || line.equals("")) {
@@ -675,13 +679,13 @@ public class ProgramServiceImpl implements ProgramService {
 		programItemVisitMapper.updateByPrimaryKey(visit);
 	}
 
-	
+
 	@Override
 	public List<Display> listDisplays() {		
 		return displayMapper.selectByExample(null);
 	}
 
-	
+
 	@Override
 	public List<ProgramVO> selectWorkingProgram(String line) {
 		ProgramExample programExample = new ProgramExample();
@@ -698,7 +702,7 @@ public class ProgramServiceImpl implements ProgramService {
 		return null;
 	}
 
-	
+
 	@Override
 	public Integer updateItemVisit(ProgramItemVisit programItemVisit) {
 		ProgramExample programExample = new ProgramExample();
@@ -771,7 +775,7 @@ public class ProgramServiceImpl implements ProgramService {
 		}
 	}
 
-	
+
 	@Override
 	public Integer resetCheckAll(String programId) {
 		ProgramItemVisitExample example = new ProgramItemVisitExample();
@@ -785,7 +789,7 @@ public class ProgramServiceImpl implements ProgramService {
 		return programItemVisitMapper.updateByExampleSelective(programItemVisit, example);
 	}
 
-	
+
 	@Override
 	public Integer checkIsReset(String programId, int type) {
 		int lastResult = 0;
@@ -852,7 +856,7 @@ public class ProgramServiceImpl implements ProgramService {
 		return lastResult;
 	}
 
-	
+
 	@Override
 	public ResultUtil2 isAllDone(String programId, String type) {
 		ResultUtil2 result = new ResultUtil2();
@@ -881,8 +885,8 @@ public class ProgramServiceImpl implements ProgramService {
 		}
 		return result;
 	}
-	
-	
+
+
 	@Override
 	public Integer isChangeSucceed(String programId, String lineseat) {
 		int result = 1;
@@ -903,7 +907,7 @@ public class ProgramServiceImpl implements ProgramService {
 		return result;
 	}
 
-	
+
 	@Override
 	public List<String> selectWorkingOrder(String line) {
 		Integer lineId = lineService.getLineIdByName(line);
@@ -921,7 +925,7 @@ public class ProgramServiceImpl implements ProgramService {
 		return null;
 	}
 
-	
+
 	@Override
 	public List<Integer> selectWorkingBoardType(String line, String workOrder) {
 		Integer lineId = lineService.getLineIdByName(line);
@@ -940,7 +944,7 @@ public class ProgramServiceImpl implements ProgramService {
 		return null;
 	}
 
-	
+
 	@Override
 	public List<ProgramItemVisit> selectItemVisitByProgram(String line, String workOrder, int boardType) {
 		Integer lineId = lineService.getLineIdByName(line);
@@ -954,7 +958,7 @@ public class ProgramServiceImpl implements ProgramService {
 		return null;
 	}
 
-	
+
 	@Override
 	public String selectLastOperatorByProgram(String line, String workOrder, Integer boardType) {
 		Integer lineId = lineService.getLineIdByName(line);
@@ -968,7 +972,7 @@ public class ProgramServiceImpl implements ProgramService {
 		return null;
 	}
 
-	
+
 	@Override
 	public ResultUtil2 getProgramId(String line, String workOrder, Integer boardType) {
 		Integer lineId = lineService.getLineIdByName(line);
@@ -992,7 +996,7 @@ public class ProgramServiceImpl implements ProgramService {
 		return resultUtil2;
 	}
 
-	
+
 	@Override
 	public String isCheckAllTimeOut(String line, String workOrder, Integer boardType) {
 		Integer isCheckAllTimeOutExist = 1;
@@ -1037,13 +1041,6 @@ public class ProgramServiceImpl implements ProgramService {
 	}
 
 
-	private void clearVisits(String programId) {
-		ProgramItemVisitExample programItemVisitExample = new ProgramItemVisitExample();
-		programItemVisitExample.createCriteria().andProgramIdEqualTo(programId);
-		programItemVisitMapper.deleteByExample(programItemVisitExample);
-	}
-
-	
 	private String formatLineseat(String in) {
 		try {
 			String[] array = in.split("-");
@@ -1054,8 +1051,8 @@ public class ProgramServiceImpl implements ProgramService {
 			return in;
 		}
 	}
-				
-	
+
+
 	/**@author HCJ
 	 * 获取从Excel表格读取的计划生产数量
 	 * @method getPlanProduct
@@ -1076,8 +1073,8 @@ public class ProgramServiceImpl implements ProgramService {
 			return 0;
 		}
 	}
-	
-	
+
+
 	/**@author HCJ
 	 * 获取从Excel表格读取的联板数
 	 * @date 2019年1月27日 上午10:13:32
@@ -1089,8 +1086,8 @@ public class ProgramServiceImpl implements ProgramService {
 		getter.getErrorInfos().add("连板数必须为数字");
 		return 0;
 	}
-	
-	
+
+
 	/**@author HCJ
 	 * 获取从Excel表格读取的时间
 	 * @date 2019年1月27日 上午10:49:53
@@ -1101,8 +1098,8 @@ public class ProgramServiceImpl implements ProgramService {
 		}
 		return getCurrentTime().toString();
 	}
-	
-	
+
+
 	/**@author HCJ
 	 * 获取从Excel表格读取的审核人
 	 * @date 2019年2月18日 下午3:00:45
@@ -1117,8 +1114,8 @@ public class ProgramServiceImpl implements ProgramService {
 		getter.getErrorInfos().add("审核人不能为空");
 		return "";
 	}
-	
-	
+
+
 	/**@author HCJ
 	 * 判断字符串是否为数字
 	 * @date 2018年11月28日 上午8:40:02
@@ -1135,31 +1132,90 @@ public class ProgramServiceImpl implements ProgramService {
 
 	/**@author HCJ
 	 * 添加错误信息
-	 * @date 2019年1月27日 上午8:40:22
+	 * @param errorInfoType 相关的错误信息类型
+	 * @param lineName 产线名称
+	 * @date 2019年3月27日 上午10:36:55
 	 */
-	private void addErrorInfo(Program program, ExcelPopularGetter getter) {
-		addLengthErrorInfo(program.getClient(), getter, FIELD_LENGTH, "产品客户");
-		addLengthErrorInfo(program.getAuditor(), getter, FIELD_LENGTH, "审核人");
-		addLengthErrorInfo(program.getMachineName(), getter, FIELD_LENGTH, "机型名称");
-		addLengthErrorInfo(program.getFileName(), getter, MATERIALNO_AND_FILENAME_AND_PROGRAMNAME_AND_WORKORDER_LENGTH, "文件名");
-		addLengthErrorInfo(program.getVersion(), getter, FIELD_LENGTH, "版本");
-		addLengthErrorInfo(program.getMachineConfig(), getter, FIELD_LENGTH, "机器配置");
-		addLengthErrorInfo(program.getProgramNo(), getter, FIELD_LENGTH, "程序表编号");
-		addLengthErrorInfo(program.getPcbNo(), getter, PCBNO_LENGTH, "PCB NO");
-		addLengthErrorInfo(program.getBom(), getter, BOM_LENGTH, "BOM文件的信息");
-		addLengthErrorInfo(program.getProgramName(), getter, MATERIALNO_AND_FILENAME_AND_PROGRAMNAME_AND_WORKORDER_LENGTH, "程序名");
-		addLengthErrorInfo(program.getWorkOrder(), getter, MATERIALNO_AND_FILENAME_AND_PROGRAMNAME_AND_WORKORDER_LENGTH, "工单");
+	private void addErrorInfo(Program program, ProgramItem programItem, ExcelPopularGetter getter, String errorInfoType, String lineName) {
+		int offset = 1;
+		if ("headerLength".equals(errorInfoType)) {
+			addLengthErrorInfo(program.getClient(), getter, FIELD_LENGTH, "产品客户");
+			addLengthErrorInfo(program.getAuditor(), getter, FIELD_LENGTH, "审核人");
+			addLengthErrorInfo(program.getMachineName(), getter, FIELD_LENGTH, "机型名称");
+			addLengthErrorInfo(program.getFileName(), getter, MATERIALNO_FILENAME_PROGRAMNAME_WORKORDER_LENGTH, "文件名");
+			addLengthErrorInfo(program.getVersion(), getter, FIELD_LENGTH, "版本");
+			addLengthErrorInfo(program.getMachineConfig(), getter, FIELD_LENGTH, "机器配置");
+			addLengthErrorInfo(program.getProgramNo(), getter, FIELD_LENGTH, "程序表编号");
+			addLengthErrorInfo(program.getPcbNo(), getter, PCBNO_LENGTH, "PCB NO");
+			addLengthErrorInfo(program.getBom(), getter, BOM_LENGTH, "BOM文件的信息");
+			addLengthErrorInfo(program.getProgramName(), getter, MATERIALNO_FILENAME_PROGRAMNAME_WORKORDER_LENGTH, "程序名");
+			addLengthErrorInfo(program.getWorkOrder(), getter, MATERIALNO_FILENAME_PROGRAMNAME_WORKORDER_LENGTH, "工单");
+			addSizeErrorInfo(program.getPlanProduct(), getter, "计划生产总数");
+			addSizeErrorInfo(program.getStructure(), getter, "连板");
+		} else if ("headerContent".equals(errorInfoType)) {
+			addContentMatchErrorInfo(getter.getString(2, 1 + offset), program.getClient(), getter, "产品客户");
+			addContentMatchErrorInfo(getter.getString(2, 4 + offset), program.getMachineName(), getter, "机型名称");
+			addContentMatchErrorInfo(getter.getString(2, 6 + offset), program.getVersion(), getter, "版本");
+			addContentMatchErrorInfo(getter.getString(3, 1 + offset), program.getMachineConfig(), getter, "机器配置");
+			addContentMatchErrorInfo(getter.getString(3, 4 + offset), program.getProgramNo(), getter, "程序表编号");
+			addContentMatchErrorInfo(getter.getString(3, 6 + offset), lineName, getter, "线别");
+			addContentMatchErrorInfo(getter.getString(4, 4 + offset), program.getPcbNo(), getter, "PCB NO");
+			addContentMatchErrorInfo(getter.getString(4, 6 + offset), program.getWorkOrder(), getter, "工单");
+			addContentMatchErrorInfo(String.valueOf(getPlanProduct(getter.getString(6, 5 + offset), getter)), program.getPlanProduct().toString(), getter, "计划生产总数");
+			addContentMatchErrorInfo(String.valueOf(getStructure(getter.getString(6, 8 + offset), getter)), program.getStructure().toString(), getter, "连板");
+		} else if ("bodyLength".equals(errorInfoType)) {
+			addLengthErrorInfo(programItem.getLineseat(), getter, FIELD_LENGTH, "站位");
+			addLengthErrorInfo(programItem.getMaterialNo(), getter, MATERIALNO_FILENAME_PROGRAMNAME_WORKORDER_LENGTH, "程序料号");
+			addLengthErrorInfo(programItem.getPosition(), getter, POSITION_SPECITIFICATION_LENGTH, "单板位置");
+			addLengthErrorInfo(programItem.getSpecitification(), getter, POSITION_SPECITIFICATION_LENGTH, "BOM料号/规格");
+			addSizeErrorInfo(programItem.getQuantity(), getter, "数量");
+			addSizeErrorInfo(programItem.getSerialNo(), getter, "序列号");
+		}
 	}
 
-	
+
 	/**@author HCJ
-	 * 添加长度错误信息
-	 * @date 2019年1月27日 上午8:40:49
+	 * 根据文本长度是否符合规范添加错误信息
+	 * @param content 文本内容
+	 * @param length 最大长度
+	 * @date 2019年3月27日 上午10:34:58
 	 */
 	private void addLengthErrorInfo(String content, ExcelPopularGetter getter, Integer length, String field) {
-		if (content.length() > length) {
-			getter.addErrorInfo("" + field + "的长度不能大于 " + length + " ，请及时修改\n");
+		if (content!=null&&content.length() > length) {
+			getter.addErrorInfo("表格 "+getter.getSheetName()+" 的 " + field + " 长度不能大于 " + length + " ，请及时修改\n");
 		}
+	}
+
+
+	/**@author HCJ
+	 * 根据数值大小添加错误信息
+	 * @param number 需要进行判断的数值
+	 * @date 2019年3月27日 上午10:33:40
+	 */
+	private void addSizeErrorInfo(Integer number, ExcelPopularGetter getter, String field) {
+		if (number != null && number.intValue() >= Integer.MAX_VALUE) {
+			getter.addErrorInfo("表格 " + getter.getSheetName() + " 的 " + field + " 大小不能大于或者等于 " + Integer.MAX_VALUE + " ，请及时修改\n");
+		}
+	}
+
+
+	/**@author HCJ
+	 * 根据文本是否匹配添加错误信息
+	 * @param content 要比较的文本内容
+	 * @param standardContent 标准文本内容
+	 * @date 2019年3月27日 上午10:31:38
+	 */
+	private void addContentMatchErrorInfo(String content, String standardContent, ExcelPopularGetter getter, String field) {
+		if (content != null && !standardContent.equals(content)) {
+			getter.addErrorInfo("表格 " + getter.getSheetName() + " 的 " + field + " 必须与第一个表格的 " + field + " 填写一致，请及时修改\n");
+		}
+	}
+
+
+	private void clearVisits(String programId) {
+		ProgramItemVisitExample programItemVisitExample = new ProgramItemVisitExample();
+		programItemVisitExample.createCriteria().andProgramIdEqualTo(programId);
+		programItemVisitMapper.deleteByExample(programItemVisitExample);
 	}
 
 
