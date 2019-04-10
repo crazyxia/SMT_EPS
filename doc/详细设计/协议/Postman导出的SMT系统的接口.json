@@ -1,0 +1,3889 @@
+{
+	"info": {
+		"_postman_id": "50746ba1-219f-4a9b-9bf8-f3052b91d383",
+		"name": "SMT",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "display",
+			"item": [
+				{
+					"name": "返回所有线号",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/line/selectLine",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"line",
+								"selectLine"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "返回所有产线的值",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {},
+								"url": {
+									"raw": "http://{{ip}}:{{port}}/eps_server/line/selectLine",
+									"protocol": "http",
+									"host": [
+										"{{ip}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"eps_server",
+										"line",
+										"selectLine"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "[\n    \"301\",\n    \"302\",\n    \"303\"\n]"
+						}
+					]
+				},
+				{
+					"name": "返回中控登录对象",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "id",
+									"value": "0",
+									"description": "产线的id值",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/login/selectById",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"login",
+								"selectById"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "返回中控登录对象",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "id",
+											"value": "123",
+											"description": "产线的id值",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://{{ip}}:{{port}}/eps_server/login/selectById",
+									"protocol": "http",
+									"host": [
+										"{{ip}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"eps_server",
+										"login",
+										"selectById"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "{\"line\":\"301\",\"mac\":\"123\",\"id\":1,\"ip\":\"123\",\"port\":123}"
+						}
+					]
+				},
+				{
+					"name": "返回产线所有进行中的工单的值",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "line",
+									"value": "301",
+									"description": "线号",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/program/selectWorkingOrder",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"program",
+								"selectWorkingOrder"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "返回产线所有进行中的工单的值",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "line",
+											"value": "307",
+											"description": "线号",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://{{ip}}:{{port}}/eps_server/program/selectWorkingOrder",
+									"protocol": "http",
+									"host": [
+										"{{ip}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"eps_server",
+										"program",
+										"selectWorkingOrder"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "[\n    \"GCE201807021-2-TOP\",\n    \"WFK41807070A-TOP\",\n    \"WW4786-A\",\n    \"POORD005276-BOT\",\n    \"WW4786-B\",\n    \"WFK41807070A-BOT\",\n    \"GCE201807021-2-BOT\",\n    \"WW4771-SIM\",\n    \"WW4771-LED\",\n    \"POORD005276-TOP\"\n]"
+						}
+					]
+				},
+				{
+					"name": "返回产线所有进行中工单版面类型的值",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "workOrder",
+									"value": "WFCP180806004A-SIM",
+									"description": "工单",
+									"type": "text"
+								},
+								{
+									"key": "line",
+									"value": "301",
+									"description": "线号",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/program/selectWorkingBoardType",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"program",
+								"selectWorkingBoardType"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "返回产线所有进行中工单版面类型的值",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "workOrder",
+											"value": "GCE201807021-2-BOT",
+											"description": "工单",
+											"type": "text"
+										},
+										{
+											"key": "line",
+											"value": "307",
+											"description": "线号",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://{{ip}}:{{port}}/eps_server/program/selectBoardTypeByWorkingProgram",
+									"protocol": "http",
+									"host": [
+										"{{ip}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"eps_server",
+										"program",
+										"selectBoardTypeByWorkingProgram"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "[\n    \"1\",\n    \"2\"\n]"
+						}
+					]
+				},
+				{
+					"name": "返回最新操作时的操作人员",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "line",
+									"value": "301",
+									"description": "产线的值",
+									"type": "text"
+								},
+								{
+									"key": "workOrder",
+									"value": "WFCP180806004A-SIM",
+									"type": "text"
+								},
+								{
+									"key": "boardType",
+									"value": "3",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/program/selectLastOperatorByProgram",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"program",
+								"selectLastOperatorByProgram"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "返回最新操作时的操作人员",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "line",
+											"value": "",
+											"description": "产线的值",
+											"type": "text"
+										},
+										{
+											"key": "workOrder",
+											"value": "",
+											"description": "工单",
+											"type": "text"
+										},
+										{
+											"key": "boardType",
+											"value": "",
+											"description": "版面类型",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://{{ip}}:{{port}}/eps_server/operation/selectLastOperatorByProgram",
+									"protocol": "http",
+									"host": [
+										"{{ip}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"eps_server",
+										"operation",
+										"selectLastOperatorByProgram"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [],
+							"body": "\"张三\""
+						}
+					]
+				},
+				{
+					"name": "返回每个站位的操作结果",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "line",
+									"value": "301",
+									"description": "线号",
+									"type": "text"
+								},
+								{
+									"key": "workOrder",
+									"value": "WFCP180806004A-SIM",
+									"description": "工单",
+									"type": "text"
+								},
+								{
+									"key": "boardType",
+									"value": "3",
+									"description": "版面类型",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/program/selectItemVisitByProgram",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"program",
+								"selectItemVisitByProgram"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "返回每个站位的操作结果",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "line",
+											"value": "307",
+											"description": "线号",
+											"type": "text"
+										},
+										{
+											"key": "workOrder",
+											"value": "GCE201807021-2-BOT",
+											"description": "工单",
+											"type": "text"
+										},
+										{
+											"key": "boardType",
+											"value": "2",
+											"description": "版面类型",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://{{ip}}:{{port}}/eps_server/programItemVisit/selectItemVisitByProgram",
+									"protocol": "http",
+									"host": [
+										"{{ip}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"eps_server",
+										"programItemVisit",
+										"selectItemVisitByProgram"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "[\n    {\n        \"lineseat\": \"04-09\",\n        \"materialNo\": \"K3106200300108\",\n        \"programId\": \"855c22f4a6d7491eba3a77f1bf27ab23\",\n        \"scanLineseat\": \"\",\n        \"scanMaterialNo\": \"K3106200300109\",\n        \"lastOperationType\": 4,\n        \"storeIssueResult\": 1,\n        \"storeIssueTime\": 1533903983000,\n        \"feedResult\": 2,\n        \"feedTime\": 1533901567000,\n        \"changeResult\": 2,\n        \"changeTime\": 1533901567000,\n        \"checkResult\": 2,\n        \"checkTime\": 1533901567000,\n        \"checkAllResult\": 2,\n        \"checkAllTime\": 1533901567000,\n        \"firstCheckAllResult\": 2,\n        \"firstCheckAllTime\": 1533901567000,\n        \"lastOperationTime\": 1533903983000\n    },\n    {\n        \"lineseat\": \"04-09\",\n        \"materialNo\": \"K3106200300109\",\n        \"programId\": \"855c22f4a6d7491eba3a77f1bf27ab23\",\n        \"scanLineseat\": \"\",\n        \"scanMaterialNo\": \"K3106200300109\",\n        \"lastOperationType\": 4,\n        \"storeIssueResult\": 1,\n        \"storeIssueTime\": 1533903983000,\n        \"feedResult\": 2,\n        \"feedTime\": 1533901567000,\n        \"changeResult\": 2,\n        \"changeTime\": 1533901567000,\n        \"checkResult\": 2,\n        \"checkTime\": 1533901567000,\n        \"checkAllResult\": 2,\n        \"checkAllTime\": 1533901567000,\n        \"firstCheckAllResult\": 2,\n        \"firstCheckAllTime\": 1533901567000,\n        \"lastOperationTime\": 1533903983000\n    }\n]"
+						}
+					]
+				},
+				{
+					"name": "返回产线是否已经处于监控状态的结果",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "lineId",
+									"value": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/program/isLineMonitored",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"program",
+								"isLineMonitored"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "返回产线是否已经处于监控状态的结果",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "lineId",
+											"value": "0",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://{{ip}}:{{port}}/eps_server/program/isLineMonitored",
+									"protocol": "http",
+									"host": [
+										"{{ip}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"eps_server",
+										"program",
+										"isLineMonitored"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Access-Control-Allow-Headers",
+									"value": "Origin, X-Requested-With, Content-Type, Accept"
+								},
+								{
+									"key": "Access-Control-Allow-Methods",
+									"value": "GET, PUT, DELETE, POST"
+								},
+								{
+									"key": "cache-control",
+									"value": "no-cache"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json;charset=UTF-8"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Thu, 21 Mar 2019 06:08:51 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "\n产线处于监控状态\n{\n    \"result\": \"succeed\"\n}\n\n产线未处于监控状态\n{\n    \"result\": \"failed_not_exist\"\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "app",
+			"item": [
+				{
+					"name": "返回当前产线正在进行的工单列表",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "line",
+									"value": "301",
+									"description": "线号,string类型",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/program/selectWorkingProgram",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"program",
+								"selectWorkingProgram"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "返回当前产线正在进行的工单列表",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "line",
+											"value": "301",
+											"description": "线号,string类型",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://{{ip}}:{{port}}/eps_server/program/selectWorkingProgram",
+									"protocol": "http",
+									"host": [
+										"{{ip}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"eps_server",
+										"program",
+										"selectWorkingProgram"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "text",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"code\": 1,\n    \"msg\": \"此线号存在工单\",\n    \"data\": [\n        {\n            \"id\": \"1daadd12ff284fe7bbf18457943c59d4\",\n            \"line\": \"301\",\n            \"workOrder\": \"GCE201807021-2-BOT\",\n            \"boardType\": 2\n        },\n        {\n            \"id\": \"1daadd12ff284fe7bbf18457943c59d4\",\n            \"line\": \"301\",\n            \"workOrder\": \"GCE201807021-2-BOT\",\n            \"boardType\": 2\n        },\n        {\n            \"id\": \"1daadd12ff284fe7bbf18457943c59d4\",\n            \"line\": \"301\",\n            \"workOrder\": \"GCE201807021-2-BOT\",\n            \"boardType\": 2\n        }\n    ]\n}\n\n{\n    \"code\": 0,\n    \"msg\": \"此线号不存在\"\n}\n\n{\n    \"code\": -1,\n    \"msg\": \"此线号不存在进行中的工单\"\n}"
+						}
+					]
+				},
+				{
+					"name": "返回操作员信息",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "id",
+									"value": "A008",
+									"description": "操作员id,string类型",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/user/selectById",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"user",
+								"selectById"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "返回操作员信息",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "id",
+											"value": "123",
+											"description": "操作员id,string类型",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://{{ip}}:{{port}}/eps_server/user/selectUserById",
+									"protocol": "http",
+									"host": [
+										"{{ip}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"eps_server",
+										"user",
+										"selectUserById"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "text",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"code\": 1,\n    \"msg\": \"操作员存在\",\n    \"data\": {\n        \"id\": \"A008\",\n        \"enabled\": true,\n        \"name\": \"曹仪辉\",\n        \"type\": 1,\n        \"createTime\": 1508987711000,\n        \"classType\": 0\n    }\n}\n\n{\n    \"code\": 0,\n    \"msg\": \"操作员不存在\"\n}"
+						}
+					]
+				},
+				{
+					"name": "获取当前工单的料号信息",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "programId",
+									"value": "000ce344aeb5409daa0a40fd9d8974a7",
+									"description": "工单id",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/program/selectProgramItem",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"program",
+								"selectProgramItem"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "获取当前工单的料号信息",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "programId",
+											"value": "000ce344aeb5409daa0a40fd9d8974a7",
+											"description": "工单id",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://{{ip}}:{{port}}/eps_server/program/selectProgramItem",
+									"protocol": "http",
+									"host": [
+										"{{ip}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"eps_server",
+										"program",
+										"selectProgramItem"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "text",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"code\": 1,\n    \"msg\": \"工单存在\",\n    \"data\": [\n        {\n            \"programId\": \"1e5b2b110ce64408ba8e5248ddbb2631\",\n            \"lineseat\": \"01-10\",\n            \"materialNo\": \"K3108410300530\",\n            \"alternative\": false,\n            \"serialNo\": 1\n        },\n        {\n            \"programId\": \"1e5b2b110ce64408ba8e5248ddbb2631\",\n            \"lineseat\": \"01-11\",\n            \"materialNo\": \"K3108415200530\",\n            \"alternative\": false,\n            \"serialNo\": 2\n        },\n        {\n            \"programId\": \"1e5b2b110ce64408ba8e5248ddbb2631\",\n            \"lineseat\": \"01-12\",\n            \"materialNo\": \"K3108451200530\",\n            \"alternative\": false,\n            \"serialNo\": 3\n        }\n    ]\n}\n\n{\n    \"code\": 0,\n    \"msg\": \"工单不存在\"\n}"
+						}
+					]
+				},
+				{
+					"name": "添加日志到 operation 表",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "\t\t\n\t\t{\n\t\t\"operator\":\"A9990\",\n\t\t\"type\":1,\n\t\t\"result\":\"PASS\",\n\t\t\"lineseat\":\"34-42\",\n\t\t\"materialNo\":\"342344\",\n\t\t\"oldMaterialNo\":\"233455\",\n\t\t\"scanlineseat\":\"2331\",\n\t\t\"remark\":\"料号与站位不符\",\n\t\t\"programId\":\"35663\",\n\t\t\"line\":\"301\",\n\t\t\"workOrder\":\"ddssrds\",\n\t\t\"boardType\":1\n\t\t}"
+						},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/operation/add",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"operation",
+								"add"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "添加日志到 operation 表",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"name": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "\t\t\n\t\t\n\t\t{\n\t\t\"operator\":\"A9990\",\n\t\t\"type\":1,\n\t\t\"result\":\"PASS\",\n\t\t\"lineseat\":\"34-42\",\n\t\t\"materialNo\":\"342344\",\n\t\t\"oldMaterialNo\":\"233455\",\n\t\t\"scanlineseat\":\"2331\",\n\t\t\"remark\":\"料号与站位不符\",\n\t\t\"programId\":\"35663\",\n\t\t\"line\":\"301\",\n\t\t\"workOrder\":\"ddssrds\",\n\t\t\"boardType\":1\n\t\t}"
+								},
+								"url": {
+									"raw": "http://{{ip}}:{{port}}/eps_server/operation/add",
+									"protocol": "http",
+									"host": [
+										"{{ip}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"eps_server",
+										"operation",
+										"add"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "text",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"code\": 1,\n    \"msg\": \"操作成功\"\n}\n\n{\n    \"code\": 0,\n    \"msg\": \"操作失败\"\n}"
+						}
+					]
+				},
+				{
+					"name": "更新操作到program_item_visit 表",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "line",
+									"value": "308",
+									"type": "text"
+								},
+								{
+									"key": "workOrder",
+									"value": "61.01.2248-WW4749-TOP",
+									"type": "text"
+								},
+								{
+									"key": "boardType",
+									"value": "3",
+									"type": "text"
+								},
+								{
+									"key": "type",
+									"value": "3",
+									"type": "text"
+								},
+								{
+									"key": "lineseat",
+									"value": "01-09",
+									"type": "text"
+								},
+								{
+									"key": "scanLineseat",
+									"value": "01-09",
+									"type": "text"
+								},
+								{
+									"key": "scanMaterialNo",
+									"value": "03.01.0333",
+									"type": "text"
+								},
+								{
+									"key": "operationResult",
+									"value": "1",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/program/operate",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"program",
+								"operate"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "更新操作到program_item_visit 表",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "line",
+											"value": "308",
+											"type": "text"
+										},
+										{
+											"key": "workOrder",
+											"value": "61.01.2248-WW",
+											"type": "text"
+										},
+										{
+											"key": "boardType",
+											"value": "3",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "3",
+											"type": "text"
+										},
+										{
+											"key": "lineseat",
+											"value": "01-09",
+											"type": "text"
+										},
+										{
+											"key": "scanLineseat",
+											"value": "01-09",
+											"type": "text"
+										},
+										{
+											"key": "scanMaterialNo",
+											"value": "03.01.0333",
+											"type": "text"
+										},
+										{
+											"key": "operationResult",
+											"value": "1",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://{{ip}}:{{port}}/eps_server/program/operate",
+									"protocol": "http",
+									"host": [
+										"{{ip}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"eps_server",
+										"program",
+										"operate"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Access-Control-Allow-Headers",
+									"value": "Origin, X-Requested-With, Content-Type, Accept"
+								},
+								{
+									"key": "Access-Control-Allow-Methods",
+									"value": "GET, PUT, DELETE, POST"
+								},
+								{
+									"key": "cache-control",
+									"value": "no-cache"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json;charset=UTF-8"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Mon, 11 Mar 2019 02:46:46 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "\n产线不存在返回：\n{\n    \"result\": \"failed_not_exist\"\n}\n\n操作成功返回：\n{\n    \"result\": \"succeed\"\n}\n\n工单不存在返回：\n{\n    \"result\": \"不存在此进行中的工单\"\n}"
+						}
+					]
+				},
+				{
+					"name": "重置当前工单结果",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "line",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "workOrder",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "boardType",
+									"value": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/program/reset",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"program",
+								"reset"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "重置当前工单结果",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "line",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "workOrder",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "boardType",
+											"value": "",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://{{ip}}:{{port}}/eps_server/program/reset",
+									"protocol": "http",
+									"host": [
+										"{{ip}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"eps_server",
+										"program",
+										"reset"
+									]
+								}
+							},
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": "\n产线不存在返回：\n{\n    \"result\": \"failed_not_exist\"\n}\n\n操作成功返回：\n{\n    \"result\": \"succeed\"\n}\n\n工单不存在返回：\n{\n    \"result\": \"不存在此进行中的工单\"\n}"
+						}
+					]
+				},
+				{
+					"name": "根据操作类型更新program_item_visit 表日志",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"programId\":\"8e398ed8e2534a5c8ed186c11d59e78c\",\n\t\"lineseat\":\"02-09\",\n\t\"lastOperationType\":0,\n\t\"feedResult\":1,\n\t\"scanLineseat\":\"456656\",\n\t\"scanMaterialNo\":\"56564\"\n\t\n}"
+						},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/program/updateItemVisit",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"program",
+								"updateItemVisit"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "根据操作类型更新program_item_visit 表日志",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"programId\":\"7ab7335344704cb284130aec0a5b7614\",\n\t\"lineseat\":\"01-01\",\n\t\"lastOperationType\":2,\n\t\"storeIssueResult\":1,\n\t\"scanLineseat\":\"11113\",\n\t\"scanMaterialNo\":\"22222\"\n}"
+								},
+								"url": {
+									"raw": "http://{{ip}}:{{port}}/eps_server/program/updateItemVisit",
+									"protocol": "http",
+									"host": [
+										"{{ip}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"eps_server",
+										"program",
+										"updateItemVisit"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "text",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"code\": 0,\n    \"msg\": \"更新失败\"\n}\n\n\n{\n    \"code\": 1（或者大于0的正整数）,\n    \"msg\": \"更新成功\"\n}\n\n{\n    \"code\": -1,\n    \"msg\": \"不存在此进行中的工单\"\n}"
+						}
+					]
+				},
+				{
+					"name": "判断工单是否重置了",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "programId",
+									"value": "b836686217ca497fa15566ab3de89d83",
+									"description": "工单id",
+									"type": "text"
+								},
+								{
+									"key": "type",
+									"value": "3",
+									"description": "0:上料 1:换料 2:核料 3:全检 4:发料 5:首检",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/program/checkIsReset",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"program",
+								"checkIsReset"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "返回工单是否重置的结果",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "programId",
+											"value": "267123c2d9a343f19299a8ba07c7f745",
+											"description": "工单id",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "2",
+											"description": "0:上料 1:换料 2:核料 3:全检 4:发料 5:首检",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://{{ip}}:{{port}}/eps_server/program/checkIsReset",
+									"protocol": "http",
+									"host": [
+										"{{ip}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"eps_server",
+										"program",
+										"checkIsReset"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "text",
+							"header": [],
+							"cookie": [],
+							"body": "\n\t返回-1，表示不存在此进行中的工单\n\t返回1，表示重置\n\t返回0，表示未重置"
+						}
+					]
+				},
+				{
+					"name": "首检完成后重置全检时间和全检结果",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "programId",
+									"value": "7ab7335344704cb284130aec0a5b7614",
+									"description": "工单id",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/program/resetCheckAll",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"program",
+								"resetCheckAll"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "首检完成后重置全检时间",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "programId",
+											"value": "b836686217ca497fa15566ab3de89d83",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://{{ip}}:{{port}}/eps_server/program/resetCheckAll",
+									"protocol": "http",
+									"host": [
+										"{{ip}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"eps_server",
+										"program",
+										"resetCheckAll"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "text",
+							"header": [],
+							"cookie": [],
+							"body": "\n\t返回-1，表示不存在此进行中的工单\n\t返回0，表示操作失败\n\t返回大于0的正整数，表示操作成功"
+						}
+					]
+				},
+				{
+					"name": "返回某个工单是否全部完成某项操作的结果",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "programId",
+									"value": "2d69d7cd3e4a44349b2297c9b7c4ea9c",
+									"description": "工单id",
+									"type": "text"
+								},
+								{
+									"key": "type",
+									"value": "0&1&3&4",
+									"description": "0:上料 1:换料 2:核料 3:全检 4:发料 5:首检",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/program/isAllDone",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"program",
+								"isAllDone"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "返回某个工单是否全部完成某项操作的结果",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "programId",
+											"value": "2d69d7cd3e4a44349b2297c9b7c4ea9c",
+											"description": "工单id",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "",
+											"description": "0:上料 1:换料 2:核料 3:全检 4:发料 5:首检",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://10.10.11.90:8080/eps_server/program/isAllDone",
+									"protocol": "http",
+									"host": [
+										"10",
+										"10",
+										"11",
+										"90"
+									],
+									"port": "8080",
+									"path": [
+										"eps_server",
+										"program",
+										"isAllDone"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Access-Control-Allow-Headers",
+									"value": "Origin, X-Requested-With, Content-Type, Accept"
+								},
+								{
+									"key": "Access-Control-Allow-Methods",
+									"value": "GET, PUT, DELETE, POST"
+								},
+								{
+									"key": "cache-control",
+									"value": "no-cache"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json;charset=UTF-8"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 12 Feb 2019 02:41:57 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"code\": 0,\n    \"msg\": \"查询失败，参数不存在\"\n}\n\n{\n    \"code\": -1,\n    \"msg\": \"查询失败，不存在此进行中的工单\"\n}\n\n{\n    \"code\": 1,\n    \"msg\": \"查询成功\",\n    \"data\": {\n        \"store\": \"1\",\n        \"feed\": \"1\",\n        \"change\": \"0\",\n        \"check\": \"\",\n        \"checkAll\": \"0\",\n        \"firstCheckAll\": \"\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "返回所有线号",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/line/selectLine",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"line",
+								"selectLine"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "返回所有线号",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {},
+								"url": {
+									"raw": "http://{{ip}}:{{port}}/eps_server/line/selectLine",
+									"protocol": "http",
+									"host": [
+										"{{ip}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"eps_server",
+										"line",
+										"selectLine"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "[\"301\",\"302\",\"303\"]"
+						}
+					]
+				},
+				{
+					"name": "核料时判断某个站位是否换料成功",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "programId",
+									"value": "207e854290864e2fa645944a33f65549",
+									"description": "工单id",
+									"type": "text"
+								},
+								{
+									"key": "lineseat ",
+									"value": "01-03",
+									"description": "站位",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/program/isChangeSucceed",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"program",
+								"isChangeSucceed"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "核料时判断某个站位是否换料成功",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "programId",
+											"value": "b2e075bbe12a4927b164f47ac9918943",
+											"description": "工单id",
+											"type": "text"
+										},
+										{
+											"key": "lineseat ",
+											"value": "08-23",
+											"description": "站位",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://{{ip}}:{{port}}/eps_server/program/isChangeSucceed",
+									"protocol": "http",
+									"host": [
+										"{{ip}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"eps_server",
+										"program",
+										"isChangeSucceed"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "",
+							"header": [],
+							"cookie": [],
+							"body": "\n\n\t返回-1，表示不存在此进行中的工单\n\t返回1，表示成功\n\t返回0，表示失败"
+						}
+					]
+				},
+				{
+					"name": "返回工单id",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "line",
+									"value": "301",
+									"description": "产线值",
+									"type": "text"
+								},
+								{
+									"key": "workOrder",
+									"value": "61.01.2248-WW4749-TOP",
+									"description": "工单号",
+									"type": "text"
+								},
+								{
+									"key": "boardType",
+									"value": "3",
+									"description": "版面类型",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/program/getProgramId",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"program",
+								"getProgramId"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "返回工单id",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "line",
+											"value": "301",
+											"description": "产线值",
+											"type": "text"
+										},
+										{
+											"key": "workOrder",
+											"value": "61.01.2248-WW4749-TOP111",
+											"description": "工单号",
+											"type": "text"
+										},
+										{
+											"key": "boardType",
+											"value": "3",
+											"description": "版面类型",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://{{ip}}:{{port}}/eps_server/program/getProgramId",
+									"protocol": "http",
+									"host": [
+										"{{ip}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"eps_server",
+										"program",
+										"getProgramId"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Access-Control-Allow-Headers",
+									"value": "Origin, X-Requested-With, Content-Type, Accept"
+								},
+								{
+									"key": "Access-Control-Allow-Methods",
+									"value": "GET, PUT, DELETE, POST"
+								},
+								{
+									"key": "cache-control",
+									"value": "no-cache"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json;charset=UTF-8"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Mon, 11 Mar 2019 04:00:32 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"code\": 0,\n    \"msg\": \"不存在此线号\"\n}\n\n{\n    \"code\": -1,\n    \"msg\": \"不存在此进行中的工单\"\n}\n\n{\n    \"code\": 1,\n    \"msg\": \"8ca0a8440793492aa9fb22b6d7ea4a19\"\n}"
+						}
+					]
+				},
+				{
+					"name": "判断当前工单全检操作是否超时",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "line",
+									"value": "301",
+									"type": "text"
+								},
+								{
+									"key": "workOrder",
+									"value": "WFCP180806004A-BGA",
+									"type": "text"
+								},
+								{
+									"key": "boardType",
+									"value": "2",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/program/isCheckAllTimeOut",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"program",
+								"isCheckAllTimeOut"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "判断当前工单全检操作是否超时",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "line",
+											"value": "301",
+											"type": "text"
+										},
+										{
+											"key": "workOrder",
+											"value": "hcx",
+											"type": "text"
+										},
+										{
+											"key": "boardType",
+											"value": "9",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://{{ip}}:{{port}}/eps_server/program/isCheckAllTimeOut",
+									"protocol": "http",
+									"host": [
+										"{{ip}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"eps_server",
+										"program",
+										"isCheckAllTimeOut"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Access-Control-Allow-Headers",
+									"value": "Origin, X-Requested-With, Content-Type, Accept"
+								},
+								{
+									"key": "Access-Control-Allow-Methods",
+									"value": "GET, PUT, DELETE, POST"
+								},
+								{
+									"key": "cache-control",
+									"value": "no-cache"
+								},
+								{
+									"key": "Accept-Charset",
+									"value": "big5, big5-hkscs, cesu-8, euc-jp, euc-kr, gb18030, gb2312, gbk, ibm-thai, ibm00858, ibm01140, ibm01141, ibm01142, ibm01143, ibm01144, ibm01145, ibm01146, ibm01147, ibm01148, ibm01149, ibm037, ibm1026, ibm1047, ibm273, ibm277, ibm278, ibm280, ibm284, ibm285, ibm290, ibm297, ibm420, ibm424, ibm437, ibm500, ibm775, ibm850, ibm852, ibm855, ibm857, ibm860, ibm861, ibm862, ibm863, ibm864, ibm865, ibm866, ibm868, ibm869, ibm870, ibm871, ibm918, iso-2022-cn, iso-2022-jp, iso-2022-jp-2, iso-2022-kr, iso-8859-1, iso-8859-13, iso-8859-15, iso-8859-2, iso-8859-3, iso-8859-4, iso-8859-5, iso-8859-6, iso-8859-7, iso-8859-8, iso-8859-9, jis_x0201, jis_x0212-1990, koi8-r, koi8-u, shift_jis, tis-620, us-ascii, utf-16, utf-16be, utf-16le, utf-32, utf-32be, utf-32le, utf-8, windows-1250, windows-1251, windows-1252, windows-1253, windows-1254, windows-1255, windows-1256, windows-1257, windows-1258, windows-31j, x-big5-hkscs-2001, x-big5-solaris, x-euc-jp-linux, x-euc-tw, x-eucjp-open, x-ibm1006, x-ibm1025, x-ibm1046, x-ibm1097, x-ibm1098, x-ibm1112, x-ibm1122, x-ibm1123, x-ibm1124, x-ibm1166, x-ibm1364, x-ibm1381, x-ibm1383, x-ibm300, x-ibm33722, x-ibm737, x-ibm833, x-ibm834, x-ibm856, x-ibm874, x-ibm875, x-ibm921, x-ibm922, x-ibm930, x-ibm933, x-ibm935, x-ibm937, x-ibm939, x-ibm942, x-ibm942c, x-ibm943, x-ibm943c, x-ibm948, x-ibm949, x-ibm949c, x-ibm950, x-ibm964, x-ibm970, x-iscii91, x-iso-2022-cn-cns, x-iso-2022-cn-gb, x-iso-8859-11, x-jis0208, x-jisautodetect, x-johab, x-macarabic, x-maccentraleurope, x-maccroatian, x-maccyrillic, x-macdingbat, x-macgreek, x-machebrew, x-maciceland, x-macroman, x-macromania, x-macsymbol, x-macthai, x-macturkish, x-macukraine, x-ms932_0213, x-ms950-hkscs, x-ms950-hkscs-xp, x-mswin-936, x-pck, x-sjis_0213, x-utf-16le-bom, x-utf-32be-bom, x-utf-32le-bom, x-windows-50220, x-windows-50221, x-windows-874, x-windows-949, x-windows-950, x-windows-iso2022jp"
+								},
+								{
+									"key": "Content-Type",
+									"value": "text/plain;charset=UTF-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "50"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 09 Mar 2019 07:54:28 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"code\": -1,\n    \"msg\": \"不存在此进行中的工单\"\n}\n\n{\n    \"code\": 0,\n    \"msg\": \"8ca0a8440793492aa9fb22b6d7ea4a19\"\n}\n\n{\n    \"code\": 1,\n    \"msg\": \"8ca0a8440793492aa9fb22b6d7ea4a19\"\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "printer",
+			"item": [
+				{
+					"name": "返回操作员信息",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "id",
+									"value": "A1544",
+									"description": "用户id",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/user/select",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"user",
+								"select"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "根据id查找用户",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "id",
+											"value": "",
+											"description": "用户id",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://{{ip}}:{{port}}/eps_server/user/select",
+									"protocol": "http",
+									"host": [
+										"{{ip}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"eps_server",
+										"user",
+										"select"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "{\n        \"id\": \"A008\",\n        \"enabled\": true,\n        \"name\": \"曹仪辉\",\n        \"type\": 1,\n        \"createTime\": 1508987711000,\n        \"classType\": 0\n    }"
+						}
+					]
+				},
+				{
+					"name": "批量插入打印日志",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/stock/insert",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"stock",
+								"insert"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "server",
+			"item": [
+				{
+					"name": "显示所有配置",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "#TOKEN#",
+									"value": "A41425DE5676A0B27EEEE7FD5207FCCF",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/config/list",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"config",
+								"list"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "显示所有配置",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "#TOKEN#",
+											"value": "91549495836B35887B7F3096FC133452",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://{{ip}}:{{port}}/eps_server/config/list",
+									"protocol": "http",
+									"host": [
+										"{{ip}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"eps_server",
+										"config",
+										"list"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Access-Control-Allow-Headers",
+									"value": "Origin, X-Requested-With, Content-Type, Accept"
+								},
+								{
+									"key": "Access-Control-Allow-Methods",
+									"value": "GET, PUT, DELETE, POST"
+								},
+								{
+									"key": "cache-control",
+									"value": "no-cache"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json;charset=UTF-8"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 26 Jan 2019 02:19:04 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "[\n    {\n        \"id\": 33,\n        \"name\": \"ipqc_error_alarm\",\n        \"value\": \"0\",\n        \"description\": \"IPQC操作（核料、全检、首检）出错时，系统将执行的操作。0为报警+停接驳台；1为仅报警；2为仅停接驳台；3为无动作\",\n        \"line\": 6,\n        \"enabled\": true,\n        \"alias\": \"IPQC出错时响应\",\n        \"lineName\": \"307\"\n    },\n    {\n        \"id\": 34,\n        \"name\": \"ipqc_error_alarm\",\n        \"value\": \"0\",\n        \"description\": \"IPQC操作（核料、全检、首检）出错时，系统将执行的操作。0为报警+停接驳台；1为仅报警；2为仅停接驳台；3为无动作\",\n        \"line\": 7,\n        \"enabled\": true,\n        \"alias\": \"IPQC出错时响应\",\n        \"lineName\": \"308\"\n    }\n]"
+						}
+					]
+				},
+				{
+					"name": "登录",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "id",
+									"value": "S444222",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "12345678",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/user/login",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"user",
+								"login"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "登录",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "id",
+											"value": "S444222",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "12345678",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://{{ip}}:{{port}}/eps_server/user/login",
+									"protocol": "http",
+									"host": [
+										"{{ip}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"eps_server",
+										"user",
+										"login"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Access-Control-Allow-Headers",
+									"value": "Origin, X-Requested-With, Content-Type, Accept"
+								},
+								{
+									"key": "Access-Control-Allow-Methods",
+									"value": "GET, PUT, DELETE, POST"
+								},
+								{
+									"key": "cache-control",
+									"value": "no-cache"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json;charset=UTF-8"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 26 Jan 2019 02:15:54 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"result\": \"200\",\n    \"data\": {\n        \"id\": \"S444222\",\n        \"enabled\": true,\n        \"name\": \"超级管理员\",\n        \"type\": 3,\n        \"password\": \"12345678\",\n        \"createTime\": 1508384679000,\n        \"classType\": 0,\n        \"typeName\": \"超级管理员\",\n        \"createTimeString\": \"2017-10-19 11:44:39\",\n        \"classTypeName\": \"白班\",\n        \"isEnabled\": \"是\",\n        \"tokenId\": \"91549495836B35887B7F3096FC133452\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "显示物料有效期",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "id",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "materialNo",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "perifdOfValidity",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "orderBy",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "currentPage",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "pageSize",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "#TOKEN#",
+									"value": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/material/list",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"material",
+								"list"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "显示物料有效期",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "id",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "materialNo",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "perifdOfValidity",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "orderBy",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "currentPage",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "pageSize",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "#TOKEN#",
+											"value": "91549495836B35887B7F3096FC133452",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://{{ip}}:{{port}}/eps_server/material/list",
+									"protocol": "http",
+									"host": [
+										"{{ip}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"eps_server",
+										"material",
+										"list"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Access-Control-Allow-Headers",
+									"value": "Origin, X-Requested-With, Content-Type, Accept"
+								},
+								{
+									"key": "Access-Control-Allow-Methods",
+									"value": "GET, PUT, DELETE, POST"
+								},
+								{
+									"key": "cache-control",
+									"value": "no-cache"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json;charset=UTF-8"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 26 Jan 2019 02:16:06 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"page\": {\n        \"firstIndex\": 0,\n        \"currentPage\": 1,\n        \"pageSize\": 20\n    },\n    \"list\": []\n}"
+						}
+					]
+				},
+				{
+					"name": "显示客户报表",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "startTime",
+									"value": "2018-09-15 00:00:00",
+									"type": "text"
+								},
+								{
+									"key": "endTime",
+									"value": "2018-09-20 00:00:00",
+									"type": "text"
+								},
+								{
+									"key": "line",
+									"value": "",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "client",
+									"value": "",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "programNo",
+									"value": "",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "orderNo",
+									"value": "",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "workOrderNo",
+									"value": "WFK41807070B",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "currentPage",
+									"value": "4765",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "pageSize",
+									"value": "20",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "#TOKEN#",
+									"value": "9D1CBE027B5719FC148195084A27C460",
+									"type": "text",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/operation/listClientReport",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"operation",
+								"listClientReport"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "显示客户报表",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "startTime",
+											"value": "2018-09-15 00:00:00",
+											"type": "text"
+										},
+										{
+											"key": "endTime",
+											"value": "2018-09-20 00:00:00",
+											"type": "text"
+										},
+										{
+											"key": "line",
+											"value": "",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "client",
+											"value": "",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "programNo",
+											"value": "",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "orderNo",
+											"value": "",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "workOrderNo",
+											"value": "WFK41807070B",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "currentPage",
+											"value": "4765",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "pageSize",
+											"value": "20",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "#TOKEN#",
+											"value": "91549495836B35887B7F3096FC133452",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://{{ip}}:{{port}}/eps_server/operation/listClientReport",
+									"protocol": "http",
+									"host": [
+										"{{ip}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"eps_server",
+										"operation",
+										"listClientReport"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Access-Control-Allow-Headers",
+									"value": "Origin, X-Requested-With, Content-Type, Accept"
+								},
+								{
+									"key": "Access-Control-Allow-Methods",
+									"value": "GET, PUT, DELETE, POST"
+								},
+								{
+									"key": "cache-control",
+									"value": "no-cache"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json;charset=UTF-8"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 26 Jan 2019 02:16:49 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"page\": {\n        \"firstIndex\": 0,\n        \"currentPage\": 1,\n        \"pageSize\": 20\n    },\n    \"list\": [\n        {\n            \"line\": \"304\",\n            \"materialDescription\": \"-\",\n            \"materialSpecitification\": \"贴片三极管; & ;类型PNP，丝印2L,封装SOT23，Vceo:150,PD:225mW; & ;LMBT5401LT1; & ;LRC; & ;\",\n            \"operationType\": \"全检\",\n            \"workOrderNo\": \"WFCP180917002A\",\n            \"lineseat\": \"08-12\",\n            \"materialNo\": \"K31045401LT100\",\n            \"operator\": \"A1348\",\n            \"time\": \"2018-09-19 23:54:53\"\n        }\n    ]\n}"
+						}
+					]
+				},
+				{
+					"name": "显示操作报表",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "line",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "workOrderNo",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "startTime",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "endTime",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "type",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "currentPage",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "pageSize",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "#TOKEN#",
+									"value": "0224E878C8169606266783F8A8874CE9",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/operation/listOperationReportSummary",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"operation",
+								"listOperationReportSummary"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "显示操作报表",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "line",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "workOrderNo",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "startTime",
+											"value": "2019-1-1 00:00:00",
+											"type": "text"
+										},
+										{
+											"key": "endTime",
+											"value": "2019-1-26 00:00:00",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "currentPage",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "pageSize",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "#TOKEN#",
+											"value": "91549495836B35887B7F3096FC133452",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://{{ip}}:{{port}}/eps_server/operation/listOperationReportSummary",
+									"protocol": "http",
+									"host": [
+										"{{ip}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"eps_server",
+										"operation",
+										"listOperationReportSummary"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Access-Control-Allow-Headers",
+									"value": "Origin, X-Requested-With, Content-Type, Accept"
+								},
+								{
+									"key": "Access-Control-Allow-Methods",
+									"value": "GET, PUT, DELETE, POST"
+								},
+								{
+									"key": "cache-control",
+									"value": "no-cache"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json;charset=UTF-8"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 26 Jan 2019 02:18:42 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"page\": {\n        \"firstIndex\": 0,\n        \"currentPage\": 1,\n        \"pageSize\": 20\n    },\n    \"list\": [\n        {\n            \"line\": \"302\",\n            \"workOrderNo\": \"test\",\n            \"operator\": \"D001\",\n            \"operationType\": \"\",\n            \"passCount\": 48,\n            \"failCount\": 0\n        },\n        {\n            \"line\": \"301\",\n            \"workOrderNo\": \"POORD005276-TOP\",\n            \"operator\": \"D001\",\n            \"operationType\": \"\",\n            \"passCount\": 44,\n            \"failCount\": 0\n        }\n    ]\n}"
+						}
+					]
+				},
+				{
+					"name": "显示出入库报表",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "operator",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "materialNo",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "custom",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "position",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "startTime",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "endTime",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "currentPage",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "pageSize",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "#TOKEN#",
+									"value": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/operation/listStockLogs",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"operation",
+								"listStockLogs"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "显示出入库报表",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "operator",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "materialNo",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "custom",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "position",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "startTime",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "endTime",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "currentPage",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "pageSize",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "#TOKEN#",
+											"value": "91549495836B35887B7F3096FC133452",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://{{ip}}:{{port}}/eps_server/operation/listStockLogs",
+									"protocol": "http",
+									"host": [
+										"{{ip}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"eps_server",
+										"operation",
+										"listStockLogs"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Access-Control-Allow-Headers",
+									"value": "Origin, X-Requested-With, Content-Type, Accept"
+								},
+								{
+									"key": "Access-Control-Allow-Methods",
+									"value": "GET, PUT, DELETE, POST"
+								},
+								{
+									"key": "cache-control",
+									"value": "no-cache"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json;charset=UTF-8"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 26 Jan 2019 02:19:40 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"page\": {\n        \"firstIndex\": 0,\n        \"currentPage\": 1,\n        \"pageSize\": 20\n    },\n    \"list\": [\n        {\n            \"id\": 193495220,\n            \"timestamp\": \"1545876089501\",\n            \"materialNo\": \"K310200VC5318000005\",\n            \"quantity\": 3000,\n            \"operator\": \"A1630\",\n            \"operationTime\": 1545876092000,\n            \"position\": \"E3-10\",\n            \"custom\": \"Sheet1\",\n            \"operationTimeString\": \"2018-12-27 10:01:32\"\n        },\n        {\n            \"id\": 193495219,\n            \"timestamp\": \"1545876089241\",\n            \"materialNo\": \"K310200VC5318000005\",\n            \"quantity\": 3000,\n            \"operator\": \"A1630\",\n            \"operationTime\": 1545876092000,\n            \"position\": \"E3-10\",\n            \"custom\": \"Sheet1\",\n            \"operationTimeString\": \"2018-12-27 10:01:32\"\n        }\n    ]\n}"
+						}
+					]
+				},
+				{
+					"name": "显示站位表",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "programName",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "fileName",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "line",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "workOrder",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "state",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "ordBy",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "currentPage",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "pageSize",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "#TOKEN#",
+									"value": "C669EF2D492F83071F76A9D2F0711934",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/program/list",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"program",
+								"list"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "显示站位表",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "programName",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "fileName",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "line",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "workOrder",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "state",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "ordBy",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "currentPage",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "pageSize",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "#TOKEN#",
+											"value": "91549495836B35887B7F3096FC133452",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://{{ip}}:{{port}}/eps_server/program/list",
+									"protocol": "http",
+									"host": [
+										"{{ip}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"eps_server",
+										"program",
+										"list"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Access-Control-Allow-Headers",
+									"value": "Origin, X-Requested-With, Content-Type, Accept"
+								},
+								{
+									"key": "Access-Control-Allow-Methods",
+									"value": "GET, PUT, DELETE, POST"
+								},
+								{
+									"key": "cache-control",
+									"value": "no-cache"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json;charset=UTF-8"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 26 Jan 2019 02:20:27 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"page\": {\n        \"firstIndex\": 0,\n        \"currentPage\": 1,\n        \"pageSize\": 20\n    },\n    \"list\": [\n        {\n            \"id\": \"01d464adf04d4964a6d76f3c570a81b0\",\n            \"fileName\": \"KNA721D-MK-V3.0-WFXZ11812023A-V12-308.xls\",\n            \"client\": \"KKS\",\n            \"machineName\": \"KNA721D\",\n            \"version\": \"V1.0\",\n            \"machineConfig\": \"8xNXTⅢM3+XPF64L\",\n            \"programNo\": \"SMT-FL-006188\",\n            \"line\": 7,\n            \"effectiveDate\": \"Tue Dec 25 00:00:00 CST 2018\",\n            \"pcbNo\": \"NA721-V3.0\",\n            \"bom\": \"NA721D（B1 B2 B5 B8）EMMC 模块 PCBA量产BOM__2018-12-25整理\",\n            \"programName\": \"KNA721D-MK-V3.0-WFXZ11812023A-V12-308-NXT\",\n            \"auditor\": \"陈威威\",\n            \"createTime\": 1545825557000,\n            \"workOrder\": \"WFXZ11812023A\",\n            \"boardType\": 0,\n            \"state\": 3,\n            \"structure\": 8,\n            \"planProduct\": 30000,\n            \"alreadyProduct\": 0,\n            \"stateName\": \"已作废\",\n            \"boardTypeName\": \"默认\",\n            \"createTimeString\": \"2018-12-26 19:59:17\",\n            \"lineName\": \"308\"\n        },\n        {\n            \"id\": \"4030ebbb96484980bbc626928d519139\",\n            \"fileName\": \"KC3316-JL-MAIN-V1.0-SCG31808002A A+B(1)0905.xls\",\n            \"client\": \"KKS\",\n            \"machineName\": \"KC3316\",\n            \"version\": \"V1.0.2\",\n            \"machineConfig\": \"6xNXTⅢM3+XPF64L\",\n            \"programNo\": \"SMT-FL-000010\",\n            \"line\": 0,\n            \"effectiveDate\": \"Thu Aug 02 00:00:00 CST 2018\",\n            \"pcbNo\": \"KC3316 MAIN PCB（V1.0）20170905\",\n            \"bom\": \"KC3316 MAIN PCBA（京立 A39-5 SC6533G 刀口 带拨动开关）量产BOM\",\n            \"programName\": \"test\",\n            \"auditor\": \"认：\",\n            \"createTime\": 1545822860000,\n            \"workOrder\": \"SCG31808002A\",\n            \"boardType\": 1,\n            \"state\": 3,\n            \"structure\": 4,\n            \"planProduct\": 7100,\n            \"alreadyProduct\": 0,\n            \"stateName\": \"已作废\",\n            \"boardTypeName\": \"AB面\",\n            \"createTimeString\": \"2018-12-26 19:14:20\",\n            \"lineName\": \"301\"\n        }\n    ]\n}"
+						}
+					]
+				},
+				{
+					"name": "显示站位表详细内容",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "id",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "currentPage",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "pageSize",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "#TOKEN#",
+									"value": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/program/listItem",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"program",
+								"listItem"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "显示站位表详细内容",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "id",
+											"value": "01d464adf04d4964a6d76f3c570a81b0",
+											"type": "text"
+										},
+										{
+											"key": "currentPage",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "pageSize",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "#TOKEN#",
+											"value": "91549495836B35887B7F3096FC133452",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://{{ip}}:{{port}}/eps_server/program/listItem",
+									"protocol": "http",
+									"host": [
+										"{{ip}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"eps_server",
+										"program",
+										"listItem"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Access-Control-Allow-Headers",
+									"value": "Origin, X-Requested-With, Content-Type, Accept"
+								},
+								{
+									"key": "Access-Control-Allow-Methods",
+									"value": "GET, PUT, DELETE, POST"
+								},
+								{
+									"key": "cache-control",
+									"value": "no-cache"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json;charset=UTF-8"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 26 Jan 2019 02:21:20 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "[\n    {\n        \"programId\": \"01d464adf04d4964a6d76f3c570a81b0\",\n        \"lineseat\": \"08-92\",\n        \"materialNo\": \"K3102H9TP32A4000085\",\n        \"alternative\": true,\n        \"specitification\": \"特用存储器; & ;特用存储器4GB eNAND+4Gb LPDDR2; & ;（H9TP32A4GDCCPR-KGM）; & ;hynix 鸿盛智佳; & ;\",\n        \"position\": \"U402\",\n        \"quantity\": 0,\n        \"serialNo\": 0,\n        \"isAlternative\": \"是\"\n    },\n    {\n        \"programId\": \"01d464adf04d4964a6d76f3c570a81b0\",\n        \"lineseat\": \"08-92\",\n        \"materialNo\": \"K3102H9TP32A4000095\",\n        \"alternative\": true,\n        \"specitification\": \"特用存储器; & ;EMCP DDR 4G+32bit; & ;(H9TP32A4GDMCPR-KDM); & ;hynix芯宇; & ;\",\n        \"position\": \"U402\",\n        \"quantity\": 0,\n        \"serialNo\": 0,\n        \"isAlternative\": \"是\"\n    }\n]"
+						}
+					]
+				},
+				{
+					"name": "显示用户",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "id",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "classType",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "name",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "type",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "orderBy",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "enabled",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "currentPage",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "pageSize",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "#TOKEN#",
+									"value": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/user/list",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"user",
+								"list"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "显示用户",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "id",
+											"value": "",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "classType",
+											"value": "",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "name",
+											"value": "",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "type",
+											"value": "",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "password",
+											"value": "",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "orderBy",
+											"value": "",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "enabled",
+											"value": "",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "currentPage",
+											"value": "",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "pageSize",
+											"value": "",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "#TOKEN#",
+											"value": "91549495836B35887B7F3096FC133452",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://{{ip}}:{{port}}/eps_server/user/list",
+									"protocol": "http",
+									"host": [
+										"{{ip}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"eps_server",
+										"user",
+										"list"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Access-Control-Allow-Headers",
+									"value": "Origin, X-Requested-With, Content-Type, Accept"
+								},
+								{
+									"key": "Access-Control-Allow-Methods",
+									"value": "GET, PUT, DELETE, POST"
+								},
+								{
+									"key": "cache-control",
+									"value": "no-cache"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json;charset=UTF-8"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 26 Jan 2019 02:22:32 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"page\": {\n        \"firstIndex\": 0,\n        \"currentPage\": 1,\n        \"pageSize\": 20\n    },\n    \"list\": [\n        {\n            \"id\": \"A1155\",\n            \"enabled\": true,\n            \"name\": \"莫才志\",\n            \"type\": 1,\n            \"password\": \"000000\",\n            \"createTime\": 1508987457000,\n            \"classType\": 0,\n            \"typeName\": \"厂线操作员\",\n            \"createTimeString\": \"2017-10-26 11:10:57\",\n            \"classTypeName\": \"白班\",\n            \"isEnabled\": \"是\"\n        },\n        {\n            \"id\": \"A1156\",\n            \"enabled\": false,\n            \"name\": \"黄冬\",\n            \"type\": 2,\n            \"password\": \"000000\",\n            \"createTime\": 1510052027000,\n            \"classType\": 0,\n            \"typeName\": \"IPQC\",\n            \"createTimeString\": \"2017-11-07 18:53:47\",\n            \"classTypeName\": \"白班\",\n            \"isEnabled\": \"否\"\n        }\n    ]\n}"
+						}
+					]
+				},
+				{
+					"name": "增加物料有效期",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "materialNo",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "perifdOfValidity",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "#TOKEN#",
+									"value": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/material/add",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"material",
+								"add"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "增加物料有效期",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "materialNo",
+											"value": "111",
+											"type": "text"
+										},
+										{
+											"key": "perifdOfValidity",
+											"value": "2222",
+											"type": "text"
+										},
+										{
+											"key": "#TOKEN#",
+											"value": "91549495836B35887B7F3096FC133452",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://{{ip}}:{{port}}/eps_server/material/add",
+									"protocol": "http",
+									"host": [
+										"{{ip}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"eps_server",
+										"material",
+										"add"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Access-Control-Allow-Headers",
+									"value": "Origin, X-Requested-With, Content-Type, Accept"
+								},
+								{
+									"key": "Access-Control-Allow-Methods",
+									"value": "GET, PUT, DELETE, POST"
+								},
+								{
+									"key": "cache-control",
+									"value": "no-cache"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json;charset=UTF-8"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 26 Jan 2019 02:26:26 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"result\": \"succeed\"\n}"
+						}
+					]
+				},
+				{
+					"name": "新增用户",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "id",
+									"value": "zaax",
+									"type": "text"
+								},
+								{
+									"key": "classType",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "name",
+									"value": "111",
+									"type": "text"
+								},
+								{
+									"key": "type",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "#TOKEN#",
+									"value": "70FFED2D0A69CB4A2F22E0F0DA3B6B0E",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/user/add",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"user",
+								"add"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "新增用户",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "id",
+											"value": "zaax",
+											"type": "text"
+										},
+										{
+											"key": "classType",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "name",
+											"value": "111",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "77",
+											"type": "text"
+										},
+										{
+											"key": "#TOKEN#",
+											"value": "91549495836B35887B7F3096FC133452",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://{{ip}}:{{port}}/eps_server/user/add",
+									"protocol": "http",
+									"host": [
+										"{{ip}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"eps_server",
+										"user",
+										"add"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Access-Control-Allow-Headers",
+									"value": "Origin, X-Requested-With, Content-Type, Accept"
+								},
+								{
+									"key": "Access-Control-Allow-Methods",
+									"value": "GET, PUT, DELETE, POST"
+								},
+								{
+									"key": "cache-control",
+									"value": "no-cache"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json;charset=UTF-8"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 26 Jan 2019 02:26:59 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"result\": \"succeed\"\n}"
+						}
+					]
+				},
+				{
+					"name": "显示操作报表详情",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "operator",
+									"value": "A1240",
+									"type": "text"
+								},
+								{
+									"key": "client",
+									"value": "",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "line",
+									"value": "5",
+									"type": "text"
+								},
+								{
+									"key": "workOrderNo",
+									"value": "WFK81812046-1A-TOP",
+									"type": "text"
+								},
+								{
+									"key": "startTime",
+									"value": "2018-12-27 00:00:00",
+									"type": "text"
+								},
+								{
+									"key": "endTime",
+									"value": "2018-12-28 23:59:59",
+									"type": "text"
+								},
+								{
+									"key": "type",
+									"value": "1",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "currentPage",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "pageSize",
+									"value": "20",
+									"type": "text"
+								},
+								{
+									"key": "#TOKEN#",
+									"value": "35679E82CB2EA9D20F3F7916B0029E7C",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/operation/listOperationReport",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"operation",
+								"listOperationReport"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "显示操作报表详情",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "operator",
+											"value": "A1240",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "client",
+											"value": "",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "line",
+											"value": "5",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "workOrderNo",
+											"value": "WFK81812046-1A-TOP",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "startTime",
+											"value": "2018-12-27 00:00:00",
+											"type": "text"
+										},
+										{
+											"key": "endTime",
+											"value": "2018-12-28 23:59:59",
+											"type": "text"
+										},
+										{
+											"key": "type",
+											"value": "1",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "currentPage",
+											"value": "1",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "pageSize",
+											"value": "20",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "#TOKEN#",
+											"value": "91549495836B35887B7F3096FC133452",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://{{ip}}:{{port}}/eps_server/operation/listOperationReport",
+									"protocol": "http",
+									"host": [
+										"{{ip}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"eps_server",
+										"operation",
+										"listOperationReport"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Access-Control-Allow-Headers",
+									"value": "Origin, X-Requested-With, Content-Type, Accept"
+								},
+								{
+									"key": "Access-Control-Allow-Methods",
+									"value": "GET, PUT, DELETE, POST"
+								},
+								{
+									"key": "cache-control",
+									"value": "no-cache"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json;charset=UTF-8"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 26 Jan 2019 02:27:39 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"page\": {\n        \"firstIndex\": 0,\n        \"currentPage\": 1,\n        \"pageSize\": 20\n    },\n    \"list\": [\n        {\n            \"line\": \"301\",\n            \"workOrderNo\": \"POORD005276-TOP\",\n            \"lineseat\": \"01-09\",\n            \"materialNo\": \"K3108410300530\",\n            \"materialDescription\": \"-\",\n            \"materialSpecitification\": \"贴片电阻; & ;47K ±1% 1/16W 0402; & ;国巨; & ;\",\n            \"operationType\": \"全检\",\n            \"operator\": \"D001\",\n            \"result\": \"PASS\",\n            \"time\": \"2018-12-28 15:13:51\"\n        },\n        {\n            \"line\": \"301\",\n            \"workOrderNo\": \"POORD005276-TOP\",\n            \"lineseat\": \"01-08\",\n            \"materialNo\": \"K3108424300530\",\n            \"materialDescription\": \"-\",\n            \"materialSpecitification\": \"SR\",\n            \"operationType\": \"全检\",\n            \"operator\": \"D001\",\n            \"result\": \"PASS\",\n            \"time\": \"2018-12-28 15:13:50\"\n        }\n    ]\n}"
+						}
+					]
+				},
+				{
+					"name": "下载标准站位表",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "#TOKEN#",
+									"value": "943D0862F40C6A078226505A500CD243",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/program/download",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"program",
+								"download"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "转发打印请求",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "printerIP",
+									"value": "",
+									"description": "打印机IP",
+									"type": "text"
+								},
+								{
+									"key": "materialId",
+									"value": "",
+									"description": "料盘时间戳",
+									"type": "text"
+								},
+								{
+									"key": "materialNo",
+									"value": "",
+									"description": "料号",
+									"type": "text"
+								},
+								{
+									"key": "remainingQuantity",
+									"value": "",
+									"description": "剩余数量",
+									"type": "text"
+								},
+								{
+									"key": "productDate",
+									"value": "",
+									"description": "生产日期",
+									"type": "text"
+								},
+								{
+									"key": "user",
+									"value": "",
+									"description": "用户名",
+									"type": "text"
+								},
+								{
+									"key": "supplier",
+									"value": "",
+									"description": "供应商",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{ip}}:{{port}}/eps_server/task/printBarcode",
+							"protocol": "http",
+							"host": [
+								"{{ip}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"eps_server",
+								"task",
+								"printBarcode"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
